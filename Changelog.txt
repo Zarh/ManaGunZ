@@ -1,0 +1,221 @@
+TODO
+_ ftp
+_ wihtout peek&poke (only cobra)
+_ NETISO
+_ group PKG
+_ auto update
+_ restaure patched EBOOT
+_ Add : ZIP extractor
+_ Add : PFD extractor
+_ Add : Speed Start
+_ UI XMB : Use setting column
+_ Add filemanager : mount iso
+_ Split game setting et game option menu
+_ IRD iso
+_ debug EBOOT
+_ tool TIP HELP
+_ filemanager standalone
+
+
+v1.26
+_ Add : JPG and PNG can be used for all images used by MGZ.
+_ Add : Retro games (PS1, PSP and PS2) with mamba v3 and cobra.
+_ Add : It read the files inside iso. So, extern param.sfo and icon0 aren't used anymore.
+_ Add : New icons used by MGZ in "/USRDIR/GUI/COMMON".
+_ Add : Hold button to scroll evertywhere.
+_ Add : Scroll speed is managed with R2 button pressure, push it to increase speed. Also, the default speed is faster.
+_ Add : Navigate with the left joystick.
+_ Add : 'Pseudo-support' of Dynamic theme *.p3t.
+_ Fix Game Menu : Make pkg.
+_ Fix Game Menu : Extract ISO from NTFS.
+_ Fix Settings : Issue when the theme of UI LIST was disabled.
+_ Add Settings : IRD check result is displayed in the TXTviewer.
+_ Add Settings : Show the background picture PIC1.PNG. XMB&FLOW UI display the background if you enabled it in settings. For all UI, hold R1 to display it.
+_ Add Settings : UI FLOW can display covers instead of ICON0.
+_ Add FileManager : NTFS support.
+_ Add FileManager : Make APNG.
+_ Add FileManager : PS1&PS2 dumps md5 check with md5 from redump.org.
+_ Add FileManager : Set Permission to 0777.
+_ Add FileManager : CXML extract (P3T, RAF, QRC). It convert vag2wav, jsx2js, gtf2png and gim2png.
+_ Add FileManager : Convert JSX to JS ; VAG to WAV ; GTF to DDS ; DDS to PNG ; GIM to PNG.
+_ Add FileManager : Extract MultiMan theme *.thm.
+_ Add FileManager : PictureViewer : support APNG (animated PNG).
+_ Add FileManager : TXTviewer : can open few more file type.
+_ Add FileManager : TXTviewer : hold up&down to scroll.
+_ Fix FileManager: the parent dir ".." always stay a the top
+
+
+v1.25
+Add Settings : Platform filter
+Add FileManager : Decompress/Compress PSP ISO (CSO files)
+Fix FileManager : fixed bug when the length of files' names was too big
+Add : Display covers in the UI "XMB" and "LIST" 
+Add Settings : Download covers
+Change : I removed the limitation to calculate hash for files bigger than 10Mo
+Add : Support IRD to check MD5(s) of a JB game (in Game Option and in the FileManager)
+Add FileManager : Generate MD5 log file
+Add FileManager : Generate SHA-1 log file
+Add FileManager : Trophy Extractor
+Add FileManager : PKG Maker/Extractor
+Add FileManager : RCO extractor
+Add FileManager : Now the TXT viewer display the whole file (scroll with pad)
+Add FileManager : The picture viewer can display the next/previous picture of the folder
+Add FileManager : SFO Viewer
+Add FileManager : Extract/Make PS3 ISO
+Fix FileManager : Sometimes the file name of a selected item was hidden
+Fix : Notification message
+Fix : Make ISO
+Add : Latest mamba v3.1.0
+[Untested] Add : Retro games (PS1, PSP and PS2)
+
+v1.23
+Fix : UI Flow without theme
+Fix : no more freeze in 4.75 CEX
+Add : support 4.75 DEX
+
+v1.22
+Fix : Make pkg
+Add : support fw 4.75
+Add : XMB priority. When you change this option it will be activ only after the next boot of the homebrew.
+Add : Acces to FileManager even if with 0 game detected
+Fix FileManager : Window resize
+Fix FileManager : Scroll bar
+Fix FileManager : Some minor issues (I forgot)
+Add FileManager : Move window with cursor
+Add FileManager : Icon with color for some file (ex : *.self = RED) 
+Add FileManager : Preview of *.txt . It's only the begining of the file ~25 lines.
+Add FileManager : View PNG and JPG
+Add FileManager : Display SHA1 and MD5 in file properties. Only for file lower than 10 Mo if the file is too big it take too many time.
+Add FileManager : Extract & Sign EBOOT.BIN, *.self and *.sprx
+Add FileManager : Add/Remove a sprx to/from a boot list
+Add FileManager : Dump Lv2 & Flash
+
+v1.21
+Fix : issue with partitioned storage device
+Add : File manager
+Add : support 4.70 DEX
+
+v1.10
+Change : UI "Flow" mouvement is inversed by default
+Fix : folder "game_settings" was missing
+Fix : after extracting an ISO, there is no more 2 game added in the list
+Fix : issue in the display of properties
+Fix : issue with NTFS devices
+Fix : issue in Plug & Play thread
+Add : New mamba 1.20 by _NZH_ (i just removed the map_path("/app_home", "dev_usb000", 0))
+Add : mount JB games with mamba (syscall 35)
+Add : mount app_home with ISO
+Change : In Game Settings with UI "XMB", the 'back' button isn't triangle anymore, it's circle like in other UI
+Add : Hold Cirlce 3s to go back to XMB
+Add : Custumize colors used by ManaGunZ
+Fix : Minor stuff (I forgot)
+Add : Support multiMAN's themes (*.thm) and original static themes (*p3t). (see note)
+Add : Support fw 4.70
+
+note :
+To use a new theme (*.p3t or *.thm) you just have to put it in the root of USB device inside the folder "Themes". 
+For example : "/dev_usbXXX/Themes/MyTheme.p3t" or "/dev_usbXXX/Themes/MyTheme.thm"
+You can also put a new "native" ManaGunZ themes in this folder.
+For example : "/dev_usbXXX/Themes/List/MyTheme" or "/dev_usbXXX/Themes/XMB/MyTheme"
+Then go in ManaGunZ settings to load it.
+
+v1.00
+Ajout : confirmation pour supprimer un jeu
+Ajout : "Fix permission"
+Correction : Patch ecran noir
+Ajout : "Set Primary USB"
+Correction : réécriture du mode AutoMount
+Ajout : Nouvelle interface du menu "Settings"
+
+v0.91
+Ajout : Nouvel ICON0 et PIC1
+Correction : freeze pour le GUI "Flow"
+Correction : notification si download cancel
+Correction : clavier
+Correction : "Turn OFF" est actif que s'il existe au moins 1 update
+Correction : "Get_ICON0()"
+
+v0.90
+Ajout : "Game Ext"
+Ajout : "Rename"
+Ajout : "Copy Game"
+Ajout : "Make pkg Stealth"
+Ajout : "Fix EBOOT"
+Ajout : "Re-Sign"
+Ajout : "Convert/Extract ISO"
+Ajout : "Download Update"
+Ajout : "Properties"
+Ajout : Une interface "Game menu" regroupant "Game Setting" et "Game Option"
+Correction : Ecran noir avec les fw 4.60+
+
+v0.80
+Ajout : réglage de l'ecran
+Ajout : option pour configurer les dossiers scanné au démarrage
+Ajout : options de montage "avancées". On peut désormais configurer (1)le payload, (2)le type d’émulation, (3)la libfs.sprx, (4)le montage de /app_home ou non,(5)explorer_plugin.sprx patché ou non.
+Correction : écran noir avec les fw 4.60+
+
+v0.70
+Ajout : GUI "Flow"
+
+v0.60
+Ajout : GUI "XMB"
+Correction : Nouveau regex sur le nom des pkg : [a..z][A..Z][0..9][ ]
+Correction : bug pour les raccourcis XMB: freeze lors d'un montages ISO en CFW cobra
+Ajout : liste de favoris (pour l'instant visible uniquement avec le GUI "XMB")
+Correction : La notification est + belle
+
+v0.50
+Ajout : GUI "Grid"
+Retrait : l'entête "ManaGunZ"
+Correction : bug lorsque aucun jeux n’est détecté
+Ajout : compatibilité 4.65
+
+v0.40
+Ajout : Structure GUI/THEME
+Ajout : GUI "Liste"
+Ajout : Thèmes
+
+v0.30
+Ajout : creation des fichiers explore_plugin.sprx patché
+Correction : L'EBOOT.BIN sert uniquement à lancer managunz.self
+Correction : 1 seul SELF avec 2 type d'utilisations, type "manager"  ou type "launcher"
+Correction : mise au propre des messages debug
+Correction : mise au propre des offsets pour tout les FW
+Ajout : Patch "anti-error"
+Ajout : Compatibilité avec le fw 4.60
+Ajout : Message d'alerte si plusieurs hdd ext sont branché pour le montage BD-Mirroir
+Correction : mineur
+
+v0.23
+Ajout : Nouveau ICON0
+Ajout : refresh automatique si vous branchez ou debranchez un support USB
+Correction : le payload mamba est installé uniquement si vous lancer un jeux sous forme iso avec un fw non-cobra
+
+v0.22
+Ajout : ICON0 "Bullet"
+Ajout : écran de chargement "Bullet"
+Ajout : icone USB et ISO
+
+v0.21
+Correction: nom des PKG en ASCII
+Correction: control flag
+
+v0.20
+Ajout : notification
+Ajout : "Make PKG", permet d'obtenir des pkg type "lastman" permettant de monter le jeux via l'xmb
+
+v0.14
+Ajout : écran de chargement
+Ajout : informations manette
+
+v0.13
+Correction : bug montage mamba iso non splitté
+
+v0.12
+Ajout : compatibilité HDD NTFS 
+
+v0.11
+Ajout : UTF
+
+v0.1
+version initial

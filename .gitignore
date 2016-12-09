@@ -1,0 +1,10 @@
+*.elf
+*.self
+*.pkg
+*.o
+*.bin
+/build
+/MGZ/build
+/MGZ/lib
+/payloads
+/OffsetFinder
