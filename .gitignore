@@ -9,6 +9,8 @@
 /payloads
 /OffsetFinder
 
+!/MGZ/data/*.bin
+
 MGZ/lib/*
 
 !/MGZ/lib/cobralib/include
