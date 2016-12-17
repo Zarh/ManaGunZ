@@ -2,6 +2,7 @@
 *.self
 *.pkg
 *.o
+*.d
 *.bin
 /build
 /MGZ/build
