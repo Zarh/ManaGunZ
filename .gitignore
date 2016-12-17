@@ -22,7 +22,9 @@ MGZ/lib/*
 !/MGZ/lib/ImageMagick/MagickWand/*.h
 
 !/MGZ/lib/libapputil
+/MGZ/lib/libapputil/build
 !/MGZ/lib/libgtfconv
+/MGZ/lib/libgtfconv/build
 !/MGZ/lib/configure_libiconv
 !/MGZ/lib/configure_ImageMagick
 !/MGZ/lib/*.a
