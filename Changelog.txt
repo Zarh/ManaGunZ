@@ -7,7 +7,7 @@ _ auto update
 _ restaure patched EBOOT
 _ Add : ZIP extractor
 _ Add : PFD extractor
-_ Add : Speed Start
+_ Add : Speed Start / Speed Scan
 _ UI XMB : Use setting column
 _ Add filemanager : mount iso
 _ Split game setting et game option menu
@@ -15,6 +15,17 @@ _ IRD iso
 _ debug EBOOT
 _ tool TIP HELP
 _ filemanager standalone
+_ fix multipartition FAT32 and NTFS (infinite scan) / loadPIC from Iso ?
+_ ps2 option : xregistry
+_ ps2 option : http://ps2wide.net/480p.html
+_ ps2 option : http://ps2wide.net
+
+v1.27
+_ Fix FileManager : NTFS drive are mounted when the window is refresh
+_ Fix : Get ID
+_ Add : ICON0 and Covers are loading in a background task
+_ Fix : Navigation with L joystick is less sensible
+_ Add FileManager : refresh with L3
 
 
 v1.26

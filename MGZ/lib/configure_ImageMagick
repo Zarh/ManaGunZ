@@ -1,0 +1,45 @@
+#!/bin/sh
+
+## Configure the build.
+cd ImageMagick
+CFLAGS="-I$PSL1GHT/ppu/include -I$PS3DEV/portlibs/ppu/include" \
+LDFLAGS="-L$PSL1GHT/ppu/lib -L$PS3DEV/portlibs/ppu/lib -lrt -llv2" \
+PKG_CONFIG_PATH="$PS3DEV/portlibs/ppu/lib/pkgconfig" \
+sh configure --host="ppu" --enable-static --disable-shared \
+--disable-hdri \
+--disable-largefile \
+--disable-openmp \
+--without-modules \
+--with-quantum-depth=8 \
+--without-frozenpaths \
+--without-bzlib \
+--without-autotrace \
+--without-djvu \
+--without-dps \
+--without-fftw \
+--without-flif \
+--without-fpx \
+--without-fontconfig \
+--without-freetype \
+--without-gslib \
+--without-gvc \
+--without-jbig \
+--without-jpeg \
+--without-lcms \
+--without-lqr \
+--without-lzma \
+--without-magick-plus-plus \
+--without-openexr \
+--without-openjp2 \
+--without-pango \
+--without-perl \
+--without-raqm \
+--without-rsvg \
+--without-tiff \
+--without-webp \
+--without-wmf \
+--without-x \
+--without-xml \
+--without-zlib \
+|| { exit 1; }
+cd ..
