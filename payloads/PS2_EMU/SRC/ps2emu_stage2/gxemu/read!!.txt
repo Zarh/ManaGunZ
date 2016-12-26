@@ -1,0 +1,7 @@
+base address in ldscript must have same 16 bytes alignment that stage2_addr (from ps2emu_stage1)
+
+Examples:
+0x2BB8A20 -> 0x0BADCAFE00000000
+0x2BB8A24 -> 0x0BADCAFE00000004
+0x2BB8A28 -> 0x0BADCAFE00000008
+0x2BB8A2C -> 0x0BADCAFE0000000C

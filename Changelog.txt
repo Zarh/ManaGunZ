@@ -21,7 +21,7 @@ _ ps2 option : http://ps2wide.net/480p.html
 _ ps2 option : http://ps2wide.net
 
 v1.27
-_ Fix FileManager : NTFS drive are mounted when the window is refresh
+_ Fix FileManager : NTFS drive are mounted when the window is refreshed
 _ Fix : Get ID
 _ Add : ICON0 and Covers are loading in a background task
 _ Fix : Navigation with L joystick is less sensible

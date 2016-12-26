@@ -6,7 +6,6 @@
 *.bin
 /build
 /MGZ/build
-/payloads
 /OffsetFinder
 
 !/MGZ/data/*.bin
@@ -31,3 +30,6 @@ MGZ/lib/*
 !/MGZ/lib/configure_libiconv
 !/MGZ/lib/configure_ImageMagick
 !/MGZ/lib/*.a
+
+payloads/*
+!payloads/PS2_EMU
