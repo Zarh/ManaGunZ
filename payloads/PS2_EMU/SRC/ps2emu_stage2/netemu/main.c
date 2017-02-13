@@ -19,6 +19,9 @@ typedef struct _payload_vars
 	int limg_read;
 	uint64_t iso_size;
 	uint64_t debug_offset;
+	int config_size;
+	char cfg_suffix[0x20];
+	char cfg_file[0x720];
 } payload_vars;
 
 payload_vars *vars = (payload_vars *)EXTENDED_DATA;
@@ -97,11 +100,10 @@ PS2EMU_HOOKED_FUNCTION_COND_POSTCALL_4(int, ufs_read_patched, (int fd, uint64_t 
 	return DO_POSTCALL;
 }*/
 
-/*uint64_t dump_ram(uint64_t addr)
+uint64_t dump_ram(uint64_t addr)
 {
-__asm__("ld %r3, 0(%r3)");
-__asm__("blr"); //gives a warning due to return statement not given.actually blr means return :)
-}*/
+ return *(uint64_t *)addr;
+}
 
 PS2EMU_PATCHED_FUNCTION(int, open_iso, (int unk, char *path))
 {
@@ -177,6 +179,45 @@ PS2EMU_PATCHED_FUNCTION(int, read_iso_size, (int fd, uint64_t offset, uint64_t *
 	}
 	
 	return ufs_read(fd, offset, iso_size, size);
+}
+
+PS2EMU_PATCHED_FUNCTION(int, open_config, (int unk, char *path))
+{
+		if(vars->iso_file[0])
+		{
+			strcpy(vars->cfg_suffix, ".CONFIG");
+			strcpy(vars->cfg_file, vars->iso_file+10);
+			strcpy(vars->cfg_file+strlen(vars->iso_file)-10, vars->cfg_suffix);
+			int fd=ufs_open(0, vars->cfg_file);
+			if(fd>=0)
+			{
+				ufs_stat stat;
+				ufs_fstat(fd, &stat);
+				vars->config_size=stat.st_size;
+			}
+			return fd;
+		}
+	return ufs_open(unk, path);
+}
+
+PS2EMU_PATCHED_FUNCTION(int, read_config_size, (int fd, uint64_t offset, uint64_t *config_size, uint64_t size))
+{
+	if(vars->iso_file[0])
+	{
+		
+		*config_size=vars->config_size;
+		return size;
+	}
+	return ufs_read(fd, offset, config_size, size);
+}
+
+PS2EMU_PATCHED_FUNCTION(int, decrypt_config, (int fd, uint64_t offset, void *buf, uint64_t size))
+{
+	if(vars->iso_file[0])
+	{
+		return ufs_read(fd, offset, buf, size);
+	}
+	return decrypt(fd, offset, buf, size);
 }
 
 PS2EMU_HOOKED_FUNCTION_COND_POSTCALL_4(int, cdvd_read_patched, (int fd, uint64_t lba, uint8_t *buf, uint64_t size))

@@ -1007,6 +1007,7 @@
 		#define strcpy_symbol                            0x110E9C
 		#define strcat_symbol                            0x110ED4
 		#define strlen_symbol                            0x110E64
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_430
@@ -1022,6 +1023,7 @@
 		#define strcpy_symbol                            0x110FDC
 		#define strcat_symbol                            0x111014
 		#define strlen_symbol                            0x110FA4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_431
@@ -1037,6 +1039,7 @@
 		#define strcpy_symbol                            0x110FDC
 		#define strcat_symbol                            0x111014
 		#define strlen_symbol                            0x110FA4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_440
@@ -1052,6 +1055,7 @@
 		#define strcpy_symbol                            0x1150DC
 		#define strcat_symbol                            0x115114
 		#define strlen_symbol                            0x1150A4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_441
@@ -1067,6 +1071,7 @@
 		#define strcpy_symbol                            0x1150DC
 		#define strcat_symbol                            0x115114
 		#define strlen_symbol                            0x1150A4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_446
@@ -1082,6 +1087,7 @@
 		#define strcpy_symbol                            0x11515C
 		#define strcat_symbol                            0x115194
 		#define strlen_symbol                            0x115124
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_450
@@ -1097,6 +1103,7 @@
 		#define strcpy_symbol                            0x11821C
 		#define strcat_symbol                            0x118254
 		#define strlen_symbol                            0x1181E4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_453
@@ -1112,6 +1119,7 @@
 		#define strcpy_symbol                            0x11871C
 		#define strcat_symbol                            0x118754
 		#define strlen_symbol                            0x1186E4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_455
@@ -1127,6 +1135,7 @@
 		#define strcpy_symbol                            0x11879C
 		#define strcat_symbol                            0x1187D4
 		#define strlen_symbol                            0x118764
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_460
@@ -1142,6 +1151,7 @@
 		#define strcpy_symbol                            0x11885C
 		#define strcat_symbol                            0x118894
 		#define strlen_symbol                            0x118824
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_465
@@ -1157,6 +1167,7 @@
 		#define strcpy_symbol                            0x11885C
 		#define strcat_symbol                            0x118894
 		#define strlen_symbol                            0x118824
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_466
@@ -1172,6 +1183,7 @@
 		#define strcpy_symbol                            0x11885C
 		#define strcat_symbol                            0x118894
 		#define strlen_symbol                            0x118824
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_470
@@ -1187,6 +1199,7 @@
 		#define strcpy_symbol                            0x11885C
 		#define strcat_symbol                            0x118894
 		#define strlen_symbol                            0x118824
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_475
@@ -1202,6 +1215,7 @@
 		#define strcpy_symbol                            0x11885C
 		#define strcat_symbol                            0x118894
 		#define strlen_symbol                            0x118824
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_476
@@ -1217,6 +1231,7 @@
 		#define strcpy_symbol                            0x11885C
 		#define strcat_symbol                            0x118894
 		#define strlen_symbol                            0x118824
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_478
@@ -1232,6 +1247,7 @@
 		#define strcpy_symbol                            0x1188DC
 		#define strcat_symbol                            0x118914
 		#define strlen_symbol                            0x1188A4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_480
@@ -1247,6 +1263,7 @@
 		#define strcpy_symbol                            0x1188DC
 		#define strcat_symbol                            0x118914
 		#define strlen_symbol                            0x1188A4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_481
@@ -1262,6 +1279,7 @@
 		#define strcpy_symbol                            0x1188DC
 		#define strcat_symbol                            0x118914
 		#define strlen_symbol                            0x1188A4
+		#define decrypt_symbol                           cdvd_read_symbol
 	#endif /* FIRMWARE */
 
 #endif /* PS2NETEMU */

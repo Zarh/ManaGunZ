@@ -693,7 +693,7 @@ int main()
 		sprintf(str, "\t\t#define strcpy_symbol                            0x%llX\n", strcpy_symbol); fputs(str, sym);
 		sprintf(str, "\t\t#define strcat_symbol                            0x%llX\n", strcat_symbol); fputs(str, sym);
 		sprintf(str, "\t\t#define strlen_symbol                            0x%llX\n", strlen_symbol); fputs(str, sym);
-		
+		       fputs("\t\t#define decrypt_symbol                           cdvd_read_symbol\n", sym);
 		fputs("\t#endif /* FIRMWARE */\n\n", sym);
 		
 		free(elf_data);

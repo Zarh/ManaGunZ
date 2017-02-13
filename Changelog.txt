@@ -4,7 +4,7 @@ _ wihtout peek&poke (only cobra)
 _ NETISO
 _ group PKG
 _ auto update
-_ restaure patched EBOOT
+_ restore patched EBOOT
 _ Add : ZIP extractor
 _ Add : PFD extractor
 _ Add : Speed Start / Speed Scan
@@ -15,18 +15,41 @@ _ IRD iso
 _ debug EBOOT
 _ tool TIP HELP
 _ filemanager standalone
-_ fix multipartition FAT32 and NTFS (infinite scan) / loadPIC from Iso ?
-_ ps2 option : xregistry
-_ ps2 option : http://ps2wide.net/480p.html
-_ ps2 option : http://ps2wide.net
+_ CONFIG editor
+_ Plugin menu "/dev_hdd0/plugins"
 
 v1.27
-_ Fix FileManager : NTFS drive are mounted when the window is refreshed
-_ Fix : Get ID
-_ Add : ICON0 and Covers are loading in a background task
-_ Fix : Navigation with L joystick is less sensible
-_ Add FileManager : refresh with L3
+_ Add : Support CFW 481 DEX.
+_ Add : Mamba v3 is ported to every supported fw.
+_ Add : PS2emu patcher is updated with the new payload to support PS2 CONFIG. See note (1).
+_ Add : PS2 CONFIG files from psdevwiki are included. It will be added automatically if there isn't any CONFIG used.
+_ Add : PS2 Menu. See note (3).
+_ Add : To have a faster loading, ICON0s and covers are loaded in a background task, a progress bar is displayed.
+_ Fix : Navigation with L joystick is less sensible.
+_ Fix : Better detection of the firmware version to avoid issues with similar fw. See note (2).
+_ Fix : freeze when it scanned some PS1/PS2 games. Fixed 'Get_ID' function.
+_ Fix FileManager : NTFS drive are mounted when the window is refreshed.
+_ Add FileManager : Press L3 to refresh the window.
+_ Add FileManager : xRegistry viewer. It convert the registry to a txt file in "/dev_hdd0/tmp/xreg.txt".
+_ Add FileManager : Scroll option menu with direction pad.
+_ Add FileManager : Check CRC of PSP ISO with CRC from renascene.
+_ Add Offsetfinder : It generate firmwares informations for mamba v3.
 
+Note : 
+(1) To allow ManaGunZ to patch the PS2 netemu, it must be the original self. It won't patch the self if it's already patched with the old payload.
+(2)	It fix some issues with 481 478 476 which was detected as 4.75.
+(3) PS2 menu have the following options :
+- Rename : it rename the ISO name
+- Add/remove to favorite
+- Apply/restore pnach : it use the pnach file in "/dev_hdd0/game/MANAGUNZ0/USRDIR/setting/PS2/[CRC].pnach" or "/dev_usbXXX/PNACH/[CRC].pnach" or "/dev_ntfsX:/PNACH/[CRC].pnach". 
+The CRC is the same used in pcsx2. You can find lot of widescreen pnach here : https://github.com/PCSX2/pcsx2/blob/master/bin/cheats_ws.zip
+ManaGunZ change the value directly in the ISO, but it keep a backup of the original value so you can restore the iso.
+- Disable/enable netemu : It available only for BC system in cobra 7.50+. It force BC system to use the sofware emulation.
+- CONFIG to use : This option allow you to use a custom CONFIG instead of the official CONFIG.
+- Check MD5 : It compare the md5 of your ps2 backup with md5 from 'redump.org'.
+- Delete : It delete the iso.
+- Copy : It copy the iso to another device.
+- Properties : It display some info like size, CRC, game ID...
 
 v1.26
 _ Add : JPG and PNG can be used for all images used by MGZ.

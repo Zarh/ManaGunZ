@@ -1,0 +1,68 @@
+PAYLOADS = 421C 421D 430C 430D 431C 440C 441C 441D 446C 446D 450C 450D 453C 453D 455C 455D 460C \
+		   465C 465D 470C 470D 475C 475D 476C 476D 478C 478D 480C 480D 481C 481D
+
+CC		:= ppu-gcc
+CXX		:= ppu-g++
+LD		:= ppu-ld 
+OBJCOPY		:= ppu-objcopy
+OBJDUMP		:= ppu-objdump
+AR 		:= ppu-ar
+STRIP		:= ppu-strip
+INCLUDE		= $(PS3DEV)/ppu/ppu/include lv2/include
+LIBSDIR         =
+LIBS           	=
+BUILD_TYPE     	= 
+GCC_INCLUDE_DIR = lv2/include
+
+CFLAGS = -ffunction-sections -fdata-sections -Os -m64 -fno-builtin -fno-exceptions \
+			   -Os -Wall -Wno-strict-aliasing -Wno-multichar $(foreach dir,$(INCLUDE),-I$(dir)) \
+			   -DLV2 -ffreestanding 
+CFLAGS += --std=gnu99
+
+ifeq ($(BUILD_TYPE), debug)
+CFLAGS += -DDEBUG -DTEST
+endif
+
+ifeq ($(BUILD_TYPE), test)
+CFLAGS += -DTEST
+endif
+
+#CFLAGS += -DPSN_SUPPORT
+#CFLAGS += -DPEEK_POKE_TEST 
+
+LDFLAGS= -T loader_src/payload.ld -nostartfiles -nostdlib -nodefaultlibs -Wl,-static -L. $(foreach dir,$(LIBSDIR),-L$(dir)) $(LIBS) \
+	 -Wl,--gc-sections -Wl,-Map=payload.map
+
+OBJS = loader_src/start.o loader_src/main.o lv2/src/io.o \
+	lv2/src/memory.o lv2/src/thread.o lv2/src/thread_c.o lv2/src/process.o \
+	lv2/src/modules.o lv2/src/modules_c.o lv2/src/syscall.o lv2/src/libc.o
+
+ifeq ($(BUILD_TYPE), debug)
+#OBJS += lv2/src/debug.o
+endif
+ 
+define do_payload
+	@rm -f *.o *.elf *.map *.lzma loader_src/*.o lv2/src/*.o 
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o loader_src/start.o loader_src/start.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o loader_src/main.o loader_src/main.c
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/io.o lv2/src/io.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/memory.o lv2/src/memory.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/thread.o lv2/src/thread.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/thread_c.o lv2/src/thread_c.c
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/process.o lv2/src/process.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/modules.o lv2/src/modules.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/modules_c.o lv2/src/modules_c.c
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/syscall.o lv2/src/syscall.S
+	$(CC) $(CFLAGS) -DFIRMWARE_$@ -c -o lv2/src/libc.o lv2/src/libc.S
+	$(CC) $(LDFLAGS) -o mamba_loader_$@.elf $(OBJS)
+	$(OBJCOPY) -O binary mamba_loader_$@.elf mamba_loader_$@.bin
+	@rm -f *.o *.elf *.map *.lzma loader_src/*.o lv2/src/*.o
+endef
+
+all: $(PAYLOADS)
+
+$(PAYLOADS):
+	$(do_payload)
+	
+clean:
+	rm -f *.o *.elf *.map *.lzma loader_src/*.o lv2/src/*.o

@@ -34,14 +34,7 @@ static oskParam DialogOskParam;
 static oskInputFieldInfo inputFieldInfo;
 
 extern void cls();
-extern void Draw_BGS();
-extern void Draw_window();
-extern void Draw_option();
-extern void Draw_properties();
-extern void Draw_Notification();
-extern void Draw_input();
-extern void Draw_cursor();
-
+extern void Draw_scene();
 
 static void my_eventHandle(u64 status, u64 param, void * userdata) {
 
@@ -160,13 +153,7 @@ int Get_OSK_String(char *caption, char *str, int len)
     {
         cls();
 		
-		Draw_BGS();
-		Draw_window();
-		Draw_option();
-		Draw_properties();
-		Draw_Notification();
-		Draw_input();
-		Draw_cursor();
+		Draw_scene();
 		
 		tiny3d_Flip();
 		

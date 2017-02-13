@@ -10,6 +10,9 @@ uint64_t read_iso_size_call;
 uint64_t fstat_iso_call;
 uint64_t open_iso_call1;
 uint64_t open_iso_call2;
+uint64_t read_config_size_call;
+uint64_t open_config_call;
+uint64_t decrypt_config_call;
 
 #define ADDITIONAL_CODE_SIZE		0x46B0
 #define ADDITIONAL_DATA_SIZE		0x1000
@@ -378,6 +381,48 @@ static int patch_emu(char *payload_map_file)
 				printf("fstat_iso_patched found at %lx\n", (unsigned long)addr);
 				patch_call(fstat_iso_call, ps2_netemu+addr);
 			}
+			else if (strcmp(name, "open_config") == 0)
+			{
+				addr = get_func_address(line);
+				
+				if (addr == 0)
+				{
+					printf("Cannot find address of open_config\n");
+					ret = -1;
+					break;
+				}
+				
+				printf("open_config found at %lx\n", (unsigned long)addr);
+				patch_call(open_config_call, ps2_netemu+addr);
+			}
+			else if (strcmp(name, "read_config_size") == 0)
+			{
+				addr = get_func_address(line);
+				
+				if (addr == 0)
+				{
+					printf("Cannot find address of read_config_size\n");
+					ret = -1;
+					break;
+				}
+				
+				printf("read_config_size found at %lx\n", (unsigned long)addr);
+				patch_call(read_config_size_call, ps2_netemu+addr);
+			}
+			else if (strcmp(name, "decrypt_config") == 0)
+			{
+				addr = get_func_address(line);
+				
+				if (addr == 0)
+				{
+					printf("Cannot find address of decrypt_config\n");
+					ret = -1;
+					break;
+				}
+				
+				printf("decrypt_config found at %lx\n", (unsigned long)addr);
+				patch_call(decrypt_config_call, ps2_netemu+addr);
+			}
 			else if (strcmp(name, "open_iso") == 0)
 			{
 				addr = get_func_address(line);
@@ -521,13 +566,17 @@ int Search_Offset(char *elf_p)
 	fstat_iso_call=0;
 	open_iso_call1=0;
 	open_iso_call2=0;
+	read_config_size_call=0;// -0x24
+	open_config_call=0; // -0x48
+	decrypt_config_call=0; // +0x10
 	 
 	uint8_t cdvd_read_symbol_FLAG[0x10] = {0x2F, 0x86, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFE, 0xF1, 0xF9, 0xC1, 0x00, 0x80};
 	uint8_t read_iso_size_call_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x08, 0x41, 0x9E, 0x01, 0x34, 0xE8, 0x7F, 0x00, 0x58}; // -4
 	uint8_t fstat_iso_call_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x00, 0x7C, 0x60, 0x1B, 0x78, 0x41, 0x9C, 0x02, 0x14}; // -4
 	uint8_t open_iso_call1_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x00, 0x7C, 0x7E, 0x1B, 0x78, 0x7C, 0x7D, 0x07, 0xB4}; // -4
 	uint8_t open_iso_call2_FLAG[0x20] = {0x60, 0x00, 0x00, 0x00, 0x39, 0x60, 0x00, 0x00, 0x90, 0x7E, 0x00, 0x04, 0x80, 0x1E, 0x00, 0x04}; // -4
-	
+	uint8_t CONFIG_FLAG[0x10] = {0x7F, 0x83, 0xE3, 0x78, 0x38, 0x80, 0x00, 0x00, 0x7F, 0xE5, 0xFB, 0x78, 0x7F, 0xA6, 0x07, 0xB4};
+		
 	printf("\n");
 	
 	int n;
@@ -558,14 +607,23 @@ int Search_Offset(char *elf_p)
 			i++;
 			printf("open_iso_call2 %X\n", (unsigned int) open_iso_call2);
 		}
-		if(i==5) break;
+		if(!memcmp((char *) &elf_buf[n], (char *) CONFIG_FLAG, 0x10)) {
+			read_config_size_call = n - 0x24 - 0x10000;
+			open_config_call = n - 0x48 - 0x10000;
+			decrypt_config_call = n + 0x10 - 0x10000;
+			i++;
+			printf("read_config_size_call %X\n", (unsigned int) read_config_size_call);
+			printf("open_config_call %X\n", (unsigned int) open_config_call);
+			printf("decrypt_config_call %X\n", (unsigned int) decrypt_config_call);
+		}
+		if(i==6) break;
 	}
 	
 	printf("\n");
 	
 	free(elf_buf);
 	
-	if(i!=5) return -1; 
+	if(i!=6) return -1; 
 
 	return 0;
 	

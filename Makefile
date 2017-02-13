@@ -23,7 +23,7 @@ INCLUDES	:=	include
 PKGFILES	:=	$(CURDIR)/pkgfiles
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.26
+VERSION		:=  1.27
 
 TITLE		:=	$(TARGET) v$(VERSION)
 APPID		:=	MANAGUNZ0
@@ -137,72 +137,19 @@ clean:
 	@$(MAKE) clean -C MGZ/lib/libiconv --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libntfs_ext --no-print-directory
 	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
-	@$(MAKE) clean -C payloads/MAMBA_LOADER --no-print-directory
 	
 #---------------------------------------------------------------------------------
 payload:
 	cd OffsetFinder; ./OffsetFinder.exe	
 	@cp -f OffsetFinder/firmware_symbols.h payloads/SKY/firmware_symbols.h;
 	@cp -f OffsetFinder/common.h MGZ/source/common.h
+	@cp -f OffsetFinder/symbols.h payloads/MAMBA/lv2/include/lv2/symbols.h
 	@$(MAKE) -C payloads/SKY --no-print-directory
+	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
 	@$(MAKE) all -C payloads/MAMBA --no-print-directory
-	@$(MAKE) all -C payloads/MAMBA_LOADER --no-print-directory
-	mv payloads/MAMBA/mamba_4_21DEX.lz.bin  MGZ/data/mamba_421D.lz.bin
-	mv payloads/MAMBA/mamba_4_21.lz.bin  MGZ/data/mamba_421C.lz.bin
-	mv payloads/MAMBA/mamba_4_30DEX.lz.bin  MGZ/data/mamba_430D.lz.bin
-	mv payloads/MAMBA/mamba_4_30.lz.bin  MGZ/data/mamba_430C.lz.bin
-	mv payloads/MAMBA/mamba_4_31.lz.bin  MGZ/data/mamba_431C.lz.bin
-	mv payloads/MAMBA/mamba_4_40.lz.bin  MGZ/data/mamba_440C.lz.bin
-	mv payloads/MAMBA/mamba_4_41DEX.lz.bin  MGZ/data/mamba_441D.lz.bin
-	mv payloads/MAMBA/mamba_4_41.lz.bin  MGZ/data/mamba_441C.lz.bin
-	mv payloads/MAMBA/mamba_4_46DEX.lz.bin  MGZ/data/mamba_446D.lz.bin
-	mv payloads/MAMBA/mamba_4_46.lz.bin  MGZ/data/mamba_446C.lz.bin
-	mv payloads/MAMBA/mamba_4_50DEX.lz.bin  MGZ/data/mamba_450D.lz.bin
-	mv payloads/MAMBA/mamba_4_50.lz.bin  MGZ/data/mamba_450C.lz.bin
-	mv payloads/MAMBA/mamba_4_53DEX.lz.bin  MGZ/data/mamba_453D.lz.bin
-	mv payloads/MAMBA/mamba_4_53.lz.bin  MGZ/data/mamba_453C.lz.bin
-	mv payloads/MAMBA/mamba_4_55DEX.lz.bin  MGZ/data/mamba_455D.lz.bin
-	mv payloads/MAMBA/mamba_4_55.lz.bin  MGZ/data/mamba_455C.lz.bin
-	mv payloads/MAMBA/mamba_4_60DEX.lz.bin  MGZ/data/mamba_460D.lz.bin
-	mv payloads/MAMBA/mamba_4_60.lz.bin  MGZ/data/mamba_460C.lz.bin
-	mv payloads/MAMBA/mamba_4_65DEX.lz.bin  MGZ/data/mamba_465D.lz.bin
-	mv payloads/MAMBA/mamba_4_65.lz.bin  MGZ/data/mamba_465C.lz.bin
-	mv payloads/MAMBA/mamba_4_66DEX.lz.bin  MGZ/data/mamba_466D.lz.bin
-	mv payloads/MAMBA/mamba_4_66.lz.bin  MGZ/data/mamba_466C.lz.bin
-	mv payloads/MAMBA/mamba_4_70DEX.lz.bin  MGZ/data/mamba_470D.lz.bin
-	mv payloads/MAMBA/mamba_4_70.lz.bin  MGZ/data/mamba_470C.lz.bin
-	mv payloads/MAMBA/mamba_4_75DEX.lz.bin  MGZ/data/mamba_475D.lz.bin
-	mv payloads/MAMBA/mamba_4_75.lz.bin  MGZ/data/mamba_475C.lz.bin
-	mv payloads/MAMBA/mamba_4_80.lz.bin  MGZ/data/mamba_480C.lz.bin
-	mv payloads/MAMBA/mamba_4_80DEX.lz.bin  MGZ/data/mamba_480D.lz.bin
-	mv payloads/MAMBA_LOADER/payload_4_21DEX.bin  MGZ/data/mamba_loader_421D.bin
-	mv payloads/MAMBA_LOADER/payload_4_21.bin  MGZ/data/mamba_loader_421C.bin
-	mv payloads/MAMBA_LOADER/payload_4_30DEX.bin  MGZ/data/mamba_loader_430D.bin
-	mv payloads/MAMBA_LOADER/payload_4_30.bin  MGZ/data/mamba_loader_430C.bin
-	mv payloads/MAMBA_LOADER/payload_4_31.bin  MGZ/data/mamba_loader_431C.bin
-	mv payloads/MAMBA_LOADER/payload_4_40.bin  MGZ/data/mamba_loader_440C.bin
-	mv payloads/MAMBA_LOADER/payload_4_41DEX.bin  MGZ/data/mamba_loader_441D.bin
-	mv payloads/MAMBA_LOADER/payload_4_41.bin  MGZ/data/mamba_loader_441C.bin
-	mv payloads/MAMBA_LOADER/payload_4_46DEX.bin  MGZ/data/mamba_loader_446D.bin
-	mv payloads/MAMBA_LOADER/payload_4_46.bin  MGZ/data/mamba_loader_446C.bin
-	mv payloads/MAMBA_LOADER/payload_4_50DEX.bin  MGZ/data/mamba_loader_450D.bin
-	mv payloads/MAMBA_LOADER/payload_4_50.bin  MGZ/data/mamba_loader_450C.bin
-	mv payloads/MAMBA_LOADER/payload_4_53DEX.bin  MGZ/data/mamba_loader_453D.bin
-	mv payloads/MAMBA_LOADER/payload_4_53.bin  MGZ/data/mamba_loader_453C.bin
-	mv payloads/MAMBA_LOADER/payload_4_55DEX.bin  MGZ/data/mamba_loader_455D.bin
-	mv payloads/MAMBA_LOADER/payload_4_55.bin  MGZ/data/mamba_loader_455C.bin
-	mv payloads/MAMBA_LOADER/payload_4_60DEX.bin  MGZ/data/mamba_loader_460D.bin
-	mv payloads/MAMBA_LOADER/payload_4_60.bin  MGZ/data/mamba_loader_460C.bin
-	mv payloads/MAMBA_LOADER/payload_4_65DEX.bin  MGZ/data/mamba_loader_465D.bin
-	mv payloads/MAMBA_LOADER/payload_4_65.bin  MGZ/data/mamba_loader_465C.bin
-	mv payloads/MAMBA_LOADER/payload_4_66DEX.bin  MGZ/data/mamba_loader_466D.bin
-	mv payloads/MAMBA_LOADER/payload_4_66.bin  MGZ/data/mamba_loader_466C.bin
-	mv payloads/MAMBA_LOADER/payload_4_70DEX.bin  MGZ/data/mamba_loader_470D.bin
-	mv payloads/MAMBA_LOADER/payload_4_70.bin  MGZ/data/mamba_loader_470C.bin
-	mv payloads/MAMBA_LOADER/payload_4_75DEX.bin  MGZ/data/mamba_loader_475D.bin
-	mv payloads/MAMBA_LOADER/payload_4_75.bin  MGZ/data/mamba_loader_475C.bin
-	mv payloads/MAMBA_LOADER/payload_4_80.bin  MGZ/data/mamba_loader_480C.bin
-	mv payloads/MAMBA_LOADER/payload_4_80DEX.bin  MGZ/data/mamba_loader_480D.bin
+	@$(MAKE) loader -C payloads/MAMBA --no-print-directory
+	mv -f payloads/MAMBA/mamba_*.lz.bin  MGZ/data
+	mv -f payloads/MAMBA/mamba_loader_*.bin  MGZ/data
 	
 #---------------------------------------------------------------------------------
 sprx_iso:

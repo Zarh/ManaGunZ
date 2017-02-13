@@ -70,6 +70,8 @@
 
 #include "ps2gen.h"
 
+#include "xreg.h"
+
 #include "payload_sky_421C_bin.h"
 #include "umount_421C_bin.h"
 #include "mamba_421C_lz_bin.h"
@@ -185,6 +187,26 @@
 #include "mamba_475D_lz_bin.h"
 #include "mamba_loader_475D_bin.h"
 
+#include "payload_sky_476C_bin.h"
+#include "umount_476C_bin.h"
+#include "mamba_476C_lz_bin.h"
+#include "mamba_loader_476C_bin.h"
+
+#include "payload_sky_476D_bin.h"
+#include "umount_476D_bin.h"
+#include "mamba_476D_lz_bin.h"
+#include "mamba_loader_476D_bin.h"
+
+#include "payload_sky_478C_bin.h"
+#include "umount_478C_bin.h"
+#include "mamba_478C_lz_bin.h"
+#include "mamba_loader_478C_bin.h"
+
+#include "payload_sky_478D_bin.h"
+#include "umount_478D_bin.h"
+#include "mamba_478D_lz_bin.h"
+#include "mamba_loader_478D_bin.h"
+
 #include "payload_sky_480C_bin.h"
 #include "umount_480C_bin.h"
 #include "mamba_480C_lz_bin.h"
@@ -194,6 +216,16 @@
 #include "umount_480D_bin.h"
 #include "mamba_480D_lz_bin.h"
 #include "mamba_loader_480D_bin.h"
+
+#include "payload_sky_481C_bin.h"
+#include "umount_481C_bin.h"
+#include "mamba_481C_lz_bin.h"
+#include "mamba_loader_481C_bin.h"
+
+#include "payload_sky_481D_bin.h"
+#include "umount_481D_bin.h"
+#include "mamba_481D_lz_bin.h"
+#include "mamba_loader_481D_bin.h"
 
 #include "ps2gxemu_stage1_421_bin.h"
 #include "ps2gxemu_stage1_430_bin.h"
@@ -305,6 +337,7 @@
 #define _NFO		44
 #define _MD5		45
 #define _SHA1		46
+#define _XREG		47
 
 #define ALL				0
 #define UP				1
@@ -355,10 +388,10 @@
 #define PINK		0xFF00FFFF
 
 #define COLOR_ISO	RED
-#define COLOR_PS3	0xB0C6EDFF
+#define COLOR_PS3	0x00A0FFFF
 #define COLOR_PS2	0x0303C0FF
 #define COLOR_PS1	BLACK
-#define COLOR_PSP	0xA0A0A0FF
+#define COLOR_PSP	0x909090FF
 
 #define MD5_HASH	0
 #define SHA1_HASH	1
@@ -467,8 +500,6 @@ static int8_t FAV_positions_in_list[100] = {[0 ... 99] = -1};
 static char scan_dir[30][128];
 static int8_t scan_dir_number=0;
 
-float c_firmware=0.0f;
-u8 dex_mode=0;
 int firmware = 0;
 
 typedef struct
@@ -741,6 +772,7 @@ char *LoadFromISO(char *path, char *filename, int *size);
 u8 get_ext(char *file);
 void read_fav();
 int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color);
+u32 Get_CRC(char *Elf_Name);
 
 //*******************************************************
 //GUI
@@ -1120,9 +1152,7 @@ void Load_PIC()
 	int i;
 	
 	Load_GamePIC_progbar = 0;
-	
-	print_head("Loading ICON0s");
-	
+		
 	memset(ICON0_offset, 0, sizeof(ICON0_offset));
 	memset(ICON0, 0, sizeof(ICON0));
 	
@@ -1149,8 +1179,6 @@ void Load_PIC()
 	
 	Load_GamePIC_progbar=0;
 	if(Load_GamePIC==NO) return;
-	
-	print_head("Loading covers");
 	
 	memset(COVER_offset, 0, sizeof(COVER_offset));
 	memset(COVER, 0, sizeof(COVER));
@@ -1250,10 +1278,7 @@ void Draw_CoverFromCenter(int position, float x, float y, float z, float w, floa
 
 u8 get_FileOffset(FILE *fd, char *path, u32 *flba, u32 *size)
 {
-	if(path[0] != '/') {
-		print_load("Error : get_FileOffset path[0] != '/'");
-		return FAILED;
-	}
+	
 	u32 root_table = 0;
 	fseek(fd, 0x800*0x10+0xA2, SEEK_SET);
 	
@@ -1268,10 +1293,12 @@ u8 get_FileOffset(FILE *fd, char *path, u32 *flba, u32 *size)
 		return FAILED;
 	}
 	
-	int i=1;
+	int i;
 	int k=0;
 	char item_name[255];
-	for(i=1; i <= strlen(path); i++) {
+	for(i=0; i <= strlen(path); i++) {
+		if(i==0 && path[0] == '/') continue;
+		
 		if(path[i] == '/' || i==strlen(path)) {
 			strncpy(item_name, path+i-k, k);
 			memset(sector, 0, sizeof(sector));
@@ -3230,7 +3257,6 @@ void GetThemes()
 
 void Load_Themes()
 {
-	print_head("Loading themes...");
 	char temp[255];
 	char thmPath[255];
 	int k;
@@ -4913,12 +4939,10 @@ s32 write_device( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u
 
 int init_fw()
 {
-	u64 CEX=0x4345580000000000ULL;
-	u64 DEX=0x4445580000000000ULL;
-
-	if(lv2peek(FIRMWARE_OFFSET_421C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.21f;
+	if(( lv2peek(FW_DATE_OFFSET_421C    )==FW_DATE_1_421C) &&
+	   ( lv2peek(FW_DATE_OFFSET_421C + 8)==FW_DATE_2_421C) )
+	{
+		
 		firmware = 0x421C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_421C;
@@ -4936,7 +4960,6 @@ int init_fw()
 		OFFSET_1_IDPS = OFFSET_1_IDPS_421C;
 		OFFSET_2_IDPS = OFFSET_2_IDPS_421C;
 		
-		
 		PAYLOAD_SKY_SIZE = payload_sky_421C_bin_size;
 		PAYLOAD_SKY = (u64) payload_sky_421C_bin;
 		UMOUNT_SIZE = umount_421C_bin_size;
@@ -4946,10 +4969,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_421C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_421C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_421D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.21f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_421D    )==FW_DATE_1_421D) &&
+	   ( lv2peek(FW_DATE_OFFSET_421D + 8)==FW_DATE_2_421D) )
+	{
 		firmware = 0x421D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_421D;
@@ -4976,10 +4999,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_421D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_421D_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_430C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.30f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_430C    )==FW_DATE_1_430C) &&
+	   ( lv2peek(FW_DATE_OFFSET_430C + 8)==FW_DATE_2_430C) )
+	{
 		firmware = 0x430C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_430C;
@@ -5006,10 +5029,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_430C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_430C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_430D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.30f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_430D    )==FW_DATE_1_430D) &&
+	   ( lv2peek(FW_DATE_OFFSET_430D + 8)==FW_DATE_2_430D) )
+	{
 		firmware = 0x430D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_430D;
@@ -5036,10 +5059,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_430D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_430D_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_431C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.31f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_431C    )==FW_DATE_1_431C) &&
+	   ( lv2peek(FW_DATE_OFFSET_431C + 8)==FW_DATE_2_431C) )
+	{
 		firmware = 0x431C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_431C;
@@ -5066,10 +5089,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_431C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_431C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_440C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.40f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_440C    )==FW_DATE_1_440C) &&
+	   ( lv2peek(FW_DATE_OFFSET_440C + 8)==FW_DATE_2_440C) )
+	{
 		firmware = 0x440C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_440C;
@@ -5097,9 +5120,9 @@ int init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_440C_bin;
 		
 	}	else
-	if(lv2peek(FIRMWARE_OFFSET_441C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.41f;
+	if(( lv2peek(FW_DATE_OFFSET_441C    )==FW_DATE_1_441C) &&
+	   ( lv2peek(FW_DATE_OFFSET_441C + 8)==FW_DATE_2_441C) )
+	{
 		firmware = 0x441C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_441C;
@@ -5126,10 +5149,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_441C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_441C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_441D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.41f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_441D    )==FW_DATE_1_441D) &&
+	   ( lv2peek(FW_DATE_OFFSET_441D + 8)==FW_DATE_2_441D) )
+	{
 		firmware = 0x441D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_441D;
@@ -5157,9 +5180,9 @@ int init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_441D_bin;
 		
 	}	else
-	if(lv2peek(FIRMWARE_OFFSET_446C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.46f;
+	if(( lv2peek(FW_DATE_OFFSET_446C    )==FW_DATE_1_446C) &&
+	   ( lv2peek(FW_DATE_OFFSET_446C + 8)==FW_DATE_2_446C) )
+	{
 		firmware = 0x446C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_446C;
@@ -5186,10 +5209,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_446C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_446C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_446D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.46f; 
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_446D    )==FW_DATE_1_446D) &&
+	   ( lv2peek(FW_DATE_OFFSET_446D + 8)==FW_DATE_2_446D) )
+	{ 
 		firmware = 0x446D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_446D;
@@ -5216,10 +5239,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_446D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_446D_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_450C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.50f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_450C    )==FW_DATE_1_450C) &&
+	   ( lv2peek(FW_DATE_OFFSET_450C + 8)==FW_DATE_2_450C) )
+	{
 		firmware = 0x450C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_450C;
@@ -5246,10 +5269,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_450C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_450C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_450D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.50f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_450D    )==FW_DATE_1_450D) &&
+	   ( lv2peek(FW_DATE_OFFSET_450D + 8)==FW_DATE_2_450D) )
+	{
 		firmware = 0x450D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_450D;
@@ -5276,10 +5299,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_450D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_450D_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_453C)==CEX) {
-		dex_mode=0; 
-		c_firmware=4.53f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_453C    )==FW_DATE_1_453C) &&
+	   ( lv2peek(FW_DATE_OFFSET_453C + 8)==FW_DATE_2_453C) )
+	{
 		firmware = 0x453C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_453C;
@@ -5306,10 +5329,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_453C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_453C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_453D)==DEX) {
-		dex_mode=2; 
-		c_firmware=4.53f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_453D    )==FW_DATE_1_453D) &&
+	   ( lv2peek(FW_DATE_OFFSET_453D + 8)==FW_DATE_2_453D) )
+	{
 		firmware = 0x453D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_453D;
@@ -5336,10 +5359,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_453D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_453D_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_455C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.55f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_455C    )==FW_DATE_1_455C) &&
+	   ( lv2peek(FW_DATE_OFFSET_455C + 8)==FW_DATE_2_455C) )
+	{
 		firmware = 0x455C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_455C;
@@ -5366,10 +5389,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_455C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_455C_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_455D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.55f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_455D    )==FW_DATE_1_455D) &&
+	   ( lv2peek(FW_DATE_OFFSET_455D + 8)==FW_DATE_2_455D) )
+	{
 		firmware = 0x455D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_455D;
@@ -5396,10 +5419,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_455D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_455D_bin;
 		
-	}	else
-	if(lv2peek(FIRMWARE_OFFSET_460C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.60f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_460C    )==FW_DATE_1_460C) &&
+	   ( lv2peek(FW_DATE_OFFSET_460C + 8)==FW_DATE_2_460C) )
+	{
 		firmware = 0x460C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_460C;
@@ -5426,10 +5449,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_460C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_460C_bin;
 		
-	} 	else
-	if(lv2peek(FIRMWARE_OFFSET_465D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.65f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_465D    )==FW_DATE_1_465D) &&
+	   ( lv2peek(FW_DATE_OFFSET_465D + 8)==FW_DATE_2_465D) )
+	{
 		firmware = 0x465D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_465D;
@@ -5456,10 +5479,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_465D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_465D_bin;
 		
-	} 	else
-	if(lv2peek(FIRMWARE_OFFSET_465C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.65f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_465C    )==FW_DATE_1_465C) &&
+	   ( lv2peek(FW_DATE_OFFSET_465C + 8)==FW_DATE_2_465C) )
+	{
 		firmware = 0x465C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_465C;
@@ -5486,10 +5509,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_465C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_465C_bin;
 		
-	}	else 
-	if(lv2peek(FIRMWARE_OFFSET_470C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.70f;
+	} else 
+	if(( lv2peek(FW_DATE_OFFSET_470C    )==FW_DATE_1_470C) &&
+	   ( lv2peek(FW_DATE_OFFSET_470C + 8)==FW_DATE_2_470C) )
+	{
 		firmware = 0x470C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_470C;
@@ -5517,9 +5540,9 @@ int init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_470C_bin;
 		
 	} else 
-	if(lv2peek(FIRMWARE_OFFSET_470D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.70f;
+	if(( lv2peek(FW_DATE_OFFSET_470D    )==FW_DATE_1_470D) &&
+	   ( lv2peek(FW_DATE_OFFSET_470D + 8)==FW_DATE_2_470D) )
+	{
 		firmware = 0x470D;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_470D;
@@ -5547,9 +5570,9 @@ int init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_470D_bin;
 		
 	} else 
-	if(lv2peek(FIRMWARE_OFFSET_475C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.75f;
+	if(( lv2peek(FW_DATE_OFFSET_475C    )==FW_DATE_1_475C) &&
+	   ( lv2peek(FW_DATE_OFFSET_475C + 8)==FW_DATE_2_475C) )
+	{
 		firmware = 0x475C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_475C;
@@ -5576,10 +5599,10 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_475C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_475C_bin;
 		
-	} 	else
-	if(lv2peek(FIRMWARE_OFFSET_475D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.75f;
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_475D    )==FW_DATE_1_475D) &&
+	   ( lv2peek(FW_DATE_OFFSET_475D + 8)==FW_DATE_2_475D) )
+	{
 		firmware = 0x475D;
 
 		OFFSET_2_FIX = OFFSET_2_FIX_475D;
@@ -5607,9 +5630,129 @@ int init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_475D_bin;
 
 	} else 
-	if(lv2peek(FIRMWARE_OFFSET_480C)==CEX) {
-		dex_mode=0;
-		c_firmware=4.80f;
+	if(( lv2peek(FW_DATE_OFFSET_476C    )==FW_DATE_1_476C) &&
+	   ( lv2peek(FW_DATE_OFFSET_476C + 8)==FW_DATE_2_476C) )
+	{
+		firmware = 0x476C;
+		
+		OFFSET_2_FIX = OFFSET_2_FIX_476C;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_476C;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_476C;
+		OFFSET_FIX = OFFSET_FIX_476C;
+		HV_START_OFFSET = HV_START_OFFSET_476C;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_476C;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_476C;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_476C;
+		SYSCALL_TABLE = SYSCALL_TABLE_476C;
+		LV2MOUNTADDR = LV2MOUNTADDR_476C;
+		OPEN_HOOK = OPEN_HOOK_476C;
+		BASE_ADDR = BASE_ADDR_476C;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_476C;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_476C;
+		
+		PAYLOAD_SKY = (u64) payload_sky_476C_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_476C_bin_size;
+		UMOUNT = (u64) umount_476C_bin;
+		UMOUNT_SIZE = umount_476C_bin_size;
+		MAMBA = (u64) mamba_476C_lz_bin;
+		MAMBA_SIZE = mamba_476C_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_476C_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_476C_bin;
+		
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_476D    )==FW_DATE_1_476D) &&
+	   ( lv2peek(FW_DATE_OFFSET_476D + 8)==FW_DATE_2_476D) )
+	{
+		firmware = 0x476D;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_476D;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_476D;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_476D;
+		OFFSET_FIX = OFFSET_FIX_476D;
+		HV_START_OFFSET = HV_START_OFFSET_476D;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_476D;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_476D;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_476D;
+		SYSCALL_TABLE = SYSCALL_TABLE_476D;
+		LV2MOUNTADDR = LV2MOUNTADDR_476D;
+		OPEN_HOOK = OPEN_HOOK_476D;
+		BASE_ADDR = BASE_ADDR_476D;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_476D;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_476D;
+
+		PAYLOAD_SKY = (u64) payload_sky_476D_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_476D_bin_size;
+		UMOUNT = (u64) umount_476D_bin;
+		UMOUNT_SIZE = umount_476D_bin_size;
+		MAMBA = (u64) mamba_476D_lz_bin;
+		MAMBA_SIZE = mamba_476D_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_476D_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_476D_bin;
+
+	} else 
+	if(( lv2peek(FW_DATE_OFFSET_478C    )==FW_DATE_1_478C) &&
+	   ( lv2peek(FW_DATE_OFFSET_478C + 8)==FW_DATE_2_478C) )
+	{
+		firmware = 0x478C;
+		
+		OFFSET_2_FIX = OFFSET_2_FIX_478C;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_478C;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_478C;
+		OFFSET_FIX = OFFSET_FIX_478C;
+		HV_START_OFFSET = HV_START_OFFSET_478C;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_478C;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_478C;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_478C;
+		SYSCALL_TABLE = SYSCALL_TABLE_478C;
+		LV2MOUNTADDR = LV2MOUNTADDR_478C;
+		OPEN_HOOK = OPEN_HOOK_478C;
+		BASE_ADDR = BASE_ADDR_478C;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_478C;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_478C;
+		
+		PAYLOAD_SKY = (u64) payload_sky_478C_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_478C_bin_size;
+		UMOUNT = (u64) umount_478C_bin;
+		UMOUNT_SIZE = umount_478C_bin_size;
+		MAMBA = (u64) mamba_478C_lz_bin;
+		MAMBA_SIZE = mamba_478C_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_478C_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_478C_bin;
+		
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_478D    )==FW_DATE_1_478D) &&
+	   ( lv2peek(FW_DATE_OFFSET_478D + 8)==FW_DATE_2_478D) )
+	{
+		firmware = 0x478D;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_478D;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_478D;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_478D;
+		OFFSET_FIX = OFFSET_FIX_478D;
+		HV_START_OFFSET = HV_START_OFFSET_478D;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_478D;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_478D;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_478D;
+		SYSCALL_TABLE = SYSCALL_TABLE_478D;
+		LV2MOUNTADDR = LV2MOUNTADDR_478D;
+		OPEN_HOOK = OPEN_HOOK_478D;
+		BASE_ADDR = BASE_ADDR_478D;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_478D;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_478D;
+
+		PAYLOAD_SKY = (u64) payload_sky_478D_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_478D_bin_size;
+		UMOUNT = (u64) umount_478D_bin;
+		UMOUNT_SIZE = umount_478D_bin_size;
+		MAMBA = (u64) mamba_478D_lz_bin;
+		MAMBA_SIZE = mamba_478D_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_478D_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_478D_bin;
+
+	} else 
+	if(( lv2peek(FW_DATE_OFFSET_480C    )==FW_DATE_1_480C) &&
+	   ( lv2peek(FW_DATE_OFFSET_480C + 8)==FW_DATE_2_480C) )
+	{
 		firmware = 0x480C;
 		
 		OFFSET_2_FIX = OFFSET_2_FIX_480C;
@@ -5637,9 +5780,9 @@ int init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_480C_bin;
 		
 	} else
-	if(lv2peek(FIRMWARE_OFFSET_480D)==DEX) {
-		dex_mode=2;
-		c_firmware=4.80f;
+	if(( lv2peek(FW_DATE_OFFSET_480D    )==FW_DATE_1_480D) &&
+	   ( lv2peek(FW_DATE_OFFSET_480D + 8)==FW_DATE_2_480D) )
+	{
 		firmware = 0x480D;
 
 		OFFSET_2_FIX = OFFSET_2_FIX_480D;
@@ -5665,6 +5808,66 @@ int init_fw()
 		MAMBA_SIZE = mamba_480D_lz_bin_size;
 		MAMBA_LOADER_SIZE = mamba_loader_480D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_480D_bin;
+
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_481C    )==FW_DATE_1_481C) &&
+	   ( lv2peek(FW_DATE_OFFSET_481C + 8)==FW_DATE_2_481C) )
+	{
+		firmware = 0x481C;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_481C;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_481C;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_481C;
+		OFFSET_FIX = OFFSET_FIX_481C;
+		HV_START_OFFSET = HV_START_OFFSET_481C;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_481C;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_481C;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_481C;
+		SYSCALL_TABLE = SYSCALL_TABLE_481C;
+		LV2MOUNTADDR = LV2MOUNTADDR_481C;
+		OPEN_HOOK = OPEN_HOOK_481C;
+		BASE_ADDR = BASE_ADDR_481C;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_481C;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_481C;
+
+		PAYLOAD_SKY = (u64) payload_sky_481C_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_481C_bin_size;
+		UMOUNT = (u64) umount_481C_bin;
+		UMOUNT_SIZE = umount_481C_bin_size;
+		MAMBA = (u64) mamba_481C_lz_bin;
+		MAMBA_SIZE = mamba_481C_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_481C_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_481C_bin;
+
+	}  else
+	if(( lv2peek(FW_DATE_OFFSET_481D    )==FW_DATE_1_481D) &&
+	   ( lv2peek(FW_DATE_OFFSET_481D + 8)==FW_DATE_2_481D) )
+	{
+		firmware = 0x481D;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_481D;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_481D;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_481D;
+		OFFSET_FIX = OFFSET_FIX_481D;
+		HV_START_OFFSET = HV_START_OFFSET_481D;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_481D;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_481D;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_481D;
+		SYSCALL_TABLE = SYSCALL_TABLE_481D;
+		LV2MOUNTADDR = LV2MOUNTADDR_481D;
+		OPEN_HOOK = OPEN_HOOK_481D;
+		BASE_ADDR = BASE_ADDR_481D;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_481D;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_481D;
+
+		PAYLOAD_SKY = (u64) payload_sky_481D_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_481D_bin_size;
+		UMOUNT = (u64) umount_481D_bin;
+		UMOUNT_SIZE = umount_481D_bin_size;
+		MAMBA = (u64) mamba_481D_lz_bin;
+		MAMBA_SIZE = mamba_481D_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_481D_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_481D_bin;
 
 	} else	{return NOK;}
 	
@@ -5944,6 +6147,8 @@ int Delete_Game(char *path, int position)
 
 	print_load("Load game pictures");
 	start_Load_GamePIC();
+	
+	if(position>game_number) position=game_number;
 	
 	return SUCCESS;
 }
@@ -6459,13 +6664,39 @@ cancel:
 
 }
 
-void Draw_GameProperties(int position)
+void Draw_GameProperties()
 {
 	
 	char *tot_size = get_unit(total_size);
 	char sys_vers[8];
-	if(GetParamSFO("PS3_SYSTEM_VER", sys_vers, position, NULL)==FAILED) strcpy(sys_vers, "Unk");
-
+	if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+		if(GetParamSFO("PS3_SYSTEM_VER", sys_vers, position, NULL)==FAILED) strcpy(sys_vers, "Unk");
+	}
+	
+	char Game_id[20];
+	if(Get_ID(list_game_path[position], list_game_platform[position], Game_id) == FAILED) {
+		strcpy(Game_id, "Unk");
+	}
+	
+	char platform[30];
+	if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+		strcpy(platform, "PlayStation 3");
+	} else
+	if(list_game_platform[position] == _JB_PS2 || list_game_platform[position] == _ISO_PS2) {
+		strcpy(platform, "PlayStation 2");
+	} else
+	if(list_game_platform[position] == _JB_PS1 || list_game_platform[position] == _ISO_PS1) {
+		strcpy(platform, "PlayStation");
+	} else
+	if(list_game_platform[position] == _JB_PSP || list_game_platform[position] == _ISO_PSP) {
+		strcpy(platform, "PlayStation Portable");
+	} else strcpy(platform, "Unk");
+	
+	char PS2_CRC[10];
+	if(list_game_platform[position] == _ISO_PS2) {
+		sprintf(PS2_CRC, "%08lX", (long unsigned int) Get_CRC(Game_id));
+	}
+	
 	while(1) {
 		
 		cls();
@@ -6532,12 +6763,31 @@ void Draw_GameProperties(int position)
 			y+=new_line(1);
 		}
 		
+		
+		if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+			SetFontColor(COLOR_3, 0x0);
+			xt=DrawString(x1 , y, "System version :");
+			SetFontColor(COLOR_1, 0x0);
+			DrawString(xt+10 , y, sys_vers);
+			
+			y+=new_line(1);
+		}
+		
 		SetFontColor(COLOR_3, 0x0);
-		xt=DrawString(x1 , y, "System version :");
+		xt=DrawString(x1 , y, "Game ID :");
 		SetFontColor(COLOR_1, 0x0);
-		DrawString(xt+10 , y, sys_vers);
+		DrawString(xt+10 , y, Game_id);
 		
 		y+=new_line(1);
+		
+		if(list_game_platform[position] == _ISO_PS2) {
+			SetFontColor(COLOR_3, 0x0);
+			xt=DrawString(x1 , y, "ELF CRC :");
+			SetFontColor(COLOR_1, 0x0);
+			DrawString(xt+10 , y,  PS2_CRC);
+			
+			y+=new_line(1);
+		}
 		
 		x1=30;
 		x1=Draw_Button_Circle(x1, 485, 15);
@@ -7607,12 +7857,8 @@ void check_device()
 				char path_unplug[20];
 				for(i=0; i<=device_number_OLD; i++) {
 					for(j=0;j<=device_number;j++) {
-						if(strcmp(list_device_OLD[j], list_device[i]) == 0) {
-							break;
-						}
-						if(j==device_number) {
-							strcpy(path_unplug, list_device_OLD[i]);
-						}
+						if(strcmp(list_device[j], list_device_OLD[i]) == 0) break;
+						if(j==device_number) strcpy(path_unplug, list_device_OLD[i]);
 					}
 				}
 				
@@ -7656,7 +7902,7 @@ void check_device()
 				char path_plug[20];
 				for(i=0;i<=device_number; i++) {
 					for(j=0;j<=device_number_OLD;j++) {
-						if(strcmp(list_device[i], list_device_OLD[j])==0) break;
+						if(strcmp(list_device_OLD[j], list_device[i])==0) break;
 						if(j==device_number_OLD) strcpy(path_plug, list_device[i]);
 					}
 				}
@@ -7901,9 +8147,146 @@ u8 CheckMD5(char *path)
 	
 }
 
+u32 GetRenaCRC32(char *path)
+{
+	char game_ID[20];
+	char link[128];
+	u32 renaCRC = 0;
+	
+	if( Get_ID(path, _ISO_PSP, game_ID) == FAILED) return 0;
+	
+	sprintf(link, "http://renascene.com/?target=search1&srchser=1&srch=%s", game_ID);
+	Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp");
+	if(download(link, "/dev_hdd0/game/MANAGUNZ0/USRDIR/temp")==SUCCESS) {
+		char *data;
+		int file_size;
+		char tmp[255];
+		data = LoadFile("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp", &file_size);
+		Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp");
+		char *pch = strstr(data, "http://renascene.com/info/umd/");
+		if(pch != NULL) {
+			strncpy(tmp, pch, 40);
+			strtok(tmp, "'");
+			if(download(tmp, "/dev_hdd0/game/MANAGUNZ0/USRDIR/temp")==SUCCESS) {
+				free(data);
+				data = LoadFile("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp", &file_size);
+				Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp");
+				char *pch2 = strstr(data, "CRC32</td><td class=\"infRightTd\">");
+				if(pch2 != NULL) {
+					strncpy(tmp, pch2+33, 255);
+					strtok(tmp, "<");
+					sscanf(tmp, "%X", &renaCRC);
+					return renaCRC;
+				}
+			}
+		}
+		free(data);
+	}
+	
+	return 0;
+}
+
+u8 CheckCRC32(char *path)
+{
+	u32 renaCRC = GetRenaCRC32(path);
+	
+	if(renaCRC == 0) return FAILED;
+	
+	print_load("CRC from renascene : %X", renaCRC);
+	
+	print_head("Getting CRC32");
+	
+    FILE *f;
+    size_t n;
+	
+    unsigned char buf[1024];
+	uint64_t read=0;
+	uint64_t file_size;
+	
+    if( ( f = fopen( path, "rb" ) ) == NULL )
+        return( 1 );
+
+	prog_bar1_value=0;
+	
+	fseek (f , 0 , SEEK_END);
+	file_size = ftell (f);
+	fseek(f, 0, SEEK_SET);
+	
+	u32 crc = crc32(0L, Z_NULL, 0);
+	
+    while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 ) {
+		read+=n;
+		prog_bar1_value=(read*100)/file_size;
+		
+		crc = crc32(crc, (const unsigned char*) buf, n);
+		
+		if(cancel==YES) break;
+	}
+	
+	prog_bar1_value=-1;
+
+    fclose( f );
+	
+	char dst[255];
+	strcpy(dst, path);
+	dst[strlen(dst)-4]=0;
+	strcat(dst, "_CHECK.crc");
+	
+	char renaCRC_STR[10];
+	sprintf(renaCRC_STR, "%X", renaCRC);
+	char realCRC_STR[10];
+	sprintf(realCRC_STR, "%X", crc);
+	
+	f = fopen(dst, "wb");
+	if(f == NULL) {
+		print_load("Error : cannot create CHECK.crc");
+		return FAILED;
+	}
+	
+	fputs("*** CRC from renascene.com ***\n\n", f);
+	fputs(renaCRC_STR, f);
+	fputs("\n\n*** real CRC ***\n\n", f);
+	fputs(realCRC_STR, f);
+	fputs(" ", f);
+	fputs(&strrchr(path, '/')[1], f);
+	
+	fputs("\n\n*** RESULT ***\n\n", f);
+	
+	if(crc == renaCRC) fputs("VALID", f);
+	else fputs("NOT VALID", f);
+	
+	fclose(f);
+	
+	return SUCCESS;
+}
+
 //*******************************************************
 // PS2 emu
 //*******************************************************
+
+void use_CONFIG()
+{
+	char CONFIG_path[128];
+	
+	strcpy(CONFIG_path, list_game_path[position]);
+	strcat(CONFIG_path, ".CONFIG");
+	
+	if( path_info(CONFIG_path) == _FILE ) return;
+	
+	char ID[20];
+	Get_ID(list_game_path[position], _ISO_PS2, ID);
+	
+	char LOC_CONFIG_path[128];
+	
+	sprintf(LOC_CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, ID);
+	
+	if( Copy(LOC_CONFIG_path, CONFIG_path) == SUCCESS ) return;
+	
+	sprintf(LOC_CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, ID);
+	
+	if( Copy(LOC_CONFIG_path, CONFIG_path) == SUCCESS ) return;
+	
+}
 
 uint8_t PS2emu_is_patched()
 {
@@ -8348,7 +8731,7 @@ void Download_covers()
 		u8 found = NO;
 		
 		if( Get_ID(list_game_path[i], list_game_platform[i], game_ID) == FAILED) {
-			print_load("Error : Failed to get ID %s", list_game_path[i]);
+			print_load("Error : Failed to get ID %s, %d", list_game_path[i], list_game_platform[i]);
 			continue;
 		}
 		
@@ -8412,8 +8795,8 @@ void Download_covers()
 		} else
 		if(list_game_platform[i] == _JB_PS2 || list_game_platform[i] == _ISO_PS2) {
 			
-			sprintf(link, "http://opl.sksapps.com/art/%s_COV.jpg", game_ID);
-			if( download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
+			//sprintf(link, "http://opl.sksapps.com/art/%s_COV.jpg", game_ID);
+			//if( download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 			
 			sprintf(link, "http://oplmanager.no-ip.info/site/?gamedetails&game=%s", game_ID);
 			if(download(link, "/dev_hdd0/game/MANAGUNZ0/USRDIR/temp")==SUCCESS) {
@@ -10553,7 +10936,10 @@ u8 get_ext(char *file)
 	if(strstr(file_name, ".")) { // get an ext
 		strcpy(ext, strrchr(file_name, '.'));
 	} else return _FILE;
-
+	
+	if (!strcmp(file_name, "xRegistry.sys")) {
+		return _XREG;
+	} else 
 	if (!strcmp(ext, ".JPG") || !strcmp(ext, ".jpg")) {
 		return _JPG;
 	} else
@@ -10741,7 +11127,7 @@ u8 Get_PS1ID(char *ps1iso, char *PS1ID)
 	fgets(temp, 128, f);
 	if( strstr(temp, ";") != NULL) strtok(temp, ";");
 	
-	if( strstr(temp, "\\") != NULL) strcpy(PS1ID, &strrchr(temp, '\\')[1]);
+	if( strstr(temp, "\\") != NULL) strcpy(PS1ID, &strrchr(temp, '\\')[1]); else
 	if( strstr(temp, ":") != NULL) strcpy(PS1ID, &strrchr(temp, ':')[1]);
 	
 	fclose(f);
@@ -10816,7 +11202,7 @@ u8 Get_PS2ID(char *ps2iso, char *PS2ID)
 	fgets(temp, 128, f);
 	if( strstr(temp, ";") != NULL) strtok(temp, ";");
 	
-	if( strstr(temp, "\\") != NULL) strcpy(PS2ID, &strrchr(temp, '\\')[1]);
+	if( strstr(temp, "\\") != NULL) strcpy(PS2ID, &strrchr(temp, '\\')[1]); else
 	if( strstr(temp, ":") != NULL) strcpy(PS2ID, &strrchr(temp, ':')[1]);
 	fclose(f);
 	
@@ -11657,32 +12043,33 @@ int load_mamba()
 {
 	char mamba_path[255];
 	sprintf(mamba_path, "/dev_hdd0/game/%s/USRDIR/sys/mamba_%X.bin", ManaGunZ_id, firmware);
-	if(path_info(mamba_path) == _NOT_EXIST) {
-		u32 size=0;
-		u8 *mamba_data = (u8 *) malloc(0x20000);
-		if(mamba_data==NULL){
-			printf("Error : failed to malloc");
-			return FAILED;
-		}
-		zlib_decompress((char *) MAMBA, (char *) mamba_data, MAMBA_SIZE, (int *) &size);
-		if(size==0) {
-			printf("Error : failed to decompress");
-			free(mamba_data);
-			return FAILED;
-		}
-		
-		FILE *f;
-		f = fopen(mamba_path, "wb");
-		if(f==NULL) {
-			printf("Error : failed to create mamba file");
-			free(mamba_data);
-			return FAILED;
-		}
-		fwrite(mamba_data, size, 1, f);
-		fclose(f);
-		free(mamba_data);
+	
+	Delete(mamba_path);
+	
+	u32 size=0;
+	u8 *mamba_data = (u8 *) malloc(0x20000);
+	if(mamba_data==NULL){
+		printf("Error : failed to malloc");
+		return FAILED;
 	}
-
+	zlib_decompress((char *) MAMBA, (char *) mamba_data, MAMBA_SIZE, (int *) &size);
+	if(size==0) {
+		printf("Error : failed to decompress");
+		free(mamba_data);
+		return FAILED;
+	}
+		
+	FILE *f;
+	f = fopen(mamba_path, "wb");
+	if(f==NULL) {
+		printf("Error : failed to create mamba file");
+		free(mamba_data);
+		return FAILED;
+	}
+	fwrite(mamba_data, size, 1, f);
+	fclose(f);
+	free(mamba_data);
+	
 	switch(syscall_mpl_payload_is_enabled())
 	{
 		case IS_MAMBA_LOADER_PAYLOAD:
@@ -13354,6 +13741,42 @@ u8 is_favorite(char *path)
 	return NO;
 }
 
+u8 add_favorite()
+{
+	FAV_game_number++;
+	real_FAV_game_number++;
+	strcpy(list_FAV_game_title[FAV_game_number], list_game_title[position]);
+	strcpy(list_FAV_game_path[FAV_game_number], list_game_path[position]);
+	FAV_positions_in_list[FAV_game_number] = position;
+	write_fav();
+
+	return is_favorite(list_game_path[position]);
+}
+
+u8 remove_favorite()
+{
+	int i, j;
+	for(i=0; i <= FAV_game_number; i++) {
+		if(strcmp(list_game_path[position], list_FAV_game_path[i]) == 0 ) {
+			for(j=i; j<=FAV_game_number; j++) {
+				strcpy(list_FAV_game_path[j], list_FAV_game_path[j+1]);
+				FAV_positions_in_list[j] = FAV_positions_in_list[j+1];
+			}
+			strcpy(list_FAV_game_path[FAV_game_number], "");
+			FAV_positions_in_list[FAV_game_number] = -1;
+			FAV_game_number--;
+			real_FAV_game_number--;
+			write_fav();
+			
+			break;
+		}
+	}
+	
+	if(is_favorite(list_game_path[position]) == YES) return FAILED;
+	
+	return SUCCESS;
+}
+
 //*******************************************************
 //ResetBD
 //*******************************************************
@@ -13479,6 +13902,10 @@ int init_ManaGunZ()
 //*******************************************************
 // Draw screens
 //*******************************************************
+
+#define SCENE_FILEMANAGER		0
+#define SCENE_PS2_OPTION		1
+u8 scene;
 
 float DrawChoice(float x, float y, char *str, u8 mode, u8 up, u8 down)
 {
@@ -13988,35 +14415,15 @@ int Draw_Game_Menu(int position, u8 use_sidebar)
 		} 
 		else if(g_menu_position==101) {
 			if(FAV == NO) {
-				FAV_game_number++;
-				real_FAV_game_number++;
-				strcpy(list_FAV_game_title[FAV_game_number], list_game_title[position]);
-				strcpy(list_FAV_game_path[FAV_game_number], list_game_path[position]);
-				FAV_positions_in_list[FAV_game_number] = position;
-				write_fav();
-				FAV = is_favorite(list_game_path[position]);
-				if(FAV==YES) show_msg("Added to favorites");
+				if(add_favorite()==SUCCESS) show_msg("Added to favorites");
 				else show_msg("Failed");
 			}
 			else {
-				for(i=0; i <= FAV_game_number; i++) {
-					if(strcmp(list_game_path[position], list_FAV_game_path[i]) == 0 ) {
-						for(j=i; j<=FAV_game_number; j++) {
-							strcpy(list_FAV_game_path[j], list_FAV_game_path[j+1]);
-							FAV_positions_in_list[j] = FAV_positions_in_list[j+1];
-						}
-						strcpy(list_FAV_game_path[FAV_game_number], "");
-						FAV_positions_in_list[FAV_game_number] = -1;
-						FAV_game_number--;
-						real_FAV_game_number--;
-						write_fav();
-						FAV = is_favorite(list_game_path[position]);
-						if(FAV==NO) show_msg("Removed from favorites"); else
-						show_msg("Failed");
-						break;
-					}
-				}
+				if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
+				else show_msg("Failed");
 			}
+			
+			FAV = is_favorite(list_game_path[position]);
 		}
 		else if(g_menu_position==104) {
 			start_loading();
@@ -14085,7 +14492,7 @@ int Draw_Game_Menu(int position, u8 use_sidebar)
 			gathering=NO;
 			end_loading();
 			
-			if(gathering_cancel==NO) Draw_GameProperties(position);
+			if(gathering_cancel==NO) Draw_GameProperties();
 			else gathering_cancel=NO;
 			total_size=0;
 			nb_file= 0;
@@ -14095,7 +14502,6 @@ int Draw_Game_Menu(int position, u8 use_sidebar)
 			if(sure2del==YES) {
 				start_loading();
 				ret = Delete_Game(NULL, position);
-				if(position>game_number) position=game_number;
 				end_loading();
 				
 				sure2del=NO;
@@ -15385,8 +15791,8 @@ static char prop_path[512];
 #define PROP_X		848/2-PROP_W/2
 #define PROP_Y		512/2-PROP_H/2
 
-static float curs_x;
-static float curs_y;
+static float curs_x = 848/2;
+static float curs_y = 512/2;
 static float curs_move_x;
 static float curs_move_y;
 static u8 curs_push=NO;
@@ -15618,7 +16024,7 @@ void Draw_window()
 		//CLOSE BOX
 		Draw_Box(window_x[n]+window_w[n]-40, window_y[n]+10, window_z[n], 0, 30, 20, RED, NO);	
 		DrawStringFromCenterX(window_x[n]+window_w[n]-40+15, window_y[n]+11, "X");
-		
+
 		//CONTENT BOX
 		SetFontSize(CONTENT_FSIZE, CONTENT_FSIZE);
 		SetFontColor(BLACK, 0);
@@ -15890,9 +16296,6 @@ void Draw_cursor()
 
 void cursor_input() {
 
-	curs_move_x=848/2;
-	curs_move_y=512/2;
-	
 	//L3 move cursor
 	curs_move_x = (paddata.button[6] - 128)/30;
 	curs_move_y = (paddata.button[7] - 128)/30;
@@ -17059,6 +17462,17 @@ void Option(char *item)
 		}
 		end_loading();
 	} else 
+	if(strcmp(item, "Check CRC32") == 0) {
+		start_loading();
+		if(CheckCRC32(option_sel[0]) == SUCCESS) {
+			char temp[255];
+			strcpy(temp, option_sel[0]);
+			temp[strlen(temp)-4]=0;
+			strcat(temp, "_CHECK.crc");
+			open_txt_viewer(temp);
+		}
+		end_loading();
+	} else
 	if(strcmp(item, "Check MD5") == 0) {
 		start_loading();
 		if(CheckMD5(option_sel[0]) == SUCCESS) {
@@ -17196,17 +17610,20 @@ void Option(char *item)
 		Build_APNG(option_sel, option_sel_N, dst, 0);
 		end_loading();
 	}
+	else 
+	if(strcmp(item, "Read xReg") == 0) { 
+		start_loading();
+		if( xreg2txt(option_sel[0], "/dev_hdd0/tmp/xreg.txt") == SUCCESS ) 
+			open_txt_viewer("/dev_hdd0/tmp/xreg.txt");
+		end_loading();
+	}
 	else
-	
-	
 	if(strcmp(item, "Set permission") == 0) { 
 		start_loading();
 		print_head("Setting permission to 0777...");
 		SetPerms(option_sel[0]);
 		end_loading();
 	}
-	
-	
 	
 	Window(".");
 	option_activ=NO;
@@ -17299,7 +17716,11 @@ void Open_option()
 			if(ext == _SFO) {
 				option_item_N++;
 				strcpy( option_item[option_item_N] , "View SFO");
-			} 
+			} else
+			if(ext == _XREG) {
+				option_item_N++;
+				strcpy( option_item[option_item_N] , "Read xReg");
+			} else
 			if(ext == _SELF) {
 				option_item_N++;
 				strcpy( option_item[option_item_N] , "Extract ELF");
@@ -17406,6 +17827,8 @@ void Open_option()
 			if(ext == _ISO_PSP) {
 				option_item_N++;
 				strcpy( option_item[option_item_N] , "Compress ISO");
+				option_item_N++;
+				strcpy( option_item[option_item_N] , "Check CRC32");
 			} else
 			if(ext == _CSO) {
 				option_item_N++;
@@ -17465,8 +17888,8 @@ void Open_option()
 	}
 	
 	option_activ = YES;
-	option_x = curs_x;
-	option_y = curs_y;
+	option_x = curs_x - 7;
+	option_y = curs_y - 7;
 	option_h = (option_item_N+1)*15;
 	option_w = k+30;
 	if(option_y+option_h > 485) option_y = 485 - option_h; 
@@ -17520,6 +17943,22 @@ u8 option_input()
 	
 	if((new_pad & BUTTON_TRIANGLE) || (new_pad & BUTTON_CIRCLE))  {
 		option_activ = NO;
+	}
+	
+	if(new_pad & BUTTON_UP) {
+		if(	option_x < curs_x && curs_x < option_x + option_w
+		&& 	option_y + 15 < curs_y && curs_y < option_y + option_h )
+		{
+			curs_y -= 15;
+		}
+	}
+	
+	if(new_pad & BUTTON_DOWN) {
+		if(	option_x < curs_x && curs_x < option_x + option_w
+		&& 	option_y < curs_y && curs_y < option_y + option_h - 15 )
+		{
+			curs_y += 15;
+		}
 	}
 	
 	return ON;
@@ -17955,12 +18394,16 @@ void Draw_input()
 
 void Draw_FileExplorer(char *path)
 {
+	
+	
 	Window(NULL);
 	
 	if(path!=NULL) Window(path);
 	
 	while(1)
 	{
+		scene = SCENE_FILEMANAGER;
+		
 		cls();
 		
 		Draw_BGS();
@@ -17988,6 +18431,713 @@ void Draw_FileExplorer(char *path)
 		SFO_viewer_input();
 	}
 
+}
+
+//*******************************************************
+// PS2 Game MENU
+//*******************************************************
+
+char ps2_items[32][64];
+int ps2_items_N;
+char ps2_subitems[32][32][64];
+int ps2_subitems_N[32];
+char CRC_STR[8];
+char PS2_ID[10];
+char pnach[128];
+
+u16 ps2_menu_position;
+s8 submenu = -1;
+s16 ps2_submenu_position[32];
+u8 ps2_submenu_show[32];
+
+#define BCNETEMU_ON			1
+#define BCNETEMU_OFF		0
+#define BCNETEMU_STATUS		2
+#define BCNETEMU_ISNOTBC	-1		
+
+// param=1		enable patch
+// param=0		disable patch
+// param=2		return current status​
+// return  1	enabled patch
+// return  0	disabled patch
+// return -1	its not a bc or semi bc ps3
+
+int ps2_netemu_cobra(int param)
+{
+	lv2syscall2(8, (uint64_t)0x1ee9, (uint64_t)(int)param);
+	return_to_user_prog(int);
+}
+
+u32 Get_CRC(char *Elf_Name)
+{
+	int size;
+	
+	print_head("Getting CRC");
+	
+	print_load("Loading ELF...");
+	char *mem = LoadFromISO(list_game_path[position], Elf_Name, &size);
+	if(mem==NULL) { print_load("Error : failed to load %s", Elf_Name); return 0; }
+	
+	const u32* srcdata = (u32*) mem;
+	
+	print_load("Calculating CRC...");
+	
+	u32 CRC=0;
+	u32 i;
+	
+	for(i=size/4; i; --i, ++srcdata) CRC ^= *srcdata;
+		
+	if(mem) free(mem);
+	
+	return reverse32(CRC);
+	
+}
+
+u8 is_pnached()
+{
+	char PnachRest[128];
+	
+	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);
+	
+	if(path_info(PnachRest) == _NOT_EXIST) return NO; else
+	return YES;
+}
+
+u8 restore_pnach()
+{
+	char PnachRest[128];
+	FILE *fi;
+	FILE *fr;
+	u32 offset;
+	u32 data;
+	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);
+	
+	if(path_info(PnachRest) == _NOT_EXIST) 
+		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2_ID);
+	
+	fi = fopen(list_game_path[position], "rb+");
+	if(fi==NULL) { print_load("Error : Cannot open ISO"); return FAILED;}
+	
+	fr = fopen(PnachRest, "rb");
+	if(fr==NULL) { fclose(fi); print_load("Error : Cannot open PnachRestore file"); return FAILED;}
+	
+	u32 flba=0;
+	u32 size=0;
+	u8 ret;
+
+	ret = get_FileOffset(fi, PS2_ID, &flba, &size); 
+
+	if(flba==0 || size==0 || ret == FAILED) {
+		print_load("Error : file_pos. File : %s flba= %X size= %X", PS2_ID, flba, size);
+		fclose(fi);
+		fclose(fr);
+		return FAILED;
+	}
+	
+	while( fread(&offset, 1, 4, fr) == 4) {
+		if( fread(&data, 1, 4, fr) == 4 ) {
+			fseek(fi, 0x800*flba + offset, SEEK_SET);
+			fwrite(&data, 4, 1, fi);
+		}
+    }
+	
+	fclose(fi);
+	fclose(fr);
+	
+	Delete(PnachRest);
+	
+	return SUCCESS;
+}
+
+u8 apply_pnach()
+{
+	FILE* fp;
+	FILE* fi;
+	FILE* fr;
+	char line[128];
+	char PnachRest[128];
+	
+	u32 offset;
+	u32 new_data;
+	u32 old_data;
+	
+	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2", ManaGunZ_id);
+	
+	mkdir(PnachRest, 0777);
+	
+	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2_ID);
+
+	fp = fopen(pnach, "rb");
+	if(fp==NULL) { print_load("Error : failed to open pnach file");return FAILED; }
+	
+	fi = fopen(list_game_path[position], "rb+");
+	if(fi==NULL) { fclose(fp); print_load(list_game_path[position]); print_load("Error : failed to open iso file"); return FAILED; }
+	
+	fr = fopen(PnachRest, "wb");
+	if(fr==NULL) { fclose(fp); fclose(fi); print_load("Error : failed to open pnachrest file"); return FAILED; }
+	
+	u32 flba=0;
+	u32 size=0;
+	u8 ret;
+
+	ret = get_FileOffset(fi, PS2_ID, &flba, &size); 
+
+	if(flba==0 || size==0 || ret == FAILED) {
+		print_load("Error : file_pos. File : %s flba= %X size= %X", PS2_ID, flba, size);
+		fclose(fi);
+		fclose(fp); 
+		fclose(fr);
+		Delete(PnachRest);
+		return FAILED;
+	}
+	
+	u32 EntryPoint;
+	u32 ProgOffset;
+	
+	fseek(fi, 0x800*flba + 0x18, SEEK_SET);
+	fread(&EntryPoint, 4, 1, fi);
+	fseek(fi, 0x800*flba + 0x38, SEEK_SET);
+	fread(&ProgOffset, 4, 1, fi);
+	
+	EntryPoint = reverse32(EntryPoint);
+	ProgOffset = reverse32(ProgOffset);
+	
+	while(fgets(line, 128, fp) != NULL) {
+		if( strstr(line, "patch") == NULL && strstr(line, "comment")==NULL && strstr(line, "gametitle")==NULL ) continue;
+		
+		if(strncmp(line, "patch=1", 7) == 0) 
+		{			
+			if(strstr(line, ",") == NULL) continue;
+			
+			char *token;
+			unsigned long int value=0;
+			token = strtok (line, ", "); //toggle patch
+			print_load(token);
+			if(token == NULL) continue;
+			token = strtok (NULL, ", "); //cpu
+			print_load(token);
+			if(token == NULL) continue;
+			token = strtok (NULL, ", "); //addr
+			print_load(token);
+			if(token == NULL) continue;
+			sscanf(token, "%8lX", &value);
+			offset = value;
+			value = 0;
+			token = strtok (NULL, ", "); //type
+			print_load(token);
+			if(token == NULL) continue;
+			token = strtok (NULL, ", "); //data
+			print_load(token);
+			sscanf(token, "%8lX", &value);
+			new_data = value;
+			
+			offset = offset - EntryPoint - 8 + ProgOffset;
+			offset = offset - (offset >> 28)*0x10000000;
+					
+			new_data = reverse32(new_data);
+			fseek(fi, 0x800*flba + offset, SEEK_SET);
+			fread(&old_data, 4, 1, fi);
+			
+			if(offset > size) { 
+				print_load("Error : offset > Elf_size"); 
+				fclose(fr);
+				fclose(fi);
+				fclose(fp);
+				restore_pnach();
+				return FAILED;
+			}
+			
+			fseek(fi, 0x800*flba + offset, SEEK_SET);
+			
+			fwrite(&new_data, 4, 1, fi);
+			
+			fwrite(&offset, 4, 1, fr);
+			fwrite(&old_data, 4, 1, fr);
+			
+		} else
+		if(strncmp(line, "gametitle=", 10) || strncmp(line, "comment=", 8)==0) {
+			print_load(&strrchr(line, '=')[1]);
+		}
+	}
+	
+	fclose(fr);
+	fclose(fi);
+	fclose(fp);
+	
+	sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+	
+	char new_CRC[128];
+	sprintf(new_CRC, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);
+	
+	if( rename(PnachRest, new_CRC) != 0 ) {
+		print_load("Error : failed to rename PnachRestor file");
+		if( restore_pnach() == FAILED ) print_load("Error : failed to restore Pnach");
+	}
+	
+	return SUCCESS;
+}
+
+#define CONFIG_NONE      0
+#define CONFIG_OFFICIAL  1
+#define CONFIG_CUSTOM    2
+#define CONFIG_UNK       3
+
+void check_CONFIG(u8* OFFICIAL, u8* CUSTOM, u8* used)
+{
+	u64 used_md5[2];
+	
+	char CONFIG_path[128];
+	
+	u8 tmp_used = CONFIG_UNK;
+	
+	strcpy(CONFIG_path, list_game_path[position]);
+	strcat(CONFIG_path, ".CONFIG");
+	
+	if( path_info(CONFIG_path) == _NOT_EXIST ) tmp_used = CONFIG_NONE;
+	else md5_file(CONFIG_path, (u8 *) used_md5);	
+	
+	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	if( path_info(CONFIG_path) == _NOT_EXIST ) *OFFICIAL = 0; else *OFFICIAL = 1;
+	
+	if(tmp_used == CONFIG_UNK) {	
+		u64 md5_off[2];
+		md5_file(CONFIG_path, (u8 *) md5_off);
+		if(used_md5[0]==md5_off[0] && used_md5[1]==md5_off[1]) tmp_used = CONFIG_OFFICIAL;
+	}
+	
+	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);	
+	if( path_info(CONFIG_path) == _NOT_EXIST ) *CUSTOM = 0; else *CUSTOM = 1;
+	
+	if(tmp_used == CONFIG_UNK) {
+		u64 md5_cus[2];
+		md5_file(CONFIG_path, (u8 *) md5_cus);
+		if(used_md5[0]==md5_cus[0] && used_md5[1]==md5_cus[1]) tmp_used = CONFIG_CUSTOM;
+	}
+	
+	*used = tmp_used;
+}
+
+void init_ps2_menu()
+{
+	int i,j;
+	
+	submenu = -1;
+	
+	for(i=0; i<32; i++) ps2_submenu_show[i]=NO;
+	for(i=0; i<32; i++) ps2_submenu_position[i]=0;
+	
+	ps2_items_N = -1;
+	memset(ps2_items, 0, sizeof(ps2_items));
+	for(i=0; i<32; i++) ps2_subitems_N[i] = -1;
+	memset(ps2_subitems, 0, sizeof(ps2_subitems));
+	
+	ps2_items_N++;
+	strcpy( ps2_items[ps2_items_N] , "Rename" );
+	
+	ps2_items_N++;
+	if( is_favorite(list_game_path[position]) == NO )	strcpy( ps2_items[ps2_items_N] , "Add to Favorite" );
+	else strcpy( ps2_items[ps2_items_N] , "Remove from Favorite" );
+	
+	
+	if( is_pnached() ) {
+		ps2_items_N++;
+		strcpy( ps2_items[ps2_items_N] , "Restore PNACH" );
+	}
+	else {
+		sprintf(pnach, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnach", ManaGunZ_id, CRC_STR);
+		if(path_info(pnach) == _NOT_EXIST) {
+			for(i=0; i<=device_number; i++) {
+				sprintf(pnach, "/%s/PNACH/%s.pnach", list_device[i], CRC_STR);
+				if(path_info(pnach) == _FILE) break;
+			}
+		}
+		if(path_info(pnach) == _FILE) {
+			ps2_items_N++;
+			strcpy( ps2_items[ps2_items_N] , "Apply PNACH" );
+		}
+	}
+	
+	i = ps2_netemu_cobra(BCNETEMU_STATUS);
+	if(i != BCNETEMU_ISNOTBC) {
+		if(i == BCNETEMU_OFF) {
+			ps2_items_N++;
+			strcpy( ps2_items[ps2_items_N] , "Enable NetEMU" );
+		} else
+		if(i == BCNETEMU_ON) {
+			ps2_items_N++;
+			strcpy( ps2_items[ps2_items_N] , "Disable NetEMU" );
+		}	
+	}
+	
+	ps2_items_N++;
+	strcpy( ps2_items[ps2_items_N] , "CONFIG to use" );
+	u8 OFFICIAL, CUSTOM, used;
+	check_CONFIG(&OFFICIAL, &CUSTOM, &used);
+	ps2_submenu_show[ps2_items_N]=YES;
+	ps2_subitems_N[ps2_items_N]++;
+	strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "None");
+	if(used == CONFIG_NONE) ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+	
+	if(OFFICIAL) {
+		ps2_subitems_N[ps2_items_N]++;
+		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "Official");
+		if(used == CONFIG_OFFICIAL) ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+	}
+	if(CUSTOM) {
+		ps2_subitems_N[ps2_items_N]++;
+		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "Custom");
+		if(used == CONFIG_CUSTOM) ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+	}
+	if(used == CONFIG_UNK) {
+		ps2_subitems_N[ps2_items_N]++;
+		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "Unknown");
+		ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+	}
+
+	ps2_items_N++;
+	strcpy( ps2_items[ps2_items_N] , "Check MD5" );
+	
+	ps2_items_N++;
+	strcpy( ps2_items[ps2_items_N] , "Copy" );
+		for(j=0; j<=scan_dir_number; j++) {
+			for(i=0; i<=device_number; i++) {
+				if(strstr(list_game_path[position], list_device[i])) continue;
+				ps2_subitems_N[ps2_items_N]++;
+				sprintf(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "/%s/%s", list_device[i], scan_dir[j]);
+			}
+		}
+	
+	ps2_items_N++;
+	strcpy( ps2_items[ps2_items_N] , "Delete" );
+		ps2_subitems_N[ps2_items_N]++;
+		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "YES");
+		ps2_subitems_N[ps2_items_N]++;
+		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "NO");
+	
+	ps2_items_N++;
+	strcpy( ps2_items[ps2_items_N] , "Properties" );
+	
+}
+
+u8 PS2_option()
+{
+	if(strcmp(ps2_items[ps2_menu_position], "Rename") == 0) {
+		char New_Name[255];
+		strcpy(New_Name, &strrchr(list_game_path[position], '/')[1]);
+		strtok(New_Name, ".");
+		if(Get_OSK_String("Rename", New_Name, 255) == SUCCESS) {
+			if(New_Name[0] != 0) {
+				char DirPath[255];
+				char NewPath[255];
+				strcpy(DirPath, list_game_path[position]);
+				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
+				sprintf(NewPath, "%s/%s.iso", DirPath, New_Name);
+				if( rename(list_game_path[position], NewPath) == 0) {
+					strcpy(list_game_path[position], NewPath);
+					strcpy(list_game_title[position], list_game_path[position]);
+					strcpy(list_game_title[position], &strrchr(list_game_title[position], '/')[1]);
+					strtok(list_game_title[position], ".");
+				}
+			}
+		}
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Add to Favorite") == 0) {
+		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
+		else show_msg("Failed");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Remove from Favorite") == 0) {
+		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
+		else show_msg("Failed");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Restore PNACH") == 0) {
+		start_loading();
+		u8 ret = restore_pnach();
+		end_loading();
+		if( ret == SUCCESS) show_msg("Done !");
+		else show_msg("Failed !");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Apply PNACH") == 0) {
+		start_loading();
+		u8 ret = apply_pnach();
+		end_loading();
+		if( ret == SUCCESS) show_msg("Done !");
+		else show_msg("Failed !");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Enable NetEMU") == 0) {
+		if( ps2_netemu_cobra(BCNETEMU_ON) == BCNETEMU_ON) show_msg("NetEMU enabled");
+		else show_msg("Failed !");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Disable NetEMU") == 0) {
+		if( ps2_netemu_cobra(BCNETEMU_OFF) == BCNETEMU_OFF) show_msg("NetEMU disabled");
+		else show_msg("Failed !");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Check MD5") == 0) {
+		start_loading();
+		u8 ret = CheckMD5(list_game_path[position]);
+		end_loading();
+		
+		if(ret == SUCCESS) {
+			char temp[255];
+			strcpy(temp, list_game_path[position]);
+			temp[strlen(temp)-4]=0;
+			strcat(temp, "_CHECK.md5");
+			open_txt_viewer(temp);
+			
+			Draw_FileExplorer(NULL);
+		}
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Copy") == 0) {
+		start_copy_loading();
+		gathering=YES;
+		get_size(list_game_path[position], YES);
+		gathering=NO;
+		strcpy(copy_src, list_game_path[position]);
+		sprintf(copy_dst, "%s/%s", ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], &strrchr(list_game_path[position], '/')[1] );
+		if( Copy(copy_src, copy_dst) == SUCCESS )
+			show_msg("Done !");
+		else
+			show_msg("Failed !");
+		end_copy_loading();
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Delete") == 0 
+	&& strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "YES") == 0 ) 
+	{
+		start_loading();
+		u8 ret = Delete_Game(NULL, position);
+		end_loading();
+		if(ret==SUCCESS) {
+			show_msg("Game deleted");
+			return BREAK;
+		} else show_msg("Failed to delete game");
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "CONFIG to use") == 0 )
+	{	
+		char CONFIG_path[128];
+		strcpy(CONFIG_path, list_game_path[position]);
+		strcat(CONFIG_path, ".CONFIG");
+	
+		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "None") == 0 ) {
+			Delete(CONFIG_path);
+		} else
+		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "Official") == 0 ) {
+			Delete(CONFIG_path);
+			char loc_CONFIG[128];
+			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			Copy(loc_CONFIG, CONFIG_path);
+		} else 
+		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "Custom") == 0 ) {
+			char loc_CONFIG[128];
+			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			Copy(loc_CONFIG, CONFIG_path);
+		} else
+		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "Unknown") == 0 ) {
+			char loc_CONFIG[128];
+			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			Delete(loc_CONFIG);
+			Copy(CONFIG_path, loc_CONFIG);
+		}
+	} else 
+	if(strcmp(ps2_items[ps2_menu_position], "Properties" ) == 0) {
+		start_loading();
+		gathering=YES;
+		Get_Game_Size(list_game_path[position]);
+		gathering=NO;
+		end_loading();
+			
+		if(gathering_cancel==NO) Draw_GameProperties();
+		else gathering_cancel=NO;
+		total_size=0;
+		nb_file= 0;
+		nb_directory=0;
+	}
+	
+	init_ps2_menu();
+	
+	return CONTINUE;
+}
+
+void Draw_title(float x, float y, char *str)
+{
+	int xt;
+	Draw_Box(x+5, y+4, 0, 0, 8, 8, COLOR_3, NO);
+	SetFontColor(COLOR_3, 0x0);
+	xt=DrawString(x+20, y, str);
+	y+=new_line(1);
+	Draw_Box(x, y, 0, 0, xt-x, 2, COLOR_3, NO); //underline
+	y+=5;
+	
+	SetFontColor(COLOR_1, 0x0);
+}
+
+void Draw_PS2_menu()
+{
+	int x1=50, x2=250, y=40, i;
+
+	SetFontSize(18, 18);
+	SetFontColor(COLOR_1, 0x0);
+	
+	DrawString(x2, y, list_game_title[position]);
+	Draw_title(x1, y, "Game Options");
+	y+=new_line(1)+10;
+	
+	SetFontSize(15, 15);
+		
+	for(i=0; i<=ps2_items_N; i++) {
+		if(ps2_menu_position == i) SetFontColor(COLOR_2, 0x0); 
+		else SetFontColor(COLOR_1, 0x0);
+		
+		DrawString(x1, y, ps2_items[i]);
+		
+		SetFontColor(COLOR_1, 0x0);
+		
+		if( ps2_subitems_N[i] >= 0 ) {
+		
+			if(submenu == i) {
+				SetFontColor(COLOR_2, 0x0);
+				if( ps2_subitems_N[i] > 0 ) {
+					float w=GetWidth(ps2_subitems[i][ps2_submenu_position[i]]);
+					float h=GetFontHeight();
+					DrawDown(x2+w/2, y+h*0.85);
+					DrawUp(x2+w/2,  y);	
+				}
+				DrawString(x2, y, ps2_subitems[i][ps2_submenu_position[i]]);
+			} else {
+				SetFontColor(COLOR_1, 0x0);
+				if(ps2_submenu_show[i]==YES) DrawString(x2, y, ps2_subitems[i][ps2_submenu_position[i]]);
+			}
+		}
+		
+		y+=new_line(1);
+		
+		SetFontColor(COLOR_1, 0x0);
+	}
+	
+}
+
+void Draw_PS2_input()
+{
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, "Enter", BUTTON_CROSS);
+	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, "Navigate", BUTTON_UP | BUTTON_DOWN);
+
+}
+
+u8 PS2_input()
+{
+	
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
+	
+	if(old_pad & BUTTON_R2) {
+		scroll_speed = 6 - paddata.PRE_R2/50;
+	} else scroll_speed = 6;
+
+	if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
+		if(submenu == -1) {
+			if(ps2_menu_position == 0) ps2_menu_position = ps2_items_N;
+			else ps2_menu_position--;
+		} else {
+			if(ps2_submenu_position[submenu] == 0) ps2_submenu_position[submenu] = ps2_subitems_N[submenu];
+			else ps2_submenu_position[submenu]--;
+		}
+	}
+	
+	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
+		if(submenu == -1) {
+			if(ps2_menu_position == ps2_items_N) ps2_menu_position = 0;
+			else ps2_menu_position++;
+		} else {
+			if(ps2_submenu_position[submenu] == ps2_subitems_N[submenu]) ps2_submenu_position[submenu] = 0 ;
+			else ps2_submenu_position[submenu]++;
+		}
+	}
+	
+	if(new_pad & BUTTON_CROSS) {
+		if(submenu == -1 && ps2_subitems_N[ps2_menu_position] != -1) {
+			submenu = ps2_menu_position;
+		} else {
+			if( PS2_option() == BREAK ) return BREAK;
+		}
+	}
+	
+	if(new_pad & BUTTON_CIRCLE) {
+		if(submenu == -1) return BREAK;
+		else {
+			init_ps2_menu();
+			submenu = -1;
+		}
+	}
+	
+	return CONTINUE;
+}
+
+void Draw_PS2_Game_Menu()
+{	
+	start_loading();
+	
+	Get_PS2ID(list_game_path[position], PS2_ID);
+	sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+	
+	init_ps2_menu();
+	end_loading();
+	
+	ps2_menu_position=0;
+	
+	while(1)
+	{
+		scene = SCENE_PS2_OPTION;
+		
+		cls();
+		
+		Draw_BGS();
+		Draw_Notification();
+		
+		Draw_PS2_menu();
+		
+		Draw_PS2_input();
+		
+		tiny3d_Flip();
+		
+		ps3pad_read();
+		
+		if( PS2_input() == BREAK ) break;
+		
+	}
+
+}
+
+void Draw_scene()  // for OSK
+{
+	if(scene == SCENE_FILEMANAGER) 
+	{
+		Draw_BGS();
+		Draw_window();
+		Draw_option();
+		Draw_properties();
+		Draw_Notification();
+		Draw_input();
+		Draw_cursor();
+	} else
+	if(scene == SCENE_PS2_OPTION) 
+	{
+		Draw_BGS();
+		Draw_Notification();
+		
+		Draw_PS2_menu();
+		
+		Draw_PS2_input();
+	}
 }
 
 //*******************************************************
@@ -18276,7 +19426,22 @@ int main(void)
 	if(AutoM == YES) AutoMount();	
 
 	start_checking();
-
+	
+	print_load("Read setting");
+	read_setting();
+	
+	print_load("Adjust screen");
+	adjust_screen();
+	
+	print_load("Get list of themes");
+	GetThemes();
+	
+	print_load("Load Common images");
+	Load_COMMON();
+	
+	print_load("Load Themes");
+	Load_Themes();
+	
 	print_load("Get directories names from scan_dir.txt");
 	if(read_scan_dir()==FAILED){
 		end_loading();
@@ -18378,18 +19543,7 @@ int main(void)
 		list_game_platform[i] = t;
 	}
 	
-	print_load("Read setting");
-	read_setting();
-	
-	print_load("Adjust screen");
-	adjust_screen();
-	
-	print_load("Get list of themes");
-	GetThemes();
-	print_load("Load Common images");
-	Load_COMMON();
-	print_load("Load Themes");
-	Load_Themes();
+	start_Load_GamePIC();
 	
 	print_load("Get Favorite game list");
 	read_fav();
@@ -18401,8 +19555,6 @@ int main(void)
 	}
 	
 	end_loading();
-	
-	start_Load_GamePIC();
 	
 	start_load_PIC1();
 	
@@ -19148,6 +20300,8 @@ int main(void)
 		if(old_pad & BUTTON_CIRCLE && g_menu == OFF) {
 			hold_CIRCLE++;
 			if(hold_CIRCLE>100) {
+				if(Load_GamePIC==YES) end_Load_GamePIC();
+				end_load_PIC1();
 				end_checking();
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
@@ -19171,10 +20325,12 @@ int main(void)
 			||	list_game_platform[position] == _ISO_PS1
 			||	list_game_platform[position] == _ISO_PSP			
 			) {
+				if(Load_GamePIC==YES) end_Load_GamePIC();
 				end_load_PIC1();
-				start_loading();
 				end_checking();
-					
+				
+				start_loading();	
+				
 				strcpy(GamPath, list_game_path[position]);
 					
 				print_load("Mounting %s", list_game_title[position]);
@@ -19191,6 +20347,10 @@ int main(void)
 					if(clean_syscall_position) remove_cfw_syscalls();
 						
 					if(direct_boot_position) {
+						end_loading();
+						sysModuleUnload(SYSMODULE_PNGDEC);
+						sysModuleUnload(SYSMODULE_JPGDEC);
+						ioPadEnd();
 						if(mount_app_home == NO) {
 							sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
 						} else {
@@ -19206,7 +20366,8 @@ int main(void)
 					
 					if(!cobra && !mamba) mamba = install_mamba();
 					
-					if(mamba && emu == EMU_PS2_DVD) patch_PS2();
+					if(emu == EMU_PS2_DVD) patch_PS2();
+					if(emu == EMU_PS2_DVD) use_CONFIG();
 					
 					cobra_MountISO(emu);
 					cobra_MountISO(emu);
@@ -19238,7 +20399,13 @@ int main(void)
 					
 					tiny3d_Flip();
 				}
-			} else show_msg("TODO");
+			} else
+			if( list_game_platform[position] == _ISO_PS2 || list_game_platform[position] == _JB_PS2 ) {
+				
+				Draw_PS2_Game_Menu();
+				
+			}
+			else show_msg("TODO");
 			
 		}
 		

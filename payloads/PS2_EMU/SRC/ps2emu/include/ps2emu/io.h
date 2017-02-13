@@ -32,6 +32,7 @@ typedef struct
 PS2EMU_EXPORT int ufs_open(int unk, char *path);
 PS2EMU_EXPORT int ufs_close(int fd);
 PS2EMU_EXPORT int ufs_read(int fd, uint64_t offset, void *buf, uint64_t size);
+PS2EMU_EXPORT int decrypt(int fd, uint64_t offset, void *buf, uint64_t size);
 PS2EMU_EXPORT int ufs_write(int fd, uint64_t offset, void *buf, uint64_t size);
 PS2EMU_EXPORT int ufs_fstat(int fd, ufs_stat *stat);
 

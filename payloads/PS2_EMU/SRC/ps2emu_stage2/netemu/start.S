@@ -13,6 +13,9 @@ _start:
 	b	open_iso
 	b	fstat_iso_patched
 	b	read_iso_size
+	b	open_config
+	b	read_config_size
+	b	decrypt_config
 	b	cdvd_read_patched
 
 

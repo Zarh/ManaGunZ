@@ -79,6 +79,9 @@ uint64_t read_iso_size_call;
 uint64_t fstat_iso_call;
 uint64_t open_iso_call1;
 uint64_t open_iso_call2;
+uint64_t read_config_size_call;
+uint64_t open_config_call;
+uint64_t decrypt_config_call;
 
 uint64_t payload_addr;
 
@@ -218,13 +221,14 @@ static void hook_function_with_cond_postcall(uint64_t func_addr, void *newfunc, 
 
 void patch_netemu()
 {
-	
-	hook_function_with_cond_postcall(cdvd_read_symbol, ps2_netemu + 0x4320, 4);
-	patch_call(read_iso_size_call, ps2_netemu + 0x4310);
-	patch_call(fstat_iso_call, ps2_netemu + 0x4300);
-	patch_call(open_iso_call1, ps2_netemu + 0x42f0);
-	patch_call(open_iso_call2, ps2_netemu + 0x42f0);
-	
+	hook_function_with_cond_postcall(cdvd_read_symbol, ps2_netemu + 0x4710, 4);
+	patch_call(read_iso_size_call, ps2_netemu + 0x46D0);
+	patch_call(fstat_iso_call, ps2_netemu + 0x46C0);
+	patch_call(open_iso_call1, ps2_netemu + 0x46B0);
+	patch_call(open_iso_call2, ps2_netemu + 0x46B0);
+	patch_call(read_config_size_call, ps2_netemu + 0x46f0);
+	patch_call(open_config_call, ps2_netemu + 0x46E0);
+	patch_call(decrypt_config_call, ps2_netemu + 0x4700);
 }
 
 static void patch_netself(char *src, char *dst, uint64_t *first_section_size)
@@ -329,7 +333,12 @@ int Search_Offset(char *elf_p, uint8_t type)
 		fstat_iso_call=0;
 		open_iso_call1=0;
 		open_iso_call2=0;
-		 
+		read_config_size_call=0;// -0x24
+		open_config_call=0; // -0x48
+		decrypt_config_call=0; // +0x10
+		
+		uint8_t CONFIG_FLAG[0x10] = {0x7F, 0x83, 0xE3, 0x78, 0x38, 0x80, 0x00, 0x00, 0x7F, 0xE5, 0xFB, 0x78, 0x7F, 0xA6, 0x07, 0xB4};
+		
 		uint8_t cdvd_read_symbol_FLAG[0x10] = {0x2F, 0x86, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFE, 0xF1, 0xF9, 0xC1, 0x00, 0x80};
 		uint8_t read_iso_size_call_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x08, 0x41, 0x9E, 0x01, 0x34, 0xE8, 0x7F, 0x00, 0x58}; // -4
 		uint8_t fstat_iso_call_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x00, 0x7C, 0x60, 0x1B, 0x78, 0x41, 0x9C, 0x02, 0x14}; // -4
@@ -364,12 +373,18 @@ int Search_Offset(char *elf_p, uint8_t type)
 				i++;
 				//print_load("open_iso_call2 %X", (unsigned int) open_iso_call2);
 			}
-			if(i==5) break;
+			if(!memcmp((char *) &elf_buf[n], (char *) CONFIG_FLAG, 0x10)) {
+				read_config_size_call = n - 0x24 - 0x10000;
+				open_config_call = n - 0x48 - 0x10000;
+				decrypt_config_call = n + 0x10 - 0x10000;
+				i++;
+			}
+			if(i==6) break;
 		}
 		
 		free(elf_buf);
 		
-		if(i!=5) return FAILED;
+		if(i!=6) return FAILED;
 		
 		payload_addr = 0x3940;
 
