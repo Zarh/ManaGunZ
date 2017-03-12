@@ -41,7 +41,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=  -lxml ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
+LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
 			../lib/libMagickWand.a ../lib/libMagickCore.a \
 			-ltiny3d -lsysmodule -lgcm_sys -lrsx -lsysutil -lio -lm -lfreetype -lz -lhttputil \
 			-lhttp -lssl -lnet -lpng -lpngdec -ljpgdec -lsysfs 
@@ -104,6 +104,7 @@ export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 # build a list of include paths
 #---------------------------------------------------------------------------------
 export INCLUDE	:=	-I$(PORTLIBS)/include/freetype2 \
+					-I$(PORTLIBS)/include/libxml2 \
 					$(foreach dir,$(INCLUDES), -I$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					$(LIBPSL1GHT_INC) \
