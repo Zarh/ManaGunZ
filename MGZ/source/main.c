@@ -14,7 +14,6 @@
 #include <lv2/sysfs.h>
 #include <sys/file.h>
 #include <sys/process.h>
-#include <sysutil/game.h>
 #include <lv2/process.h>
 #include <ppu-lv2.h>
 #include <ppu-types.h>
@@ -29,8 +28,12 @@
 #include <jpgdec/jpgdec.h>
 #include <sysmodule/sysmodule.h>
 #include <sysutil/osk.h>
+#include <sysutil/msg.h>
 #include <sysutil/sysutil.h>
+#include <sysutil/game.h>
 #include <arpa/inet.h>
+
+#include <zip.h>
 
 #include <sys/systime.h>
 
@@ -284,8 +287,7 @@
 
 #define IRIS		0
 #define MM			1
-#define COBRA		2
-#define MAMB		3
+#define SNAKE		2  // cobra else mamba
 
 #define REACTPSN	2
 
@@ -338,6 +340,7 @@
 #define _MD5		45
 #define _SHA1		46
 #define _XREG		47
+#define _ZIP		48
 
 #define ALL				0
 #define UP				1
@@ -427,6 +430,17 @@ u16 * ttf_texture;
 
 #define MAX_FRAME	1024
 
+#define SCENE_FILEMANAGER			0
+#define SCENE_PS3_MENU				1
+#define SCENE_PS2_MENU				2
+#define SCENE_PS1_MENU				3
+#define SCENE_PSP_MENU				4
+#define SCENE_PS2_CONFIG_EDITOR		5
+#define SCENE_SETTINGS				6
+#define SCENE_MAIN					7
+
+u8 scene;
+
 typedef struct
 {
 	uint64_t device;
@@ -494,8 +508,6 @@ static int game_number = -1;
 static char list_FAV_game_path[100][128] = {{0}};
 static char list_FAV_game_title[100][128]= {{0}};
 static int8_t FAV_game_number = -1;
-static int8_t real_FAV_game_number=-1;
-static int8_t FAV_positions_in_list[100] = {[0 ... 99] = -1};
 
 static char scan_dir[30][128];
 static int8_t scan_dir_number=0;
@@ -511,37 +523,35 @@ static redir_files_struct file_to_map[8];
 static u8 max_mapped=0;
 
 static u8 cobra = NO, iso = NO, splitted_iso = NO, mamba = NO, usb = NO;
-static u8 inverse_button=YES;
+static u8 FLOW_inverse_button=YES;
 static u8 mount_app_home = NO;
 static u8 use_ex_plug = NO;
-static u8 emu_position = NONE;
+static u8 emu = NONE;
 static u8 prim_USB = NO;
 static u8 ext_game_data= NO;
-static u8 payload_position = MM;
-static u8 direct_boot_position = NO;
+static u8 payload = MM;
+static u8 direct_boot = NO;
 static u8 real_disk = NO;
 static u8 AutoM = NO;
 static u8 libfs_from = MM;
 static int8_t device = 0;
 static u8 gui_called = NO;
 static u8 Game_stuff = YES;
-static char GamPath[256];
+static char GamPath[128];
 char ManaGunZ_id[10];
 
-static u8 clean_syscall_position = NO;
-static u8 change_IDPS_position = NO;
-static long long unsigned int IDPS[2]={0,0};
-static u8 Show_ICON0_position = NO;
-static u8 LIST_Show_COVER_position = NO;
-static u8 XMB_Show_COVER_position = NO;
-static u8 XMB_Show_PIC1 = NO;
-static u8 FLOW_Show_PIC1 = NO;
+static u8 clean_syscall = NO;
+static u8 change_IDPS = NO;
+static u8 IDPS[0x10]={0};
+static u8 LIST_Show_ICON0 = NO;
 static u8 FLOW_use_Cover = NO;
+static u8 Show_COVER = NO;
 static u8 Show_PIC1 = NO;
 static u8 Show_PS3 = YES;
 static u8 Show_PS2 = YES;
 static u8 Show_PS1 = YES;
 static u8 Show_PSP = YES;
+static u8 Only_FAV = NO;
 
 u8 size_font=20;
 
@@ -643,38 +653,9 @@ static u32 XMB_nb_lin[6] = {0};
 static u32 XMB_V_position[6] = {0};
 static int XMB_curs_move_x = -180;
 static long int XMB_curs_move_y[6] = {0};
-static int g_menu_move = 0;
-static u8 g_menu = OFF;
-static u8 use_sidebar_menu = NO;
-static u32 g_menu_position = 0;
-static u32 settings_position = 0;
+
+static u8 use_sidemenu = NO;
 static u8 scan_dir_position=0;
-static char keyboard_str[128];
-static u8 keyb_lock=LOW;
-const char *keyboard_button[2][38]={{
-"1","2","3","4","5","6","7","8","9","0",
-"a","z","e","r","t","y","u","i","o","p",
-"q","s","d","f","g","h","j","k","l","m",
-"w","x","c","v","b","n",
-"ABC", "space"
-},{
-"1","2","3","4","5","6","7","8","9","0",
-"A","Z","E","R","T","Y","U","I","O","P",
-"Q","S","D","F","G","H","J","K","L","M",
-"W","X","C","V","B","N",
-"abc", "space"
-}};
-
-static u8 rename_scan_dir = FALSE;
-static u8 rename_theme = FALSE;
-static u8 change_color_1 = FALSE;
-static u8 change_color_2 = FALSE;
-static u8 change_color_3 = FALSE;
-static u8 change_color_4 = FALSE;
-
-static u8 title_region=1;
-static u8 title_type=1;
-static u8 title_n[5]={0};
 
 static int Flow_curs_move_x = 0;
 
@@ -690,8 +671,8 @@ static u8 UI_position = LIST;
 static char Themes_Names_list[4][128][255];
 static char Themes_Paths_list[4][128][255];
 static char Themes[4][128];
-static int8_t Themes_position[4] = {-1,-1,-1,-1}; // ou {[0 ... 3] = -1}
-static int8_t Themes_number[4] = {-1,-1,-1,-1};
+static u8 Themes_position[4] = {0}; 
+static int8_t Themes_number[4] = {-1,-1,-1,-1}; // ou {[0 ... 3] = -1}
 
 static u8 grid_nb_lines = 5;
 static u8 grid_nb_columns = 5;
@@ -699,10 +680,10 @@ static u8 grid_type = SCROLL;
 static u8 direction = VERTICAL;
 static u8 animated = YES;
 static u8 keep_prop = YES;
-static float move = 0;
+static float Grid_move = 0;
 
-static float List_curs_move_x = 0;
-static float List_curs_move_y = 0;
+static float Grid_curs_move_x = 0;
+static float Grid_curs_move_y = 0;
 
 static char copy_log[10][128];
 static char copy_file[128];
@@ -726,11 +707,6 @@ int64_t prog_bar1_value=-1;
 int64_t prog_bar2_value=-1;
 u8 cancel = NO;
 
-static u8 sure2del=NO;
-
-static int dst_cpy_position=0;
-static int dst_cvt_position=0;
-
 int8_t videoscale_x = 0;
 int8_t videoscale_y = 0;
 
@@ -747,8 +723,68 @@ uint8_t ERR = FALSE;
 uint8_t WAR = FALSE;
 
 int position=0;
+int first_line = 0, nb_line=0, last_line;
+int hold_CIRCLE=0;
+int first_icon = 0, nb_icon, last_icon=-1;
+int x_L = 0;
+int y_L = 0;
+
+float w_ICON0;  
+float h_ICON0;
+float e_w = 10;
+float e_h = 10;
+float speed = 9;
+float XMB_w = 72;
+float XMB_h = 40;
+
+float FLOW_w = 80;
+float FLOW_h = 44;
 
 static u8 picture_viewer_activ = NO;
+
+u8 Display_PIC1 = NO;
+
+// ******* MENU **********
+
+#define MAX_ITEMS				32
+#define MAX_ITEMS_LENGTH		128
+#define MAX_ITEMS_VALUE			32
+#define MAX_ITEMS_VALUE_LENGTH	128
+
+#define MAX_TITLE_LENGHT		128
+
+#define ITEM_TEXTBOX	0
+#define ITEM_CHECKBOX	1
+#define ITEM_COLORBOX	2
+
+u8 MENU=NO;
+
+char ITEMS[MAX_ITEMS][MAX_ITEMS_LENGTH];
+s8 ITEMS_NUMBER;
+char ITEMS_VALUE[MAX_ITEMS][MAX_ITEMS_VALUE][MAX_ITEMS_VALUE_LENGTH];
+s8 ITEMS_VALUE_NUMBER[MAX_ITEMS];
+
+u8 ITEMS_POSITION;
+u8 ITEMS_VALUE_POSITION[MAX_ITEMS];
+u8 ITEMS_VALUE_SHOW[MAX_ITEMS];
+u8 ITEMS_TYPE[MAX_ITEMS];
+
+u8 IN_ITEMS_VALUE=NO;
+
+float MENU_ITEMS_X;
+float MENU_ITEMS_VALUE_X;
+
+int MENU_COLUMN_ITEMS_NUMBER;
+float MENU_COLUMN_ITEMS_W;
+
+char TITLES[MAX_ITEMS][MAX_TITLE_LENGHT];
+
+u8 MENU_SIDE;
+
+float x_COLOR;
+float y_COLOR;
+
+// **************** //
 
 u8 Copy(char *src, char *dst);
 void Delete(char* path);
@@ -756,6 +792,7 @@ void print_head(char *format2, ...);
 void print_load(char *format, ...);
 u8 Show_it(int pos);
 char *LoadFile(char *path, int *file_size);
+char *LoadFileProg(char *path, int *file_size);
 u8 GetParamSFO(const char *name, char *value, int position, char *path);
 u8 Get_ID(char *isopath, u8 platform, char *game_ID);
 u8 is_apng(char *file);
@@ -773,6 +810,12 @@ u8 get_ext(char *file);
 void read_fav();
 int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color);
 u32 Get_CRC(char *Elf_Name);
+void Draw_scene();
+void Draw_title(float x, float y, char *str);
+void peek_IDPS();
+void start_load_PIC1();
+void end_load_PIC1();
+int SaveFile(char *path, char *mem, int file_size);
 
 //*******************************************************
 //GUI
@@ -896,6 +939,32 @@ void Draw_Box(float x, float y, float z, float r, float w, float h, u32 rgba, u8
 	
 }
 
+float Draw_checkbox(u8 checked, float x, float y, char *str, u32 color)
+{
+	Draw_Box(x, y, 0, 0, 14, 14, color, NO);
+	Draw_Box(x+2, y+2, 0, 0, 10, 10, BLACK, NO);
+	
+	if(checked) Draw_Box(x+3, y+3, 0, 0, 8, 8, color, NO);
+	
+	SetFontColor(color, 0x0);
+	SetFontSize(15, 15);
+	
+	return DrawString(x+20, y, str);
+}
+
+void Draw_title(float x, float y, char *str)
+{
+	int xt;
+	SetFontSize(18, 18);
+	Draw_Box(x+5, y+4, 0, 0, 8, 8, COLOR_3, NO);
+	SetFontColor(COLOR_3, 0x0);
+	xt=DrawString(x+20, y, str);
+	y+=18;
+	Draw_Box(x, y, 0, 0, xt-x, 2, COLOR_3, NO); //underline
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+}
+
 u8 is_ntfs(char *path)
 {
 	if(strstr(path, "ntfs")) return YES;
@@ -915,7 +984,6 @@ u8 exist(char *path)
 	if(path_info(path) == _NOT_EXIST) return NO;
 	return YES;
 }
-
 
 u8 imgLoadFromFile(char *imgPath, imgData *out)
 {
@@ -949,7 +1017,6 @@ void Read_ICON0(int position)
 		if(mem==NULL) return;
 		pngLoadFromBuffer((const void *) mem, size, (pngData *) &ICON0[position]);
 		free(mem);
-
 	} else
 	if(list_game_platform[position] == _ISO_PSP) {
 		int size;
@@ -957,7 +1024,6 @@ void Read_ICON0(int position)
 		if(mem==NULL) return;
 		pngLoadFromBuffer((const void *) mem, size, (pngData *) &ICON0[position]);
 		free(mem);
-
 	} else	
 	if(list_game_platform[position] == _JB_PS3) {
 		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[position]);
@@ -974,8 +1040,21 @@ void Read_ICON0(int position)
 			sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[position]);
 			if(imgLoadFromFile(temp, &ICON0[position]) == SUCCESS) return;
 		}
+	} else
+	if(list_game_platform[position] == _ISO_PS2 || list_game_platform[position] == _ISO_PS1) {
+		strcpy(temp, list_game_path[position]);
+		temp[strlen(temp)-4]=0;
+		char temp2[255];
+		sprintf(temp2, "%s.jpg", temp);
+		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
+		sprintf(temp2, "%s.png", temp);
+		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
+		sprintf(temp2, "%s.JPG", temp);
+		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
+		sprintf(temp2, "%s.PNG", temp);
+		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
 	}
-
+	
 }
 
 //*******************************************************
@@ -1136,7 +1215,7 @@ void Read_COVER(int position)
 	if(path_info(temp) == _FILE) goto read;
 	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", title_id);
 	if(path_info(temp) == _FILE) goto read;
-
+	
 	return;
 read:
 
@@ -1145,17 +1224,14 @@ read:
 	//Delete(temp);
 }
 
-void Load_PIC()
+void Load_ICON0()
 {
 	u32 * texture_pointer;
 	texture_pointer = ICON0_texture_mem;
 	int i;
 	
 	Load_GamePIC_progbar = 0;
-		
-	memset(ICON0_offset, 0, sizeof(ICON0_offset));
-	memset(ICON0, 0, sizeof(ICON0));
-	
+
 	for(i=0; i<=game_number; i++) {
 		Load_GamePIC_progbar = (i*100)/game_number;
 		
@@ -1173,41 +1249,55 @@ void Load_PIC()
 		} else ICON0_offset[i]=0;
 	}
 	
+	Load_GamePIC_progbar = -1;
+	
 	COVER_texture_mem = texture_pointer;
-	
+}
+
+u8 COVER_Loaded;
+void Load_COVER() 
+{
+	u32 * texture_pointer;
 	texture_pointer = COVER_texture_mem;
+	int i;
 	
-	Load_GamePIC_progbar=0;
 	if(Load_GamePIC==NO) return;
 	
-	memset(COVER_offset, 0, sizeof(COVER_offset));
-	memset(COVER, 0, sizeof(COVER));
+	COVER_Loaded = NO;
 	
-	for(i=0; i<=game_number; i++) {
-		Load_GamePIC_progbar = (i*100)/game_number;
-		if(Load_GamePIC==NO) return;
-		Read_COVER(i);
-		if(Load_GamePIC==NO) return;
-		if(COVER[i].bmp_out) {
-			memcpy(texture_pointer, COVER[i].bmp_out, COVER[i].pitch * COVER[i].height);
-			free(COVER[i].bmp_out);
-			COVER_offset[i] = tiny3d_TextureOffset(texture_pointer);
-			texture_pointer += ((COVER[i].pitch * COVER[i].height + 15) & ~15) / 4;
-		} else COVER_offset[i] = 0;
+	if(Show_COVER==YES) {
+		Load_GamePIC_progbar=0;
+		for(i=0; i<=game_number; i++) {
+			Load_GamePIC_progbar = (i*100)/game_number;
+			if(Load_GamePIC==NO) return;
+			Read_COVER(i);
+			if(Load_GamePIC==NO) return;
+			if(COVER[i].bmp_out) {
+				memcpy(texture_pointer, COVER[i].bmp_out, COVER[i].pitch * COVER[i].height);
+				free(COVER[i].bmp_out);
+				COVER_offset[i] = tiny3d_TextureOffset(texture_pointer);
+				texture_pointer += ((COVER[i].pitch * COVER[i].height + 15) & ~15) / 4;
+			} else COVER_offset[i] = 0;
+		}
+		COVER_Loaded = YES;
 	}
+	Load_GamePIC_progbar = -1;
 	
 	FM_PIC_texture_mem = texture_pointer;
-	
-	if(Load_GamePIC==NO) return;
-	
-	Load_GamePIC_progbar = -1;
 }
 
 static sys_ppu_thread_t Load_GamePIC_id;
 
 void Load_GamePIC_thread(void *unused)
 {
-	Load_PIC();
+	memset(ICON0_offset, 0, sizeof(ICON0_offset));
+	memset(ICON0, 0, sizeof(ICON0));
+	memset(COVER_offset, 0, sizeof(COVER_offset));
+	memset(COVER, 0, sizeof(COVER));
+	FM_PIC_offset = 0;
+	
+	Load_ICON0();
+	Load_COVER();
 	
 	while(Load_GamePIC == YES) sleep(1);
 	
@@ -1244,6 +1334,8 @@ void Draw_Load_GamePIC()
 
 void Draw_COVER(int position, float x , float y, float z, float w, float h)
 {
+	if(position < 0 || game_number < position) return;
+	
 	if(COVER_offset[position] != 0) {
 		tiny3d_SetTexture(0, COVER_offset[position], COVER[position].width, COVER[position].height, COVER[position].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
@@ -1261,6 +1353,8 @@ void Draw_COVER(int position, float x , float y, float z, float w, float h)
 
 void Draw_CoverFromCenter(int position, float x, float y, float z, float w, float h)
 {
+	if(position < 0 || game_number < position) return;
+	
 	if(COVER_offset[position] != 0) {
 		tiny3d_SetTexture(0, COVER_offset[position], COVER[position].width, COVER[position].height, COVER[position].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
@@ -1429,6 +1523,8 @@ void Extract_IconParam()
 
 void Draw_DEFAULT(int position, float x , float y, float z,  float w, float h)
 {
+	if(position < 0 || game_number < position) return;
+	
 	int type = list_game_platform[position];
 	if(type == _JB_PS1 || type == _JB_PS2 || type == _JB_PS3 || type == _JB_PSP) {
 		if(COMMON_offset[DEFAULT_JB] != 0) {
@@ -1457,8 +1553,10 @@ void Draw_DEFAULT(int position, float x , float y, float z,  float w, float h)
 	if(type == _JB_PSP || type == _ISO_PSP) Draw_Box(x, y, z, 0, w, h, COLOR_PSP - 0x90, NO);
 }
 
-void Draw_ICON0(int position, float x , float y, float z,  float w, float h)
+void Draw_ICON0(int position, float x, float y, float z,  float w, float h)
 {
+	if(position < 0 || game_number < position) return;
+	
 	if(UI_position==LIST) {
 		if(List_BG_ICON0_offset != 0) {
 			tiny3d_SetTexture(0, List_BG_ICON0_offset, List_BG_ICON0.width, List_BG_ICON0.height, List_BG_ICON0.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
@@ -1468,9 +1566,16 @@ void Draw_ICON0(int position, float x , float y, float z,  float w, float h)
 	
 	if(ICON0_offset[position] != 0) {
 		tiny3d_SetTexture(0, ICON0_offset[position], ICON0[position].width, ICON0[position].height, ICON0[position].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		
+		if(ICON0[position].height >= ICON0[position].width) {
+			float w1= ICON0[position].width * h / ICON0[position].height;
+			float x1 = x + (w-w1)/2;
+			Draw_Box(x1, y, z, 0, w1, h, WHITE, YES);
+		} else Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		
 	}
 	else Draw_DEFAULT(position, x, y, z, w, h);
+	
 	
 }
 
@@ -3259,7 +3364,6 @@ void Load_Themes()
 {
 	char temp[255];
 	char thmPath[255];
-	int k;
 
 	u32 * texture_pointer=NULL;
 	
@@ -3284,246 +3388,243 @@ void Load_Themes()
 	Flow_BGS_offset = 0;
 	
 	prog_bar1_value = 0;
+
+	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[0], Themes[0]);
 	
-	for(k=0 ; k<4; k++) {
-		prog_bar1_value = k*100/4;
-		
-		if(Themes[k][0] == 0) continue;
-
-		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[k], Themes[k]);
-		
-		if(path_info(thmPath) == _NOT_EXIST) continue;
-
-		if(k==0) {
-			texture_pointer = List_BG_texture_mem;
-			sprintf(temp, "%s/BG.PNG", thmPath);
-
-			if(imgLoadFromFile(temp, &List_BG) == FAILED) {
-				sprintf(temp, "%s/BG.JPG", thmPath);
-				imgLoadFromFile(temp, &List_BG);
-			}
-
-			if(List_BG.bmp_out) {
-				memcpy(texture_pointer, List_BG.bmp_out, List_BG.pitch * List_BG.height);
-				free(List_BG.bmp_out);
-				List_BG_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((List_BG.pitch * List_BG.height + 15) & ~15) / 4;
-			}
-			
-			List_BG_ICON0_texture_mem = texture_pointer;
-			
-			texture_pointer = List_BG_ICON0_texture_mem;
-			
-			sprintf(temp, "%s/BG_ICON0.PNG", thmPath);
-			
-			if(imgLoadFromFile(temp, &List_BG_ICON0) == FAILED) {
-				sprintf(temp, "%s/BG_ICON0.JPG", thmPath);
-				imgLoadFromFile(temp, &List_BG_ICON0);
-			}
-
-			if(List_BG_ICON0.bmp_out) {
-				memcpy(texture_pointer, List_BG_ICON0.bmp_out, List_BG_ICON0.pitch * List_BG_ICON0.height);
-				free(List_BG_ICON0.bmp_out);
-				List_BG_ICON0_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((List_BG_ICON0.pitch * List_BG_ICON0.height + 15) & ~15) / 4;
-			}
-
-		}
-		else if(k==1) {
-			if(texture_pointer!=NULL) GRID_BG_texture_mem = texture_pointer;
-			
-			texture_pointer = GRID_BG_texture_mem;
-			
-			sprintf(temp, "%s/BG.PNG", thmPath);
-			
-			if(imgLoadFromFile(temp, &GRID_BG) == FAILED) {
-				sprintf(temp, "%s/BG.JPG", thmPath);
-				imgLoadFromFile(temp, &GRID_BG);
-			}
-		
-			if(GRID_BG.bmp_out) {
-				memcpy(texture_pointer, GRID_BG.bmp_out, GRID_BG.pitch * GRID_BG.height);
-				free(GRID_BG.bmp_out);
-				GRID_BG_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((GRID_BG.pitch * GRID_BG.height + 15) & ~15) / 4;
-			}
-			
-			GRID_BGS_texture_mem = texture_pointer;
-			
-			texture_pointer = GRID_BGS_texture_mem;
-			
-			sprintf(temp, "%s/BGS.PNG", thmPath);
-			
-			if(imgLoadFromFile(temp, &GRID_BGS) == FAILED) {
-				sprintf(temp, "%s/BGS.JPG", thmPath);
-				imgLoadFromFile(temp, &GRID_BGS);
-			}
+	texture_pointer = List_BG_texture_mem;
 	
-			if(GRID_BGS.bmp_out) {
-				memcpy(texture_pointer, GRID_BGS.bmp_out, GRID_BGS.pitch * GRID_BGS.height);
-				free(GRID_BGS.bmp_out);
-				GRID_BGS_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((GRID_BGS.pitch * GRID_BGS.height + 15) & ~15) / 4;
-			}
-		}
-		else if(k==2) {
+	sprintf(temp, "%s/BG.PNG", thmPath);
 
-			if(texture_pointer!=NULL) XMB_BG_texture_mem = texture_pointer;
+	if(imgLoadFromFile(temp, &List_BG) == FAILED) {
+		sprintf(temp, "%s/BG.JPG", thmPath);
+		imgLoadFromFile(temp, &List_BG);
+	}
 
-			texture_pointer = XMB_BG_texture_mem;
+	if(List_BG.bmp_out) {
+		memcpy(texture_pointer, List_BG.bmp_out, List_BG.pitch * List_BG.height);
+		free(List_BG.bmp_out);
+		List_BG_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((List_BG.pitch * List_BG.height + 15) & ~15) / 4;
+	}
+	
+	List_BG_ICON0_texture_mem = texture_pointer;
+	
+	texture_pointer = List_BG_ICON0_texture_mem;
+	
+	sprintf(temp, "%s/BG_ICON0.PNG", thmPath);
+	
+	if(imgLoadFromFile(temp, &List_BG_ICON0) == FAILED) {
+		sprintf(temp, "%s/BG_ICON0.JPG", thmPath);
+		imgLoadFromFile(temp, &List_BG_ICON0);
+	}
 
-			sprintf(temp, "%s/BG.PNG", thmPath);
-			if(is_apng(temp) == YES) {
-				texture_pointer = Load_XMB_BG(temp, texture_pointer);
-			} else {
-				
-				if(imgLoadFromFile(temp, &XMB_BG[0]) == FAILED) {
-					sprintf(temp, "%s/BG.JPG", thmPath);
-					imgLoadFromFile(temp, &XMB_BG[0]);
-				}
+	if(List_BG_ICON0.bmp_out) {
+		memcpy(texture_pointer, List_BG_ICON0.bmp_out, List_BG_ICON0.pitch * List_BG_ICON0.height);
+		free(List_BG_ICON0.bmp_out);
+		List_BG_ICON0_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((List_BG_ICON0.pitch * List_BG_ICON0.height + 15) & ~15) / 4;
+	}
 
-				if(XMB_BG[0].bmp_out) {
-					memcpy(texture_pointer, XMB_BG[0].bmp_out, XMB_BG[0].pitch * XMB_BG[0].height);
-					free(XMB_BG[0].bmp_out);
-					XMB_BG_offset[0] = tiny3d_TextureOffset(texture_pointer);
-					texture_pointer += ((XMB_BG[0].pitch * XMB_BG[0].height + 15) & ~15) / 4;
-				}
-			}
+	prog_bar1_value = 25;
 
-			XMB_BGS_texture_mem = texture_pointer;
-			
-			texture_pointer = XMB_BGS_texture_mem;
-			
-			sprintf(temp, "%s/BGS.PNG", thmPath);
+	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[1], Themes[1]);
+	
+	GRID_BG_texture_mem = texture_pointer;
+	
+	texture_pointer = GRID_BG_texture_mem;
+	
+	sprintf(temp, "%s/BG.PNG", thmPath);
+	
+	if(imgLoadFromFile(temp, &GRID_BG) == FAILED) {
+		sprintf(temp, "%s/BG.JPG", thmPath);
+		imgLoadFromFile(temp, &GRID_BG);
+	}
 
-			if(imgLoadFromFile(temp, &XMB_BGS) == FAILED) {
-				sprintf(temp, "%s/BGS.JPG", thmPath);
-				imgLoadFromFile(temp, &XMB_BGS);
-			}
+	if(GRID_BG.bmp_out) {
+		memcpy(texture_pointer, GRID_BG.bmp_out, GRID_BG.pitch * GRID_BG.height);
+		free(GRID_BG.bmp_out);
+		GRID_BG_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((GRID_BG.pitch * GRID_BG.height + 15) & ~15) / 4;
+	}
+	
+	GRID_BGS_texture_mem = texture_pointer;
+	
+	texture_pointer = GRID_BGS_texture_mem;
+	
+	sprintf(temp, "%s/BGS.PNG", thmPath);
+	
+	if(imgLoadFromFile(temp, &GRID_BGS) == FAILED) {
+		sprintf(temp, "%s/BGS.JPG", thmPath);
+		imgLoadFromFile(temp, &GRID_BGS);
+	}
 
-			if(XMB_BGS.bmp_out) {
-				memcpy(texture_pointer, XMB_BGS.bmp_out, XMB_BGS.pitch * XMB_BGS.height);
-				free(XMB_BGS.bmp_out);
-				XMB_BGS_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((XMB_BGS.pitch * XMB_BGS.height + 15) & ~15) / 4;
-			}
-			
-			XMB_SIDEBAR_texture_mem = texture_pointer;
-			
-			texture_pointer = XMB_SIDEBAR_texture_mem;
+	if(GRID_BGS.bmp_out) {
+		memcpy(texture_pointer, GRID_BGS.bmp_out, GRID_BGS.pitch * GRID_BGS.height);
+		free(GRID_BGS.bmp_out);
+		GRID_BGS_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((GRID_BGS.pitch * GRID_BGS.height + 15) & ~15) / 4;
+	}
+	
+	prog_bar1_value = 50;
+
+	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[2], Themes[2]);
+	
+	XMB_BG_texture_mem = texture_pointer;
+
+	texture_pointer = XMB_BG_texture_mem;
+
+	sprintf(temp, "%s/BG.PNG", thmPath);
+	if(is_apng(temp) == YES) {
+		texture_pointer = Load_XMB_BG(temp, texture_pointer);
+	} else {
 		
-			sprintf(temp, "%s/SIDEBAR.PNG", thmPath);
-			if(imgLoadFromFile(temp, &XMB_SIDEBAR) == FAILED) {
-				sprintf(temp, "%s/SIDEBAR.JPG", thmPath);
-				imgLoadFromFile(temp, &XMB_SIDEBAR);
-			}
-
-			if(XMB_SIDEBAR.bmp_out) {
-				memcpy(texture_pointer, XMB_SIDEBAR.bmp_out, XMB_SIDEBAR.pitch * XMB_SIDEBAR.height);
-				free(XMB_SIDEBAR.bmp_out);
-				XMB_SIDEBAR_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((XMB_SIDEBAR.pitch * XMB_SIDEBAR.height + 15) & ~15) / 4;
-			}
-
-			int i;
-			for(i=0; i<6; i++) {
-				XMB_Col_texture_mem[i] = texture_pointer;
-				
-				texture_pointer = XMB_Col_texture_mem[i];
-				
-				sprintf(temp, "%s/%s.PNG", thmPath, Columns[i]);
-
-				if(imgLoadFromFile(temp, &XMB_Col[i]) == FAILED) {
-					sprintf(temp, "%s/%s.JPG", thmPath, Columns[i]);
-					imgLoadFromFile(temp, &XMB_Col[i]);
-				}
-
-				if(XMB_Col[i].bmp_out) {
-					memcpy(texture_pointer, XMB_Col[i].bmp_out, XMB_Col[i].pitch * XMB_Col[i].height);
-					free(XMB_Col[i].bmp_out);
-					XMB_Col_offset[i] = tiny3d_TextureOffset(texture_pointer);
-					texture_pointer += ((XMB_Col[i].pitch * XMB_Col[i].height + 15) & ~15) / 4;
-				}
-			}
-
-			XMB_MMTHM_XMB_texture_mem = texture_pointer;
-			
-			texture_pointer = XMB_MMTHM_XMB_texture_mem;
-			
-			sprintf(temp, "%s/MMTHM_XMB.PNG", thmPath);
-
-			if(imgLoadFromFile(temp, &XMB_MMTHM_XMB) == FAILED) {
-				sprintf(temp, "%s/MMTHM_XMB.JPG", thmPath);
-				imgLoadFromFile(temp, &XMB_MMTHM_XMB);
-			}
-
-			if(XMB_MMTHM_XMB.bmp_out) {
-				memcpy(texture_pointer, XMB_MMTHM_XMB.bmp_out, XMB_MMTHM_XMB.pitch * XMB_MMTHM_XMB.height);
-				free(XMB_MMTHM_XMB.bmp_out);
-				XMB_MMTHM_XMB_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((XMB_MMTHM_XMB.pitch * XMB_MMTHM_XMB.height + 15) & ~15) / 4;
-			}
-
-			XMB_MMTHM_XMB2_texture_mem = texture_pointer;
-			
-			texture_pointer = XMB_MMTHM_XMB2_texture_mem;
-			
-			sprintf(temp, "%s/MMTHM_XMB2.PNG", thmPath);
-
-			if(imgLoadFromFile(temp, &XMB_MMTHM_XMB2) == FAILED) {
-				sprintf(temp, "%s/MMTHM_XMB2.JPG", thmPath);
-				imgLoadFromFile(temp, &XMB_MMTHM_XMB2);
-			}
-
-			if(XMB_MMTHM_XMB2.bmp_out) {
-				memcpy(texture_pointer, XMB_MMTHM_XMB2.bmp_out, XMB_MMTHM_XMB2.pitch * XMB_MMTHM_XMB2.height);
-				free(XMB_MMTHM_XMB2.bmp_out);
-				XMB_MMTHM_XMB2_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((XMB_MMTHM_XMB2.pitch * XMB_MMTHM_XMB2.height + 15) & ~15) / 4;
-			}
-
+		if(imgLoadFromFile(temp, &XMB_BG[0]) == FAILED) {
+			sprintf(temp, "%s/BG.JPG", thmPath);
+			imgLoadFromFile(temp, &XMB_BG[0]);
 		}
-		else if(k==3) {
-			if(texture_pointer!=NULL) Flow_BG_texture_mem = texture_pointer;
-			
-			texture_pointer = Flow_BG_texture_mem;
-			
-			sprintf(temp, "%s/BG.PNG", thmPath);
 
-			if(imgLoadFromFile(temp, &Flow_BG) == FAILED) {
-				sprintf(temp, "%s/BG.JPG", thmPath);
-				imgLoadFromFile(temp, &Flow_BG);
-			}
-			
-			if(Flow_BG.bmp_out) {
-				memcpy(texture_pointer, Flow_BG.bmp_out, Flow_BG.pitch * Flow_BG.height);
-				free(Flow_BG.bmp_out);
-				Flow_BG_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((Flow_BG.pitch * Flow_BG.height + 15) & ~15) / 4;
-			}
-			
-			Flow_BGS_texture_mem = texture_pointer;
-			
-			texture_pointer = Flow_BGS_texture_mem;
-			
-			sprintf(temp, "%s/BGS.PNG", thmPath);
-
-			if(imgLoadFromFile(temp, &Flow_BGS) == FAILED) {
-				sprintf(temp, "%s/BGS.JPG", thmPath);
-				imgLoadFromFile(temp, &Flow_BGS);
-			}
-			
-			if(Flow_BGS.bmp_out) {
-				memcpy(texture_pointer, Flow_BGS.bmp_out, Flow_BGS.pitch * Flow_BGS.height);
-				free(Flow_BGS.bmp_out);
-				Flow_BGS_offset = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((Flow_BGS.pitch * Flow_BGS.height + 15) & ~15) / 4;
-			}
+		if(XMB_BG[0].bmp_out) {
+			memcpy(texture_pointer, XMB_BG[0].bmp_out, XMB_BG[0].pitch * XMB_BG[0].height);
+			free(XMB_BG[0].bmp_out);
+			XMB_BG_offset[0] = tiny3d_TextureOffset(texture_pointer);
+			texture_pointer += ((XMB_BG[0].pitch * XMB_BG[0].height + 15) & ~15) / 4;
 		}
 	}
+
+	XMB_BGS_texture_mem = texture_pointer;
+	
+	texture_pointer = XMB_BGS_texture_mem;
+	
+	sprintf(temp, "%s/BGS.PNG", thmPath);
+
+	if(imgLoadFromFile(temp, &XMB_BGS) == FAILED) {
+		sprintf(temp, "%s/BGS.JPG", thmPath);
+		imgLoadFromFile(temp, &XMB_BGS);
+	}
+
+	if(XMB_BGS.bmp_out) {
+		memcpy(texture_pointer, XMB_BGS.bmp_out, XMB_BGS.pitch * XMB_BGS.height);
+		free(XMB_BGS.bmp_out);
+		XMB_BGS_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((XMB_BGS.pitch * XMB_BGS.height + 15) & ~15) / 4;
+	}
+	
+	XMB_SIDEBAR_texture_mem = texture_pointer;
+	
+	texture_pointer = XMB_SIDEBAR_texture_mem;
+
+	sprintf(temp, "%s/SIDEBAR.PNG", thmPath);
+	if(imgLoadFromFile(temp, &XMB_SIDEBAR) == FAILED) {
+		sprintf(temp, "%s/SIDEBAR.JPG", thmPath);
+		imgLoadFromFile(temp, &XMB_SIDEBAR);
+	}
+
+	if(XMB_SIDEBAR.bmp_out) {
+		memcpy(texture_pointer, XMB_SIDEBAR.bmp_out, XMB_SIDEBAR.pitch * XMB_SIDEBAR.height);
+		free(XMB_SIDEBAR.bmp_out);
+		XMB_SIDEBAR_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((XMB_SIDEBAR.pitch * XMB_SIDEBAR.height + 15) & ~15) / 4;
+	}
+
+	int i;
+	for(i=0; i<6; i++) {
+		XMB_Col_texture_mem[i] = texture_pointer;
+		
+		texture_pointer = XMB_Col_texture_mem[i];
+		
+		sprintf(temp, "%s/%s.PNG", thmPath, Columns[i]);
+
+		if(imgLoadFromFile(temp, &XMB_Col[i]) == FAILED) {
+			sprintf(temp, "%s/%s.JPG", thmPath, Columns[i]);
+			imgLoadFromFile(temp, &XMB_Col[i]);
+		}
+
+		if(XMB_Col[i].bmp_out) {
+			memcpy(texture_pointer, XMB_Col[i].bmp_out, XMB_Col[i].pitch * XMB_Col[i].height);
+			free(XMB_Col[i].bmp_out);
+			XMB_Col_offset[i] = tiny3d_TextureOffset(texture_pointer);
+			texture_pointer += ((XMB_Col[i].pitch * XMB_Col[i].height + 15) & ~15) / 4;
+		}
+	}
+
+	XMB_MMTHM_XMB_texture_mem = texture_pointer;
+	
+	texture_pointer = XMB_MMTHM_XMB_texture_mem;
+	
+	sprintf(temp, "%s/MMTHM_XMB.PNG", thmPath);
+
+	if(imgLoadFromFile(temp, &XMB_MMTHM_XMB) == FAILED) {
+		sprintf(temp, "%s/MMTHM_XMB.JPG", thmPath);
+		imgLoadFromFile(temp, &XMB_MMTHM_XMB);
+	}
+
+	if(XMB_MMTHM_XMB.bmp_out) {
+		memcpy(texture_pointer, XMB_MMTHM_XMB.bmp_out, XMB_MMTHM_XMB.pitch * XMB_MMTHM_XMB.height);
+		free(XMB_MMTHM_XMB.bmp_out);
+		XMB_MMTHM_XMB_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((XMB_MMTHM_XMB.pitch * XMB_MMTHM_XMB.height + 15) & ~15) / 4;
+	}
+
+	XMB_MMTHM_XMB2_texture_mem = texture_pointer;
+	
+	texture_pointer = XMB_MMTHM_XMB2_texture_mem;
+	
+	sprintf(temp, "%s/MMTHM_XMB2.PNG", thmPath);
+
+	if(imgLoadFromFile(temp, &XMB_MMTHM_XMB2) == FAILED) {
+		sprintf(temp, "%s/MMTHM_XMB2.JPG", thmPath);
+		imgLoadFromFile(temp, &XMB_MMTHM_XMB2);
+	}
+
+	if(XMB_MMTHM_XMB2.bmp_out) {
+		memcpy(texture_pointer, XMB_MMTHM_XMB2.bmp_out, XMB_MMTHM_XMB2.pitch * XMB_MMTHM_XMB2.height);
+		free(XMB_MMTHM_XMB2.bmp_out);
+		XMB_MMTHM_XMB2_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((XMB_MMTHM_XMB2.pitch * XMB_MMTHM_XMB2.height + 15) & ~15) / 4;
+	}
+	
+	prog_bar1_value = 75;
+
+	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[3], Themes[3]);
+	
+	Flow_BG_texture_mem = texture_pointer;
+	
+	texture_pointer = Flow_BG_texture_mem;
+	
+	sprintf(temp, "%s/BG.PNG", thmPath);
+
+	if(imgLoadFromFile(temp, &Flow_BG) == FAILED) {
+		sprintf(temp, "%s/BG.JPG", thmPath);
+		imgLoadFromFile(temp, &Flow_BG);
+	}
+	
+	if(Flow_BG.bmp_out) {
+		memcpy(texture_pointer, Flow_BG.bmp_out, Flow_BG.pitch * Flow_BG.height);
+		free(Flow_BG.bmp_out);
+		Flow_BG_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((Flow_BG.pitch * Flow_BG.height + 15) & ~15) / 4;
+	}
+	
+	Flow_BGS_texture_mem = texture_pointer;
+	
+	texture_pointer = Flow_BGS_texture_mem;
+	
+	sprintf(temp, "%s/BGS.PNG", thmPath);
+
+	if(imgLoadFromFile(temp, &Flow_BGS) == FAILED) {
+		sprintf(temp, "%s/BGS.JPG", thmPath);
+		imgLoadFromFile(temp, &Flow_BGS);
+	}
+	
+	if(Flow_BGS.bmp_out) {
+		memcpy(texture_pointer, Flow_BGS.bmp_out, Flow_BGS.pitch * Flow_BGS.height);
+		free(Flow_BGS.bmp_out);
+		Flow_BGS_offset = tiny3d_TextureOffset(texture_pointer);
+		texture_pointer += ((Flow_BGS.pitch * Flow_BGS.height + 15) & ~15) / 4;
+	}
+		
 	prog_bar1_value=-1;
 	
-	if(texture_pointer==NULL) texture_pointer = List_BG_texture_mem;
 	ICON0_texture_mem = texture_pointer;
 }
 
@@ -3542,11 +3643,22 @@ char *LoadFromISO(char *path, char *filename, int *size)
 	if(flba==0 || file_size==0 || ret == FAILED) {fclose(f);	return NULL;}
 	char *mem = malloc(file_size);
 	if(mem == NULL) {fclose(f); return NULL;}
-
+	
 	fseek(f, 0x800*flba, SEEK_SET);
-	fread(mem, file_size, 1, f);
+	
+	prog_bar1_value=0;
+	u64 read = 0;
+	while(read < file_size) {
+		u32 wrlen = 1024;
+		if(read+wrlen > file_size) wrlen = (u32)file_size-read;
+		fread(mem+read, sizeof(u8), wrlen, f);
+		read += wrlen;
+		prog_bar1_value = (read*100)/file_size;
+	}
 	fclose(f);
-
+	
+	prog_bar1_value=-1;
+	
 	*size= file_size;
 	return mem;
 }
@@ -3559,8 +3671,7 @@ void LOAD_PIC1()
 	
 	FM_PIC_offset=0;
 	
-	if( UI_position==XMB && XMB_Show_PIC1 == NO) return; 
-	if( UI_position==FLOW && FLOW_Show_PIC1 == NO ) return;
+	if( Show_PIC1 == NO ) return; 
 	
 	if( list_game_platform[position_PIC1] != _ISO_PS3 && list_game_platform[position_PIC1] != _ISO_PSP &&
 		list_game_platform[position_PIC1] != _JB_PS3 ) return;
@@ -3574,7 +3685,7 @@ void LOAD_PIC1()
 	if( list_game_platform[position_PIC1] == _JB_PS3 ) {
 		char temp[255];
 		sprintf(temp, "%s/PS3_GAME/PIC1.PNG", list_game_path[position_PIC1]);
-		mem = LoadFile(temp, &size);
+		mem = LoadFileProg(temp, &size);
 		if(mem==NULL) return;
 	}
 	
@@ -3596,19 +3707,30 @@ void LOAD_PIC1()
 
 void Draw_PIC1()
 {
-
+	
+	if(Show_PIC1==NO && load_PIC1 == YES) { end_load_PIC1(); return; }
+	
+	if(Show_PIC1==YES && load_PIC1 == NO) { start_load_PIC1(); return; }
+	
+	if(Show_PIC1==NO) return;
+	
+	if(MENU==YES && MENU_SIDE == NO) return;
+	
+	if((UI_position==LIST || UI_position==GRID) && Display_PIC1 == NO) return;
+	
 	if(FM_PIC_offset != 0 ) {
-		if( ( UI_position==XMB && XMB_Show_PIC1) 
-		||	( UI_position==FLOW && FLOW_Show_PIC1) )
+		if( UI_position==XMB || UI_position==FLOW)
 		{
 			tiny3d_SetTexture(0, FM_PIC_offset, FM_PIC.width, FM_PIC.height, FM_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);	
-			Draw_Box(0, 0, 999, 0, 848, 512, WHITE, YES);
+			Draw_Box(0, 0, 99, 0, 848, 512, WHITE, YES);
 		} else
-		if( ( UI_position==LIST || UI_position==GRID) && Show_PIC1 ) 
+		if( UI_position==LIST || UI_position==GRID) 
 		{
 			tiny3d_SetTexture(0, FM_PIC_offset, FM_PIC.width, FM_PIC.height, FM_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			Draw_Box(50, 50, 0, 0, 848-100, 512-100, WHITE, YES);
 		}
+	} else {
+		if(0 <= prog_bar1_value && prog_bar1_value < 100) Draw_Progress_Bar(50, 15, 1, prog_bar1_value, COLOR_2);
 	}
 
 }
@@ -3621,9 +3743,10 @@ void load_PIC1_thread(void *unused)
 		if(position_PIC1 != position && Load_GamePIC == NO) {
 			FM_PIC_offset = 0;
 			position_PIC1=position;
-			usleep(500000);
+			usleep(1000000);
 			if(position_PIC1 == position) LOAD_PIC1();
-		} else usleep(100000);
+		}
+		else usleep(100000);
 		if( Game_stuff == NO ) FM_PIC_offset=0;
 	}
 
@@ -3634,7 +3757,7 @@ void start_load_PIC1()
 {
 	if(load_PIC1==NO) {
 		load_PIC1 = YES;
-		sysThreadCreate(&load_PIC1_id, load_PIC1_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "load_PIC1");
+		sysThreadCreate(&load_PIC1_id, load_PIC1_thread, NULL, 1500, 0x2000, THREAD_JOINABLE, "load_PIC1");
 	}
 }
 
@@ -3649,6 +3772,8 @@ void end_load_PIC1()
 
 void Draw_BG()
 {
+	if(MENU==YES && MENU_SIDE == NO) return;
+	
 	if(UI_position==LIST) {
 		if(List_BG_offset != 0 ) {
 			tiny3d_SetTexture(0, List_BG_offset, List_BG.width, List_BG.height, List_BG.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
@@ -3678,8 +3803,7 @@ void Draw_BG()
 }
 
 void Draw_BGS()
-{
-	
+{	
 	if(UI_position==LIST) {
 		if(List_BG_offset != 0 ) {
 			tiny3d_SetTexture(0, List_BG_offset, List_BG.width, List_BG.height, List_BG.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
@@ -4325,24 +4449,30 @@ void Draw_NOT(float x, float y, float z, float w, float h)
 
 void Draw_SIDEBAR(float x)
 {
+	Draw_Box(0, 0, 0, 0, 848, 512, 0x000000B0, NO);
 	if(XMB_SIDEBAR_offset != 0) {
 		tiny3d_SetTexture(0, XMB_SIDEBAR_offset, XMB_SIDEBAR.width, XMB_SIDEBAR.height, XMB_SIDEBAR.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		tiny3d_SetPolygon(TINY3D_QUADS);
-		tiny3d_VertexPos(x, 0, 50);
+		tiny3d_VertexPos(x, 0, 0);
 		tiny3d_VertexColor(0xFFFFFFFF);
 		tiny3d_VertexTexture(0.0f, 0.0f);
-		tiny3d_VertexPos(x + 260, 0, 50);
+		tiny3d_VertexPos(x + 310, 0, 0);
 		tiny3d_VertexTexture(1.0f, 0.0f);
-		tiny3d_VertexPos(x + 260, 512, 50);
+		tiny3d_VertexPos(x + 310, 512, 0);
 		tiny3d_VertexTexture(1.0f, 1.0f);
-		tiny3d_VertexPos(x, 512, 50);
+		tiny3d_VertexPos(x, 512, 0);
 		tiny3d_VertexTexture(0.0f, 1.0f);
 		tiny3d_End();
-		return;
+	} else {
+		Draw_Box(x, 0, 0, 0, 310, 512, 0xFFFFFF30, NO);
+		Draw_Box(x, 0, 0, 0, 1, 512, 0xFFFFFFFF, NO);
 	}
 	
-	Draw_Box(x, 0, 50, 0, 260, 512, 0xFFFFFF30, NO);
-	Draw_Box(x, 0, 50, 0, 1, 512, 0xFFFFFFFF, NO);
+	if(UI_position==XMB) {
+		Draw_ICON0(position, 250-XMB_w-XMB_w , 200-XMB_h, 0, XMB_w*4, XMB_h*4);
+	}
+	
+	
 }
 
 int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color)
@@ -4373,9 +4503,12 @@ void Draw_Notification()
 	int x1 = x;
 	SetFontSize(size, size);
 	
+	Draw_Box(590, 40, 0, 3, 213, h, 0x555555FF, NO);
+	
 	char *splited_msg;
 	x1=DrawFormatString(x, -50, "%s", not_msg);
-	if(x1 < 810) DrawFormatString( x, 58, "%s", not_msg);
+	if(x1 < 810) DrawFormatString( x, 58, "%s", not_msg); else
+	if(strstr(not_msg, " ") == NULL) DrawFormatString( x, 58, "%s", not_msg);
 	else {
 		int y = 51;
 		char temp[255];
@@ -4387,22 +4520,22 @@ void Draw_Notification()
 			if(strcmp(splited_msg, "/;/") == 0) { // new line
 				x=635;
 				y+=size;
-				if(y > 51 + size) h+=size;
+				if(y > 51 + size)  { Draw_Box(590, 40+h-3, 0, 3, 213, size+3, 0x555555FF, NO); h+=size; }
 				x1=x;
 			} else if(x1 < 810) {
 				x=DrawFormatString( x, y, "%s ", splited_msg);
 			} else {
 				x=635;
 				y+=size;
-				if(y > 51 + size) h+=size;
+				if(y > 51 + size) { Draw_Box(590, 40+h-3, 0, 3, 213, size+3, 0x555555FF, NO); h+=size;  }
 				x=DrawFormatString( x, y, "%s ", splited_msg);
 				x1=x;
 			}
 			splited_msg = strtok (NULL, " ");
 		}
 	}
-	Draw_Box(590, 40, 1, 3, 213, h, 0x555555FF, NO);
-	Draw_NOT(600, 50, 1, 30, 30);
+	
+	Draw_NOT(600, 50, 0, 30, 30);
 	
 	SetFontZ(10);
 	SetFontColor(COLOR_1, 0);
@@ -4614,7 +4747,7 @@ void Draw_Loading(void *unused)
 		else x=DrawButton(x, y, "Show logs", BUTTON_SELECT);
 		
 		x=Draw_Button_Square(x, y, 15);
-		x=Draw_Progress_Bar(x+5, y+2, 1, boost, color);
+		x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
 		x=DrawString( x+5, y, "Boost!  ");
 		
 		if(AutoM == YES) {
@@ -4689,6 +4822,8 @@ void Draw_Loading(void *unused)
 static char buff[4096];
 void print_load(char *format, ...)
 {
+	if(loading==NO) return;
+	
 	char *str = (char *) buff;
 	va_list	opt;
 	
@@ -4719,6 +4854,8 @@ void print_load(char *format, ...)
 static char buff2[4096];
 void print_head(char *format2, ...)
 {
+	if(loading==NO) return;
+	
 	char *str2 = (char *) buff2;
 	va_list	opt2;
 	
@@ -4732,14 +4869,14 @@ void print_head(char *format2, ...)
 
 void start_loading()
 {
-	loading=1;
+	loading=YES;
 	sysThreadCreate(&loading_id, Draw_Loading, NULL, 999, 0x2000, THREAD_JOINABLE, "loading");	
 }
 
 void end_loading()
 {
 	u64 ret;
-	loading=0;
+	loading=NO;
 	sysThreadJoin(loading_id, &ret);
 }
 
@@ -5878,6 +6015,240 @@ int init_fw()
 }
 
 //*******************************************************
+// ZIP
+//*******************************************************
+
+u8 ExtractZip(char* ZipFile)
+{
+	char FileOUT[255];
+	char Folder[255];
+	
+	int err=0;
+	struct zip *f_zip=NULL;
+	
+	strcpy(Folder, ZipFile);
+	Folder[strlen(Folder)-4]=0;
+	
+	mkdir(Folder, 0777);
+	
+	f_zip = zip_open(ZipFile, ZIP_CHECKCONS, &err);
+	if(err != ZIP_ER_OK || f_zip==NULL)
+	{
+		print_load("Error : zip_open");
+		return FAILED;
+	}
+
+	int count = zip_get_num_files(f_zip);
+	if(count==-1)
+	{
+		print_load("Error : zip_get_num_files");
+		zip_close(f_zip);
+		return FAILED;
+	}
+	
+	prog_bar1_value = 0;
+	int i;
+	for(i=0; i<count; i++)
+	{
+		prog_bar1_value = (i*100)/count;
+		
+		struct zip_stat file_stat;
+		struct zip_file *file_zip=NULL;
+		
+		zip_stat_index(f_zip, i, 0, &file_stat);
+		
+		if(zip_stat(f_zip, file_stat.name, 0, &file_stat) == -1)
+		{
+			print_load("Error : zip_stat");
+			zip_close(f_zip);
+			return FAILED;
+		}
+		
+		print_load((char*)file_stat.name);
+		
+		sprintf(FileOUT, "%s/%s", Folder, file_stat.name);
+		
+		if(FileOUT[strlen(FileOUT)-1]=='/') {
+			FileOUT[strlen(FileOUT)-1]=0;
+			mkdir(FileOUT, 0777);
+			continue;
+		}
+		
+		file_zip=zip_fopen(f_zip, file_stat.name, ZIP_FL_UNCHANGED);
+		if(!file_zip)
+		{
+			print_load("Error : zip_fopen");
+			zip_close(f_zip);
+			return FAILED;
+		}
+		
+		u64 pos = 0ULL;
+		u64 readed = 0, writed = 0;
+		FILE *f;
+		
+		prog_bar2_value=0;
+		
+		f = fopen(FileOUT, "wb");
+		if(f==NULL) {
+			zip_fclose(file_zip);
+			zip_close(f_zip);
+			return FAILED;
+		}
+
+		if( is_ntfs(FileOUT) == NO ) sysLv2FsChmod(FileOUT, 0777);
+
+		int mem_size = 0x1000;
+		char *mem = malloc(mem_size);
+
+		while(pos < file_stat.size) {
+			
+			if(cancel==YES) {
+				zip_fclose(file_zip);
+				zip_close(f_zip);
+				fclose(f);
+				free(mem);
+				return FAILED;
+			}
+			
+			readed = file_stat.size - pos; if(readed > mem_size) readed = mem_size;
+			
+			writed = zip_fread(file_zip, mem, (size_t) readed);
+			if(writed<0) {
+				zip_fclose(file_zip);
+				zip_close(f_zip);
+				fclose(f);
+				free(mem);
+				return FAILED;
+			}
+			
+			if(copy_cancel==YES) {
+				zip_fclose(file_zip);
+				zip_close(f_zip);
+				fclose(f);
+				free(mem);
+				return FAILED;
+			}
+			
+			if(readed != writed) {
+				zip_fclose(file_zip);
+				zip_close(f_zip);
+				fclose(f);
+				free(mem);
+				return FAILED;
+			}
+			
+			writed = fwrite(mem, 1, readed, f);
+			if(writed<0) {
+				zip_fclose(file_zip);
+				zip_close(f_zip);
+				fclose(f);
+				free(mem);
+				return FAILED;
+			}
+			
+			if(readed != writed) {
+				zip_fclose(file_zip);
+				zip_close(f_zip);
+				fclose(f);
+				free(mem);
+				return FAILED;
+			}
+			
+			pos += readed;
+			
+			prog_bar2_value=pos*100/file_stat.size;
+		}
+		fclose(f);
+		zip_fclose(file_zip);
+		
+		free(mem);
+		
+	}
+		
+	prog_bar1_value = -1;
+	prog_bar2_value = -1;
+	
+	zip_close(f_zip);
+
+	return SUCCESS;
+}
+
+u8 ExtractZipFile(char* ZipFile, char* File, char* out)
+{
+
+	int id = 0;
+	struct zip *f_zip=NULL;
+	int err=0;
+
+	f_zip=zip_open(ZipFile, ZIP_CHECKCONS, &err);
+	/* s'il y a des erreurs */
+	if(err != ZIP_ER_OK || f_zip==NULL)
+	{
+		print_load("Error : zip_open");
+		return FAILED;
+	}
+
+	id=zip_name_locate(f_zip,File,0);
+	if (id==-1)
+	{
+		zip_close(f_zip);
+		return FAILED;
+	}
+
+	
+	struct zip_stat file_stat;
+	struct zip_file *file_zip=NULL;
+	zip_stat_index(f_zip, id, 0, &file_stat);
+
+	if(zip_stat(f_zip, file_stat.name, 0, &file_stat) == -1)
+	{
+		print_load("Error : zip_stat");
+		zip_close(f_zip);
+		return FAILED;
+	}
+
+	file_zip=zip_fopen(f_zip, file_stat.name, ZIP_FL_UNCHANGED);
+
+	if(!file_zip)
+	{
+		print_load("Error : zip_fopen");
+		zip_close(f_zip);
+		return FAILED;
+	}
+
+	char *data=NULL;
+	data = malloc((size_t)(file_stat.size+1));
+	memset(data, 0, (size_t)(file_stat.size+1));
+	if(data == NULL)
+	{
+		print_load("Error : malloc");
+		zip_fclose(file_zip);
+		zip_close(f_zip);
+		return FAILED;
+	}
+
+	if(zip_fread(file_zip, data, (size_t)(file_stat.size)) != file_stat.size)
+	{
+		print_load("Error : zip_fread");
+		free(data);
+		zip_fclose(file_zip);
+		zip_close(f_zip);
+		return FAILED;
+	}
+	zip_fclose(file_zip);
+	zip_close(f_zip);
+
+	if( SaveFile(out, data, file_stat.size) == FAILED ) {
+		print_load("Error : SaveFile");
+		free(data);
+		return FAILED;
+	}
+	free(data);
+	
+	return SUCCESS;
+}
+
+//*******************************************************
 //NTFS
 //*******************************************************
 
@@ -5905,8 +6276,54 @@ void MountNTFS()
 	mounts = NULL;
 	mountCount = 0;
 	mountCount = ntfsMountAll(&mounts, NTFS_SU | NTFS_FORCE);
-	if(mountCount < 0) print_load("Error : ntfsMountAll failed  %d", mountCount);
+	if(mountCount < 0) print_load("Error : ntfsMountAll failed	%d", mountCount);
 
+}
+
+//*******************************************************
+// Game OPTION
+//*******************************************************
+
+volatile u8 dialog_action = 0;
+
+void my_dialog(msgButton button, void *userdata)
+{
+	switch(button)
+	{
+		case MSG_DIALOG_BTN_YES:
+			dialog_action = 2;
+			break;
+		case MSG_DIALOG_BTN_NO:
+		case MSG_DIALOG_BTN_ESCAPE:
+		case MSG_DIALOG_BTN_NONE:
+			dialog_action = 1;
+			break;
+		default:
+			break;
+	}
+}
+
+void wait_dialog()
+{
+	while(!dialog_action)
+	{
+		sysUtilCheckCallback();
+		tiny3d_Flip();
+	}
+
+	msgDialogAbort();
+	usleep(100000);
+}
+
+u8 DrawDialogYesNo(char * str)
+{
+	dialog_action = 0;
+
+	msgDialogOpen2(MSG_DIALOG_NORMAL | MSG_DIALOG_BTN_TYPE_YESNO, str, my_dialog, (void*)	0x0000aaaa, NULL );
+
+	wait_dialog();
+	
+	return (dialog_action-1);
 }
 
 //*******************************************************
@@ -7194,8 +7611,8 @@ u8 GetParamSFO(const char *name, char *value, int pos, char *path)
 	data_name = data_start + temp32;
 	fseek(sfo, data_name + sfo_start, SEEK_SET);
 	fgets(value, 128, sfo);
-	strtok(value, "\n");
-	strtok(value, "\r");
+	if(strstr(value, "\n") != NULL ) strtok(value, "\n");
+	if(strstr(value, "\r") != NULL ) strtok(value, "\r");
 	fclose(sfo);
 	
 	return SUCCESS;
@@ -7437,14 +7854,19 @@ int download(char *url, char *dst)
 		ret=FAILED;
 		goto end;
 	}
-	//END of URI
-
+	//END of URI	
+	
 	//SEND REQUEST
 	ret = httpCreateTransaction(&httpTrans, httpClient, HTTP_METHOD_GET, &uri);
 	if (ret < 0) {
 		print_load("Error : httpCreateTransaction() failed (%x)", ret);
 		ret=FAILED;
 		goto end;
+	}
+	
+	if(strstr(url, "gamecovers.ezyro.com") != NULL) {
+		httpHeader headerCookie = { (const char*) "Cookie", (const char*) "__test=e33ccad40e2c5eb87799048011774abc" };
+		httpRequestAddHeader(httpTrans, &headerCookie);
 	}
 	
 	ret = httpSendRequest(httpTrans, NULL, 0, NULL);
@@ -8027,8 +8449,11 @@ u8 Download_MD5(char *gameID)
 	redumpID[9]=redumpID[10];
 	redumpID[10]=0;
 	
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
+	mkdir(dst, 0777);
+	
 	// it's better to http_set_autoredirect=false and then get header.value of "Location" header...
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/IRD/temp.txt", ManaGunZ_id);
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/temp.txt", ManaGunZ_id);
 	sprintf(url, "http://redump.org/discs/quicksearch/%s/", redumpID);
 	
 	if( download(url, dst) == FAILED) {
@@ -8058,7 +8483,7 @@ u8 Download_MD5(char *gameID)
 	free(buff);
 	
 	sprintf(url, "http://redump.org/disc/%s/md5/", pageID);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/IRD/%s.md5", ManaGunZ_id, gameID);
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.md5", ManaGunZ_id, gameID);
 
 	if( download(url, dst) == FAILED) {
 		print_load("Error : failed to download md5");
@@ -8071,12 +8496,12 @@ u8 Download_MD5(char *gameID)
 
 u8 CheckMD5(char *path)
 {
-
 	char MD5_redump[255];
 	long long unsigned int MD5_local[2];
 	char MD5_local_STR[33];
 	char gameID[20];
-	
+	char MD5_DB[128];
+	char MD5_FILE[25];
 	
 	print_head("Checking MD5...");
 	
@@ -8092,7 +8517,11 @@ u8 CheckMD5(char *path)
 		return FAILED;
 	}
 	
-	sprintf(MD5_redump, "/dev_hdd0/game/%s/USRDIR/IRD/%s.md5", ManaGunZ_id, gameID);
+	sprintf(MD5_redump, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.md5", ManaGunZ_id, gameID);
+	sprintf(MD5_DB, "/dev_hdd0/game/%s/USRDIR/sys/Check.zip", ManaGunZ_id);
+	sprintf(MD5_FILE, "%s.md5", gameID);
+	
+	ExtractZipFile(MD5_DB, MD5_FILE, MD5_redump);
 	
 	if( path_info(MD5_redump) == _NOT_EXIST )
 	if( Download_MD5(gameID) == FAILED ) return FAILED;
@@ -8166,7 +8595,7 @@ u32 GetRenaCRC32(char *path)
 		char *pch = strstr(data, "http://renascene.com/info/umd/");
 		if(pch != NULL) {
 			strncpy(tmp, pch, 40);
-			strtok(tmp, "'");
+			if( strstr(tmp, "'") != NULL) strtok(tmp, "'");
 			if(download(tmp, "/dev_hdd0/game/MANAGUNZ0/USRDIR/temp")==SUCCESS) {
 				free(data);
 				data = LoadFile("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp", &file_size);
@@ -8174,7 +8603,7 @@ u32 GetRenaCRC32(char *path)
 				char *pch2 = strstr(data, "CRC32</td><td class=\"infRightTd\">");
 				if(pch2 != NULL) {
 					strncpy(tmp, pch2+33, 255);
-					strtok(tmp, "<");
+					if( strstr(tmp, "<") != NULL) strtok(tmp, "<");
 					sscanf(tmp, "%X", &renaCRC);
 					return renaCRC;
 				}
@@ -8186,9 +8615,42 @@ u32 GetRenaCRC32(char *path)
 	return 0;
 }
 
+u32 GetPSPCRC32(char *path)
+{
+	char game_ID[20];
+	unsigned int CRC = 0;
+	char CRC_DB[128];
+	
+	if( Get_ID(path, _ISO_PSP, game_ID) == FAILED) return 0;
+	
+	sprintf(CRC_DB, "/dev_hdd0/game/%s/USRDIR/sys/PSP_CRC.txt", ManaGunZ_id);
+	
+	FILE *f;
+	
+	f = fopen(CRC_DB, "r");
+	
+	char line[128];
+	
+	while(fgets(line, 128, f) != NULL) {
+		if(strstr(line, game_ID) != NULL) {
+			sscanf(line, "%*s %X", &CRC);
+			break;
+		}
+	}
+	
+	fclose(f);
+	
+	return (u32) CRC;
+
+}
+
 u8 CheckCRC32(char *path)
 {
-	u32 renaCRC = GetRenaCRC32(path);
+	u32 renaCRC = 0;
+	
+	renaCRC = GetPSPCRC32(path);
+	
+	if(renaCRC == 0) renaCRC = GetRenaCRC32(path);
 	
 	if(renaCRC == 0) return FAILED;
 	
@@ -8542,11 +9004,11 @@ int Download_IRD(char *titleID)
 	}
 	free(mem);
 	
-	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/IRD", ManaGunZ_id);
+	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
 	
 	if(path_info(IRD_dst) == _NOT_EXIST) mkdir(IRD_dst, 0777);
 	
-	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/IRD/%s.ird", ManaGunZ_id, titleID);
+	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.ird", ManaGunZ_id, titleID);
 	
 	if( download(IRD_url, IRD_dst) == FAILED) {
 		Delete(IRD_dst);
@@ -8617,7 +9079,7 @@ u8 CheckIRD(char *G_PATH)
 		return FAILED;
 	}
 
-	sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/IRD", ManaGunZ_id);
+	sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
 	
 	if( search_IRD(titleID, IRD_dir, IRD_path) == FOUND ) goto check;
 	
@@ -8632,7 +9094,7 @@ u8 CheckIRD(char *G_PATH)
 	}
 	
 	if( Download_IRD(titleID) == SUCCESS) {
-		sprintf(IRD_path, "/dev_hdd0/game/%s/USRDIR/IRD/%s.ird", ManaGunZ_id, titleID);
+		sprintf(IRD_path, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.ird", ManaGunZ_id, titleID);
 		goto check;
 	}
 	
@@ -8682,7 +9144,7 @@ u8 Get_ID(char *isopath, u8 platform, char *game_ID)
 		f=fopen(temp, "rb");
 		if(f==NULL) return FAILED;
 		fgets(temp, 128, f);
-		strtok(temp, ";");
+		if( strstr(temp, ";") != NULL) strtok(temp, ";");
 		strcpy(game_ID, &strrchr(temp, '\\')[1]);
 		fclose(f);
 	} else
@@ -8695,7 +9157,7 @@ u8 Get_ID(char *isopath, u8 platform, char *game_ID)
 		f=fopen(temp, "rb");
 		if(f==NULL) return FAILED;
 		fgets(temp, 128, f);
-		strtok(temp, ";");
+		if( strstr(temp, ";") != NULL) strtok(temp, ";");
 		strcpy(game_ID, &strrchr(temp, '\\')[1]);
 		fclose(f);
 	} else return FAILED;
@@ -8712,7 +9174,7 @@ char lowit(char in){
 
 void Download_covers()
 {
-	int i, n, k;
+	int i;
 	char game_ID[20];
 	char link[255];
 	char out[255];
@@ -8728,7 +9190,6 @@ void Download_covers()
 		
 		memset(game_ID, 0, sizeof(game_ID));
 		memset(link, 0, sizeof(link));
-		u8 found = NO;
 		
 		if( Get_ID(list_game_path[i], list_game_platform[i], game_ID) == FAILED) {
 			print_load("Error : Failed to get ID %s, %d", list_game_path[i], list_game_platform[i]);
@@ -8739,14 +9200,48 @@ void Download_covers()
 		
 		if(path_info(out)==_FILE) {print_load("OK : %s", list_game_title[i]); continue;}
 		
-		sprintf(link, "http://www.gamecover.host-ed.me/%s.JPG", game_ID);
+		sprintf(link, "http://gamecovers.ezyro.com/download.php?file=%s.jpg", game_ID);
 		
 		if(download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 		
+		/*	
+		
+		// PS3
+		http://www.gametdb.com/PS3/BCES00001
+		
+		// PS2/PSP/PS3
+		http://sce.scene7.com/is/image/playstation/bljs10332_jacket
+		
+		// PS2/PS2/PSX/PSP
+		http://www.gameswave.com/media/PS3/BCES-00001/pics/_source.png
+		http://www.gameswave.com/media/PS2/SCES-50000/pics/_source.png
+		http://www.gameswave.com/media/PSX/SCES-00001/pics/_source.png
+		http://www.gameswave.com/media/PSP/UCES-00001/pics/_source.png 
+		
+		// PSP/PS3
+		http://renascene.com
+		
+		// PS2
+		http://opl.sksapps.com
+		
+		// PSX/PS2/PSP
+		http://psxdatacenter.com
+		
+		// PSX
+		http://playstationmuseum.com/product-codes/slus-00870/
+		
+		http://www.play-asia.com
+		http://www.suruga-ya.jp	
+		http://www.jeuxactu.com
+		http://www.jeuxvideo.com
+		
+		
+		u8 found = NO;
+		int n,k;
 		if(list_game_platform[i] == _JB_PS3 || list_game_platform[i] == _ISO_PS3) {
-			sprintf(link, "http://damox.net/images/covers/PS3/%s.JPG", game_ID);
+			//sprintf(link, "http://damox.net/images/covers/PS3/%s.JPG", game_ID);
 			
-			if(download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
+			//if(download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 
 			char region[17][4] = {"US","EN","FR","ES","DE","IT","AU","NL","PT","SE","DK","NO","FI","TR","KO","RU","JA"};
 			for (n = 0; n < 17; n++) {
@@ -8774,7 +9269,7 @@ void Download_covers()
 				char *pch = strstr(data, "http://renascene.com/ps3/info/");
 				if(pch != NULL) {
 					strncpy(tmp, pch, 40);
-					strtok(tmp, "\"");
+					if( strstr(tmp, "\"") != NULL) strtok(tmp, "\"");
 					if(download(tmp, "/dev_hdd0/game/MANAGUNZ0/USRDIR/temp")==SUCCESS) {
 						free(data);
 						data = LoadFile("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp", &file_size);
@@ -8782,14 +9277,14 @@ void Download_covers()
 						char *pch2 = strstr(data, "http://renascene.com/pics/ps3/poster/");
 						if(pch2 != NULL) {
 							strncpy(tmp, pch2, 255);
-							strtok(tmp, ">");
+							if( strstr(tmp, ">") != NULL) strtok(tmp, ">");
 							if(download(tmp, out)==SUCCESS) found=YES;
 						}
 					}
 				}
 				free(data);
 			}
-			return;
+			
 			if(found==YES) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 			print_load("FAILED : %s", list_game_title[i]); 
 		} else
@@ -8807,7 +9302,7 @@ void Download_covers()
 				char *pch = strstr(data, "/files/COV/");
 				if(pch != NULL) {
 					strncpy(tmp, pch, 127);
-					strtok(tmp, "'");
+					if( strstr(tmp, "'") != NULL) strtok(tmp, "'");
 					sprintf(link, "http://oplmanager.no-ip.info%s", tmp);
 					if(download(link, out)==SUCCESS) found=YES; 
 				}
@@ -8894,10 +9389,10 @@ void Download_covers()
 		} else
 		if(list_game_platform[i] == _JB_PSP || list_game_platform[i] == _ISO_PSP) {
 			
-			sprintf(link, "http://damox.net/images/covers/PSP/%s.jpg", game_ID);
-			if(download(link, out) == SUCCESS) found=YES;
+			//sprintf(link, "http://damox.net/images/covers/PSP/%s.jpg", game_ID);
+			//if(download(link, out) == SUCCESS) found=YES;
 			
-			if(found==YES) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
+			//if(found==YES) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 			
 			char lowID[10];
 			strcpy(lowID, game_ID);
@@ -8918,7 +9413,7 @@ void Download_covers()
 				char *pch = strstr(data, "http://renascene.com/info/umd/");
 				if(pch != NULL) {
 					strncpy(tmp, pch, 40);
-					strtok(tmp, "'");
+					if( strstr(tmp, "'") != NULL) strtok(tmp, "'");
 					if(download(tmp, "/dev_hdd0/game/MANAGUNZ0/USRDIR/temp")==SUCCESS) {
 						free(data);
 						data = LoadFile("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp", &file_size);
@@ -8926,7 +9421,7 @@ void Download_covers()
 						char *pch2 = strstr(data, "http://renascene.com/pics/poster/Norm/");
 						if(pch2 != NULL) {
 							strncpy(tmp, pch2, 255);
-							strtok(tmp, ">");
+							if( strstr(tmp, ">") != NULL) strtok(tmp, ">");
 							if(download(tmp, out)==SUCCESS) found=YES;
 						}
 					}
@@ -8935,9 +9430,10 @@ void Download_covers()
 			}
 			
 			if(found==YES) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
-			
-			print_load("FAILED : %s", list_game_title[i]); 
 		}
+		*/
+		
+		print_load("FAILED : %s", list_game_title[i]); 
 		
 	}
 	
@@ -9449,7 +9945,7 @@ u8 re_sign_EBOOT(char *path)
 	}
 	
 	strcpy(bak, path);
-	strcat(bak, ".BAK");
+	strcat(bak, ".MGZBAK");
 	
 	rename(path, bak);
 	
@@ -9501,7 +9997,7 @@ u8 re_sign_SELF(char *path)
 	}
 	
 	strcpy(bak, path);
-	strcat(bak, ".BAK");
+	strcat(bak, ".MGZBAK");
 	
 	rename(path, bak);
 	
@@ -9553,7 +10049,7 @@ u8 re_sign_SPRX(char *path)
 	}
 	
 	strcpy(bak, path);
-	strcat(bak, ".BAK");
+	strcat(bak, ".MGZBAK");
 	
 	rename(path, bak);
 	
@@ -9568,6 +10064,51 @@ u8 re_sign_SPRX(char *path)
 	
 	return SUCCESS;
 	
+}
+
+u8 is_resigned_GAME(char *path)
+{
+	char temp[255];
+	
+	sprintf(temp, "%s/PS3_GAME/USRDIR/EBOOT.BIN.MGZBAK", path);
+	
+	if(path_info(temp) == _FILE) return YES;
+	
+	return NO;
+
+}
+
+u8 restore_GAME(char *path)
+{
+	char temp[255];
+	
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir(path);
+	if(d==NULL) return FAILED;
+	
+	while ((dir = readdir(d))) {
+		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+		
+		sprintf(temp, "%s/%s", path, dir->d_name);
+		
+		if(dir->d_type & DT_DIR) {
+			restore_GAME(temp);
+		}
+		else if (strcmp(&temp[strlen(temp)-7], ".MGZBAK")==0) {
+			char temp2[255];
+			strcpy(temp2, temp);
+			temp2[strlen(temp2)-7]= 0;
+			if(unlink(temp2) == 0) {
+				rename(temp, temp2);
+			}	
+		}
+	}
+	closedir(d);
+
+	return SUCCESS;
+
 }
 
 u8 re_sign_GAME(char *path)
@@ -9733,6 +10274,48 @@ void SetPrimaryUSB()
 	}
 }
 
+char *LoadFileProg(char *path, int *file_size)
+{
+	FILE *fp;
+	char *mem = NULL;
+	
+	*file_size = 0;
+	
+	if( path_info(path) == _NOT_EXIST) return NULL;
+	
+	sysLv2FsChmod(path, FS_S_IFMT | 0777);
+
+	fp = fopen(path, "rb");
+
+	if (fp == NULL) return NULL;
+	
+	fseek(fp, 0, SEEK_END);
+		
+	*file_size = ftell(fp);
+	int size = ftell(fp);
+	
+	mem = malloc(*file_size);
+
+	if(!mem) {fclose(fp);return NULL;}
+		
+	fseek(fp, 0, SEEK_SET);
+
+	prog_bar1_value = 0;
+	int read = 0;
+	while(read < size) {
+		int wrlen = 1024;
+		if(read+wrlen > size) wrlen = size-read;
+		fread(mem+read, sizeof(u8), wrlen, fp);
+		read += wrlen;
+		prog_bar1_value = (read*100) / size;
+	}
+	prog_bar1_value = -1;
+	
+	fclose(fp);
+	
+	return mem;
+}
+
 char *LoadFile(char *path, int *file_size)
 {
 	FILE *fp;
@@ -9757,12 +10340,39 @@ char *LoadFile(char *path, int *file_size)
 	if(!mem) {fclose(fp);return NULL;}
 		
 	fseek(fp, 0, SEEK_SET);
-
+	
 	fread((void *) mem, 1, *file_size, fp);
-
+	
 	fclose(fp);
 	
 	return mem;
+}
+
+
+int SaveFileProg(char *path, char *mem, int file_size)
+{
+	FILE *fp;
+   
+	fp = fopen(path, "wb");
+
+	if (fp == NULL) return FAILED;
+	
+	prog_bar2_value = 0;
+	int write = 0;
+	while(write < file_size) {
+		int wrlen = 1024;
+		if(write+wrlen > file_size) wrlen = file_size-write;
+		fwrite(mem+write, sizeof(u8), wrlen, fp);
+		write += wrlen;
+		prog_bar2_value = (write*100) / file_size;
+	}
+	prog_bar2_value = -1;
+	
+	fclose(fp);
+
+	sysLv2FsChmod(path, FS_S_IFMT | 0777);
+
+	return SUCCESS;
 }
 
 int SaveFile(char *path, char *mem, int file_size)
@@ -9771,7 +10381,7 @@ int SaveFile(char *path, char *mem, int file_size)
    
 	fp = fopen(path, "wb");
 
-	if (fp == NULL) return -1;
+	if (fp == NULL) return FAILED;
 	   
 	fwrite((void *) mem, 1, file_size, fp);
 
@@ -9779,7 +10389,7 @@ int SaveFile(char *path, char *mem, int file_size)
 
 	sysLv2FsChmod(path, FS_S_IFMT | 0777);
 
-	return 0;
+	return SUCCESS;
 }
 
 int move_origin_to_bdemubackup(char *path)
@@ -9792,7 +10402,7 @@ int move_origin_to_bdemubackup(char *path)
 	sprintf(temp_buffer, "%s/PS3_GAME/PS3PATH.BUP", path);
 	sprintf(temp_buffer + 1024, "%s/PS3_GAME", path);
 
-	if(SaveFile(temp_buffer, temp_buffer + 1024, strlen(temp_buffer + 1024))!=0) return -1;
+	if(SaveFile(temp_buffer, temp_buffer + 1024, strlen(temp_buffer + 1024)) == FAILED) return -1;
 
 	if(!strncmp(temp_buffer, "/dev_hdd0", 9))	strncpy(temp_buffer + 9, "/PS3_GAME", 16); 
 	else	strncpy(temp_buffer + 11, "/PS3_GAME", 16);
@@ -9815,7 +10425,7 @@ int move_origin_to_bdemubackup(char *path)
 		return 0;
 	}
 
-	if(SaveFile(temp_buffer, temp_buffer + 1024, strlen(temp_buffer + 1024))!=0) return -1;
+	if(SaveFile(temp_buffer, temp_buffer + 1024, strlen(temp_buffer + 1024)) == FAILED) return -1;
 
 	if(!strncmp(temp_buffer, "/dev_hdd0", 9)) strncpy(temp_buffer + 9, "/PS3_GM01", 16);
 	else	strncpy(temp_buffer + 11, "/PS3_GM01", 16);
@@ -11037,7 +11647,11 @@ u8 get_ext(char *file)
 	} else 
 	if (!strcmp(ext, ".DDS") || !strcmp(ext, ".dds")) {
 		return _DDS;
-	}  
+	}  else 
+	if (!strcmp(ext, ".ZIP") || !strcmp(ext, ".zip")) {
+		return _ZIP;
+	} 
+	
 	return _FILE;
 }
 
@@ -11471,7 +12085,7 @@ void iris_Mount()
 	
 	char temp[128];
 	
-	if(emu_position==BDMIRROR) {
+	if(emu==BDMIRROR) {
 		print_load("Patching BD-Mirror");
 		ret = patch_bdmirror();
 		if( ret != 0) print_load("Error %d: failed to patch bdmirroir", ret);
@@ -11483,7 +12097,7 @@ void iris_Mount()
 		add_sys8_bdvd(NULL, NULL);
 		
 	} else
-	if(emu_position == BDEMU) {
+	if(emu == BDEMU) {
 		sprintf(temp, "%s", get_libfs_path());
 		if(path_info(temp) == _FILE)	add_sys8_path_table("/dev_flash/sys/external/libfs.sprx", temp);
 	} else {
@@ -11491,7 +12105,7 @@ void iris_Mount()
 	}
 	
 	if(mount_app_home == YES) {
-		if(emu_position == BDMIRROR) {
+		if(emu == BDMIRROR) {
 			add_sys8_bdvd(NULL, "/dev_bdvd");
 		} else {
 			add_sys8_bdvd(GamPath, GamPath);
@@ -11670,7 +12284,7 @@ void mm_Mount()
 	sprintf(path, "%s", GamPath);
 	char temp[128];
 	
-	if(emu_position == BDMIRROR) {
+	if(emu == BDMIRROR) {
 		print_load("Patching BD-Mirror");
 		ret = patch_bdmirror();
 		if( ret != 0) print_load("Error %d: patch_bdmirror failed", ret);
@@ -11680,18 +12294,18 @@ void mm_Mount()
 		add_to_map("/dev_bdvd/PS3_DISC.SFB", temp);
 		
 	} else
-	if(emu_position == BDEMU) {
+	if(emu == BDEMU) {
 		sprintf(temp, "%s", get_libfs_path());
 		if(path_info(temp) == _FILE)	add_to_map("/dev_flash/sys/external/libfs.sprx", temp);
 		
 		add_to_map("/dev_bdvd", path);
 	} else 
-	if(emu_position==NONE) {
+	if(emu==NONE) {
 		add_to_map("/dev_bdvd", path);
 	}
 	
 	if(mount_app_home == YES)	{
-		if(emu_position == BDMIRROR) {
+		if(emu == BDMIRROR) {
 			add_to_map("/app_home", "/dev_bdvd");
 		} else {
 			add_to_map("/app_home", path);
@@ -11942,7 +12556,7 @@ void cobra_Mount()
 		
 		mount_fake_BR();
 		
-		if(emu_position == BDMIRROR) {
+		if(emu == BDMIRROR) {
 			print_load("Patching BD-Mirror");
 			ret = patch_bdmirror();
 			if( ret != 0) print_load("Error %d: patch_bdmirror failed", ret);
@@ -11951,17 +12565,17 @@ void cobra_Mount()
 			sprintf(temp, "%s/PS3_DISC.SFB", GamPath);
 			{sys_map_path("/dev_bdvd/PS3_DISC.SFB", temp);}
 		} else
-		if(emu_position == BDEMU) {
+		if(emu == BDEMU) {
 			sprintf(temp, "%s", get_libfs_path());
 			if(path_info(temp) == _FILE)	{sys_map_path("/dev_flash/sys/external/libfs.sprx", temp);}
 			
 			cobra_map_game(GamPath, (char*)"TEST00000", &i);
-		} else if(emu_position==NONE) {
+		} else if(emu==NONE) {
 			cobra_map_game(GamPath, (char*)"TEST00000", &i);
 		}
 		
 		if(mount_app_home == YES)	{
-			if(emu_position == BDMIRROR) {
+			if(emu == BDMIRROR) {
 				{sys_map_path("/app_home", "/dev_bdvd");}
 			} else {
 				{sys_map_path("/app_home", GamPath);}
@@ -12305,7 +12919,7 @@ void mamba_Mount()
 		
 		if(prim_USB == YES) SetPrimaryUSB();
 		
-		if(emu_position == BDMIRROR) {
+		if(emu == BDMIRROR) {
 			print_load("Patching BD-Mirror");
 			ret = patch_bdmirror();
 			if( ret != 0) print_load("Error %d: patch_bdmirror failed", ret);
@@ -12314,19 +12928,19 @@ void mamba_Mount()
 			sprintf(temp, "%s/PS3_DISC.SFB", GamPath);
 			{mamba_map("/dev_bdvd/PS3_DISC.SFB", temp);}
 		} else
-		if(emu_position == BDEMU) {
+		if(emu == BDEMU) {
 			sprintf(temp, "%s", get_libfs_path());
 			if(path_info(temp)==_FILE)	{mamba_map("/dev_flash/sys/external/libfs.sprx", temp);}
 			
 			{mamba_map("/dev_bdvd", GamPath);}
 			
 		} else 
-		if(emu_position==NONE) {
+		if(emu==NONE) {
 			{mamba_map("/dev_bdvd", GamPath);}
 		}
 		
 		if(mount_app_home == YES)	{
-			if(emu_position == BDMIRROR) {
+			if(emu == BDMIRROR) {
 				{mamba_map("/app_home", "/dev_bdvd");}
 			} else {
 				{mamba_map("/app_home", GamPath);}
@@ -13301,14 +13915,14 @@ u8 read_AutoMount_setting()
 	
 	if(fp==NULL) return FAILED;
 	
-	fread(&direct_boot_position, sizeof(u8), 1, fp);
-	fread(&clean_syscall_position, sizeof(u8), 1, fp);
-	fread(&change_IDPS_position, sizeof(u8), 1, fp);
-	fread(&IDPS, sizeof(long long unsigned int), 2, fp);
+	fread(&direct_boot, sizeof(u8), 1, fp);
+	fread(&clean_syscall, sizeof(u8), 1, fp);
+	fread(&change_IDPS, sizeof(u8), 1, fp);
+	fread(&IDPS, sizeof(u8), 0x10, fp);
 	fread(&ext_game_data, sizeof(u8), 1, fp);
-	fread(&payload_position, sizeof(u8), 1, fp);
+	fread(&payload, sizeof(u8), 1, fp);
 	fread(&prim_USB, sizeof(u8), 1, fp);
-	fread(&emu_position, sizeof(u8), 1, fp);
+	fread(&emu, sizeof(u8), 1, fp);
 	fread(&libfs_from, sizeof(u8), 1, fp);
 	fread(&mount_app_home, sizeof(u8), 1, fp);
 	fread(&use_ex_plug, sizeof(u8), 1, fp);
@@ -13330,14 +13944,14 @@ u8 write_AutoMount_setting(char *path)
 	fp = fopen(Mount_path, "wb");
 	if(fp==NULL) return FAILED;
 	
-	fwrite(&direct_boot_position, sizeof(u8), 1, fp);
-	fwrite(&clean_syscall_position, sizeof(u8), 1, fp);
-	fwrite(&change_IDPS_position, sizeof(u8), 1, fp);
-	fwrite(&IDPS, sizeof(long long unsigned int), 2, fp);
+	fwrite(&direct_boot, sizeof(u8), 1, fp);
+	fwrite(&clean_syscall, sizeof(u8), 1, fp);
+	fwrite(&change_IDPS, sizeof(u8), 1, fp);
+	fwrite(&IDPS, sizeof(u8), 0x10, fp);
 	fwrite(&ext_game_data, sizeof(u8), 1, fp);
-	fwrite(&payload_position, sizeof(u8), 1, fp);
+	fwrite(&payload, sizeof(u8), 1, fp);
 	fwrite(&prim_USB, sizeof(u8), 1, fp);
-	fwrite(&emu_position, sizeof(u8), 1, fp);
+	fwrite(&emu, sizeof(u8), 1, fp);
 	fwrite(&libfs_from, sizeof(u8), 1, fp);
 	fwrite(&mount_app_home, sizeof(u8), 1, fp);
 	fwrite(&use_ex_plug, sizeof(u8), 1, fp);
@@ -13348,16 +13962,16 @@ u8 write_AutoMount_setting(char *path)
 	return SUCCESS;
 }
 
-int make_launcher_pkg(int position, char *title_id)
+int make_launcher_pkg(char *title_id)
 {
 print_load("Start...");
 	char content_id[37];
 	char src[128];
 	char dst[128];
-	
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher", ManaGunZ_id);
-	Delete(dst);
-	mkdir(dst, 0777);
+	char lch[128];
+	sprintf(lch, "/dev_hdd0/game/%s/USRDIR/launcher", ManaGunZ_id);
+	Delete(lch);
+	mkdir(lch, 0777);
 
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR", ManaGunZ_id);
 	mkdir(dst, 0777);
@@ -13367,6 +13981,7 @@ print_load("Start...");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys", ManaGunZ_id);
 	if( Copy(src, dst) == FAILED ) {
 		print_load("Error : failed to copy sys directory");
+		Delete(lch);
 		return FAILED;
 	}
 
@@ -13375,6 +13990,7 @@ print_load("Start...");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/ManaGunZ.self", ManaGunZ_id);
 	if( CopyFile(src, dst) == FAILED ) {
 		print_load("Error : failed to copy ManaGunZ.self");
+		Delete(lch);
 		return FAILED;
 	}
 	
@@ -13389,6 +14005,7 @@ print_load("Start...");
 	}
 	if( CopyFile(src, dst) == FAILED ) {
 		print_load("Error : failed to copy ICON0.PNG");
+		Delete(lch);
 		return FAILED;
 	}
 print_load("param");
@@ -13397,58 +14014,49 @@ print_load("param");
 	sprintf(src, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
 	if( CopyFile(src, dst) == FAILED ) {
 		print_load("Error : failed to copy PARAM.SFO");
+		Delete(lch);
 		return FAILED;
 	}
 print_load("titleID");
-	if(title_id == NULL) {	
-		print_load("IN");
-		title_id = (char*) malloc(sizeof(char)*128);
-		print_load("Malloc done");
-		if( GetParamSFO("TITLE_ID", title_id, position, NULL) == FAILED ) {
-			print_load("Error : failed to get TITLE ID from PARAM.SFO");
-			return FAILED;
-		}
-		print_load("Get TID done");
-		title_id[0]='N';
-		title_id[1]='P'; 
-		title_id[3]='B';
-		title_id[4]='4';
-	}
-print_load("OUT");
 	if( SetParamSFO("TITLE_ID", title_id, -1, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE_ID");
+		Delete(lch);
 		return FAILED;
 	}
-	print_load("SET ID done");
+print_load("title");
 	if( SetParamSFO("TITLE", list_game_title[position], -1, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE");
+		Delete(lch);
 		return FAILED;
 	}
-	print_load("title");
+print_load("AutoMount");
 // AUTOMOUNT
 	if( write_AutoMount_setting(list_game_path[position]) == FAILED ) {
 		print_load("Error : failed to write AutoMount file");
+		Delete(lch);
 		return FAILED;
 	}
-	
+print_load("EBOOT.ELF");
 // EBOOT.BIN
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/EBOOT.BIN", ManaGunZ_id);
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
 	if( Extract(src, dst) == FAILED ) {
 		print_load("Error : Failed extract EBOOT.BIN");
+		Delete(lch);
 		return FAILED;
 	}
-	
+print_load("EBOOT.BIN");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.BIN", ManaGunZ_id);
 	sprintf(content_id, "EP0001-%s_00-0000000000000000", title_id);
 	if(make_EBOOT_NPDRM(src, dst, content_id) == FAILED) {
 		print_load("Error : Failed to make EBOOT.BIN");
+		Delete(lch);
 		return FAILED;
 	}
 	Delete(src);
 	
-	
+print_load("ASCII");
 // Name of Package file
 	char ascii_name[60]={0};
 	int i;
@@ -13470,12 +14078,17 @@ print_load("OUT");
 	strcat(ascii_name, title_id);
 	strcat(ascii_name, "]");
 	
+print_load("Make Package");
 // Make package	
+	strcpy(dst, "/dev_hdd0/packages");
+	mkdir(lch, 0777);
+	
 	sprintf(dst, "/dev_hdd0/packages/%s.pkg", ascii_name);
 	Delete(dst);
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR", ManaGunZ_id);
 	if( pkg_pack(dst, content_id, src, "launcher") == FAILED ) {
 		print_load("Error : Failed to make PKG");
+		Delete(lch);
 		return FAILED;
 	}
 	
@@ -13484,24 +14097,6 @@ print_load("OUT");
 	Delete(dst);
 	
 	return SUCCESS;
-}
-
-//*******************************************************
-// IDPS
-//*******************************************************
-
-void get_IDPS()
-{
-	IDPS[0] = lv2peek(OFFSET_2_IDPS		);
-	IDPS[1] = lv2peek(OFFSET_2_IDPS + 8	);
-}
-
-void change_IDPS()
-{
-	lv2poke(OFFSET_1_IDPS		, (u64) IDPS[0]);
-	lv2poke(OFFSET_1_IDPS + 8	, (u64) IDPS[1]);
-	lv2poke(OFFSET_2_IDPS		, (u64) IDPS[0]);
-	lv2poke(OFFSET_2_IDPS + 8	, (u64) IDPS[1]);
 }
 
 //*******************************************************
@@ -13520,7 +14115,7 @@ void read_setting()
 		fread(&Themes[1], sizeof(char), 0x40, fp);
 		fread(&Themes[2], sizeof(char), 0x40, fp);
 		fread(&Themes[3], sizeof(char), 0x40, fp);
-		fread(&Show_ICON0_position, sizeof(u8), 1, fp);
+		fread(&LIST_Show_ICON0, sizeof(u8), 1, fp);
 		fread(&UI_position, sizeof(u8), 1, fp);
 		fread(&grid_type, sizeof(u8), 1, fp);
 		fread(&direction, sizeof(u8), 1, fp);
@@ -13528,7 +14123,7 @@ void read_setting()
 		fread(&keep_prop, sizeof(u8), 1, fp);
 		fread(&grid_nb_lines, sizeof(u8), 1, fp);
 		fread(&grid_nb_columns, sizeof(u8), 1, fp);
-		fread(&inverse_button, sizeof(u8), 1, fp);
+		fread(&FLOW_inverse_button, sizeof(u8), 1, fp);
 		fread(&videoscale_x, sizeof(int8_t), 1, fp);
 		fread(&videoscale_y, sizeof(int8_t), 1, fp);
 		fread(&COLOR_1, sizeof(u32), 1, fp);
@@ -13536,15 +14131,15 @@ void read_setting()
 		fread(&COLOR_3, sizeof(u32), 1, fp);
 		fread(&COLOR_4, sizeof(u32), 1, fp);
 		fread(&XMB_priority, sizeof(u8), 1, fp);
-		fread(&LIST_Show_COVER_position, sizeof(u8), 1, fp);
-		fread(&XMB_Show_COVER_position, sizeof(u8), 1, fp);
-		fread(&XMB_Show_PIC1, sizeof(u8), 1, fp);
+		fread(&Show_COVER, sizeof(u8), 1, fp);
+		fread(&Show_PIC1, sizeof(u8), 1, fp);
 		fread(&Show_PS3, sizeof(u8), 1, fp);
 		fread(&Show_PS2, sizeof(u8), 1, fp);
 		fread(&Show_PS1, sizeof(u8), 1, fp);
 		fread(&Show_PSP, sizeof(u8), 1, fp);
-		fread(&FLOW_Show_PIC1, sizeof(u8), 1, fp);
 		fread(&FLOW_use_Cover, sizeof(u8), 1, fp);
+		fread(&Only_FAV, sizeof(u8), 1, fp);
+		fread(&use_sidemenu, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
 	
@@ -13562,7 +14157,7 @@ void write_setting()
 		fwrite(&Themes[1], sizeof(char), 0x40, fp);
 		fwrite(&Themes[2], sizeof(char), 0x40, fp);
 		fwrite(&Themes[3], sizeof(char), 0x40, fp);
-		fwrite(&Show_ICON0_position, sizeof(u8), 1, fp);
+		fwrite(&LIST_Show_ICON0, sizeof(u8), 1, fp);
 		fwrite(&UI_position, sizeof(u8), 1, fp);
 		fwrite(&grid_type, sizeof(u8), 1, fp);
 		fwrite(&direction, sizeof(u8), 1, fp);
@@ -13570,7 +14165,7 @@ void write_setting()
 		fwrite(&keep_prop, sizeof(u8), 1, fp);
 		fwrite(&grid_nb_lines, sizeof(u8), 1, fp);
 		fwrite(&grid_nb_columns, sizeof(u8), 1, fp);
-		fwrite(&inverse_button, sizeof(u8), 1, fp);
+		fwrite(&FLOW_inverse_button, sizeof(u8), 1, fp);
 		fwrite(&videoscale_x, sizeof(int8_t), 1, fp);
 		fwrite(&videoscale_y, sizeof(int8_t), 1, fp);
 		fwrite(&COLOR_1, sizeof(u32), 1, fp);
@@ -13578,17 +14173,26 @@ void write_setting()
 		fwrite(&COLOR_3, sizeof(u32), 1, fp);
 		fwrite(&COLOR_4, sizeof(u32), 1, fp);
 		fwrite(&XMB_priority, sizeof(u8), 1, fp);
-		fwrite(&LIST_Show_COVER_position, sizeof(u8), 1, fp);
-		fwrite(&XMB_Show_COVER_position, sizeof(u8), 1, fp);
-		fwrite(&XMB_Show_PIC1, sizeof(u8), 1, fp);
+		fwrite(&Show_COVER, sizeof(u8), 1, fp);
+		fwrite(&Show_PIC1, sizeof(u8), 1, fp);
 		fwrite(&Show_PS3, sizeof(u8), 1, fp);
 		fwrite(&Show_PS2, sizeof(u8), 1, fp);
 		fwrite(&Show_PS1, sizeof(u8), 1, fp);
 		fwrite(&Show_PSP, sizeof(u8), 1, fp);
-		fwrite(&FLOW_Show_PIC1, sizeof(u8), 1, fp);
 		fwrite(&FLOW_use_Cover, sizeof(u8), 1, fp);
+		fwrite(&Only_FAV, sizeof(u8), 1, fp);
+		fwrite(&use_sidemenu, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
+	
+	char sfo[64];
+	sprintf(sfo, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
+	SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, 0, sfo);
+	
+	if(Load_GamePIC == NO && COVER_Loaded == NO && Show_COVER == YES) {
+		start_Load_GamePIC();
+	} 
+	
 	read_setting();
 }
 
@@ -13601,45 +14205,35 @@ void read_game_setting(char *file_name)
 	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, file_name);
 	
 	if((fp = fopen(setPath, "rb"))!=NULL)	{
-		fread(&direct_boot_position, sizeof(u8), 1, fp);
-		fread(&clean_syscall_position, sizeof(u8), 1, fp);
-		fread(&change_IDPS_position, sizeof(u8), 1, fp);
+		fread(&direct_boot, sizeof(u8), 1, fp);
+		fread(&clean_syscall, sizeof(u8), 1, fp);
+		fread(&change_IDPS, sizeof(u8), 1, fp);
 		fread(&IDPS, sizeof(long long unsigned int), 2, fp);
 		fread(&ext_game_data, sizeof(u8), 1, fp);
-		fread(&payload_position, sizeof(u8), 1, fp);
+		fread(&payload, sizeof(u8), 1, fp);
 		fread(&prim_USB, sizeof(u8), 1, fp);
-		fread(&emu_position, sizeof(u8), 1, fp);
+		fread(&emu, sizeof(u8), 1, fp);
 		fread(&libfs_from, sizeof(u8), 1, fp);
 		fread(&mount_app_home, sizeof(u8), 1, fp);
 		fread(&use_ex_plug, sizeof(u8), 1, fp);
 		fclose(fp);
 	} 
 	else {
-		direct_boot_position = NO;
-		clean_syscall_position = NO;
-		change_IDPS_position = NO;
+		direct_boot = NO;
+		clean_syscall = NO;
+		change_IDPS = NO;
+		peek_IDPS();
 		ext_game_data = NO;
-		if(cobra) payload_position = COBRA; else
-		if(iso) payload_position = MAMB; else
-		payload_position=MM;
+		if(iso) payload=SNAKE;
+		else payload=MM;
 		prim_USB=NO;
-		emu_position=NONE;
+		emu=NONE;
 		libfs_from=MM;
 		mount_app_home=NO;
 		use_ex_plug=NO;
 	}
 	
-	if(iso) {
-		if(cobra == YES) payload_position = COBRA ; else
-		payload_position = MAMB;
-	}
-	else if(payload_position == COBRA && cobra == NO) {
-		payload_position = MM;
-	} 
-	else if(payload_position == MAMB && cobra == YES) {
-		payload_position = COBRA;
-	}
-	
+	if(iso) payload=SNAKE;
 }
 
 void write_game_setting(char *file_name)
@@ -13653,14 +14247,14 @@ void write_game_setting(char *file_name)
 	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, file_name);
 	
 	if((fp = fopen(setPath, "wb"))!=NULL)	{
-		fwrite(&direct_boot_position, sizeof(u8), 1, fp);
-		fwrite(&clean_syscall_position, sizeof(u8), 1, fp);
-		fwrite(&change_IDPS_position, sizeof(u8), 1, fp);
+		fwrite(&direct_boot, sizeof(u8), 1, fp);
+		fwrite(&clean_syscall, sizeof(u8), 1, fp);
+		fwrite(&change_IDPS, sizeof(u8), 1, fp);
 		fwrite(&IDPS, sizeof(long long unsigned int), 2, fp);
 		fwrite(&ext_game_data, sizeof(u8), 1, fp);
-		fwrite(&payload_position, sizeof(u8), 1, fp);
+		fwrite(&payload, sizeof(u8), 1, fp);
 		fwrite(&prim_USB, sizeof(u8), 1, fp);
-		fwrite(&emu_position, sizeof(u8), 1, fp);
+		fwrite(&emu, sizeof(u8), 1, fp);
 		fwrite(&libfs_from, sizeof(u8), 1, fp);
 		fwrite(&mount_app_home, sizeof(u8), 1, fp);
 		fwrite(&use_ex_plug, sizeof(u8), 1, fp);
@@ -13696,7 +14290,7 @@ void read_fav()
 {
 	FILE *fp=NULL;
 	char favPath[128];
-	int i, j;
+	int i;
 	u16 path_size;
 	
 	sprintf(favPath, "/dev_hdd0/game/%s/USRDIR/setting/fav.bin", ManaGunZ_id);
@@ -13713,30 +14307,13 @@ void read_fav()
 		}
 		fclose(fp);
 	}
-	
-	real_FAV_game_number = -1;
-	for(i=0; i <= FAV_game_number; i++) {
-		if(path_info(list_FAV_game_path[i]) == _NOT_EXIST) {
-			FAV_positions_in_list[i] = -1;
-			continue;
-		}
-		
-		for(j=0;j <= game_number; j++) {
-			if(strcmp(list_FAV_game_path[i], list_game_path[j]) == 0) {
-				FAV_positions_in_list[i] = j;
-				real_FAV_game_number++;
-			}
-		}
-	}
 }
 
 u8 is_favorite(char *path)
 {
 	int j;
 	for(j=0;j <= FAV_game_number; j++) {
-		if(strcmp(list_FAV_game_path[j], path) == 0) {
-			return YES;
-		}
+		if(strcmp(list_FAV_game_path[j], path) == 0) return YES;
 	}
 	return NO;
 }
@@ -13744,10 +14321,8 @@ u8 is_favorite(char *path)
 u8 add_favorite()
 {
 	FAV_game_number++;
-	real_FAV_game_number++;
 	strcpy(list_FAV_game_title[FAV_game_number], list_game_title[position]);
 	strcpy(list_FAV_game_path[FAV_game_number], list_game_path[position]);
-	FAV_positions_in_list[FAV_game_number] = position;
 	write_fav();
 
 	return is_favorite(list_game_path[position]);
@@ -13760,12 +14335,9 @@ u8 remove_favorite()
 		if(strcmp(list_game_path[position], list_FAV_game_path[i]) == 0 ) {
 			for(j=i; j<=FAV_game_number; j++) {
 				strcpy(list_FAV_game_path[j], list_FAV_game_path[j+1]);
-				FAV_positions_in_list[j] = FAV_positions_in_list[j+1];
 			}
 			strcpy(list_FAV_game_path[FAV_game_number], "");
-			FAV_positions_in_list[FAV_game_number] = -1;
 			FAV_game_number--;
-			real_FAV_game_number--;
 			write_fav();
 			
 			break;
@@ -13839,7 +14411,7 @@ int init_ManaGunZ()
 		return NOK;
 	}
 	
-	get_IDPS();
+	peek_IDPS();
 	
 	print_load("Reset BD");
 	
@@ -13897,1831 +14469,6 @@ int init_ManaGunZ()
 	}
 
 	return OK;
-}
-
-//*******************************************************
-// Draw screens
-//*******************************************************
-
-#define SCENE_FILEMANAGER		0
-#define SCENE_PS2_OPTION		1
-u8 scene;
-
-float DrawChoice(float x, float y, char *str, u8 mode, u8 up, u8 down)
-{
-	if(mode==ON) {
-		SetFontColor(COLOR_2, 0x0);
-		
-		float w=GetWidth(str);
-		
-		if(up==YES) {
-			DrawUp(x+w/2,  y);
-		}
-		if(down==YES) {
-			float h=GetFontHeight();
-			DrawDown(x+w/2, y+h*0.85);
-		}
-	} else SetFontColor(COLOR_1, 0x0);
-	
-	float r = DrawString(x, y, str);
-	
-	SetFontColor(COLOR_1, 0x0);
-	
-	return r;
-}
-
-void Draw_keyboard(float x_k, float y_k, int keyb_pos)
-{
-	int x1;
-	int x2;
-	int i, j;
-	int fsize = GetFontHeight();
-	int z_k = 9;
-	
-	SetFontZ(z_k);
-	SetFontColor(COLOR_1, 0);
-	
-	if(x_k + 5+(20+3)*10+2 > 848) {
-		x_k -= (x_k + 5+(20+3)*10+2) - 848;
-	}
-
-	DrawString(x_k, y_k, keyboard_str);
-	
-	y_k+=new_line(1);
-	
-	SetFontSize(15,15);
-	SetFontColor(BLACK, 0);
-	x_k-=5;
-	
-	Draw_Box(x_k,y_k,z_k, 4, 5+(20+3)*10+2, 5+(18+3)*5+2,  0x444444FF, NO);
-	
-	x_k+=5; y_k+=5;
-	x1=x_k;
-	for(i=0; i<4; i++) {
-		for(j=i*10; j<(i+1)*10; j++) { 
-			if(j==36) break;
-			if(j==keyb_pos) Draw_Box(x_k,y_k,z_k, 2, 20,18, 0xFFFFFFFF, NO); else Draw_Box(x_k,y_k,z_k, 2, 20,18,  0x999999FF, NO);
-			x2=DrawFormatString(0,-50, "%s", keyboard_button[keyb_lock][j]);
-			DrawFormatString(x_k+10-x2/2, y_k+2, "%s", keyboard_button[keyb_lock][j]);
-			x_k+=20+3;
-		}
-		y_k+=18+3; x_k=x1;
-	}
-	if(keyb_pos==36) Draw_Box(x_k,y_k,z_k, 2,  (20+3)*3-3,18, 0xFFFFFFFF, NO); else Draw_Box(x_k,y_k,z_k, 2, (20+3)*3-3,18,  0x999999FF, NO);
-	x2=DrawFormatString(0,-50, "%s", keyboard_button[keyb_lock][36]);
-	DrawFormatString(x_k+((20+3)*3-3)/2-x2/2, y_k+2, "%s", keyboard_button[keyb_lock][36]);
-	x_k+=(20+3)*3;
-	if(keyb_pos==37) Draw_Box(x_k,y_k,z_k, 2,(20+3)*7-3,18, 0xFFFFFFFF, NO); else Draw_Box(x_k,y_k,z_k, 2, (20+3)*7-3,18,  0x999999FF, NO);
-	x2=DrawFormatString(0,-50, "%s", keyboard_button[keyb_lock][37]);
-	DrawFormatString(x_k+((20+3)*7-3)/2-x2/2, y_k+2, "%s", keyboard_button[keyb_lock][37]);
-	
-	
-	SetFontColor(COLOR_1, 0);
-	SetFontSize(fsize, fsize);
-	SetFontZ(10);
-}
-
-void DrawChooseCOLOR(float x_C, float y_C, int C_pos, u32 rgba)
-{
-	Draw_Box(x_C, y_C, 0, 0, 10+10+10+128+10, 5+20*3+5, 0x888888FF, NO);
-	
-	Draw_Box(x_C+10+10+10, y_C+5+9			, 0, 0, 128, 2, 0x444444FF, NO);
-	Draw_Box(x_C+10+10+10, y_C+5+20+9		, 0, 0, 128, 2, 0x444444FF, NO);
-	Draw_Box(x_C+10+10+10, y_C+5+20+20+9	, 0, 0, 128, 2, 0x444444FF, NO);
-	
-	u32 curs_color;
-	float e;
-	
-	if(C_pos == 0) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_C+10+5-e/2, y_C+5+10-e/2, 0, 0, e, e, RED, NO);
-	Draw_Box(x_C+10+10+10 + GetRED(rgba)/2 - 2, y_C+5+10-4, 0, 0, 4, 8, curs_color, NO);
-	
-	if(C_pos == 1) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_C+10+5-e/2, y_C+5+20+10-e/2, 0, 0, e, e, GREEN, NO);
-	Draw_Box(x_C+10+10+10 + GetGREEN(rgba)/2 - 2, y_C+5+20+10-4, 0, 0, 4, 8, curs_color, NO);
-	
-	if(C_pos == 2) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_C+10+5-e/2, y_C+5+20+20+10-e/2, 0, 0, e, e, BLUE, NO);
-	Draw_Box(x_C+10+10+10 + GetBLUE(rgba)/2 - 2, y_C+5+20+20+10-4, 0, 0, 4, 8, curs_color, NO);
-	
-}
-
-int Draw_Game_Menu(int position, u8 use_sidebar)
-{
-	//0-50 		Game setting1
-	//50-100	Game setting2
-	//100-150	Game Option1
-	//150-200	Game Option2
-	//500+		Choose Title_ID
-	//600+		keyboard
-	//700+		Change IDPS
-	
-	char *payload_str[]={"Iris", "multiMAN", "Cobra", "Mamba"};
-	char *emu_str[]={"None", "BDMIRROR", "BDEMU"};
-	char *libfs_from_str[]={"multiMAN", "Iris", "reactPSN"};
-	
-	char *region_str[]={"A", "E", "H", "I", "J", "K", "U", "X"};
-	char *type_str[]={"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
-	char *n_str[]={"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-	
-	int y;
-	int x1;
-	int x2;
-	float xt;
-	
-	int i, j, ret;
-	char t[128];
-	
-	char *No_Yes[]={"No", "Yes"};
-	u8 FAV = is_favorite(list_game_path[position]);
-	
-	char dst_cpy[30][128];
-	int dst_cpy_number=-1;
-	char dst_cvt[30][128];
-	int dst_cvt_number=-1;
-	
-	char IDPS_str[33];
-	
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			sprintf(t, "/%s/%s", list_device[i], scan_dir[j]);
-			dst_cvt_number++;
-			strcpy(dst_cvt[dst_cvt_number], t);
-			if(strstr(list_game_path[position], list_device[i])) continue;
-			dst_cpy_number++;
-			strcpy(dst_cpy[dst_cpy_number], t);
-		}
-	}
-
-	SetFontZ(10);
-	
-	if(use_sidebar==YES) {
-		if(real_FAV_game_number<0 && XMB_H_position==COL_FAV) g_menu = OFF;
-		
-		Draw_Box(0, 0, 89, 0, 848, 512, 0x00000060, NO); 
-		Draw_Box(0, 190, 89, 0, 848, 100, 0x00000090, NO);
-		
-		x1=848;
-		x2=160;
-		y=60;
-		if(g_menu_move<260) g_menu_move+=20;
-		
-		x1-=g_menu_move;
-		
-		Draw_SIDEBAR(x1);
-		
-		x1+=10;
-		
-		SetFontSize(14, 14);
-
-	} else {
-	
-		Draw_Notification();
-		Draw_BGS();
-		
-		Draw_ICON0(position, 630, 30, 100, 141.3, 75.9);
-
-		x1=50;
-		x2=200;
-		y=40;
-
-		SetFontSize(18, 18);
-		SetFontColor(COLOR_1, 0x0);
-
-		DrawString(x1+x2, y, list_game_title[position]);
-		
-		Draw_Box(x1+5, y+4, 0, 0, 8, 8, COLOR_3, NO);
-		SetFontColor(COLOR_3, 0x0);
-		SetFontSize(18, 18);
-		xt=DrawString(x1+20, y, "Game Settings");
-		SetFontSize(16, 16);
-		y+=new_line(1);
-		Draw_Box(x1, y, 0, 0, xt-x1, 2, COLOR_3, NO); //underline
-		y+=5;	
-	}
-	
-	DrawChoice(x1	,	y,					"Direct boot", g_menu_position==0 , NO, NO);
-	DrawChoice(x1+x2,	y,	 No_Yes[direct_boot_position], g_menu_position==50, direct_boot_position==NO, direct_boot_position==YES);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,					"Clean syscall", g_menu_position==1 , NO, NO);
-	DrawChoice(x1+x2,	y,	 No_Yes[clean_syscall_position], g_menu_position==51, clean_syscall_position==NO, clean_syscall_position==YES);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,					"Change IDPS", g_menu_position==2 , NO, NO);
-	DrawChoice(x1+x2,	y,	 No_Yes[change_IDPS_position], g_menu_position==52, change_IDPS_position==NO, change_IDPS_position==YES);
-	
-	y+=new_line(1);
-	
-	if(change_IDPS_position == YES) {
-		if(use_sidebar==NO) {
-			DrawChoice(x1	,	y,			"Enter New IDPS", g_menu_position==3 , NO, NO);
-			xt=x1+x2;
-		} 
-		else {
-			if(!(700 <= g_menu_position && g_menu_position <= 717)) {
-				DrawChoice(x1	,	y,			"Enter New IDPS", g_menu_position==3 , NO, NO);
-			}
-			xt=x1;
-		}
-		
-		if(700 <= g_menu_position && g_menu_position <= 717) {
-			char tp[2];
-			if(use_sidebar==YES) {
-				xt = DrawString(xt, y, "1008");
-			} else	xt = DrawString(xt, y, "00000001008");
-			
-			sprintf(tp, "%c", IDPS_str[11]);
-			xt = DrawChoice(xt	,  y,		tp, g_menu_position==700, IDPS_str[11]<70, IDPS_str[11]>50);
-			xt = DrawString(xt	, y, "000");
-			sprintf(tp, "%c", IDPS_str[15]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==701, IDPS_str[15]<69, IDPS_str[15]>49);
-			sprintf(tp, "%c", IDPS_str[16]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==702, IDPS_str[16]<70, IDPS_str[16]>48);
-			sprintf(tp, "%c", IDPS_str[17]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==703, IDPS_str[17]<52, IDPS_str[17]>48);
-			sprintf(tp, "%c", IDPS_str[18]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==704, IDPS_str[18]<70, IDPS_str[18]>48);
-			sprintf(tp, "%c", IDPS_str[19]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==705, IDPS_str[19]<70, IDPS_str[19]>48);
-			sprintf(tp, "%c", IDPS_str[20]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==706, IDPS_str[20]<70, IDPS_str[20]>48);
-			sprintf(tp, "%c", IDPS_str[21]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==707, IDPS_str[21]<70, IDPS_str[21]>48);
-			sprintf(tp, "%c", IDPS_str[22]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==708, IDPS_str[22]<70, IDPS_str[22]>48);
-			sprintf(tp, "%c", IDPS_str[23]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==709, IDPS_str[23]<70, IDPS_str[23]>48);
-			sprintf(tp, "%c", IDPS_str[24]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==710, IDPS_str[24]<70, IDPS_str[24]>48);
-			sprintf(tp, "%c", IDPS_str[25]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==711, IDPS_str[25]<70, IDPS_str[25]>48);
-			sprintf(tp, "%c", IDPS_str[26]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==712, IDPS_str[26]<70, IDPS_str[26]>48);
-			sprintf(tp, "%c", IDPS_str[27]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==713, IDPS_str[27]<70, IDPS_str[27]>48);
-			sprintf(tp, "%c", IDPS_str[28]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==714, IDPS_str[28]<70, IDPS_str[28]>48);
-			sprintf(tp, "%c", IDPS_str[29]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==715, IDPS_str[29]<70, IDPS_str[29]>48);
-			sprintf(tp, "%c", IDPS_str[30]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==716, IDPS_str[30]<70, IDPS_str[30]>48);
-			sprintf(tp, "%c", IDPS_str[31]);
-			xt = DrawChoice(xt	,	y,		tp, g_menu_position==717, IDPS_str[31]<70, IDPS_str[31]>48);
-		}
-	}
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,				 "Ext. Game Data", g_menu_position==4 , NO, NO);
-	DrawChoice(x1+x2,	y,			No_Yes[ext_game_data], g_menu_position==54, ext_game_data==NO, ext_game_data==YES);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,						"Payload", g_menu_position==5, NO, NO);
-	DrawChoice(x1+x2,	y,	payload_str[payload_position],	g_menu_position==55, !iso && payload_position<=1, !iso && payload_position>0); //down
-
-	y+=new_line(1);
-
-	if(iso == NO) {
-		if(cobra==YES && usb==YES) {
-			DrawChoice(x1	,	y,			"Set Primary USB", g_menu_position==6 , NO, NO);
-			DrawChoice(x1+x2,	y,			 No_Yes[prim_USB], g_menu_position==56, emu_position<2, emu_position>0);
-			
-			y+=new_line(1);
-		}
-		
-		DrawChoice(x1	,	y,			  "Emulation", g_menu_position==7 , NO, NO);
-		DrawChoice(x1+x2,	y,	emu_str[emu_position], g_menu_position==57, emu_position<2, emu_position>0);
-		
-		y+=new_line(1);
-	
-		if(emu_position==BDEMU) {
-			DrawChoice(x1	,	y,				"Patched from", g_menu_position==8 , NO, NO);
-			DrawChoice(x1+x2,	y,	libfs_from_str[libfs_from],	g_menu_position==58, libfs_from<2, libfs_from>0);
-		}
-	
-		y+=new_line(1);
-	}
-	
-	DrawChoice(x1	,	y,			 "Mount /app_home", g_menu_position==9 , NO, NO);
-	DrawChoice(x1+x2,	y,		No_Yes[mount_app_home],	g_menu_position==59, mount_app_home==NO, mount_app_home==YES);
-
-	y+=new_line(1);
-
-	if(mount_app_home==YES) {
-		DrawChoice(x1	,	y,		   "Use patched plugin", g_menu_position==10 , NO, NO);
-		DrawChoice(x1+x2,	y,			No_Yes[use_ex_plug], g_menu_position==60, use_ex_plug==NO, use_ex_plug==YES);
-	}
-	
-	y+=new_line(1);
-	
-	if(use_sidebar==YES) {
-		y=260;
-	} else {
-		y+=5;
-		Draw_Box(x1+5, y+4, 0, 0, 8, 8, COLOR_3, NO);
-		SetFontColor(COLOR_3, 0x0);
-		SetFontSize(18, 18);
-		xt=DrawString(x1+20, y, "Game Options");
-		SetFontSize(16, 16);
-		y+=new_line(1);
-		Draw_Box(x1, y, 0, 0, xt-x1, 2, COLOR_3, NO);
-		y+=5;
-	}
-	
-	DrawChoice(x1	,	y,			 			 "Rename", g_menu_position==100, NO, NO);
-	if(600<=g_menu_position && g_menu_position <=637) {
-		if(use_sidebar==NO) {
-			Draw_keyboard(x1+x2, y, g_menu_position-600);
-		}
-		else {
-			SetFontSize(20,20);
-			Draw_keyboard(342, 230, g_menu_position-600);
-			SetFontSize(14, 14);
-		}
-	}
-	
-	y+=new_line(1);
-	
-	if(FAV==NO)	DrawChoice(x1	,	y,			 "Add to favorite", g_menu_position==101 , NO, NO);
-	else 		DrawChoice(x1	,	y,		"Remove from favorite", g_menu_position==101 , NO, NO);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,							"Delete game", g_menu_position==102, NO, NO);
-	
-	if(g_menu_position==152) {
-		y-=new_line(1);
-		char *sure = "Are you sure ?";
-		float w=GetWidth(sure);
-		
-		Draw_Box(x1+x2 -w/2-5 , y-5, 10, 2, w+5+5, new_line(2)+10, 0x000000B0, NO);
-		
-		SetFontColor(COLOR_3, 0);
-		
-		DrawString(x1+x2 -w/2, y, sure);
-		
-		SetFontColor(COLOR_1, 0);
-		y+=new_line(1);
-		
-		DrawChoice(x1+x2 -15,	y,	 No_Yes[sure2del], g_menu_position==152, sure2del==NO, sure2del==YES);
-	}
-	
-	y+=new_line(1);
-	
-	if(dst_cpy_number != -1) {
-		DrawChoice(x1	,	y,			 					  "Copy Game", g_menu_position==103, NO, NO);	
-		
-		if(use_sidebar == YES) {
-			y+=new_line(1);
-			if(g_menu_position==153) {
-				SetFontColor(COLOR_1, 0);
-				xt=DrawString(x1, y, "to ");
-				DrawChoice(xt,	y,				dst_cpy[dst_cpy_position], g_menu_position==153, dst_cpy_position<dst_cpy_number, dst_cpy_position>0);
-			}
-		} else {
-			if(g_menu_position==153) {
-				SetFontColor(COLOR_1, 0);
-				xt=DrawString(x1+x2, y, "to ");
-				DrawChoice(xt,	y,			   dst_cpy[dst_cpy_position], g_menu_position==153, dst_cpy_position<dst_cpy_number, dst_cpy_position>0);
-			}
-		}
-		
-		y+=new_line(1);
-	}
-	
-	DrawChoice(x1	,	y,			 		 "Make PKG", g_menu_position==104, NO, NO);	
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,			 "Make PKG Stealth", g_menu_position==105, NO, NO);
-	
-	if(500 <= g_menu_position && g_menu_position <= 506) {
-		xt = DrawString(x1+x2, y, "NP");
-		xt = DrawChoice(xt	,	y,		region_str[title_region], g_menu_position==500, title_region<7, title_region>0);	
-		xt = DrawChoice(xt	,	y,			type_str[title_type], g_menu_position==501, title_type<25 , title_type>0);
-		xt = DrawChoice(xt	,	y,			   n_str[title_n[0]], g_menu_position==502, title_n[0]<9, title_n[0]>0);
-		xt = DrawChoice(xt	,	y,			   n_str[title_n[1]], g_menu_position==503, title_n[1]<9, title_n[1]>0);
-		xt = DrawChoice(xt	,	y,			   n_str[title_n[2]], g_menu_position==504, title_n[2]<9, title_n[2]>0);
-		xt = DrawChoice(xt	,	y,			   n_str[title_n[3]], g_menu_position==505, title_n[3]<9, title_n[3]>0);
-		xt = DrawChoice(xt	,	y,			   n_str[title_n[4]], g_menu_position==506, title_n[4]<9, title_n[4]>0);
-	}
-
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,			 		"Patch EBOOT", g_menu_position==106, NO, NO);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y, 						"Re-sign", g_menu_position==107, NO, NO);
-	
-	y+=new_line(1);
-	
-	if(iso) {
-		DrawChoice(x1	,	y,				"Extract ISO", g_menu_position==108, NO, NO);	
-	} else DrawChoice(x1,	y,			 "Convert to ISO", g_menu_position==108, NO, NO);	
-	
-	if(use_sidebar == YES) {
-		y+=new_line(1);
-		if(g_menu_position==158) {
-			SetFontColor(COLOR_1, 0);
-			xt=DrawString(x1, y, "to ");
-			DrawChoice(xt,	y,  dst_cvt[dst_cvt_position], g_menu_position==158, dst_cpy_position<dst_cpy_number, dst_cpy_position>0);
-		}
-	} else {
-		if(g_menu_position==158) {
-			SetFontColor(COLOR_1, 0);
-			xt=DrawString(x1+x2, y, "to ");
-			DrawChoice(xt,	y,  dst_cvt[dst_cvt_position], g_menu_position==158, dst_cvt_position<dst_cvt_number, dst_cvt_position>0);
-		}
-	}
-	
-	y+=new_line(1);	
-	
-	DrawChoice(x1	,	y, 				"Fix Permission", g_menu_position==109, NO, NO);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y, 			"Check files (IRD)", g_menu_position==110, NO, NO);
-	
-	y+=new_line(1);
-	DrawChoice(x1	,	y,			 	"Download Update", g_menu_position==111, NO, NO);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,			 		 "Properties", g_menu_position==112, NO, NO);
-	
-	SetFontColor(COLOR_1, 0);
-	SetFontSize(15,15);
-	
-	if(use_sidebar==NO) {
-		xt=30;
-	} else xt=x1;
-	
-	y=485;
-	
-	if(500 <= g_menu_position && g_menu_position <= 506) {
-		xt=DrawButton(xt, y, "Make pkg", BUTTON_CROSS);
-	}
-	else if(g_menu_position==153) {
-		xt=DrawButton(xt, y, "Start copy", BUTTON_CROSS);
-	}
-	else if(g_menu_position==158) {
-		if(iso) xt=DrawButton(xt, y, "Extract", BUTTON_CROSS); else 
-		xt=DrawButton(xt, y, "Convert", BUTTON_CROSS);
-	}
-	else if(g_menu_position < 50 || (g_menu_position >= 100 && g_menu_position < 150) || g_menu_position==152) {
-		xt=DrawButton(xt, y, "Enter", BUTTON_CROSS);
-	}
-	else if(700 <= g_menu_position && g_menu_position <= 717) {
-		xt=DrawButton(xt, y, "Validate new IDPS", BUTTON_CROSS);
-	}
-	
-	if(600 <= g_menu_position && g_menu_position <= 637) {
-		if(use_sidebar == YES) {
-			DrawButton(x1, y, "Enter", BUTTON_CROSS);
-			DrawButton(x1+100, y, "Backspace", BUTTON_SQUARE);
-			y-=new_line(1);
-			DrawButton(x1, y, "Back", BUTTON_CIRCLE);
-			DrawButton(x1+100, y, "Cancel", BUTTON_TRIANGLE);
-		} else {
-			xt=DrawButton(xt, y, "Enter", BUTTON_CROSS);
-			xt=DrawButton(xt, y, "Backspace", BUTTON_SQUARE);
-			xt=DrawButton(xt, y, "Back", BUTTON_CIRCLE);
-			xt=DrawButton(xt, y, "Cancel", BUTTON_TRIANGLE);
-		}
-	} 
-	else {
-		DrawButton(xt, y, "Back", BUTTON_CIRCLE);
-	}
-	
-	if(new_pad & BUTTON_SQUARE) {
-		if(600 <= g_menu_position && g_menu_position <= 637) {
-			keyboard_str[strlen(keyboard_str)-1]=0;
-		}
-	}
-	if(new_pad & BUTTON_CROSS) {
-		if(g_menu_position==3) {
-			get_IDPS();
-			sprintf(IDPS_str, "%016llX%016llX", IDPS[0], IDPS[1]);
-			g_menu_position=700;
-		}
-		else if(g_menu_position == 100) {
-			strcpy(keyboard_str, list_game_title[position]);
-			g_menu_position=600;
-		} 
-		else if(g_menu_position==101) {
-			if(FAV == NO) {
-				if(add_favorite()==SUCCESS) show_msg("Added to favorites");
-				else show_msg("Failed");
-			}
-			else {
-				if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
-				else show_msg("Failed");
-			}
-			
-			FAV = is_favorite(list_game_path[position]);
-		}
-		else if(g_menu_position==104) {
-			start_loading();
-			write_game_setting(list_game_title[position]);
-			if(make_launcher_pkg(position, NULL) == FAILED) 
-			show_msg("Failed !"); else show_msg("Done !");
-			end_loading();
-		}
-		else if(g_menu_position==105) {
-			g_menu_position=500;
-		}
-		else if(g_menu_position==106) {
-			start_loading();
-			if(iso==NO) {
-				if(patch_EBOOT(position) == SUCCESS) show_msg("EBOOT Patched"); 
-				else show_msg("Failed");
-			} else {
-				if(patchps3iso(list_game_path[position])==SUCCESS) show_msg("Patched");
-				else show_msg("Failed");
-			}
-			end_loading();
-		}
-		else if(g_menu_position==107) {
-			if(iso==NO) {
-				start_loading();
-				if(re_sign_GAME(list_game_path[position]) == SUCCESS) show_msg("Game re-signed"); else
-				show_msg("Failed"); 
-				end_loading();
-			} else show_msg("TODO for ISO");
-		}
-		else if(g_menu_position==109) {
-			if(iso==NO) {
-				start_loading();
-				print_head("Fixing permission...");
-				
-				if(SetPerms(list_game_path[position]) == SUCCESS) show_msg("Perms Fixed !");
-				else show_msg("Failed");
-
-				end_loading();
-			} else show_msg("Useless for ISO");
-		}
-		else if(g_menu_position==110) {
-			if(iso==NO) {
-				start_loading();
-				if( CheckIRD(list_game_path[position]) == SUCCESS ) {
-					char temp[128];
-					sprintf(temp, "%s/MD5_check.txt", list_game_path[position]);
-					open_txt_viewer(temp);
-					end_loading();
-					
-					Draw_FileExplorer(&list_game_path[position][1]);
-				} 
-				else {
-					show_msg("Failed to check IRD");
-					end_loading();
-				}
-			} else show_msg("Not supported with iso yet");
-		}
-		else if(g_menu_position==111) {
-			get_game_update(position);
-		}
-		else if(g_menu_position==112) {
-			start_loading();
-			gathering=YES;
-			Get_Game_Size(list_game_path[position]);
-			gathering=NO;
-			end_loading();
-			
-			if(gathering_cancel==NO) Draw_GameProperties();
-			else gathering_cancel=NO;
-			total_size=0;
-			nb_file= 0;
-			nb_directory=0;
-		}
-		else if(g_menu_position==152) {
-			if(sure2del==YES) {
-				start_loading();
-				ret = Delete_Game(NULL, position);
-				end_loading();
-				
-				sure2del=NO;
-				
-				if(ret==SUCCESS) {
-					show_msg("Game deleted");
-					return BREAK;
-				} else  show_msg("Failed to delete game");
-			}
-			else {
-				g_menu_position-=50;
-			}
-		}
-		else if(g_menu_position==153) {		
-			Copy_Game(list_game_path[position], dst_cpy[dst_cpy_position]);
-		}
-		else if(g_menu_position==158) {
-			start_loading();
-			print_head("Converting...");
-			u8 ret;
-			char dst[128];
-			strcpy(dst, dst_cvt[dst_cvt_position]);
-			strcat(dst, strrchr(list_game_path[position], '/'));
-
-			if(iso==NO) {
-				if(is_ntfs(dst_cvt[dst_cvt_position])==YES || strstr(dst_cvt[dst_cvt_position], "/dev_hdd0")) {
-					ret = makeps3iso(list_game_path[position], dst_cvt[dst_cvt_position], FULL);
-				} else ret = makeps3iso(list_game_path[position], dst_cvt[dst_cvt_position], SPLIT);
-			} else {
-				if(is_ntfs(dst_cvt[dst_cvt_position])==YES || strstr(dst_cvt[dst_cvt_position], "/dev_hdd0")) {
-					ret = extractps3iso(list_game_path[position], dst_cvt[dst_cvt_position], FULL);
-				} else ret = extractps3iso(list_game_path[position], dst_cvt[dst_cvt_position], SPLIT);
-				strtok(dst, ".");
-			}
-			
-			if(ret==FAILED) show_msg("Failed"); else
-			show_msg("Done");
-			
-			end_loading();
-		}
-		else if((0  <= g_menu_position && g_menu_position < 50)  || (100 <= g_menu_position && g_menu_position < 150) ) {
-			g_menu_position+=50;
-		}
-		else if(500 <= g_menu_position && g_menu_position <= 506) {
-			start_loading();
-			char title_id[10];
-			strcpy(title_id, "NP");
-			strcat(title_id, region_str[title_region]);
-			strcat(title_id, type_str[title_type]);
-			strcat(title_id, n_str[title_n[0]]);
-			strcat(title_id, n_str[title_n[1]]);
-			strcat(title_id, n_str[title_n[2]]);
-			strcat(title_id, n_str[title_n[3]]);
-			strcat(title_id, n_str[title_n[4]]);
-			write_game_setting(list_game_title[position]);
-			if(make_launcher_pkg(position, title_id) == FAILED) 
-			show_msg("Failed !"); else show_msg("Done !");
-			end_loading();
-		}
-		else if(600 <= g_menu_position && g_menu_position <= 637) {
-			if(g_menu_position==636) {
-				if(keyb_lock==LOW) keyb_lock=UP; else
-				if(keyb_lock==UP)  keyb_lock=LOW;
-			} else
-			if(g_menu_position==637) {
-				strcat(keyboard_str, " ");
-			} else {
-				strcat(keyboard_str, keyboard_button[keyb_lock][g_menu_position-600]);
-			}
-		}
-		else if(700 <= g_menu_position && g_menu_position <= 717) {
-			sscanf(IDPS_str, "%16llX%16llX", &IDPS[0], &IDPS[1]);
-			change_IDPS();
-			g_menu_position=3;
-		}
-	}
-	
-	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
-		hold_it++;
-		if(hold_it>30) {
-			slow_it++;
-			if(slow_it>scroll_speed) slow_it=0;
-		}
-	} else {slow_it=1; hold_it=0;}
-	
-	if(old_pad & BUTTON_R2) {
-		scroll_speed = 6 - paddata.PRE_R2/50;
-	} else scroll_speed = 6;
-	
-	if(new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP) && slow_it==0)) {
-		if(g_menu_position < 50) {
-			if(g_menu_position==0) g_menu_position=112; else
-			if(g_menu_position==4 && change_IDPS_position==NO) g_menu_position=2; else
-			if(g_menu_position==7 && (cobra==NO || usb==NO)) g_menu_position=5; else
-			if(g_menu_position==9 && iso==YES) g_menu_position=5; else
-			if(g_menu_position==9 && emu_position!=BDEMU) g_menu_position=7; else
-			if(g_menu_position>0) g_menu_position--;
-		}
-		else if(g_menu_position==100) {
-			if(mount_app_home==YES) g_menu_position=10; else
-			g_menu_position=9;
-		} 
-		else if(g_menu_position==104 && dst_cpy_number == -1) {
-			g_menu_position=102;
-		}
-		else if(100 < g_menu_position && g_menu_position <= 112) {
-			g_menu_position--;
-		}
-		else if(g_menu_position==50) { 
-			if(direct_boot_position==NO)	direct_boot_position=YES;
-		}
-		else if(g_menu_position==51) {
-			if(clean_syscall_position==NO) clean_syscall_position=YES;	
-		}
-		else if(g_menu_position==52) {
-			if(change_IDPS_position==NO) change_IDPS_position=YES;	
-		}
-		else if(g_menu_position==54) {
-			if(ext_game_data==NO) ext_game_data=YES;	
-		}
-		else if(g_menu_position==55) {
-			if(!iso) {
-				if(payload_position<1) payload_position++; else 
-				if(payload_position==1) {
-					if(cobra) payload_position = COBRA; else
-					payload_position = MAMB;
-				}
-			}
-		}
-		else if(g_menu_position==56) {
-			if(prim_USB==NO)	prim_USB=YES;
-		}
-		else if(g_menu_position==57) {
-			if(emu_position<2) emu_position++;
-		}
-		else if(g_menu_position==58) {
-			if(libfs_from<2) libfs_from++;
-		}
-		else if(g_menu_position==59) {
-			if(mount_app_home==NO) mount_app_home=YES;	
-		}
-		else if(g_menu_position==60 ) {
-			if(use_ex_plug==NO) use_ex_plug=YES;
-		}
-		else if(g_menu_position==152) {
-			if(sure2del==NO) sure2del=YES;
-		} 
-		else if(g_menu_position==153) {
-			if(dst_cpy_position<dst_cpy_number) dst_cpy_position++;
-		}
-		else if(g_menu_position==158) {
-			if(dst_cvt_position<dst_cvt_number) dst_cvt_position++;
-		}
-		else if(g_menu_position==500) {
-			if(title_region < 7) title_region++;
-		}
-		else if(g_menu_position==501) {
-			if(title_type < 25) title_type++;
-		}
-		else if(g_menu_position==502) {
-			if(title_n[0] < 9) title_n[0]++;
-		}
-		else if(g_menu_position==503) {
-			if(title_n[1] < 9) title_n[1]++;
-		}
-		else if(g_menu_position==504) {
-			if(title_n[2] < 9) title_n[2]++;
-		}
-		else if(g_menu_position==505) {
-			if(title_n[3] < 9) title_n[3]++;
-		}
-		else if(g_menu_position==506) {
-			if(title_n[4] < 9) title_n[4]++;
-		}
-		else if(600 <= g_menu_position && g_menu_position <= 637) {
-			if(g_menu_position==636) g_menu_position=630; else
-			if(g_menu_position==637) g_menu_position=633; else
-			if(g_menu_position>=610) g_menu_position-=10;
-		}
-		else if(700 <= g_menu_position && g_menu_position <= 717) {
-			if(g_menu_position==700) {
-				if(IDPS_str[11]==57) IDPS_str[11]=65; else
-				if(IDPS_str[11] <70) IDPS_str[11]++;
-			}
-			else if(g_menu_position==701) {
-				if(IDPS_str[15]==57) IDPS_str[15]=65; else
-				if(IDPS_str[15] <69) IDPS_str[15]++;
-			}
-			else if(g_menu_position==702) {
-				if(IDPS_str[16]==49) IDPS_str[16]=70; else
-				if(IDPS_str[16]==48) IDPS_str[16]=49;
-			}
-			else if(g_menu_position==703) {
-				if(IDPS_str[17]==48) IDPS_str[17]=52;
-			}
-			else {
-				if(IDPS_str[g_menu_position-686]==57) IDPS_str[g_menu_position-686]=65; else
-				if(IDPS_str[g_menu_position-686] <70) IDPS_str[g_menu_position-686]++;
-			}
-		}
-	}
-	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
-		if(g_menu_position < 50) {
-			if(iso==YES) {
-				if(g_menu_position==2 && change_IDPS_position==NO) g_menu_position=4; else
-				if(g_menu_position<5) g_menu_position++; else
-				if(g_menu_position==5) g_menu_position=9; else
-				if(g_menu_position==9 && mount_app_home==YES) g_menu_position=10; else
-				if(g_menu_position==10 || g_menu_position==9) g_menu_position=100;
-			}
-			else {
-				if(g_menu_position==2 && change_IDPS_position==NO) g_menu_position=4; else
-				if(g_menu_position==5 && (cobra==NO || usb==NO)) g_menu_position=7; else
-				if(g_menu_position==7 && emu_position != BDEMU) g_menu_position=9; else
-				if(g_menu_position==9 && mount_app_home==YES) g_menu_position=10; else
-				if(g_menu_position==10 || g_menu_position==9) g_menu_position=100; else 
-				if(g_menu_position<9) g_menu_position++;
-			}
-		}
-		else if(g_menu_position==112) {
-			g_menu_position=0; 
-		} 
-		else if(g_menu_position==102 && dst_cpy_number == -1) {
-			g_menu_position=104;
-		}
-		else if(100 <= g_menu_position && g_menu_position < 112) {
-			g_menu_position++;
-		}
-		else if(g_menu_position==50) {
-			if(direct_boot_position==1) direct_boot_position--;
-		}
-		else if(g_menu_position==51) {
-			if(clean_syscall_position==YES) clean_syscall_position=NO;	
-		}
-		else if(g_menu_position==52) {
-			if(change_IDPS_position==YES) change_IDPS_position=NO;	
-		}
-		else if(g_menu_position==54) {
-			if(ext_game_data==YES) ext_game_data=NO;	
-		}
-		else if(g_menu_position==55) {
-			if(payload_position>0 && !iso) {
-				if(payload_position==MAMB) payload_position=MM; else
-				payload_position--;
-			}
-		}
-		else if(g_menu_position==56) {
-			if(prim_USB==YES)	prim_USB=NO;
-		}
-		else if(g_menu_position==57) {
-			if(emu_position>0) emu_position--;	
-		}
-		else if(g_menu_position==58) {
-			if(libfs_from>0) libfs_from--;
-		}
-		else if(g_menu_position==59) {
-			if(mount_app_home==YES) mount_app_home=NO;	
-		}
-		else if(g_menu_position==60) {
-			if(use_ex_plug==YES) use_ex_plug=NO;
-		}
-		else if(g_menu_position==152) {
-			if(sure2del==YES) sure2del=NO;
-		} 
-		else if(g_menu_position==153) {
-			if(dst_cpy_position>0) dst_cpy_position--;
-		}
-		else if(g_menu_position==158) {
-			if(dst_cvt_position>0) dst_cvt_position--;
-		}
-		else if(g_menu_position==500) {
-			if(title_region > 0) title_region--;
-		}
-		else if(g_menu_position==501) {
-			if(title_type > 0) title_type--;
-		}
-		else if(g_menu_position==502) {
-			if(title_n[0] > 0) title_n[0]--;
-		}
-		else if(g_menu_position==503) {
-			if(title_n[1] > 0) title_n[1]--;
-		}
-		else if(g_menu_position==504) {
-			if(title_n[2] > 0) title_n[2]--;
-		}
-		else if(g_menu_position==505) {
-			if(title_n[3] > 0) title_n[3]--;
-		}
-		else if(g_menu_position==506) {
-			if(title_n[4] > 0) title_n[4]--;
-		}
-		else if(600<=g_menu_position && g_menu_position <= 637) {
-			if(630<=g_menu_position && g_menu_position<=632) g_menu_position=636; else
-			if(633<=g_menu_position && g_menu_position<=635) g_menu_position=637; else
-			if(626<=g_menu_position && g_menu_position<=629) g_menu_position=635; else
-			if(g_menu_position<626) g_menu_position+=10;	
-		}
-		else if(700<=g_menu_position && g_menu_position <= 737) {
-			if(g_menu_position==700) {
-				if(IDPS_str[11]==65) IDPS_str[11]=57; else
-				if(IDPS_str[11] >50) IDPS_str[11]--;
-			}
-			else if(g_menu_position==701) {
-				if(IDPS_str[15]==65) IDPS_str[15]=57; else
-				if(IDPS_str[15] >49) IDPS_str[15]--;
-			}
-			else if(g_menu_position==702) {
-				if(IDPS_str[16]==70) IDPS_str[16]=49; else
-				if(IDPS_str[16]==49) IDPS_str[16]=48;
-			}
-			else if(g_menu_position==703) {
-				if(IDPS_str[17]==52) IDPS_str[17]=48;
-			}
-			else {
-				if(IDPS_str[g_menu_position-686]==65) IDPS_str[g_menu_position-686]=57; else
-				if(IDPS_str[g_menu_position-686] >48) IDPS_str[g_menu_position-686]--;
-			}
-		}
-	}
-	
-	if(new_pad & BUTTON_LEFT  || ((old_pad & BUTTON_LEFT) && slow_it==0)) {
-		if(500 < g_menu_position && g_menu_position <= 506) g_menu_position--; else
-		if(600 < g_menu_position && g_menu_position <= 637) g_menu_position--; else
-		if(700 < g_menu_position && g_menu_position <= 717) g_menu_position--;
-	}
-	if(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) {
-		if(500 <= g_menu_position && g_menu_position < 506) g_menu_position++; else
-		if(600 <= g_menu_position && g_menu_position < 637) g_menu_position++; else
-		if(700 <= g_menu_position && g_menu_position < 717) g_menu_position++;
-	}	
-
-	if(new_pad & BUTTON_TRIANGLE) {
-		if(600 <= g_menu_position && g_menu_position <= 637) {
-			g_menu_position=100;
-		}
-	}
-	if(new_pad & BUTTON_CIRCLE) {
-		if((50 <= g_menu_position && g_menu_position < 100)  || (150 <= g_menu_position && g_menu_position < 200)) {
-			g_menu_position-=50;
-		}
-		else if(500 <= g_menu_position && g_menu_position <= 506) {
-			g_menu_position=105;
-		}
-		else if(700 <= g_menu_position && g_menu_position <= 717) {
-			g_menu_position=3;
-		}
-		else if((0 <= g_menu_position && g_menu_position < 50) || (100 <= g_menu_position && g_menu_position < 150)) {
-			write_game_setting(list_game_title[position]);
-			g_menu_position=0;
-			g_menu=OFF;
-			g_menu_move=0;
-			return BREAK;
-		}
-		else if(600 <= g_menu_position && g_menu_position <= 637) {
-			if(keyboard_str[0]!=0 && strcmp(keyboard_str, list_game_title[position]) != 0 ) {
-				if(SetParamSFO("TITLE", keyboard_str, position, NULL)==SUCCESS) {
-					strcpy(list_game_title[position], keyboard_str);
-					show_msg("Game renamed");
-				}
-			}
-			g_menu_position=100;
-		}
-	}
-	
-	return CONTINUE;
-}
-
-void Draw_AdjustScreen() {
-
-	while(1){
-		int x;
-		adjust_screen();
-
-		cls();
-
-		Draw_Box(0,0,10,   0,   X_MAX,Y_MAX,  0xFFFFFFFF, NO);
-		Draw_Box(30,30,9 , 0,   X_MAX-30*2,Y_MAX-30*2,  0x000000FF, NO);
-
-		int l=150, h=70;
-		Draw_Box(110,150,8,   5,   15,Y_MAX-150*2,  0xFFFFFFFF, NO);
-
-		tiny3d_SetPolygon(TINY3D_TRIANGLES);
-		tiny3d_VertexPos(110+15+5+h, Y_MAX/2, 8);
-		tiny3d_VertexColor(0xFFFFFFFF);
-		tiny3d_VertexPos(110+15+5 , Y_MAX/2 -l/2 , 8);
-		tiny3d_VertexPos(110+15+5 , Y_MAX/2 +l/2 , 8);
-		tiny3d_End();
-		Draw_Pad(BUTTON_RIGHT,  110+15+5+5,Y_MAX/2-20,8, 40);			
-
-		tiny3d_SetPolygon(TINY3D_TRIANGLES);
-		tiny3d_VertexPos(110-5-h, Y_MAX/2, 8);
-		tiny3d_VertexColor(0xFFFFFFFF);
-		tiny3d_VertexPos(110-5 , Y_MAX/2 -l/2 , 8);
-		tiny3d_VertexPos(110-5 , Y_MAX/2 +l/2 , 8);
-		tiny3d_End();
-		Draw_Pad(BUTTON_LEFT,  110-5-40-5,Y_MAX/2-20,8, 40);
-		
-		Draw_Box(150,110,8,   5,   X_MAX-120*2,15,  0xFFFFFFFF, NO);
-
-		tiny3d_SetPolygon(TINY3D_TRIANGLES);
-		tiny3d_VertexPos(X_MAX/2, 110+15+5+h, 8);
-		tiny3d_VertexColor(0xFFFFFFFF);
-		tiny3d_VertexPos(X_MAX/2 -l/2, 110+15+5 , 8);
-		tiny3d_VertexPos(X_MAX/2 +l/2, 110+15+5 , 8);
-		tiny3d_End();
-		Draw_Pad(BUTTON_DOWN,  X_MAX/2-20,110+15+5+5,8, 40);
-	
-		tiny3d_SetPolygon(TINY3D_TRIANGLES);
-		tiny3d_VertexPos(X_MAX/2, 110-5-h , 8);
-		tiny3d_VertexColor(0xFFFFFFFF);
-		tiny3d_VertexPos(X_MAX/2 -l/2 , 110-5 , 8);
-		tiny3d_VertexPos(X_MAX/2 +l/2 , 110-5 , 8);
-		tiny3d_End();
-		Draw_Pad(BUTTON_UP,  X_MAX/2-20,110-5-40-5,8, 40);
-
-		SetFontColor(0x000000FF, 0x0);
-		SetFontSize(15, 15);
-		x=Draw_Button_Circle(25, 485, 15);
-		x=DrawString(x+5, 485, "Back  ");
-
-		tiny3d_Flip();
-	
-		ps3pad_read();
-		
-		if(new_pad & BUTTON_DOWN) {if(videoscale_y > -120) videoscale_y-=10;}
-		if(new_pad & BUTTON_UP) {if(videoscale_y < 120) videoscale_y+=10;}
-		if(new_pad & BUTTON_RIGHT) {if(videoscale_x > -120) videoscale_x-=10;}
-		if(new_pad & BUTTON_LEFT) {if(videoscale_x < 120) videoscale_x+=10;}
-		if(new_pad & BUTTON_CIRCLE) {write_setting(); return;}
-	}
-}
-
-int DrawSettings() {
-	
-	//0-100		global settings
-	//100-200	Themes settings
-	//200-300	UI settings
-	//600+		keyboard
-	//800-802	Choose color RGB
-	
-	char *No_Yes[]={"No", "Yes"};
-	char *way_str[]={"Vertical", "Horizontal"};
-	char *grid_typ_str[]={"Scroll", "Page"};
-
-	Draw_BGS();
-	Draw_Notification();
-	
-	int x1=50, y=40, x2=200;
-	float xt;
-	
-	SetFontAutoCenter(0);
-	SetFontSize(18, 18);
-	SetFontColor(COLOR_1, 0x0);
-	SetFontZ(10);
-
-//****************************************************		GLOBAL		   *********************************************************************
-	Draw_Box(x1+5, y+4, 10, 0, 8, 8, COLOR_3, NO);
-	SetFontColor(COLOR_3, 0x0);
-	SetFontSize(18, 18);
-	xt=DrawString(x1+20, y, "Global settings");		
-	SetFontSize(15, 15);
-	y+=new_line(1);
-	Draw_Box(x1, y, 10, 0, xt-x1, 2, COLOR_3, NO);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,					"Adjust screen", settings_position==0, NO, NO);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,					"Download covers", settings_position==1, NO, NO);
-	
-	y+=new_line(1);
-
-	DrawChoice(x1	,	y,					"Dir. to scan", settings_position==2, NO, NO);
-	if(600<=settings_position && settings_position<=637 && rename_scan_dir == TRUE) {
-		Draw_keyboard(x1+x2, y,	settings_position-600);
-	} else DrawChoice(x1+x2, y,	scan_dir[scan_dir_position], settings_position==52, scan_dir_position < scan_dir_number, scan_dir_position > 0);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	 ,	y,				  "XMB Priority", settings_position==3 , NO, NO);
-	DrawChoice(x1+x2 ,	y,			No_Yes[XMB_priority], settings_position==53, XMB_priority == NO , XMB_priority == YES);
-	
-	y+=new_line(1);
-		
-	DrawChoice(x1	,	y,						"Show PS3 games", settings_position==4, NO, NO);
-	DrawChoice(x1+x2,	y,	 					No_Yes[Show_PS3], settings_position==54, Show_PS3==NO, Show_PS3==YES);	
-	
-	y+=new_line(1);
-		
-	DrawChoice(x1	,	y,						"Show PS2 games", settings_position==5, NO, NO);
-	DrawChoice(x1+x2,	y,	 					No_Yes[Show_PS2], settings_position==55, Show_PS2==NO, Show_PS2==YES);	
-	
-	y+=new_line(1);
-		
-	DrawChoice(x1	,	y,						"Show PS1 games", settings_position==6, NO, NO);
-	DrawChoice(x1+x2,	y,	 					No_Yes[Show_PS1], settings_position==56, Show_PS1==NO, Show_PS1==YES);	
-	
-	y+=new_line(1);
-		
-	DrawChoice(x1	,	y,						"Show PSP games", settings_position==7, NO, NO);
-	DrawChoice(x1+x2,	y,	 					No_Yes[Show_PSP], settings_position==57, Show_PSP==NO, Show_PSP==YES);	
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1	,	y,					"UI", settings_position==8 , NO, NO);
-	DrawChoice(x1+x2	,	y,	 	UI[UI_position], settings_position==58, UI_position < 3, UI_position > 0);
-
-	y+=new_line(2);
-	
-//****************************************************		THEMES		   *********************************************************************
-	Draw_Box(x1+5, y+4, 10, 0, 8, 8, COLOR_3, NO);
-	SetFontColor(COLOR_3, 0x0);
-	SetFontSize(18, 18);
-	xt=DrawString(x1+20, y, "Theme settings");
-	SetFontColor(COLOR_1, 0x0);
-	DrawString(x1+x2, y, Themes[UI_position]);
-	SetFontSize(15, 15);
-	y+=new_line(1);
-	Draw_Box(x1, y, 10, 0, xt-x1, 2, COLOR_3, NO);
-	
-	y+=new_line(1);
-	
-	u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][Themes_position[UI_position]]);
-	
-	DrawChoice(x1 	,	y,												"Themes", settings_position==100, NO, NO);
-	if(600<=settings_position && settings_position<=637 && rename_theme == TRUE) {
-		Draw_keyboard(x1+x2, y,	settings_position-600);
-	} else {
-		if(Themes_position[UI_position]>=0)	{
-			if(ThemeType == P3T) DrawString(x1+x2 - 60, y, "[P3T]"); else
-			if(ThemeType == THM) DrawString(x1+x2 - 60, y, "[THM]");
-			DrawChoice(x1+x2,	y,	 	Themes_Names_list[UI_position][Themes_position[UI_position]], settings_position==150, Themes_position[UI_position] < Themes_number[UI_position], Themes_position[UI_position] > -1);	
-		}
-		else DrawChoice(x1+x2,	y,	 									  "None", settings_position==150, Themes_number[UI_position]>=0, NO);
-	}
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1		,	y,					"Color 1", settings_position==101 , NO, NO);
-	Draw_Box(x1+x2, y, 10, 0, 16, 10, COLOR_1, NO);
-	if(800<=settings_position && settings_position<=802 && change_color_1 == TRUE)
-	DrawChooseCOLOR(x1+x2, y+10,  settings_position-800, COLOR_1);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1		,	y,					"Color 2", settings_position==102 , NO, NO);
-	Draw_Box(x1+x2, y, 10, 0, 16, 10, COLOR_2, NO);
-	if(800<=settings_position && settings_position<=802 && change_color_2 == TRUE)
-	DrawChooseCOLOR(x1+x2, y+10,  settings_position-800, COLOR_2);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1		,	y,					"Color 3", settings_position==103 , NO, NO);
-	Draw_Box(x1+x2, y, 10, 0, 16, 10, COLOR_3, NO);
-	if(800<=settings_position && settings_position<=802 && change_color_3 == TRUE)
-	DrawChooseCOLOR(x1+x2, y+10,  settings_position-800, COLOR_3);
-	
-	y+=new_line(1);
-	
-	DrawChoice(x1		,	y,					"Color 4", settings_position==104 , NO, NO);
-	Draw_Box(x1+x2, y, 10, 0, 16, 10, COLOR_4, NO);
-	if(800<=settings_position && settings_position<=802 && change_color_4 == TRUE)
-	DrawChooseCOLOR(x1+x2, y+10,  settings_position-800, COLOR_4);
-	
-//****************************************************		UI		   *********************************************************************
-
-	y+=new_line(2);
-	Draw_Box(x1+5, y+4, 10, 0, 8, 8, COLOR_3, NO);
-	SetFontColor(COLOR_3, 0x0);
-	SetFontSize(18, 18);
-	xt=DrawString(x1+20, y, "User interface settings");		
-	SetFontSize(15, 15);
-	y+=new_line(1);
-	Draw_Box(x1, y, 10, 0, xt-x1, 2, COLOR_3, NO);
-	
-	
-	if(UI_position==LIST) {
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,						"Show ICON0", settings_position==200, NO, NO);
-		DrawChoice(x1+x2,	y,	 	 No_Yes[Show_ICON0_position], settings_position==250, Show_ICON0_position==NO, Show_ICON0_position==YES);
-		
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,						"Show cover", settings_position==201, NO, NO);
-		DrawChoice(x1+x2,	y,	 	 No_Yes[LIST_Show_COVER_position], settings_position==251, LIST_Show_COVER_position==NO, LIST_Show_COVER_position==YES);
-	}
-	else if(UI_position==XMB) {
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,						"Show cover", settings_position==200, NO, NO);
-		DrawChoice(x1+x2,	y,	 	 No_Yes[XMB_Show_COVER_position], settings_position==250, XMB_Show_COVER_position==NO, XMB_Show_COVER_position==YES);
-		
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,						"Show PIC1", settings_position==201, NO, NO);
-		DrawChoice(x1+x2,	y,	 	 No_Yes[XMB_Show_PIC1], settings_position==251, XMB_Show_PIC1==NO, XMB_Show_PIC1==YES);
-		
-	}
-	else if(UI_position==GRID) {
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,						 "Grid type", settings_position==200, NO, NO);
-		DrawChoice(x1+x2,	y,	 		 grid_typ_str[grid_type], settings_position==250, grid_type==SCROLL, grid_type==PAGE);
-
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,						 "Direction", settings_position==201, NO, NO);
-		DrawChoice(x1+x2,	y,	 			  way_str[direction], settings_position==251, direction==VERTICAL, direction==HORIZONTAL);
-
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,							"Animated", settings_position==202, NO, NO);
-		DrawChoice(x1+x2,	y,	 				  No_Yes[animated], settings_position==252, animated==NO, animated==YES);
-
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,					"Keep proportion", settings_position==203, NO, NO);
-		DrawChoice(x1+x2,	y,	 			  	No_Yes[keep_prop], settings_position==253, keep_prop==NO, keep_prop==YES);
-		
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,				 "Number of columns", settings_position==204, NO, NO);
-		char grid_nb_str[5];
-		sprintf(grid_nb_str, "%d", grid_nb_columns);
-		DrawChoice(x1+x2,	y, 					grid_nb_str, settings_position==254, YES, grid_nb_columns>1);
-		
-		if(keep_prop == NO)  {
-			y+=new_line(1);
-			sprintf(grid_nb_str, "%d", grid_nb_lines);
-			DrawChoice(x1	,	y,				   "Number of line", settings_position==205, NO, NO);
-			DrawChoice(x1+x2,	y,						grid_nb_str, settings_position==255, YES, grid_nb_lines>1);
-		}
-	} 
-	else if(UI_position==FLOW) {
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,					  "Inverse button", settings_position==200, NO, NO);
-		DrawChoice(x1+x2,	y,				No_Yes[inverse_button], settings_position==250, inverse_button==NO, inverse_button==YES);
-		
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,					  "Use Cover", settings_position==201, NO, NO);
-		DrawChoice(x1+x2,	y,				No_Yes[FLOW_use_Cover], settings_position==251, FLOW_use_Cover==NO, FLOW_use_Cover==YES);
-		
-		y+=new_line(1);
-		
-		DrawChoice(x1	,	y,					  "Show PIC1", settings_position==202, NO, NO);
-		DrawChoice(x1+x2,	y,				No_Yes[FLOW_Show_PIC1], settings_position==252, FLOW_Show_PIC1==NO, FLOW_Show_PIC1==YES);
-	}
-	
-	SetFontColor(COLOR_1, 0x0);
-	SetFontSize(15, 15);
-	y=485;
-	x1=DrawButton(25, y, "Back", BUTTON_CIRCLE);
-	
-	if(101<=settings_position && settings_position<=104) {
-		x1=DrawButton(x1, y, "Change color", BUTTON_CROSS);
-		x1=DrawButton(x1, y, "Restore default color", BUTTON_SQUARE);
-	}
-	else if((  0<=settings_position && settings_position<50) 
-		|| ( 100<=settings_position && settings_position<150)
-		|| ( 200<=settings_position && settings_position<250) )
-	{
-		x1=DrawButton(x1, y, "Enter", BUTTON_CROSS);
-	}
-	else if(settings_position==52) {
-		x1=DrawButton(x1, y, "Add new directory", BUTTON_CROSS);
-		if(scan_dir_number>0) {
-			x1=DrawButton(x1, y, "Delete current directory", BUTTON_SQUARE);
-		}
-	}
-	else if(600 <= settings_position && settings_position <= 637) {
-		x1=DrawButton(x1, y, "Enter", BUTTON_CROSS);
-		x1=DrawButton(x1, y, "Backspace", BUTTON_SQUARE);
-		x1=DrawButton(x1, y, "Cancel", BUTTON_TRIANGLE);
-	}
-	else if(settings_position == 150 && Themes_position[UI_position]>=0 ) {
-		x1=DrawButton(x1, y, "Use this theme", BUTTON_CROSS);
-		x1=DrawButton(x1, y, "Delete", BUTTON_TRIANGLE);
-		if(ThemeType == MGZ) {
-			x1=DrawButton(x1, y, "Rename", BUTTON_SQUARE);
-		}
-	} 
-	else if(settings_position == 150 && Themes_position[UI_position]==-1 ) {
-		DrawButton(x1, y, "Don't use theme", BUTTON_CROSS);
-	}
-
-	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
-		hold_it++;
-		if(hold_it>30) {
-			slow_it++;
-			if(slow_it>scroll_speed) slow_it=0;
-		}
-	} else {slow_it=1; hold_it=0;}
-	
-	if(old_pad & BUTTON_R2) {
-		scroll_speed = 6 - paddata.PRE_R2/50;
-	} else scroll_speed=6;
-	
-	if(new_pad & BUTTON_UP || (old_pad & BUTTON_UP && slow_it==0)) {
-		if(settings_position==100) {
-			settings_position=8;
-		}
-		else if(settings_position==200) {
-			settings_position=104;
-		}
-		else if(settings_position==0) {
-			if(UI_position==LIST) {
-				settings_position=201;
-			}
-			else if(UI_position==GRID) {
-				if(keep_prop==NO) settings_position=205; else
-				settings_position=204;
-			}
-			else if(UI_position==XMB) {
-				settings_position=201;
-			}
-			else if(UI_position==FLOW) {
-				settings_position=202;
-			}
-		}
-		else if((0 < settings_position && settings_position < 50) || (100 < settings_position && settings_position < 150) || (200 < settings_position && settings_position < 250)) {
-			settings_position--;
-		}
-		else if(settings_position == 52) {
-			if(scan_dir_position < scan_dir_number) scan_dir_position++; 
-		}
-		else if(settings_position == 53) {
-			if(XMB_priority == NO) XMB_priority=YES; 
-		}
-		else if(settings_position == 54) {
-			if(Show_PS3 == NO) Show_PS3=YES; 
-		}
-		else if(settings_position == 55) {
-			if(Show_PS2 == NO) Show_PS2=YES; 
-		}
-		else if(settings_position == 56) {
-			if(Show_PS1 == NO) Show_PS1=YES; 
-		}
-		else if(settings_position == 57) {
-			if(Show_PSP == NO) Show_PSP=YES; 
-		}
-		else if(settings_position == 58) {
-			if(UI_position < 3) UI_position++; 
-		}
-		else if(settings_position == 150) {
-			if(Themes_position[UI_position] < Themes_number[UI_position])	Themes_position[UI_position]++;
-		}
-		else if(600 <= settings_position && settings_position <= 637) {
-			if(settings_position==636) settings_position=630; else
-			if(settings_position==637) settings_position=633; else
-			if(settings_position>=610) settings_position-=10;
-		}
-		else if(800 < settings_position && settings_position <= 802) {
-			settings_position--;
-		}
-		else if(UI_position==LIST) {
-			if(settings_position == 250) {
-				if(Show_ICON0_position==NO) Show_ICON0_position=YES;
-			} 
-			else if(settings_position == 251) {
-				if(LIST_Show_COVER_position==NO) LIST_Show_COVER_position=YES;
-			}
-		}
-		else if(UI_position==XMB) {
-			if(settings_position == 250) {
-				if(XMB_Show_COVER_position==NO) XMB_Show_COVER_position=YES;
-			} 
-			else if(settings_position == 251) {
-				if(XMB_Show_PIC1==NO) XMB_Show_PIC1=YES;
-			}
-		}
-		else if(UI_position==GRID) {
-			if(settings_position == 250) {
-				if(grid_type==SCROLL) grid_type=PAGE;
-			} 
-			else if(settings_position == 251) {
-				if(direction==VERTICAL) 	direction=HORIZONTAL;
-			}
-			else if(settings_position == 252) {
-				if(animated==NO) 	animated=YES;	
-			}
-			else if(settings_position == 253) {
-				if(keep_prop==NO) 	keep_prop=YES;	
-			}
-			else if(settings_position == 254) {
-				grid_nb_columns++;
-			} 
-			else if(settings_position == 255) {
-				grid_nb_lines++;
-			}
-		}
-		else if(UI_position==FLOW) {
-			if(settings_position == 250) {
-				if(inverse_button==NO) 	inverse_button=YES;	
-			}  else
-			if(settings_position == 251) {
-				if(FLOW_use_Cover==NO) FLOW_use_Cover=YES;
-			} else 
-			if(settings_position == 252) {
-				if(FLOW_Show_PIC1==NO) FLOW_Show_PIC1=YES;
-			}
-		}
-	}
-	if(new_pad & BUTTON_DOWN || (old_pad & BUTTON_DOWN && slow_it==0)) {
-		if(settings_position==8) {
-			settings_position=100;
-		}
-		else if(settings_position<50) {
-			settings_position++;
-		}
-		else if(100 <= settings_position && settings_position<104) {
-			settings_position++;
-		}
-		else if(settings_position==104) {
-			settings_position=200;
-		}
-		else if(200 <= settings_position && settings_position < 250) {
-			if(UI_position==LIST) {
-				if(settings_position==201) settings_position=0;
-				else settings_position++;
-			}
-			else if(UI_position==XMB) {
-				if(settings_position==201) settings_position=0;
-				else settings_position++;
-			}
-			else if(UI_position==GRID) {
-				if(keep_prop==NO) {
-					if(settings_position<205) settings_position++;else
-					if(settings_position==205) settings_position=0;
-				} else {
-					if(settings_position<204) settings_position++; else
-					if(settings_position==204) settings_position=0;
-				}
-			}
-			else if(UI_position==FLOW) {
-				if(settings_position==202) settings_position=0; else
-				settings_position++;
-			}
-		}
-		else if(settings_position == 52) {
-			if(scan_dir_position > 0) scan_dir_position--; 
-		}
-		else if(settings_position == 53) {
-			if(XMB_priority == YES) XMB_priority=NO; 
-		}
-		else if(settings_position == 54) {
-			if(Show_PS3 == YES) Show_PS3=NO; 
-		}
-		else if(settings_position == 55) {
-			if(Show_PS2 == YES) Show_PS2=NO; 
-		}
-		else if(settings_position == 56) {
-			if(Show_PS1 == YES) Show_PS1=NO; 
-		}
-		else if(settings_position == 57) {
-			if(Show_PSP == YES) Show_PSP=NO; 
-		}
-		else if(settings_position == 58) {
-			if(UI_position > 0) UI_position--; 
-		}
-		else if(settings_position == 150) {
-			if(Themes_position[UI_position] > -1) Themes_position[UI_position]--;
-		}
-		else if(600<=settings_position && settings_position <= 637) {
-			if(630<=settings_position && settings_position<=632) settings_position=636; else
-			if(633<=settings_position && settings_position<=635) settings_position=637; else
-			if(626<=settings_position && settings_position<=629) settings_position=635; else
-			if(settings_position<626) settings_position+=10;	
-		}
-		else if(800 <= settings_position && settings_position < 802) {
-			settings_position++;
-		}
-		else if(UI_position==LIST) {
-			if(settings_position == 250) {
-				if(Show_ICON0_position==YES) Show_ICON0_position=NO;
-			} else 
-			if(settings_position == 251) {
-				if(LIST_Show_COVER_position==YES) LIST_Show_COVER_position=NO;
-			}
-		}
-		else if(UI_position==XMB) {
-			if(settings_position == 250) {
-				if(XMB_Show_COVER_position==YES) XMB_Show_COVER_position=NO;
-			} else 
-			if(settings_position == 251) {
-				if(XMB_Show_PIC1==YES) XMB_Show_PIC1=NO;
-			}
-		}
-		else if(UI_position==GRID) {
-			if(settings_position == 250) {
-				if(grid_type==PAGE) grid_type=SCROLL;
-			} 
-			else if(settings_position == 251) {
-				if(direction==HORIZONTAL) 	direction=VERTICAL;
-			}
-			else if(settings_position == 252) {
-				if(animated==YES) 	animated=NO;	
-			}
-			else if(settings_position == 253) {
-				if(keep_prop==YES) 	keep_prop=NO;	
-			}
-			else if(settings_position == 254) {
-				if(grid_nb_columns>1) grid_nb_columns--;
-			} 
-			else if(settings_position == 255) {
-				if(grid_nb_lines>1) grid_nb_lines--;
-			}	
-		} 
-		else if(UI_position==FLOW) {
-			if(settings_position == 250) {
-				if(inverse_button==YES) inverse_button=NO;	
-			} else
-			if(settings_position == 251) {
-				if(FLOW_use_Cover==YES) FLOW_use_Cover=NO;
-			} else 
-			if(settings_position == 252) {
-				if(FLOW_Show_PIC1==YES) FLOW_Show_PIC1=NO;
-			}
-		}
-	}		
-	
-	if(new_pad & BUTTON_LEFT  || (old_pad & BUTTON_LEFT  && slow_it==0)) {
-		if(600 < settings_position && settings_position <= 637) settings_position--;
-		else if(800 <= settings_position && settings_position <= 802) {
-			if(settings_position == 800) {
-				if(GetRED(COLOR_1) > 0 && change_color_1 == TRUE) {
-					COLOR_1 = SetRED(GetRED(COLOR_1)-5 ,COLOR_1);
-				}
-				else if(GetRED(COLOR_2) > 0 && change_color_2 == TRUE) {
-					COLOR_2 = SetRED(GetRED(COLOR_2)-5 ,COLOR_2);
-				}
-				else if(GetRED(COLOR_3) > 0 && change_color_3 == TRUE) {
-					COLOR_3 = SetRED(GetRED(COLOR_3)-5 ,COLOR_3);
-				}
-				else if(GetRED(COLOR_4) > 0 && change_color_4 == TRUE) {
-					COLOR_4 = SetRED(GetRED(COLOR_4)-5 ,COLOR_4);
-				}
-			}
-			else if(settings_position == 801) {
-				if(GetGREEN(COLOR_1) > 0 && change_color_1 == TRUE) {
-					COLOR_1 = SetGREEN(GetGREEN(COLOR_1)-5 ,COLOR_1);
-				}
-				else if(GetGREEN(COLOR_2) > 0 && change_color_2 == TRUE) {
-					COLOR_2 = SetGREEN(GetGREEN(COLOR_2)-5 ,COLOR_2);
-				}
-				else if(GetGREEN(COLOR_3) > 0 && change_color_3 == TRUE) {
-					COLOR_3 = SetGREEN(GetGREEN(COLOR_3)-5 ,COLOR_3);
-				}
-				else if(GetGREEN(COLOR_4) > 0 && change_color_4 == TRUE) {
-					COLOR_4 = SetGREEN(GetGREEN(COLOR_4)-5 ,COLOR_4);
-				}
-			}
-			else if(settings_position == 802) {
-				if(GetBLUE(COLOR_1) > 0 && change_color_1 == TRUE) {
-					COLOR_1 = SetBLUE(GetBLUE(COLOR_1)-5 ,COLOR_1);
-				}
-				else if(GetBLUE(COLOR_2) > 0 && change_color_2 == TRUE) {
-					COLOR_2 = SetBLUE(GetBLUE(COLOR_2)-5 ,COLOR_2);
-				}
-				else if(GetBLUE(COLOR_3) > 0 && change_color_3 == TRUE) {
-					COLOR_3 = SetBLUE(GetBLUE(COLOR_3)-5 ,COLOR_3);
-				}
-				else if(GetBLUE(COLOR_4) > 0 && change_color_4 == TRUE) {
-					COLOR_4 = SetBLUE(GetBLUE(COLOR_4)-5 ,COLOR_4);
-				}
-			}
-		}
-	}
-	if(new_pad & BUTTON_RIGHT || (old_pad & BUTTON_RIGHT && slow_it==0)) {
-		if(600 <= settings_position && settings_position < 637) settings_position++;
-		else if(800 <= settings_position && settings_position <= 802) {
-			if(settings_position == 800) {
-				if(GetRED(COLOR_1) < 0xFF && change_color_1 == TRUE) {
-					COLOR_1 = SetRED(GetRED(COLOR_1)+5 ,COLOR_1);
-				}
-				else if(GetRED(COLOR_2) < 0xFF && change_color_2 == TRUE) {
-					COLOR_2 = SetRED(GetRED(COLOR_2)+5 ,COLOR_2);
-				}
-				else if(GetRED(COLOR_3) < 0xFF && change_color_3 == TRUE) {
-					COLOR_3 = SetRED(GetRED(COLOR_3)+5 ,COLOR_3);
-				}
-				else if(GetRED(COLOR_4) < 0xFF && change_color_4 == TRUE) {
-					COLOR_4 = SetRED(GetRED(COLOR_4)+5 ,COLOR_4);
-				}
-			}
-			else if(settings_position == 801) {
-				if(GetGREEN(COLOR_1) < 0xFF && change_color_1 == TRUE) {
-					COLOR_1 = SetGREEN(GetGREEN(COLOR_1)+5 ,COLOR_1);
-				}
-				else if(GetGREEN(COLOR_2) < 0xFF && change_color_2 == TRUE) {
-					COLOR_2 = SetGREEN(GetGREEN(COLOR_2)+5 ,COLOR_2);
-				}
-				else if(GetGREEN(COLOR_3) < 0xFF && change_color_3 == TRUE) {
-					COLOR_3 = SetGREEN(GetGREEN(COLOR_3)+5 ,COLOR_3);
-				}
-				else if(GetGREEN(COLOR_4) < 0xFF && change_color_4 == TRUE) {
-					COLOR_4 = SetGREEN(GetGREEN(COLOR_4)+5 ,COLOR_4);
-				}
-			}
-			else if(settings_position == 802) {
-				if(GetBLUE(COLOR_1) < 0xFF && change_color_1 == TRUE) {
-					COLOR_1 = SetBLUE(GetBLUE(COLOR_1)+5 ,COLOR_1);
-				}
-				else if(GetBLUE(COLOR_2) < 0xFF && change_color_2 == TRUE) {
-					COLOR_2 = SetBLUE(GetBLUE(COLOR_2)+5 ,COLOR_2);
-				}
-				else if(GetBLUE(COLOR_3) < 0xFF && change_color_3 == TRUE) {
-					COLOR_3 = SetBLUE(GetBLUE(COLOR_3)+5 ,COLOR_3);
-				}
-				else if(GetBLUE(COLOR_4) < 0xFF && change_color_4 == TRUE) {
-					COLOR_4 = SetBLUE(GetBLUE(COLOR_4)+5 ,COLOR_4);
-				}
-			}
-		}
-	}
-	
-	if(new_pad & BUTTON_CROSS) {
-		if(settings_position==0) {
-			Draw_AdjustScreen();
-		}
-		if(settings_position==1) {
-			start_loading();
-			Download_covers();
-			end_loading();
-		}
-		else if(settings_position==52) {
-			memset(keyboard_str, 0, sizeof(keyboard_str));
-			rename_scan_dir=TRUE;
-			settings_position=600;
-		}
-		else if(settings_position == 150 && Themes_position[UI_position]>=0 ) {
-			start_loading();
-			
-			print_load("Loading theme...");
-			
-			u8 ret = ExtractTheme();
-			
-			if(ret==SUCCESS) {
-				strcpy(Themes[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
-				
-				Load_Themes();
-				start_Load_GamePIC();
-			} else print_load("Failed to extract theme");
-			
-			end_loading();
-		}
-		else if(settings_position == 150 && Themes_position[UI_position]==-1 ) {
-			start_loading();
-			print_load("Disabling theme...");
-			
-			memset(Themes[UI_position], 0, sizeof(Themes[UI_position]));
-			Load_Themes();
-			start_Load_GamePIC();
-			end_loading();
-		}
-		else if(600 <= settings_position && settings_position <= 637) {
-			if(settings_position==636) {
-				if(keyb_lock==LOW) keyb_lock=UP; else
-				if(keyb_lock==UP)  keyb_lock=LOW;
-			} else
-			if(settings_position==637) {
-				strcat(keyboard_str, " ");
-			} else {
-				strcat(keyboard_str, keyboard_button[keyb_lock][settings_position-600]);
-			}
-		}
-		else if(settings_position == 101) {
-			change_color_1 = TRUE;
-			settings_position = 800;
-		}
-		else if(settings_position == 102) {
-			change_color_2 = TRUE;
-			settings_position = 800;
-		}
-		else if(settings_position == 103) {
-			change_color_3 = TRUE;
-			settings_position = 800;
-		}
-		else if(settings_position == 104) {
-			change_color_4 = TRUE;
-			settings_position = 800;
-		}
-		else if((0 <= settings_position && settings_position < 50) 
-			 || (100 <= settings_position && settings_position < 150) 
-			 || (200 <= settings_position && settings_position < 250)) 
-		{
-			settings_position+=50;
-		} 
-	}
-	
-	if(new_pad & BUTTON_SQUARE) {
-		if(settings_position==52) {
-			if(scan_dir_number>0) {
-				int i;
-				for(i=scan_dir_position; i < scan_dir_number; i++) {
-					strcpy(scan_dir[i], scan_dir[i+1]);
-				}
-				strcpy(scan_dir[scan_dir_number], "");
-				if(scan_dir_number==scan_dir_position) scan_dir_position--;
-				scan_dir_number--;
-				write_scan_dir();
-			}
-		}
-		else if(settings_position == 101) {
-			COLOR_1 = WHITE;
-		}
-		else if(settings_position == 102) {
-			COLOR_2 = GREEN;
-		}
-		else if(settings_position == 103) {
-			COLOR_3 = ORANGE;
-		}
-		else if(settings_position == 104) {
-			COLOR_4 = RED;
-		}
-		else if(settings_position == 150 && Themes_position[UI_position]>=0 && ThemeType==MGZ) {
-			memset(keyboard_str, 0, sizeof(keyboard_str));
-			strcpy(keyboard_str, Themes_Names_list[UI_position][Themes_position[UI_position]]);
-			rename_theme = TRUE;
-			settings_position=600;
-		}
-		else if(600 <= settings_position && settings_position <= 637) {
-			keyboard_str[strlen(keyboard_str)-1]=0;
-		}	
-	}
-	
-	if(new_pad & BUTTON_CIRCLE) {
-		if((0 <= settings_position && settings_position < 50) 
-		|| (100 <= settings_position && settings_position < 150)
-		|| (200 <= settings_position && settings_position < 250))
-		{
-			write_setting();
-			return BREAK;
-		}
-		else if(800 <= settings_position && settings_position <= 802) {
-			if(change_color_1 == TRUE) {
-				change_color_1 = FALSE;
-				settings_position = 101;
-			}
-			else if(change_color_2 == TRUE) {
-				change_color_2 = FALSE;
-				settings_position = 102;
-			}
-			else if(change_color_3 == TRUE) {
-				change_color_3 = FALSE;
-				settings_position = 103;
-			}
-			else if(change_color_4 == TRUE) {
-				change_color_4 = FALSE;
-				settings_position = 104;
-			}
-		}
-		else if(600 <= settings_position && settings_position <= 637 && rename_scan_dir==TRUE) {
-			if(keyboard_str[0]!=0) {
-				scan_dir_number++;
-				strcpy(scan_dir[scan_dir_number], keyboard_str);
-				write_scan_dir();
-			}
-			rename_scan_dir = FALSE;
-			settings_position=52;
-		}
-		else if(600 <= settings_position && settings_position <= 637 && rename_theme==TRUE) {
-			if(strcmp(Themes_Names_list[UI_position][Themes_position[UI_position]], keyboard_str) != 0 && keyboard_str[0]!=0) {
-				char old[128], new[128];
-				sprintf(old, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
-				sprintf(new, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], keyboard_str);
-				if( rename(old, new) == 0 ) {
-					strcpy(Themes_Names_list[UI_position][Themes_position[UI_position]], keyboard_str);
-					show_msg("Theme renamed");
-				} else show_msg("Failed");
-			}
-			rename_theme = FALSE;
-			settings_position=150;
-		}
-		else {
-			if(settings_position == 53) {
-				char sfo[255];
-				sprintf(sfo, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
-				SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, 0, sfo);
-			}
-			settings_position-=50;
-		}
-	}
-	
-	if(new_pad & BUTTON_TRIANGLE) {
-		if(600 <= settings_position && settings_position <= 637 && rename_scan_dir==TRUE) {
-			rename_scan_dir = FALSE;
-			settings_position=52;
-		}
-		else if(600 <= settings_position && settings_position <= 637 && rename_theme==TRUE) {
-			rename_theme = FALSE;
-			settings_position=150;
-		}
-		else if(settings_position == 150 && Themes_position[UI_position]>=0 ) {
-			start_loading();
-			
-			if(strcmp(Themes_Names_list[UI_position][Themes_position[UI_position]], Themes[UI_position]) != 0) {
-				
-				char locPath[128];
-				sprintf(locPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
-				Delete(locPath);
-				
-				Delete(Themes_Paths_list[UI_position][Themes_position[UI_position]]);
-				
-				if(path_info(Themes_Paths_list[UI_position][Themes_position[UI_position]]) == _NOT_EXIST) {
-					GetThemes();
-					if(Themes_position[UI_position] > Themes_number[UI_position]) Themes_position[UI_position]=Themes_number[UI_position];
-					show_msg("Theme removed");
-				} else show_msg("Failed");
-			} else show_msg("Theme used");
-			
-			end_loading();
-		}
-	}
-
-	return CONTINUE;
 }
 
 //*******************************************************
@@ -15811,44 +14558,36 @@ char *txt_viewer_content;
 
 u8 is_it_inside(char *file_path, char *str)
 {
-	FILE *f;
+	int size;
+	char *buff = LoadFile(file_path, &size);
+	if(buff==NULL) return NO;
 	
-	char *buff;
-	size_t size;
-	size_t result;
-
-	f=fopen(file_path, "rb");
-	if(f==NULL) return NO;
-	fseek (f , 0 , SEEK_END);
-	size = ftell (f);
-	fseek(f, 0, SEEK_SET);
-
-	buff = (char*) malloc (sizeof(char)*size);
-	if (buff == NULL) {free(buff); return NO;}
-
-	result = fread(buff,1,size, f);
-	if (result != size) {free (buff); fclose (f); return NO;}
-	
-	fclose(f);
-
 	if(strstr(buff, str) != NULL) {
 		free(buff);
 		return YES;
 	}
 	
 	free(buff);
+
 	return NO;
 
 }
 
 void add_to_list(char *file_path, char *str)
 {
+	
+	int size;
+	char *buff = LoadFile(file_path, &size);
+	if(buff==NULL) return;
+	
 	FILE *f;
 	f=fopen(file_path, "a");
-	if(f==NULL) return;
-	fputs("\r\n", f);
+	if(f==NULL) {free(buff); return;}
+	if(buff[strlen(buff)-1] != '\n' && size != 0) fputs("\n", f);;
 	fputs(str, f);
 	fclose(f);
+	
+	free(buff);
 }
 
 void remove_from_list(char *file_path, char *str)
@@ -16296,7 +15035,7 @@ void Draw_cursor()
 
 void cursor_input() {
 
-	//L3 move cursor
+	//L3 Grid_move cursor
 	curs_move_x = (paddata.button[6] - 128)/30;
 	curs_move_y = (paddata.button[7] - 128)/30;
 	curs_x += curs_move_x;
@@ -16876,7 +15615,6 @@ void DrawTXTInBox(float x, float y, float z, float w, float h, char *txt, u32 bg
 void txt_viewer_input()
 {
 	if(txt_viewer_activ == NO) return;
-	
 		
 	if((old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
 		hold_it++;
@@ -16918,7 +15656,6 @@ void Draw_txt_viewer()
 	Draw_Box(TXT_X-20   , TXT_Y-20   , 0, 0, TXT_W+40	, TXT_H+40	, WHITE, NO); // White Border
 
 	DrawTXTInBox(TXT_X, TXT_Y, 0, TXT_W, TXT_H, &txt_viewer_content[txt_linpos], WHITE, BLACK);
-	
 }
 
 void open_txt_viewer(char *txt_path)
@@ -17624,6 +16361,13 @@ void Option(char *item)
 		SetPerms(option_sel[0]);
 		end_loading();
 	}
+	else
+	if(strcmp(item, "Extract ZIP") == 0) { 
+		start_loading();
+		print_head("Extracting ZIP");
+		ExtractZip(option_sel[0]);
+		end_loading();
+	}
 	
 	Window(".");
 	option_activ=NO;
@@ -17865,6 +16609,10 @@ void Open_option()
 			if(ext == _DDS) {
 				option_item_N++;
 				strcpy( option_item[option_item_N] , "Convert DDS to PNG");
+			} else
+			if(ext == _ZIP) {
+				option_item_N++;
+				strcpy( option_item[option_item_N] , "Extract ZIP");
 			}
 			
 		}
@@ -17975,7 +16723,7 @@ u8 window_input()
 	if(txt_viewer_activ == YES) return CONTINUE;
 	if(SFO_viewer_activ == YES) return CONTINUE;
 	
-	//R3 move window
+	//R3 Grid_move window
 	window_x[window_activ] += (paddata.button[4] - 128)/30;
 	window_y[window_activ] += (paddata.button[5] - 128)/30;
 	if(window_x[window_activ] + window_w[window_activ] > 848 ) window_x[window_activ]=848-window_w[window_activ];
@@ -18319,12 +17067,12 @@ u8 window_input()
 		scroll_speed = 6 - paddata.PRE_R2/50;
 	} else scroll_speed = 6;
 
-	//move up scroll
+	//Grid_move up scroll
 	if(((new_pad & BUTTON_UP) || ((old_pad & BUTTON_UP) && slow_it==0)) && 0 <= window_activ ) {
 		if(window_scroll_P[window_activ] >0) window_scroll_P[window_activ]--;
 	}
 	
-	//move down scroll
+	//Grid_move down scroll
 	if(((new_pad & BUTTON_DOWN) || ((old_pad & BUTTON_DOWN) && slow_it==0)) && 0 <= window_activ ) {
 		if(window_scroll_N[window_activ] != 0)
 		if(window_scroll_P[window_activ] < window_scroll_N[window_activ]) window_scroll_P[window_activ]++;
@@ -18395,7 +17143,6 @@ void Draw_input()
 void Draw_FileExplorer(char *path)
 {
 	
-	
 	Window(NULL);
 	
 	if(path!=NULL) Window(path);
@@ -18434,21 +17181,184 @@ void Draw_FileExplorer(char *path)
 }
 
 //*******************************************************
-// PS2 Game MENU
+// MENU
 //*******************************************************
 
-char ps2_items[32][64];
-int ps2_items_N;
-char ps2_subitems[32][32][64];
-int ps2_subitems_N[32];
-char CRC_STR[8];
-char PS2_ID[10];
-char pnach[128];
+void init_MENU()
+{
+	int i;
+	
+	memset(ITEMS, 0, sizeof(ITEMS));
+	memset(ITEMS_VALUE, 0, sizeof(ITEMS_VALUE));
+	
+	ITEMS_NUMBER = -1;
+	for(i=0; i<MAX_ITEMS; i++) ITEMS_VALUE_NUMBER[i]=-1;
+	
+	memset(ITEMS_VALUE_SHOW, 0, sizeof(ITEMS_VALUE_SHOW));
+	memset(ITEMS_TYPE, 0, sizeof(ITEMS_TYPE));
+		
+	memset(TITLES, 0, sizeof(TITLES));
+	
+	MENU_COLUMN_ITEMS_NUMBER=-1;
+	MENU_COLUMN_ITEMS_W = 200;
+	
+}
 
-u16 ps2_menu_position;
-s8 submenu = -1;
-s16 ps2_submenu_position[32];
-u8 ps2_submenu_show[32];
+void add_item_MENU(char *str, u8 type)
+{
+	ITEMS_NUMBER++;
+	strcpy(ITEMS[ITEMS_NUMBER], str);
+	ITEMS_TYPE[ITEMS_NUMBER]=type;
+	
+	if(type==ITEM_CHECKBOX) ITEMS_VALUE_NUMBER[ITEMS_NUMBER] = 1;
+}
+
+void add_item_value_MENU(char *str)
+{
+	ITEMS_VALUE_NUMBER[ITEMS_NUMBER]++;
+	strcpy(ITEMS_VALUE[ITEMS_NUMBER][ITEMS_VALUE_NUMBER[ITEMS_NUMBER]], str);
+}
+
+void add_title_MENU(char *str)
+{
+	strcpy(TITLES[ITEMS_NUMBER+1], str);
+}
+
+u8 item_is(char *str)
+{
+	if(strcmp(ITEMS[ITEMS_POSITION], str) == 0) return YES;
+	
+	return NO;
+}
+
+u8 item_value_is(char *str)
+{
+	if(strcmp(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], str) == 0 ) return YES;
+
+	return NO;
+}
+
+void Draw_MENU()
+{
+	if(MENU == NO) return;
+	
+	int x1, x2, y=40, y1, i;
+	
+	y1=y;
+	
+	SetFontSize(15, 15);
+	SetFontZ(0);
+	
+	if(MENU_SIDE == NO) {
+		MENU_ITEMS_X = 50;
+		MENU_ITEMS_VALUE_X = 250;
+		Draw_BGS();
+	} else {
+		MENU_ITEMS_X = 550;
+		MENU_ITEMS_VALUE_X = 720;
+		Draw_SIDEBAR(MENU_ITEMS_X-10);
+	}
+	
+	x1 = MENU_ITEMS_X;
+	x2 = MENU_ITEMS_VALUE_X;
+	
+	for(i=0; i<=ITEMS_NUMBER; i++) {
+		
+		if(TITLES[i][0] != 0) {
+			y+=10;
+			Draw_title(x1, y, TITLES[i]);
+			y+=new_line(1)+15;
+			y1=y;
+		}
+		
+		if(ITEMS_TYPE[i] == ITEM_TEXTBOX) {
+			if(ITEMS_POSITION == i) SetFontColor(COLOR_2, 0x0); 
+			else SetFontColor(COLOR_1, 0x0);
+			
+			DrawString(x1, y, ITEMS[i]);
+			
+			SetFontColor(COLOR_1, 0x0);
+			
+			if( ITEMS_VALUE_NUMBER[i] != -1 ) {
+				if(IN_ITEMS_VALUE == YES && ITEMS_POSITION == i) {
+					SetFontColor(COLOR_2, 0x0);
+					if( ITEMS_VALUE_NUMBER[i] > 0 ) {
+						float w=GetWidth(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
+						float h=GetFontHeight();
+						DrawDown(x2+w/2, y+h*0.85);
+						DrawUp(x2+w/2,  y);	
+					}
+					DrawString(x2, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
+				} else {
+					SetFontColor(COLOR_1, 0x0);
+					if(ITEMS_VALUE_SHOW[i]==YES) DrawString(x2, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
+				}
+			}
+			y+=new_line(1);
+		} else
+		if(ITEMS_TYPE[i] == ITEM_CHECKBOX) {
+			if(i>0) {
+				if(ITEMS_TYPE[i-1] == ITEM_TEXTBOX) { y+=10; y1=y; }
+			}
+			
+			u32 color;
+			if(ITEMS_POSITION==i) color = COLOR_2; else color = COLOR_1;
+		
+			Draw_checkbox(ITEMS_VALUE_POSITION[i], x1, y, ITEMS[i], color);
+			y+=new_line(1);
+			
+		} else
+		if(ITEMS_TYPE[i] == ITEM_COLORBOX) {			
+			if(ITEMS_POSITION == i) SetFontColor(COLOR_2, 0x0); 
+			else SetFontColor(COLOR_1, 0x0);
+			
+			DrawString(x1, y, ITEMS[i]);
+			
+			u32 color;
+			memcpy(&color, ITEMS_VALUE[i][0], 4);
+			
+			Draw_Box(x2, y, 0, 0, 16, 10, color, NO);
+			if(ITEMS_POSITION == i) {x_COLOR=x2; y_COLOR=y+12;}
+			
+			y+=new_line(1);
+		}
+		
+		SetFontColor(COLOR_1, 0x0);
+		
+		if(1<i && MENU_COLUMN_ITEMS_NUMBER != -1) {
+			if( (i+1)%MENU_COLUMN_ITEMS_NUMBER == 0 ) {
+				x1+=MENU_COLUMN_ITEMS_W;
+				x2+=MENU_COLUMN_ITEMS_W;
+				y=y1;
+			}
+		}
+	
+	}
+	
+}
+
+typedef void (*func)();
+
+void EmptyFunc()
+{
+	return;
+}
+
+func Draw_MENU_input = &EmptyFunc;
+
+func input_MENU = &EmptyFunc;
+
+
+//*******************************************************
+// PS2 MENU
+//*******************************************************
+
+void open_PS2_GAME_MENU();
+
+char CRC_STR[8];
+char PS2_ID[12];
+char pnach[128];
+char WS[128];
 
 #define BCNETEMU_ON			1
 #define BCNETEMU_OFF		0
@@ -18466,6 +17376,177 @@ int ps2_netemu_cobra(int param)
 {
 	lv2syscall2(8, (uint64_t)0x1ee9, (uint64_t)(int)param);
 	return_to_user_prog(int);
+}
+
+u8 Create_PS2_CONFIG()
+{
+	char config_path[255];
+	
+	sprintf(config_path, "%s.CONFIG", list_game_path[position]);
+	Delete(config_path);
+	
+	FILE *f;
+	f = fopen(config_path, "wb");
+	if(f==NULL) {
+		return FAILED;
+	}
+	
+	u64 x3D = 0x3D00000057440000;
+	fwrite(&x3D, sizeof(u64), 1, f);
+	
+	int i;
+	unsigned int value;
+	for(i=0; i<=ITEMS_NUMBER; i++) {
+		if(ITEMS_VALUE_POSITION[i]) {
+			sscanf(&ITEMS[i][2], "%X", &value);
+			value = reverse32(value);
+			fwrite(&value, sizeof(u32), 1, f);
+		}
+	}
+	
+	value = 0;
+	fwrite(&value, sizeof(u32), 1, f);
+	
+	char ID[12];
+	strcpy(ID, PS2_ID);
+	ID[4]='-';
+	ID[8]=ID[9];
+	ID[9]=ID[10];
+	ID[10]=0;
+	fputs(ID, f);
+	
+	fclose(f);
+
+	return SUCCESS;
+}
+
+void init_PS2_CONFIG_EDITOR()
+{
+	init_MENU();
+	
+	add_title_MENU("PS2 CONFIG EDITOR");
+	
+	add_item_MENU("0x03", ITEM_CHECKBOX);
+	add_item_MENU("0x06", ITEM_CHECKBOX);
+	add_item_MENU("0x14", ITEM_CHECKBOX);
+	add_item_MENU("0x19", ITEM_CHECKBOX);
+	add_item_MENU("0x1A", ITEM_CHECKBOX);
+	add_item_MENU("0x1B", ITEM_CHECKBOX);
+	add_item_MENU("0x22", ITEM_CHECKBOX);
+	add_item_MENU("0x23", ITEM_CHECKBOX);
+	add_item_MENU("0x2A", ITEM_CHECKBOX);
+	add_item_MENU("0x2B", ITEM_CHECKBOX);
+	add_item_MENU("0x35", ITEM_CHECKBOX);
+	add_item_MENU("0x3E", ITEM_CHECKBOX);
+	add_item_MENU("0x40", ITEM_CHECKBOX);
+	add_item_MENU("0x41", ITEM_CHECKBOX);
+	add_item_MENU("0x44", ITEM_CHECKBOX);
+	add_item_MENU("0x45", ITEM_CHECKBOX);
+	add_item_MENU("0x46", ITEM_CHECKBOX);
+	add_item_MENU("0x47", ITEM_CHECKBOX);
+	add_item_MENU("0x49", ITEM_CHECKBOX);
+	add_item_MENU("0x4A", ITEM_CHECKBOX);
+	add_item_MENU("0x50", ITEM_CHECKBOX);
+	
+	MENU_COLUMN_ITEMS_NUMBER = 7;
+	
+}
+
+u8 input_PS2_CONFIG_EDITOR()
+{
+
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
+	
+	if(old_pad & BUTTON_R2) {
+		scroll_speed = 6 - paddata.PRE_R2/50;
+	} else scroll_speed = 6;
+
+	if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
+		if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+		else ITEMS_POSITION--;	
+	}
+	
+	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
+		if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+		else ITEMS_POSITION++;
+	}
+	
+	if(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) {
+		if(ITEMS_POSITION + MENU_COLUMN_ITEMS_NUMBER <= ITEMS_NUMBER) ITEMS_POSITION += MENU_COLUMN_ITEMS_NUMBER;
+	}
+	
+	if(new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) {
+		if(ITEMS_POSITION - MENU_COLUMN_ITEMS_NUMBER >= 0) ITEMS_POSITION -= MENU_COLUMN_ITEMS_NUMBER;
+	}
+	
+	if(new_pad & BUTTON_CROSS) {
+		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) {
+			ITEMS_VALUE_POSITION[ITEMS_POSITION] = NO;
+		} else {
+			ITEMS_VALUE_POSITION[ITEMS_POSITION]= YES;
+		}
+	} else
+	if(new_pad & BUTTON_START) {
+		if( Create_PS2_CONFIG() == SUCCESS ) show_msg("Done !");
+		else show_msg("Failed !");
+		return BREAK;
+	} else
+	if(new_pad & BUTTON_CIRCLE) {
+		return BREAK;
+	}
+	
+	return CONTINUE;
+}
+
+void Draw_PS2_CONFIG_EDITOR_input()
+{
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, "Check/Uncheck", BUTTON_CROSS);
+	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, "Create CONFIG", BUTTON_START );
+}
+
+void Draw_PS2_CONFIG_EDITOR()
+{
+	start_loading();
+	init_PS2_CONFIG_EDITOR();
+	ITEMS_POSITION = 0;
+	memset(ITEMS_VALUE_POSITION, 0, sizeof(ITEMS_VALUE_POSITION));
+	MENU_SIDE = NO;
+	MENU=YES;
+	end_loading();
+	
+	while(1)
+	{		
+		cls();
+		
+		Draw_BGS();
+		Draw_Notification();
+		
+		Draw_MENU();
+		
+		Draw_PS2_CONFIG_EDITOR_input();
+		
+		tiny3d_Flip();
+		
+		ps3pad_read();
+		
+		if( input_PS2_CONFIG_EDITOR() == BREAK ) break;
+		
+	}
+	
+	open_PS2_GAME_MENU();
 }
 
 u32 Get_CRC(char *Elf_Name)
@@ -18503,18 +17584,13 @@ u8 is_pnached()
 	return YES;
 }
 
-u8 restore_pnach()
+u8 restore_pnach(char *PnachRest)
 {
-	char PnachRest[128];
 	FILE *fi;
 	FILE *fr;
 	u32 offset;
 	u32 data;
-	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);
-	
-	if(path_info(PnachRest) == _NOT_EXIST) 
-		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2_ID);
-	
+
 	fi = fopen(list_game_path[position], "rb+");
 	if(fi==NULL) { print_load("Error : Cannot open ISO"); return FAILED;}
 	
@@ -18546,28 +17622,23 @@ u8 restore_pnach()
 	
 	Delete(PnachRest);
 	
+	sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+	
 	return SUCCESS;
 }
 
-u8 apply_pnach()
+u8 apply_pnach(char *pnach_file, char *PnachRest)
 {
 	FILE* fp;
 	FILE* fi;
 	FILE* fr;
 	char line[128];
-	char PnachRest[128];
 	
 	u32 offset;
 	u32 new_data;
 	u32 old_data;
 	
-	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2", ManaGunZ_id);
-	
-	mkdir(PnachRest, 0777);
-	
-	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2_ID);
-
-	fp = fopen(pnach, "rb");
+	fp = fopen(pnach_file, "rb");
 	if(fp==NULL) { print_load("Error : failed to open pnach file");return FAILED; }
 	
 	fi = fopen(list_game_path[position], "rb+");
@@ -18612,22 +17683,17 @@ u8 apply_pnach()
 			char *token;
 			unsigned long int value=0;
 			token = strtok (line, ", "); //toggle patch
-			print_load(token);
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //cpu
-			print_load(token);
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //addr
-			print_load(token);
 			if(token == NULL) continue;
 			sscanf(token, "%8lX", &value);
 			offset = value;
 			value = 0;
 			token = strtok (NULL, ", "); //type
-			print_load(token);
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //data
-			print_load(token);
 			sscanf(token, "%8lX", &value);
 			new_data = value;
 			
@@ -18643,7 +17709,7 @@ u8 apply_pnach()
 				fclose(fr);
 				fclose(fi);
 				fclose(fp);
-				restore_pnach();
+				restore_pnach(PnachRest);
 				return FAILED;
 			}
 			
@@ -18663,16 +17729,6 @@ u8 apply_pnach()
 	fclose(fr);
 	fclose(fi);
 	fclose(fp);
-	
-	sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
-	
-	char new_CRC[128];
-	sprintf(new_CRC, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);
-	
-	if( rename(PnachRest, new_CRC) != 0 ) {
-		print_load("Error : failed to rename PnachRestor file");
-		if( restore_pnach() == FAILED ) print_load("Error : failed to restore Pnach");
-	}
 	
 	return SUCCESS;
 }
@@ -18717,31 +17773,57 @@ void check_CONFIG(u8* OFFICIAL, u8* CUSTOM, u8* used)
 	*used = tmp_used;
 }
 
-void init_ps2_menu()
+u8 WS_exist()
+{
+	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.ws", ManaGunZ_id, CRC_STR);
+	
+	if(path_info(WS) == _NOT_EXIST) return NO;
+	
+	return YES;
+}
+
+void get_WS()
+{
+	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.ws", ManaGunZ_id, CRC_STR);
+	
+	if(path_info(WS) != _NOT_EXIST) return;
+	
+	char ZIP_WS[32];
+	char ZIP[128];
+	
+	sprintf(ZIP_WS, "%s.pnach", CRC_STR);
+	sprintf(ZIP, "/dev_hdd0/game/%s/USRDIR/sys/ws.zip", ManaGunZ_id);
+	
+	ExtractZipFile(ZIP, ZIP_WS, WS);
+}
+
+u8 is_WS()
+{
+	char WSRest[128];
+	
+	sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, CRC_STR);
+	
+	if(path_info(WSRest) == _NOT_EXIST) return NO; else
+	return YES;
+}
+
+void init_PS2_GAME_MENU()
 {
 	int i,j;
 	
-	submenu = -1;
+	init_MENU();
 	
-	for(i=0; i<32; i++) ps2_submenu_show[i]=NO;
-	for(i=0; i<32; i++) ps2_submenu_position[i]=0;
+	add_title_MENU("Game Options");
 	
-	ps2_items_N = -1;
-	memset(ps2_items, 0, sizeof(ps2_items));
-	for(i=0; i<32; i++) ps2_subitems_N[i] = -1;
-	memset(ps2_subitems, 0, sizeof(ps2_subitems));
-	
-	ps2_items_N++;
-	strcpy( ps2_items[ps2_items_N] , "Rename" );
-	
-	ps2_items_N++;
-	if( is_favorite(list_game_path[position]) == NO )	strcpy( ps2_items[ps2_items_N] , "Add to Favorite" );
-	else strcpy( ps2_items[ps2_items_N] , "Remove from Favorite" );
-	
+	add_item_MENU("Rename", ITEM_TEXTBOX);
+
+	if( is_favorite(list_game_path[position]) == NO )
+		add_item_MENU("Add to Favorite", ITEM_TEXTBOX);
+	else 
+		add_item_MENU("Remove from Favorite", ITEM_TEXTBOX);
 	
 	if( is_pnached() ) {
-		ps2_items_N++;
-		strcpy( ps2_items[ps2_items_N] , "Restore PNACH" );
+		add_item_MENU("Restore PNACH", ITEM_TEXTBOX);
 	}
 	else {
 		sprintf(pnach, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnach", ManaGunZ_id, CRC_STR);
@@ -18752,76 +17834,80 @@ void init_ps2_menu()
 			}
 		}
 		if(path_info(pnach) == _FILE) {
-			ps2_items_N++;
-			strcpy( ps2_items[ps2_items_N] , "Apply PNACH" );
+			add_item_MENU("Apply PNACH", ITEM_TEXTBOX);
 		}
+	}
+	
+	if( is_WS() ) {
+		add_item_MENU("Disable WideScreen", ITEM_TEXTBOX);
+	} else 
+	if( WS_exist() ) {
+		add_item_MENU("Enable WideScreen", ITEM_TEXTBOX);
 	}
 	
 	i = ps2_netemu_cobra(BCNETEMU_STATUS);
 	if(i != BCNETEMU_ISNOTBC) {
 		if(i == BCNETEMU_OFF) {
-			ps2_items_N++;
-			strcpy( ps2_items[ps2_items_N] , "Enable NetEMU" );
+			add_item_MENU("Enable NetEMU", ITEM_TEXTBOX);
 		} else
 		if(i == BCNETEMU_ON) {
-			ps2_items_N++;
-			strcpy( ps2_items[ps2_items_N] , "Disable NetEMU" );
+			add_item_MENU("Disable NetEMU", ITEM_TEXTBOX);
 		}	
 	}
 	
-	ps2_items_N++;
-	strcpy( ps2_items[ps2_items_N] , "CONFIG to use" );
+	add_item_MENU("CONFIG to use", ITEM_TEXTBOX);
+	
 	u8 OFFICIAL, CUSTOM, used;
 	check_CONFIG(&OFFICIAL, &CUSTOM, &used);
-	ps2_submenu_show[ps2_items_N]=YES;
-	ps2_subitems_N[ps2_items_N]++;
-	strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "None");
-	if(used == CONFIG_NONE) ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+	
+	add_item_value_MENU("None");
+	if(used == CONFIG_NONE) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
 	
 	if(OFFICIAL) {
-		ps2_subitems_N[ps2_items_N]++;
-		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "Official");
-		if(used == CONFIG_OFFICIAL) ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+		add_item_value_MENU("Official");
+		if(used == CONFIG_OFFICIAL) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
 	}
 	if(CUSTOM) {
-		ps2_subitems_N[ps2_items_N]++;
-		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "Custom");
-		if(used == CONFIG_CUSTOM) ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+		add_item_value_MENU("Custom");
+		if(used == CONFIG_CUSTOM) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
 	}
 	if(used == CONFIG_UNK) {
-		ps2_subitems_N[ps2_items_N]++;
-		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "Unknown");
-		ps2_submenu_position[ps2_items_N]=ps2_subitems_N[ps2_items_N];
+		add_item_value_MENU("Unknown");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
 	}
-
-	ps2_items_N++;
-	strcpy( ps2_items[ps2_items_N] , "Check MD5" );
 	
-	ps2_items_N++;
-	strcpy( ps2_items[ps2_items_N] , "Copy" );
+	add_item_MENU("Create CONFIG", ITEM_TEXTBOX);
+	
+	add_item_MENU("Check MD5", ITEM_TEXTBOX);
+	
+	if(device_number != 0) {
+		add_item_MENU("Copy", ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
 			for(i=0; i<=device_number; i++) {
 				if(strstr(list_game_path[position], list_device[i])) continue;
-				ps2_subitems_N[ps2_items_N]++;
-				sprintf(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "/%s/%s", list_device[i], scan_dir[j]);
+				char tmp[128];
+				sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+				add_item_value_MENU(tmp);
 			}
 		}
+	}
 	
-	ps2_items_N++;
-	strcpy( ps2_items[ps2_items_N] , "Delete" );
-		ps2_subitems_N[ps2_items_N]++;
-		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "YES");
-		ps2_subitems_N[ps2_items_N]++;
-		strcpy(ps2_subitems[ps2_items_N][ps2_subitems_N[ps2_items_N]], "NO");
+	add_item_MENU("Delete", ITEM_TEXTBOX);
 	
-	ps2_items_N++;
-	strcpy( ps2_items[ps2_items_N] , "Properties" );
+	add_item_MENU("Properties", ITEM_TEXTBOX);
 	
 }
 
-u8 PS2_option()
+void close_PS2_GAME_MENU()
 {
-	if(strcmp(ps2_items[ps2_menu_position], "Rename") == 0) {
+	Draw_MENU_input = &EmptyFunc;
+	input_MENU = &EmptyFunc;
+	MENU=NO;
+}
+
+u8 PS2_GAME_MENU_CROSS()
+{
+	if(item_is("Rename")) {
 		char New_Name[255];
 		strcpy(New_Name, &strrchr(list_game_path[position], '/')[1]);
 		strtok(New_Name, ".");
@@ -18841,103 +17927,142 @@ u8 PS2_option()
 			}
 		}
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Add to Favorite") == 0) {
+	if(item_is("Add to Favorite")) {
 		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
 		else show_msg("Failed");
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Remove from Favorite") == 0) {
+	if(item_is("Remove from Favorite")) {
 		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
 		else show_msg("Failed");
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Restore PNACH") == 0) {
+	if(item_is("Restore PNACH")) {
 		start_loading();
-		u8 ret = restore_pnach();
+		char PnachRest[128];
+		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);
+		u8 ret = restore_pnach(PnachRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg("Done !");
 		else show_msg("Failed !");
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Apply PNACH") == 0) {
+	if(item_is("Apply PNACH")) {
 		start_loading();
-		u8 ret = apply_pnach();
+		char PnachRest[128];
+		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2_ID);
+		u8 ret = apply_pnach(pnach, PnachRest);
+		if( ret == SUCCESS) {
+			sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+			char new_CRC[128];
+			sprintf(new_CRC, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, CRC_STR);	
+			if( rename(PnachRest, new_CRC) != 0 ) {
+				print_load("Error : failed to rename PnachRestor file");
+				if( restore_pnach(PnachRest) == FAILED ) print_load("Error : failed to restore Pnach");
+			}
+		}		
 		end_loading();
 		if( ret == SUCCESS) show_msg("Done !");
 		else show_msg("Failed !");
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Enable NetEMU") == 0) {
+	if(item_is("Enable WideScreen")) {
+		start_loading();
+		char WSRest[128];
+		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2_ID);
+		u8 ret = apply_pnach(WS, WSRest);
+		if( ret == SUCCESS) {
+			sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+			char new_CRC[128];
+			sprintf(new_CRC, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, CRC_STR);
+			if( rename(WSRest, new_CRC) != 0 ) {
+				print_load("Error : failed to rename PnachRestor file");
+				if( restore_pnach(WSRest) == FAILED ) print_load("Error : failed to restore Pnach");
+			}
+		}
+		end_loading();
+		if( ret == SUCCESS) show_msg("Done !");
+		else show_msg("Failed !");
+	} else 
+	if(item_is("Disable WideScreen")) {
+		start_loading();
+		char WSRest[128];
+		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, CRC_STR);
+		u8 ret = restore_pnach(WSRest);
+		end_loading();
+		if( ret == SUCCESS) show_msg("Done !");
+		else show_msg("Failed !");
+	} else 
+	if(item_is("Enable NetEMU")) {
 		if( ps2_netemu_cobra(BCNETEMU_ON) == BCNETEMU_ON) show_msg("NetEMU enabled");
 		else show_msg("Failed !");
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Disable NetEMU") == 0) {
+	if(item_is("Disable NetEMU")) {
 		if( ps2_netemu_cobra(BCNETEMU_OFF) == BCNETEMU_OFF) show_msg("NetEMU disabled");
 		else show_msg("Failed !");
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Check MD5") == 0) {
+	if(item_is("Create CONFIG")) {
+		Draw_PS2_CONFIG_EDITOR();
+	} else 
+	if(item_is("Check MD5")) {
 		start_loading();
 		u8 ret = CheckMD5(list_game_path[position]);
 		end_loading();
-		
 		if(ret == SUCCESS) {
 			char temp[255];
 			strcpy(temp, list_game_path[position]);
 			temp[strlen(temp)-4]=0;
 			strcat(temp, "_CHECK.md5");
 			open_txt_viewer(temp);
-			
-			Draw_FileExplorer(NULL);
 		}
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Copy") == 0) {
+	if(item_is("Copy")) {
 		start_copy_loading();
 		gathering=YES;
 		get_size(list_game_path[position], YES);
 		gathering=NO;
 		strcpy(copy_src, list_game_path[position]);
-		sprintf(copy_dst, "%s/%s", ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], &strrchr(list_game_path[position], '/')[1] );
+		sprintf(copy_dst, "%s/%s", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], &strrchr(list_game_path[position], '/')[1] );
 		if( Copy(copy_src, copy_dst) == SUCCESS )
 			show_msg("Done !");
 		else
 			show_msg("Failed !");
 		end_copy_loading();
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Delete") == 0 
-	&& strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "YES") == 0 ) 
+	if(item_is("Delete")) 
 	{
-		start_loading();
-		u8 ret = Delete_Game(NULL, position);
-		end_loading();
-		if(ret==SUCCESS) {
-			show_msg("Game deleted");
-			return BREAK;
-		} else show_msg("Failed to delete game");
+		char diag_msg[512];
+		sprintf(diag_msg, "Do you realy want to delete '%s' ?\nPath : %s\n", list_game_title[position], list_game_path[position]);
+		if( DrawDialogYesNo(diag_msg) == YES) {
+			start_loading();
+			u8 ret = Delete_Game(NULL, position);
+			end_loading();
+			if(ret==SUCCESS) {
+				show_msg("Game deleted");
+				return BREAK;
+			} else show_msg("Failed to delete game");
+		}
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "CONFIG to use") == 0 )
+	if(item_is("CONFIG to use"))
 	{	
 		char CONFIG_path[128];
 		strcpy(CONFIG_path, list_game_path[position]);
 		strcat(CONFIG_path, ".CONFIG");
-	
-		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "None") == 0 ) {
+		
+		if(item_value_is("None")) {
 			Delete(CONFIG_path);
 		} else
-		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "Official") == 0 ) {
+		if(item_value_is("Official")) {
 			Delete(CONFIG_path);
 			char loc_CONFIG[128];
 			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, PS2_ID);
 			Copy(loc_CONFIG, CONFIG_path);
 		} else 
-		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "Custom") == 0 ) {
+		if(item_value_is("Custom")) {
+			Delete(CONFIG_path);
 			char loc_CONFIG[128];
 			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
 			Copy(loc_CONFIG, CONFIG_path);
-		} else
-		if(strcmp(ps2_subitems[ps2_menu_position][ps2_submenu_position[ps2_menu_position]], "Unknown") == 0 ) {
-			char loc_CONFIG[128];
-			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
-			Delete(loc_CONFIG);
-			Copy(CONFIG_path, loc_CONFIG);
 		}
+		
 	} else 
-	if(strcmp(ps2_items[ps2_menu_position], "Properties" ) == 0) {
+	if(item_is("Properties")) {
 		start_loading();
 		gathering=YES;
 		Get_Game_Size(list_game_path[position]);
@@ -18951,71 +18076,15 @@ u8 PS2_option()
 		nb_directory=0;
 	}
 	
-	init_ps2_menu();
+	init_PS2_GAME_MENU();
 	
 	return CONTINUE;
 }
 
-void Draw_title(float x, float y, char *str)
+void Draw_PS2_GAME_MENU_input()
 {
-	int xt;
-	Draw_Box(x+5, y+4, 0, 0, 8, 8, COLOR_3, NO);
-	SetFontColor(COLOR_3, 0x0);
-	xt=DrawString(x+20, y, str);
-	y+=new_line(1);
-	Draw_Box(x, y, 0, 0, xt-x, 2, COLOR_3, NO); //underline
-	y+=5;
+	if(MENU==NO) return;
 	
-	SetFontColor(COLOR_1, 0x0);
-}
-
-void Draw_PS2_menu()
-{
-	int x1=50, x2=250, y=40, i;
-
-	SetFontSize(18, 18);
-	SetFontColor(COLOR_1, 0x0);
-	
-	DrawString(x2, y, list_game_title[position]);
-	Draw_title(x1, y, "Game Options");
-	y+=new_line(1)+10;
-	
-	SetFontSize(15, 15);
-		
-	for(i=0; i<=ps2_items_N; i++) {
-		if(ps2_menu_position == i) SetFontColor(COLOR_2, 0x0); 
-		else SetFontColor(COLOR_1, 0x0);
-		
-		DrawString(x1, y, ps2_items[i]);
-		
-		SetFontColor(COLOR_1, 0x0);
-		
-		if( ps2_subitems_N[i] >= 0 ) {
-		
-			if(submenu == i) {
-				SetFontColor(COLOR_2, 0x0);
-				if( ps2_subitems_N[i] > 0 ) {
-					float w=GetWidth(ps2_subitems[i][ps2_submenu_position[i]]);
-					float h=GetFontHeight();
-					DrawDown(x2+w/2, y+h*0.85);
-					DrawUp(x2+w/2,  y);	
-				}
-				DrawString(x2, y, ps2_subitems[i][ps2_submenu_position[i]]);
-			} else {
-				SetFontColor(COLOR_1, 0x0);
-				if(ps2_submenu_show[i]==YES) DrawString(x2, y, ps2_subitems[i][ps2_submenu_position[i]]);
-			}
-		}
-		
-		y+=new_line(1);
-		
-		SetFontColor(COLOR_1, 0x0);
-	}
-	
-}
-
-void Draw_PS2_input()
-{
 	float x=25;
 	float y=485;
 	SetFontSize(15, 15);
@@ -19025,11 +18094,11 @@ void Draw_PS2_input()
 	x=DrawButton(x, y, "Enter", BUTTON_CROSS);
 	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
 	x=DrawButton(x, y, "Navigate", BUTTON_UP | BUTTON_DOWN);
-
 }
 
-u8 PS2_input()
+void input_PS2_GAME_MENU()
 {
+	if(MENU==NO) return;
 	
 	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
 		hold_it++;
@@ -19044,100 +18113,1857 @@ u8 PS2_input()
 	} else scroll_speed = 6;
 
 	if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
-		if(submenu == -1) {
-			if(ps2_menu_position == 0) ps2_menu_position = ps2_items_N;
-			else ps2_menu_position--;
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+			else ITEMS_POSITION--;
 		} else {
-			if(ps2_submenu_position[submenu] == 0) ps2_submenu_position[submenu] = ps2_subitems_N[submenu];
-			else ps2_submenu_position[submenu]--;
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
 		}
 	}
 	
 	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
-		if(submenu == -1) {
-			if(ps2_menu_position == ps2_items_N) ps2_menu_position = 0;
-			else ps2_menu_position++;
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+			else ITEMS_POSITION++;
 		} else {
-			if(ps2_submenu_position[submenu] == ps2_subitems_N[submenu]) ps2_submenu_position[submenu] = 0 ;
-			else ps2_submenu_position[submenu]++;
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
 		}
 	}
 	
 	if(new_pad & BUTTON_CROSS) {
-		if(submenu == -1 && ps2_subitems_N[ps2_menu_position] != -1) {
-			submenu = ps2_menu_position;
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			IN_ITEMS_VALUE = YES;
 		} else {
-			if( PS2_option() == BREAK ) return BREAK;
+			if( PS2_GAME_MENU_CROSS() == BREAK ) close_PS2_GAME_MENU();
+		}
+	} else
+	if(new_pad & BUTTON_CIRCLE) {
+		if(IN_ITEMS_VALUE == NO) close_PS2_GAME_MENU();
+		else {
+			init_PS2_GAME_MENU();
+			IN_ITEMS_VALUE = NO;
+		}
+	}
+}
+
+void open_PS2_GAME_MENU()
+{
+	start_loading();
+	Get_PS2ID(list_game_path[position], PS2_ID);
+	sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+	get_WS();
+	init_PS2_GAME_MENU();
+	ITEMS_POSITION = 0;
+	memset(ITEMS_VALUE_POSITION, 0, sizeof(ITEMS_VALUE_POSITION));
+	MENU_SIDE=use_sidemenu;
+	IN_ITEMS_VALUE=NO;
+	Draw_MENU_input = &Draw_PS2_GAME_MENU_input;
+	input_MENU = &input_PS2_GAME_MENU;
+	end_loading();
+	MENU=YES;
+}
+
+//*******************************************************
+// PS3 MENU
+//*******************************************************
+
+void peek_IDPS()
+{
+	u8 i;
+	for(i=0; i<0x10; i++) {
+		IDPS[i]=lv2peek8(OFFSET_2_IDPS + i);
+	}
+}
+
+void poke_IDPS()
+{
+	u8 i;
+	for(i=0; i<0x10; i++) {
+		lv2poke8(OFFSET_1_IDPS + i, IDPS[i]);
+		lv2poke8(OFFSET_2_IDPS + i, IDPS[i]);
+	}
+}
+
+void LoadEID5_IDPS()
+{
+	u32 source, read;
+	u64 offset;
+    u64 buffer[ 0x40 ];
+    int ret = 1;
+    
+    ret = open_device( 0x100000000000004ull, &source );
+    
+    if( ret != 0 ) {
+		offset = 0x20D; 
+		close_device( source );
+		open_device( 0x100000000000001ull, &source );
+	}
+	else offset = 0x181; 
+   
+    read_device( source, offset, 0x1, buffer, &read, 0x22 );
+	close_device( source );
+	
+	memcpy(IDPS, &buffer[ 0x3a ], 0x10);
+}
+
+u8 CHOOSE_IDPS_position=0;
+
+void Draw_CHOOSE_IDPS_menu()
+{
+	int x = 70;
+	int y = 512/2;
+	int x1=x;
+	
+	SetFontSize(20, 20);
+	
+	u8 i;
+	for(i=0; i<0x10; i++) x1=DrawString(x1, -50, "FF");
+	
+	Draw_Box(0, 0, 0, 0, 848, 512, 0x00000080, NO);
+	Draw_Box(50, y-15 , 0, 10, x1+20+20, 15+25+10+15, GREY, NO);
+	
+	
+	SetFontColor(COLOR_3, 0x0);
+	SetFontZ(0);
+	x = DrawString(x,y, "00000001008");
+
+	if(CHOOSE_IDPS_position==0) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x, y, "%X", IDPS[0x5] - (IDPS[5] >> 4)*0x10 );
+	if(CHOOSE_IDPS_position==0) {
+		if(IDPS[0x5] - (IDPS[0x5] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0x5] - (IDPS[0x5] >> 4)*0x10 > 0x2) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	SetFontColor(COLOR_3, 0x0);
+	x = DrawString(x,y, "000");
+	
+	//0x7
+	if(CHOOSE_IDPS_position==1) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0x7] - (IDPS[0x7] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==1) {
+		if(IDPS[0x7]<0x0E) DrawUp((x+x1)/2, y);
+		if(IDPS[0x7]>0x01) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0x8
+	if(CHOOSE_IDPS_position==2) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0x8] >> 4));
+	if(CHOOSE_IDPS_position==2) {
+		if((IDPS[0x8] >> 4) == 0x0 || (IDPS[0x8] >> 4) == 0x1) DrawUp((x+x1)/2, y);
+		if((IDPS[0x8] >> 4) == 0x1 || (IDPS[0x8] >> 4) == 0xF) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	if(CHOOSE_IDPS_position==3) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0x8] - (IDPS[0x8] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==3) {
+		if(IDPS[0x8] - (IDPS[0x8] >> 4)*0x10 == 0x0) DrawUp((x+x1)/2, y); else
+		if(IDPS[0x8] - (IDPS[0x8] >> 4)*0x10 == 0x4) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0x9
+	if(CHOOSE_IDPS_position==4) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0x9] >> 4));
+	if(CHOOSE_IDPS_position==4) {
+		if((IDPS[0x9] >> 4) < 0x3) DrawUp((x+x1)/2, y);
+		if((IDPS[0x9] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	if(CHOOSE_IDPS_position==5) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0x9] - (IDPS[0x9] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==5) {
+		if(IDPS[0x9] - (IDPS[0x9] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0x9] - (IDPS[0x9] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0xA
+	if(CHOOSE_IDPS_position==6) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0xA] >> 4));
+	if(CHOOSE_IDPS_position==6) {
+		if((IDPS[0xA] >> 4) < 0xF) DrawUp((x+x1)/2, y);
+		if((IDPS[0xA] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	if(CHOOSE_IDPS_position==7) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0xA] - (IDPS[0xA] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==7) {
+		if(IDPS[0xA] - (IDPS[0xA] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0xA] - (IDPS[0xA] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0xB
+	if(CHOOSE_IDPS_position==8) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0xB] >> 4));
+	if(CHOOSE_IDPS_position==8) {
+		if((IDPS[0xB] >> 4) < 0xF) DrawUp((x+x1)/2, y);
+		if((IDPS[0xB] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	if(CHOOSE_IDPS_position==9) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0xB] - (IDPS[0xB] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==9) {
+		if(IDPS[0xB] - (IDPS[0xB] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0xB] - (IDPS[0xB] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0xC
+	if(CHOOSE_IDPS_position==10) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0xC] >> 4));
+	if(CHOOSE_IDPS_position==10) {
+		if((IDPS[0xC] >> 4) < 0xF) DrawUp((x+x1)/2, y);
+		if((IDPS[0xC] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	if(CHOOSE_IDPS_position==11) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0xC] - (IDPS[0xC] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==11) {
+		if(IDPS[0xC] - (IDPS[0xC] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0xC] - (IDPS[0xC] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0xD
+	if(CHOOSE_IDPS_position==12) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0xD] >> 4));
+	if(CHOOSE_IDPS_position==12) {
+		if((IDPS[0xD] >> 4) < 0xF) DrawUp((x+x1)/2, y);
+		if((IDPS[0xD] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	if(CHOOSE_IDPS_position==13) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0xD] - (IDPS[0xD] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==13) {
+		if(IDPS[0xD] - (IDPS[0xD] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0xD] - (IDPS[0xD] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0xE
+	if(CHOOSE_IDPS_position==14) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0xE] >> 4));
+	if(CHOOSE_IDPS_position==14) {
+		if((IDPS[0xE] >> 4) < 0xF) DrawUp((x+x1)/2, y);
+		if((IDPS[0xE] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	if(CHOOSE_IDPS_position==15) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0xE] - (IDPS[0xE] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==15) {
+		if(IDPS[0xE] - (IDPS[0xE] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0xE] - (IDPS[0xE] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	//0xF
+	if(CHOOSE_IDPS_position==16) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", (IDPS[0xF] >> 4));
+	if(CHOOSE_IDPS_position==16) {
+		if((IDPS[0xF] >> 4) < 0xF) DrawUp((x+x1)/2, y);
+		if((IDPS[0xF] >> 4) > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	if(CHOOSE_IDPS_position==17) SetFontColor(COLOR_2, 0x0); else SetFontColor(COLOR_1, 0x0);
+	x1=x;
+	x=DrawFormatString(x,y, "%X", IDPS[0xF] - (IDPS[0xF] >> 4)*0x10);
+	if(CHOOSE_IDPS_position==17) {
+		if(IDPS[0xF] - (IDPS[0xF] >> 4)*0x10 < 0xF) DrawUp((x+x1)/2, y);
+		if(IDPS[0xF] - (IDPS[0xF] >> 4)*0x10 > 0x0) DrawDown((x+x1)/2, y+25*0.85);
+	}
+	
+	x=70; y+=25;
+	SetFontSize(10, 10);
+	SetFontColor(COLOR_3, 0x0);
+	x=DrawString(x,y, "Target ID : ");
+	
+	if((IDPS[5] >> 4) == 0) x=DrawString(x,y, "PSP "); else
+	if((IDPS[5] >> 4) == 8) x=DrawString(x,y, "PS3 ");
+	
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x2) DrawString(x,y, "DEX"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x3) DrawString(x,y, "JAPAN"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x4) DrawString(x,y, "USA"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x5) DrawString(x,y, "EUROPE"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x6) DrawString(x,y, "KOREA"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x7) DrawString(x,y, "UK"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x8) DrawString(x,y, "MEXICO"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0x9) DrawString(x,y, "AUSTRALIA"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0xA) DrawString(x,y, "SOUTH ASIA"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0xB) DrawString(x,y, "TAIWAN"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0xC) DrawString(x,y, "RUSSIA"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0xD) DrawString(x,y, "CHINA"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0xE) DrawString(x,y, "HONG KONG"); else
+	if(IDPS[5] - (IDPS[5] >> 4)*0x10 == 0xF) DrawString(x,y, "BRAZIL");
+}
+
+u8 input_CHOOSE_IDPS()
+{
+	if(new_pad & BUTTON_DOWN) {
+	
+		if(CHOOSE_IDPS_position==0) {
+			if(IDPS[0x5] - (IDPS[0x5] >> 4)*0x10 > 0x2) IDPS[0x5]--;
+		} else
+		if(CHOOSE_IDPS_position==1) {
+			if(IDPS[0x7]>0x01) IDPS[0x7]--;
+		} else
+		if(CHOOSE_IDPS_position==2) {
+			if((IDPS[0x8] >> 4) == 0x1) IDPS[0x8] = IDPS[0x8] -(IDPS[0x8] >> 4)*0x10;
+			else if((IDPS[0x8] >> 4) == 0xF) IDPS[0x8] = IDPS[0x8] - (IDPS[0x8] >> 4)*0x10 + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==3) {
+			if(IDPS[0x8] - (IDPS[0x8] >> 4)*0x10 == 0x4) IDPS[0x8]= (IDPS[0x8] >> 4)*0x10;
+		} else
+		if(CHOOSE_IDPS_position==4) {
+			if((IDPS[0x9] >> 4) > 0x0) IDPS[0x9]= IDPS[0x9] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==5) {
+			if(IDPS[0x9] - (IDPS[0x9] >> 4)*0x10 > 0x0) IDPS[0x9]--;
+		} else
+		if(CHOOSE_IDPS_position==6) {
+			if((IDPS[0xA] >> 4) > 0x0) IDPS[0xA] = IDPS[0xA] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==7) {
+			if(IDPS[0xA] - (IDPS[0xA] >> 4)*0x10 > 0x0) IDPS[0xA]--;
+		}  else
+		if(CHOOSE_IDPS_position==8) {
+			if((IDPS[0xB] >> 4) > 0x0) IDPS[0xB] = IDPS[0xB] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==9) {
+			if(IDPS[0xB] - (IDPS[0xB] >> 4)*0x10 > 0x0) IDPS[0xB]--;
+		}  else
+		if(CHOOSE_IDPS_position==10) {
+			if((IDPS[0xC] >> 4) > 0x0) IDPS[0xC] = IDPS[0xC] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==11) {
+			if(IDPS[0xC] - (IDPS[0xC] >> 4)*0x10 > 0x0) IDPS[0xC]--;
+		} else
+		if(CHOOSE_IDPS_position==12) {
+			if((IDPS[0xD] >> 4) > 0x0) IDPS[0xD] = IDPS[0xD] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==13) {
+			if(IDPS[0xD] - (IDPS[0xD] >> 4)*0x10 > 0x0) IDPS[0xD]--;
+		}  else
+		if(CHOOSE_IDPS_position==14) {
+			if((IDPS[0xE] >> 4) > 0x0) IDPS[0xE] = IDPS[0xE] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==15) {
+			if(IDPS[0xE] - (IDPS[0xE] >> 4)*0x10 > 0x0) IDPS[0xE]--;
+		}  else
+		if(CHOOSE_IDPS_position==16) {
+			if((IDPS[0xF] >> 4) > 0x0) IDPS[0xF] = IDPS[0xF] - 0x10;
+		} else
+		if(CHOOSE_IDPS_position==17) {
+			if(IDPS[0xF] - (IDPS[0xF] >> 4)*0x10 > 0x0) IDPS[0xF]--;
 		}
 	}
 	
+	if(new_pad & BUTTON_UP) {
+		if(CHOOSE_IDPS_position==0) {
+			if(IDPS[0x5] - (IDPS[0x5] >> 4)*0x10 < 0xF)	IDPS[0x5]++;
+		} else
+		if(CHOOSE_IDPS_position==1) {
+			if(IDPS[0x7]<0x0E) IDPS[0x7]++;
+		} else
+		if(CHOOSE_IDPS_position==2) {
+			if((IDPS[0x8] >> 4) == 0x1) IDPS[0x8] = IDPS[0x8] -(IDPS[0x8] >> 4)*0x10 + 0xF0;
+			else if((IDPS[0x8] >> 4) == 0x0) IDPS[0x8] = IDPS[0x8] - (IDPS[0x8] >> 4)*0x10 + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==3) {
+			if(IDPS[0x8] - (IDPS[0x8] >> 4)*0x10 == 0x0) IDPS[0x8]= (IDPS[0x8] >> 4)*0x10 + 0x4;
+		} else
+		if(CHOOSE_IDPS_position==4) {
+			if((IDPS[0x9] >> 4) < 0x3) IDPS[0x9]= IDPS[0x9] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==5) {
+			if(IDPS[0x9] - (IDPS[0x9] >> 4)*0x10 < 0xF) IDPS[0x9]++;
+		} else
+		if(CHOOSE_IDPS_position==6) {
+			if((IDPS[0xA] >> 4) < 0xF) IDPS[0xA] = IDPS[0xA] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==7) {
+			if(IDPS[0xA] - (IDPS[0xA] >> 4)*0x10 < 0xF) IDPS[0xA]++;
+		}  else
+		if(CHOOSE_IDPS_position==8) {
+			if((IDPS[0xB] >> 4) < 0xF) IDPS[0xB] = IDPS[0xB] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==9) {
+			if(IDPS[0xB] - (IDPS[0xB] >> 4)*0x10 < 0xF) IDPS[0xB]++;
+		}  else
+		if(CHOOSE_IDPS_position==10) {
+			if((IDPS[0xC] >> 4) < 0xF) IDPS[0xC] = IDPS[0xC] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==11) {
+			if(IDPS[0xC] - (IDPS[0xC] >> 4)*0x10 < 0xF) IDPS[0xC]++;
+		}  else
+		if(CHOOSE_IDPS_position==12) {
+			if((IDPS[0xD] >> 4) < 0xF) IDPS[0xD] = IDPS[0xD] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==13) {
+			if(IDPS[0xD] - (IDPS[0xD] >> 4)*0x10 < 0xF) IDPS[0xD]++;
+		}  else
+		if(CHOOSE_IDPS_position==14) {
+			if((IDPS[0xE] >> 4) < 0xF) IDPS[0xE] = IDPS[0xE] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==15) {
+			if(IDPS[0xE] - (IDPS[0xE] >> 4)*0x10 < 0xF) IDPS[0xE]++;
+		}  else
+		if(CHOOSE_IDPS_position==16) {
+			if((IDPS[0xF] >> 4) < 0xF) IDPS[0xF] = IDPS[0xF] + 0x10;
+		} else
+		if(CHOOSE_IDPS_position==17) {
+			if(IDPS[0xF] - (IDPS[0xF] >> 4)*0x10 < 0xF) IDPS[0xF]++;
+		}
+	}
+	
+	if(new_pad & BUTTON_RIGHT) {
+		if(0 <= CHOOSE_IDPS_position && CHOOSE_IDPS_position < 17) {
+			CHOOSE_IDPS_position++;
+		}
+	}
+	
+	if(new_pad & BUTTON_LEFT) {
+		if(0 < CHOOSE_IDPS_position && CHOOSE_IDPS_position <= 17) {
+			CHOOSE_IDPS_position--;
+		}
+	}
+	
+	if(new_pad & BUTTON_SQUARE) {
+		peek_IDPS();
+	}
+	
+	if(new_pad & BUTTON_TRIANGLE) {
+		LoadEID5_IDPS();
+	}
+	
 	if(new_pad & BUTTON_CIRCLE) {
-		if(submenu == -1) return BREAK;
+		return BREAK;
+	}
+	
+	return CONTINUE;
+}
+
+void Draw_CHOOSE_IDPS_input()
+{
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, "Change value", BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
+	x=DrawButton(x, y, "Load IDPS from lv2", BUTTON_SQUARE);
+	x=DrawButton(x, y, "Load IDPS from EID5", BUTTON_TRIANGLE);
+	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+}
+
+void Draw_CHOOSE_IDPS()
+{
+	while(1)
+	{
+		cls();
+		Draw_scene();
+		
+		Draw_CHOOSE_IDPS_menu();
+		Draw_CHOOSE_IDPS_input();
+		
+		tiny3d_Flip();
+		
+		ps3pad_read();
+				
+		if(input_CHOOSE_IDPS() == BREAK) return;
+	}
+	old_pad = 0;
+	new_pad = 0;
+}
+
+void close_PS3_GAME_MENU()
+{
+	write_game_setting(list_game_title[position]);
+	Draw_MENU_input = &EmptyFunc;
+	input_MENU = &EmptyFunc;
+	MENU=NO;
+}
+
+void init_PS3_GAME_MENU()
+{
+	int i, j;
+	
+	init_MENU();
+	
+	add_title_MENU("Game Settings");
+	
+	add_item_MENU("Direct boot", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direct_boot;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Clean syscall", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = clean_syscall;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Change IDPS", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = change_IDPS;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Ext. Game Data", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = ext_game_data;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Payload", ITEM_TEXTBOX);
+	add_item_value_MENU("Iris");
+	add_item_value_MENU("multiMAN");
+	if(cobra) add_item_value_MENU("Cobra");
+	else add_item_value_MENU("Mamba");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = payload;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	if(iso == NO) {	
+		if(cobra==YES && usb==YES) {
+			add_item_MENU("Set Primary USB", ITEM_TEXTBOX);
+			add_item_value_MENU("No");
+			add_item_value_MENU("Yes");
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = prim_USB;
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		}
+		
+		add_item_MENU("Emulation", ITEM_TEXTBOX);
+		add_item_value_MENU("None");
+		add_item_value_MENU("BDMIRROR");
+		add_item_value_MENU("BDEMU");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		if(emu==BDEMU) {
+			add_item_MENU("Patched from", ITEM_TEXTBOX);
+			add_item_value_MENU("multiMAN");
+			add_item_value_MENU("Iris");
+			add_item_value_MENU("reactPSN");
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = libfs_from;
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		}
+	}
+	
+	add_item_MENU("Mount /app_home", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = mount_app_home;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	if(mount_app_home==YES) {
+		add_item_MENU("Use patched plugin", ITEM_TEXTBOX);
+		add_item_value_MENU("No");
+		add_item_value_MENU("Yes");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	}
+	
+	add_title_MENU("Game Options");
+	
+	add_item_MENU("Rename", ITEM_TEXTBOX);
+	
+	if(is_favorite(list_game_path[position]) == NO) {
+		add_item_MENU("Add to favorite", ITEM_TEXTBOX);
+	} else {
+		add_item_MENU("Remove from favorite", ITEM_TEXTBOX);
+	}
+
+	add_item_MENU("Delete game", ITEM_TEXTBOX);
+	
+	if(device_number != 0) {
+		add_item_MENU("Copy game", ITEM_TEXTBOX);
+		for(j=0; j<=scan_dir_number; j++) {
+			for(i=0; i<=device_number; i++) {
+				if(strstr(list_game_path[position], list_device[i])) continue;
+				char tmp[255];
+				sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+				add_item_value_MENU(tmp);
+			}
+		}
+	}
+	
+	add_item_MENU("Make PKG", ITEM_TEXTBOX);
+	
+	add_item_MENU("Patch EBOOT", ITEM_TEXTBOX);
+	
+	if(iso==NO) {
+		if(is_resigned_GAME(list_game_path[position])==NO) {
+			add_item_MENU("Re-sign", ITEM_TEXTBOX);
+		} else {
+			add_item_MENU("Restore", ITEM_TEXTBOX);
+		}
+	}
+	
+	if(iso) {
+		add_item_MENU("Extract ISO", ITEM_TEXTBOX);
+	} else {
+		add_item_MENU("Convert to ISO", ITEM_TEXTBOX);
+	}
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			char tmp[255];
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
+	
+	add_item_MENU("Fix Permission", ITEM_TEXTBOX);
+	
+	add_item_MENU("Check files (IRD)", ITEM_TEXTBOX);
+	
+	add_item_MENU("Download Update", ITEM_TEXTBOX);
+	
+	add_item_MENU("Properties", ITEM_TEXTBOX);
+	
+}
+
+void PS3_GAME_MENU_UPDATE()
+{
+	if(item_is("Direct boot")) {
+		direct_boot = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Clean syscall")) {
+		clean_syscall = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is("Change IDPS")) {
+		change_IDPS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Payload")) {
+		payload = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Ext. Game Data")) {
+		ext_game_data = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Set Primary USB")) {
+		prim_USB = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Emulation")) {
+		emu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Patched from")) {
+		libfs_from = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is("Mount /app_home")) {
+		mount_app_home = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(item_is("Use patched plugin")) {
+		use_ex_plug = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	}
+	
+	init_PS3_GAME_MENU();
+}
+
+u8 PS3_GAME_MENU_CROSS()
+{
+	if(item_is("Change IDPS")) {
+		Draw_CHOOSE_IDPS();
+	} else 
+	if(item_is("Rename")) {
+		char tmpName[128];
+		strcpy(tmpName, list_game_title[position]);
+		if(Get_OSK_String("Rename", tmpName, 128) == SUCCESS) {
+			if(tmpName[0]!=0) {
+				if(SetParamSFO("TITLE", tmpName, position, NULL)==SUCCESS) {
+					strcpy(list_game_title[position], tmpName);
+					show_msg("Game renamed");
+				}
+			}
+		}
+	} else 
+	if(item_is("Add to favorite")) {
+		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
+		else show_msg("Failed");
+	} else 
+	if(item_is("Remove from favorite")) {
+		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
+		else show_msg("Failed");
+	} else 
+	if(item_is("Make PKG")) {
+		
+		char mk_pkg_ID[10];
+		if( GetParamSFO("TITLE_ID", mk_pkg_ID, position, NULL) == SUCCESS ) {
+			mk_pkg_ID[0]='N';
+			mk_pkg_ID[1]='P'; 
+			mk_pkg_ID[3]='B';
+			mk_pkg_ID[4]='4';
+		} else strcpy(mk_pkg_ID, "NPEB40000");
+		if(Get_OSK_String("Title ID", mk_pkg_ID, 10) == SUCCESS) {
+			if(mk_pkg_ID[0]!=0) {
+				u8 ret;
+				start_loading();
+				ret=make_launcher_pkg(mk_pkg_ID);
+				end_loading();
+				if(ret == SUCCESS) show_msg("Done");
+				else show_msg("Failed");
+			}
+		}
+	
+	} else 
+	if(item_is("Delete game")) {
+		char diag_msg[512];
+		sprintf(diag_msg, "Do you realy want to delete %s ?\nPath : %s", list_game_title[position], list_game_path[position]);
+		if( DrawDialogYesNo(diag_msg) == YES) {
+			start_loading();
+			u8 ret = Delete_Game(NULL, position);
+			end_loading();
+			if(ret==SUCCESS) {
+				show_msg("Game deleted");
+				return BREAK;
+			} else show_msg("Failed to delete game");
+		}
+	} else 
+	if(item_is("Copy game")) {
+		Copy_Game(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+	} else 
+	if(item_is("Patch EBOOT")) {
+		start_loading();
+		u8 ret;
+		if(iso==NO) ret = patch_EBOOT(position);
+		else 		ret = patchps3iso(list_game_path[position]);
+		if(ret == SUCCESS) show_msg("EBOOT Patched"); 
+		else show_msg("Failed");
+		end_loading();
+	} else 
+	if(item_is("Re-sign")) {
+		if(iso==NO) {
+			start_loading();
+			if(re_sign_GAME(list_game_path[position]) == SUCCESS) show_msg("Game re-signed"); else
+			show_msg("Failed"); 
+			end_loading();
+		} else show_msg("TODO for ISO");
+	} else 
+	if(item_is("Restore")) {
+		if(iso==NO) {
+			start_loading();
+			if(restore_GAME(list_game_path[position]) == SUCCESS) show_msg("Game restored"); else
+			show_msg("Failed"); 
+			end_loading();
+		} else show_msg("TODO for ISO");
+	} else 
+	if(item_is("Extract ISO")) {
+			start_loading();
+			print_head("Converting...");
+			u8 ret;
+			if(is_ntfs(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])==YES
+			|| strstr(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0")) 
+				ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL); 
+			else 
+				ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);	
+			if(ret==FAILED) show_msg("Failed"); else
+			show_msg("Done");
+			end_loading();
+	} else 
+	if(item_is("Convert to ISO")) {
+		start_loading();
+		print_head("Converting...");
+		u8 ret;
+		if(is_ntfs(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])==YES
+		|| strstr(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0")) 
+			ret = makeps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL);
+		else 
+			ret = makeps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);
+		
+		if(ret==FAILED) show_msg("Failed"); else
+		show_msg("Done");
+		end_loading();
+	} else 
+	if(item_is("Fix Permission")) {
+		if(iso==NO) {
+			start_loading();
+			print_head("Fixing permission...");
+			if(SetPerms(list_game_path[position]) == SUCCESS) show_msg("Perms Fixed !");
+			else show_msg("Failed");
+			end_loading();
+		} else show_msg("Useless for ISO");
+	} else 
+	if(item_is("Check files (IRD)")) {
+		if(iso==NO) {
+			u8 ret;
+			start_loading();
+			ret = CheckIRD(list_game_path[position]);
+			end_loading();
+			
+			if( ret == SUCCESS ) {
+				char temp[128];
+				sprintf(temp, "%s/MD5_check.txt", list_game_path[position]);
+				open_txt_viewer(temp);
+			} 
+			else {
+				show_msg("Failed to check IRD");
+				end_loading();
+			}
+		} else show_msg("TODO for ISO");
+	} else 
+	if(item_is("Download Update")) {
+		get_game_update(position);
+	} else 
+	if(item_is("Properties")) {
+		start_loading();
+		gathering=YES;
+		Get_Game_Size(list_game_path[position]);
+		gathering=NO;
+		end_loading();
+		
+		if(gathering_cancel==NO) Draw_GameProperties();
+		else gathering_cancel=NO;
+		total_size=0;
+		nb_file= 0;
+		nb_directory=0;
+	}
+	
+	return CONTINUE;
+}
+
+void PS3_GAME_MENU_SQUARE()
+{
+	
+}
+
+void PS3_GAME_MENU_TRIANGLE()
+{
+	
+}
+
+void input_PS3_GAME_MENU()
+{
+	if(MENU==NO) return;
+	
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
+	
+	if(old_pad & BUTTON_R2) {
+		scroll_speed = 6 - paddata.PRE_R2/50;
+	} else scroll_speed = 6;
+
+	if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+			else ITEMS_POSITION--;
+		} else {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+		}
+	}
+	
+	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+			else ITEMS_POSITION++;
+		} else {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+		}
+	}
+	
+	PS3_GAME_MENU_UPDATE();
+	
+	if(new_pad & BUTTON_CROSS) {
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			IN_ITEMS_VALUE = YES;
+		} else {
+			if(PS3_GAME_MENU_CROSS() == BREAK) close_PS3_GAME_MENU();
+		}
+	} else
+	if(new_pad & BUTTON_SQUARE) {
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+		} else {
+			PS3_GAME_MENU_SQUARE(); 
+		}
+	} else
+	if(new_pad & BUTTON_TRIANGLE) {
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+		} else {
+			PS3_GAME_MENU_TRIANGLE(); 
+		}
+	} else
+	if(new_pad & BUTTON_CIRCLE) {
+		if(IN_ITEMS_VALUE == NO) close_PS3_GAME_MENU();
 		else {
-			init_ps2_menu();
-			submenu = -1;
+			init_PS3_GAME_MENU();
+			IN_ITEMS_VALUE = NO;
+		}
+	}
+}
+
+void Draw_PS3_GAME_MENU_input()
+{
+	if(MENU==NO) return;
+	
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	if(IN_ITEMS_VALUE == YES) {
+		if(item_is("Dir. to scan")) {
+			x=DrawButton(x, y, "Add", BUTTON_CROSS);
+			if(scan_dir_number>0) {
+				x=DrawButton(x, y, "Delete", BUTTON_TRIANGLE);
+				x=DrawButton(x, y, "Rename", BUTTON_SQUARE);
+			}
+		} else
+		if(item_is("Themes")) {
+			x=DrawButton(x, y, "Load", BUTTON_CROSS);
+			x=DrawButton(x, y, "Delete", BUTTON_TRIANGLE);
+			u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+			if(ThemeType == MGZ) {
+				x=DrawButton(x, y, "Rename", BUTTON_TRIANGLE);
+			}
+		}		
+		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	} else {
+		if(strstr(ITEMS[ITEMS_POSITION], "Color") != NULL) {
+			x=DrawButton(x, y, "Change", BUTTON_CROSS);
+			x=DrawButton(x, y, "Reset", BUTTON_SQUARE);
+		} else {
+			x=DrawButton(x, y, "Enter", BUTTON_CROSS);
+			x=DrawButton(x, y, "Change", BUTTON_SQUARE);
+		}
+		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	}
+
+}
+
+void open_PS3_GAME_MENU()
+{
+	start_loading();
+	read_game_setting(list_game_title[position]);
+	ITEMS_POSITION=0;
+	IN_ITEMS_VALUE = NO;
+	memset(ITEMS_VALUE_POSITION, 0, sizeof(ITEMS_VALUE_POSITION));
+	init_PS3_GAME_MENU();
+	MENU_SIDE=use_sidemenu;
+	Draw_MENU_input = &Draw_PS3_GAME_MENU_input;
+	input_MENU = &input_PS3_GAME_MENU;
+	end_loading();
+	MENU=YES;
+}
+
+void open_GameMenu()
+{
+	if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+		open_PS3_GAME_MENU();
+	} else
+	if(list_game_platform[position] == _JB_PS2 || list_game_platform[position] == _ISO_PS2) {
+		open_PS2_GAME_MENU();
+	} else
+	if(list_game_platform[position] == _JB_PS1 || list_game_platform[position] == _ISO_PS1) {
+		show_msg("todo");
+	} else
+	if(list_game_platform[position] == _JB_PSP || list_game_platform[position] == _ISO_PSP) {
+		show_msg("todo");
+	}
+}
+
+//*******************************************************
+// SETTINGS MENU
+//*******************************************************
+
+void open_SETTINGS();
+void close_SETTINGS();
+
+void close_PLUGINS_MANAGER()
+{
+	open_SETTINGS();
+}
+
+void init_PLUGINS_MANAGER()
+{
+	init_MENU();
+	
+	add_title_MENU("PLUGING MANAGER");
+	
+	add_item_MENU("Boot file", ITEM_TEXTBOX);
+	if(path_info("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt") == _FILE) {
+		add_item_value_MENU("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt");
+	}
+	if(path_info("/dev_hdd0/prx_plugins.txt") == _FILE) {
+		add_item_value_MENU("/dev_hdd0/prx_plugins.txt");
+	}
+	if(path_info("/dev_hdd0/mamba_plugins.txt") == _FILE) {
+		add_item_value_MENU("/dev_hdd0/mamba_plugins.txt");
+	}
+	if(path_info("/dev_hdd0/boot_plugins.txt") == _FILE) {
+		add_item_value_MENU("/dev_hdd0/boot_plugins.txt");
+	}
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	if(ITEMS_VALUE_NUMBER[0] == -1) return;
+	
+	char temp[128];
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir("/dev_hdd0/plugins");
+	if(d!=NULL) {			
+		while ((dir = readdir(d))) {
+			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+			if(get_ext(dir->d_name) == _SPRX) {
+				add_item_MENU(dir->d_name, ITEM_CHECKBOX);
+				sprintf(temp, "/dev_hdd0/plugins/%s", dir->d_name);
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = is_it_inside(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], temp);
+			}	
+		}
+		closedir(d);
+	}
+}
+
+u8 PLUGINS_MANAGER_CROSS()
+{
+	if(item_is("Boot file")) {
+		open_txt_viewer(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+	} else {
+		char temp[128];
+		sprintf(temp, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
+		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) 
+			remove_from_list(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], temp);
+		else 
+			add_to_list(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], temp);
+	}
+	
+	init_PLUGINS_MANAGER();
+	
+	return CONTINUE;
+}
+
+u8 PLUGINS_MANAGER_SQUARE()
+{
+	if( item_is("Boot file") == NO ) {
+		char diag_msg[512];
+		sprintf(diag_msg, "Do you realy want to delete '%s' ?", ITEMS[ITEMS_POSITION]);
+		if( DrawDialogYesNo(diag_msg) == YES) {
+			char temp[128];
+			sprintf(temp, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
+			remove_from_list(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], temp);
+			Delete(temp);
+		}
+		ITEMS_POSITION=0;
+	}
+	
+	init_PLUGINS_MANAGER();
+	
+	return CONTINUE;
+}
+
+u8 PLUGINS_MANAGER_TRIANGLE()
+{
+	return CONTINUE;
+}
+
+void input_PLUGINS_MANAGER()
+{
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
+	
+	if(old_pad & BUTTON_R2) {
+		scroll_speed = 6 - paddata.PRE_R2/50;
+	} else scroll_speed = 6;
+	
+	if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+			else ITEMS_POSITION--;
+		} else {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+		}
+	}
+	
+	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+			else ITEMS_POSITION++;
+		} else {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+		}
+	}
+	
+	if(new_pad & BUTTON_CROSS) {
+		if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX ) {
+			PLUGINS_MANAGER_CROSS();
+		} else
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1 ) {
+			IN_ITEMS_VALUE = YES;
+		} else {
+			if(PLUGINS_MANAGER_CROSS() == BREAK) close_PLUGINS_MANAGER();
+		}
+	} else
+	if(new_pad & BUTTON_SQUARE) {
+		if(PLUGINS_MANAGER_SQUARE() == BREAK) close_PLUGINS_MANAGER();
+	} else
+	if(new_pad & BUTTON_TRIANGLE) {
+		if(PLUGINS_MANAGER_TRIANGLE() == BREAK) close_PLUGINS_MANAGER();
+	} else
+	if(new_pad & BUTTON_CIRCLE) {
+		if(IN_ITEMS_VALUE == NO) close_PLUGINS_MANAGER();
+		else {
+			init_PLUGINS_MANAGER();
+			IN_ITEMS_VALUE = NO;
+		}
+	}
+}
+
+void Draw_PLUGINS_MANAGER_input()
+{
+	if(MENU==NO) return;
+	
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	if(IN_ITEMS_VALUE == YES) {
+		if(item_is("Boot file")) {
+			x=DrawButton(x, y, "Show", BUTTON_CROSS);
+		}	
+		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	} else {
+		if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) 
+				x=DrawButton(x, y, "Uncheck", BUTTON_CROSS);
+			else 
+				x=DrawButton(x, y, "Check", BUTTON_CROSS);
+			x=DrawButton(x, y, "Delete", BUTTON_SQUARE);
+		} else x=DrawButton(x, y, "Enter", BUTTON_CROSS);
+		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	}
+}
+
+void open_PLUGINS_MANAGER()
+{
+	start_loading();
+	
+	close_SETTINGS();
+	
+	ITEMS_POSITION = 0;
+	memset(ITEMS_VALUE_POSITION, 0, sizeof(ITEMS_VALUE_POSITION));
+	
+	init_PLUGINS_MANAGER();
+	
+	MENU_SIDE = NO;
+	MENU=YES;
+	IN_ITEMS_VALUE=NO;
+	Draw_MENU_input = &Draw_PLUGINS_MANAGER_input;
+	input_MENU = &input_PLUGINS_MANAGER;
+	
+	end_loading();
+}
+
+void Draw_AdjustScreen()
+{
+	while(1){
+		int x;
+		adjust_screen();
+
+		cls();
+
+		Draw_Box(0,0,10,   0,   X_MAX,Y_MAX,  0xFFFFFFFF, NO);
+		Draw_Box(30,30,9 , 0,   X_MAX-30*2,Y_MAX-30*2,  0x000000FF, NO);
+
+		int l=150, h=70;
+		Draw_Box(110,150,8,   5,   15,Y_MAX-150*2,  0xFFFFFFFF, NO);
+
+		tiny3d_SetPolygon(TINY3D_TRIANGLES);
+		tiny3d_VertexPos(110+15+5+h, Y_MAX/2, 8);
+		tiny3d_VertexColor(0xFFFFFFFF);
+		tiny3d_VertexPos(110+15+5 , Y_MAX/2 -l/2 , 8);
+		tiny3d_VertexPos(110+15+5 , Y_MAX/2 +l/2 , 8);
+		tiny3d_End();
+		Draw_Pad(BUTTON_RIGHT,  110+15+5+5,Y_MAX/2-20,8, 40);			
+
+		tiny3d_SetPolygon(TINY3D_TRIANGLES);
+		tiny3d_VertexPos(110-5-h, Y_MAX/2, 8);
+		tiny3d_VertexColor(0xFFFFFFFF);
+		tiny3d_VertexPos(110-5 , Y_MAX/2 -l/2 , 8);
+		tiny3d_VertexPos(110-5 , Y_MAX/2 +l/2 , 8);
+		tiny3d_End();
+		Draw_Pad(BUTTON_LEFT,  110-5-40-5,Y_MAX/2-20,8, 40);
+		
+		Draw_Box(150,110,8,   5,   X_MAX-120*2,15,  0xFFFFFFFF, NO);
+
+		tiny3d_SetPolygon(TINY3D_TRIANGLES);
+		tiny3d_VertexPos(X_MAX/2, 110+15+5+h, 8);
+		tiny3d_VertexColor(0xFFFFFFFF);
+		tiny3d_VertexPos(X_MAX/2 -l/2, 110+15+5 , 8);
+		tiny3d_VertexPos(X_MAX/2 +l/2, 110+15+5 , 8);
+		tiny3d_End();
+		Draw_Pad(BUTTON_DOWN,  X_MAX/2-20,110+15+5+5,8, 40);
+	
+		tiny3d_SetPolygon(TINY3D_TRIANGLES);
+		tiny3d_VertexPos(X_MAX/2, 110-5-h , 8);
+		tiny3d_VertexColor(0xFFFFFFFF);
+		tiny3d_VertexPos(X_MAX/2 -l/2 , 110-5 , 8);
+		tiny3d_VertexPos(X_MAX/2 +l/2 , 110-5 , 8);
+		tiny3d_End();
+		Draw_Pad(BUTTON_UP,  X_MAX/2-20,110-5-40-5,8, 40);
+
+		SetFontColor(0x000000FF, 0x0);
+		SetFontSize(15, 15);
+		x=Draw_Button_Circle(25, 485, 15);
+		x=DrawString(x+5, 485, "Back  ");
+
+		tiny3d_Flip();
+	
+		ps3pad_read();
+		
+		if(new_pad & BUTTON_DOWN) {if(videoscale_y > -120) videoscale_y-=10;}
+		if(new_pad & BUTTON_UP) {if(videoscale_y < 120) videoscale_y+=10;}
+		if(new_pad & BUTTON_RIGHT) {if(videoscale_x > -120) videoscale_x-=10;}
+		if(new_pad & BUTTON_LEFT) {if(videoscale_x < 120) videoscale_x+=10;}
+		if(new_pad & BUTTON_CIRCLE) {write_setting(); return;}
+	}
+}
+
+u8 C_pos=0;
+
+void Draw_RGB_box(int n)
+{
+	u32 COLOR=0;
+	if(n==1) COLOR = COLOR_1; else
+	if(n==2) COLOR = COLOR_2; else
+	if(n==3) COLOR = COLOR_3; else
+	if(n==4) COLOR = COLOR_4;
+	
+	float w_COLOR = 10+10+10+128+10;
+	float h_COLOR = 5+20*3+5;
+	
+	Draw_Box(x_COLOR, y_COLOR-12, 0, 0, 16, 10, COLOR, NO);
+	
+	if(x_COLOR + w_COLOR > 848) x_COLOR -= w_COLOR;
+	
+	Draw_Box(x_COLOR, y_COLOR, 0, 0, w_COLOR, h_COLOR, 0x888888FF, NO);
+	
+	Draw_Box(x_COLOR+10+10+10, y_COLOR+5+9			, 0, 0, 128, 2, 0x444444FF, NO);
+	Draw_Box(x_COLOR+10+10+10, y_COLOR+5+20+9		, 0, 0, 128, 2, 0x444444FF, NO);
+	Draw_Box(x_COLOR+10+10+10, y_COLOR+5+20+20+9	, 0, 0, 128, 2, 0x444444FF, NO);
+	
+	u32 curs_color;
+	float e;
+	
+	if(C_pos == 0) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
+	Draw_Box(x_COLOR+10+5-e/2, y_COLOR+5+10-e/2, 0, 0, e, e, RED, NO);
+	Draw_Box(x_COLOR+10+10+10 + GetRED(COLOR)/2 - 2, y_COLOR+5+10-4, 0, 0, 4, 8, curs_color, NO);
+	
+	if(C_pos == 1) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
+	Draw_Box(x_COLOR+10+5-e/2, y_COLOR+5+20+10-e/2, 0, 0, e, e, GREEN, NO);
+	Draw_Box(x_COLOR+10+10+10 + GetGREEN(COLOR)/2 - 2, y_COLOR+5+20+10-4, 0, 0, 4, 8, curs_color, NO);
+	
+	if(C_pos == 2) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
+	Draw_Box(x_COLOR+10+5-e/2, y_COLOR+5+20+20+10-e/2, 0, 0, e, e, BLUE, NO);
+	Draw_Box(x_COLOR+10+10+10 + GetBLUE(COLOR)/2 - 2, y_COLOR+5+20+20+10-4, 0, 0, 4, 8, curs_color, NO);	
+}
+
+u8 input_COLOR(int n)
+{
+	u32 COLOR=0;
+	if(n==1) COLOR = COLOR_1; else
+	if(n==2) COLOR = COLOR_2; else
+	if(n==3) COLOR = COLOR_3; else
+	if(n==4) COLOR = COLOR_4;
+	
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
+	
+	if(old_pad & BUTTON_R2) {
+		scroll_speed = 6 - paddata.PRE_R2/50;
+	} else scroll_speed=6;
+	
+	if(new_pad & BUTTON_UP || (old_pad & BUTTON_UP && slow_it==0)) {
+		if(C_pos==0) C_pos=2;
+		else C_pos--;
+	}
+	
+	if(new_pad & BUTTON_DOWN || (old_pad & BUTTON_DOWN && slow_it==0)) {
+		if(C_pos==2) C_pos=0;
+		else C_pos++;
+	}
+	
+	if(new_pad & BUTTON_LEFT  || (old_pad & BUTTON_LEFT  && slow_it==0)) {
+		if(C_pos == 0) {
+			if(GetRED(COLOR) > 0) {
+				COLOR = SetRED(GetRED(COLOR)-5, COLOR);
+			}
+		} else
+		if(C_pos == 1) {
+			if(GetGREEN(COLOR) > 0) {
+				COLOR = SetGREEN(GetGREEN(COLOR)-5, COLOR);
+			}
+		} else
+		if(C_pos == 2) {
+			if(GetBLUE(COLOR) > 0) {
+				COLOR = SetBLUE(GetBLUE(COLOR)-5, COLOR);
+			}
+		}
+	}
+		
+	if(new_pad & BUTTON_RIGHT || (old_pad & BUTTON_RIGHT && slow_it==0)) {
+		if(C_pos == 0) {
+			if(GetRED((u32) COLOR) < 0xFF) {
+				COLOR = SetRED(GetRED(COLOR)+5, COLOR);
+			}
+		} else
+		if(C_pos == 1) {
+			if(GetGREEN((u32) COLOR) < 0xFF) {
+				COLOR = SetGREEN(GetGREEN(COLOR)+5, COLOR);
+			}
+		} else
+		if(C_pos == 2) {
+			if(GetBLUE((u32) COLOR) < 0xFF) {
+				COLOR = SetBLUE(GetBLUE(COLOR)+5, COLOR);
+			}
+		}
+	}
+		
+	if(n==1) COLOR_1 = COLOR; else
+	if(n==2) COLOR_2 = COLOR; else
+	if(n==3) COLOR_3 = COLOR; else
+	if(n==4) COLOR_4 = COLOR;
+		
+	if(new_pad & BUTTON_CIRCLE) {
+		return BREAK;
+	}
+	
+	return CONTINUE;
+}
+
+void Draw_COLOR_input()
+{
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, "Set color", BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
+	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+}
+
+void Draw_ChooseColor(u8 n)
+{
+	while(1)
+	{
+		cls();
+		Draw_scene();
+		
+		Draw_RGB_box(n);
+		Draw_COLOR_input();
+		
+		tiny3d_Flip();
+		
+		ps3pad_read();
+				
+		if(input_COLOR(n) == BREAK) return;
+	}
+}
+
+void close_SETTINGS()
+{
+	write_setting();
+	Draw_MENU_input = &EmptyFunc;
+	input_MENU = &EmptyFunc;
+	MENU=NO;
+}
+
+void init_SETTINGS()
+{
+	int i;
+	
+	init_MENU();
+	
+	add_title_MENU("Global settings");
+	
+	add_item_MENU("Adjust screen", ITEM_TEXTBOX);
+	
+	add_item_MENU("Download covers", ITEM_TEXTBOX);
+	
+	if(path_info("/dev_hdd0/plugins") == _DIRECTORY) {
+		add_item_MENU("Plugins Manager", ITEM_TEXTBOX);
+	}
+	
+	add_item_MENU("Dir. to scan", ITEM_TEXTBOX);
+	for(i=0; i <= scan_dir_number; i++) {
+		add_item_value_MENU(scan_dir[i]);
+	}
+	
+	add_item_MENU("XMB Priority", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = XMB_priority;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Game SideMenu", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_sidemenu;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Show Cover", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_COVER;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+
+	add_item_MENU("Show PIC1", ITEM_TEXTBOX);
+	add_item_value_MENU("No");
+	add_item_value_MENU("Yes");
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_PIC1;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("UI", ITEM_TEXTBOX);
+	for(i=0; i < 4; i++) {
+		add_item_value_MENU(UI[i]);
+	}
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = UI_position;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_title_MENU("Themes settings");
+	
+	add_item_MENU("Themes", ITEM_TEXTBOX);
+	for(i=0; i <= Themes_number[UI_position]; i++) {
+		add_item_value_MENU(Themes_Names_list[UI_position][i]);
+	}
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Themes_position[UI_position];
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU("Color 1", ITEM_COLORBOX);
+	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_1, 4);
+	
+	add_item_MENU("Color 2", ITEM_COLORBOX);
+	ITEMS_VALUE_NUMBER[ITEMS_NUMBER]++;
+	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_2, 4);
+	
+	add_item_MENU("Color 3", ITEM_COLORBOX);
+	ITEMS_VALUE_NUMBER[ITEMS_NUMBER]++;
+	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_3, 4);
+
+	add_item_MENU("Color 4", ITEM_COLORBOX);
+	ITEMS_VALUE_NUMBER[ITEMS_NUMBER]++;
+	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_4, 4);
+	
+	if(UI_position!=XMB)
+	add_title_MENU("User interface settings");
+	
+	if(UI_position==LIST) {
+		add_item_MENU("Show ICON0", ITEM_TEXTBOX);
+		add_item_value_MENU("No");
+		add_item_value_MENU("Yes");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LIST_Show_ICON0;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	}
+	else if(UI_position==GRID) {
+	
+		add_item_MENU("Grid type", ITEM_TEXTBOX);
+		add_item_value_MENU("Scroll");
+		add_item_value_MENU("Page");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = grid_type;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU("Direction", ITEM_TEXTBOX);
+		add_item_value_MENU("Vertical");
+		add_item_value_MENU("Horizontal");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direction;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU("Animated", ITEM_TEXTBOX);
+		add_item_value_MENU("No");
+		add_item_value_MENU("Yes");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = animated;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU("Keep proportion", ITEM_TEXTBOX);
+		add_item_value_MENU("No");
+		add_item_value_MENU("Yes");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = keep_prop;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU("Number of columns", ITEM_TEXTBOX);
+		for(i=0; i < 16; i++) {
+			char tmp[3];
+			sprintf(tmp, "%d", i);
+			add_item_value_MENU(tmp);
+		}
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = grid_nb_columns;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		if(keep_prop==NO) {
+			add_item_MENU("Number of lines", ITEM_TEXTBOX);
+			for(i=0; i < 16; i++) {
+				char tmp[3];
+				sprintf(tmp, "%d", i);
+				add_item_value_MENU(tmp);
+			}
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = grid_nb_lines;
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		}
+	} 
+	else if(UI_position==FLOW) {
+		
+		add_item_MENU("Inverse button", ITEM_TEXTBOX);
+		add_item_value_MENU("No");
+		add_item_value_MENU("Yes");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_inverse_button;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU("Use Cover", ITEM_TEXTBOX);
+		add_item_value_MENU("No");
+		add_item_value_MENU("Yes");
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_use_Cover;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	}
+}
+
+void SETTINGS_UPDATE()
+{
+	if(strcmp(ITEMS[ITEMS_POSITION], "Dir. to scan") == 0) {
+		scan_dir_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(strcmp(ITEMS[ITEMS_POSITION], "XMB Priority") == 0) {
+		XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Game SideMenu") == 0) {
+		use_sidemenu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "UI") == 0) {
+		UI_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Themes") == 0) {
+		Themes_position[UI_position] = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(strcmp(ITEMS[ITEMS_POSITION], "Show Cover") == 0) {
+		Show_COVER = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Show PIC1") == 0) {
+		Show_PIC1 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	}
+	
+	if(UI_position==LIST) {
+		if(strcmp(ITEMS[ITEMS_POSITION], "Show ICON0") == 0) {
+			LIST_Show_ICON0 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		}
+	} else 
+	if(UI_position==GRID) {
+		if(strcmp(ITEMS[ITEMS_POSITION], "Grid type") == 0) {
+			grid_type = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(strcmp(ITEMS[ITEMS_POSITION], "Direction") == 0) {
+			direction = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(strcmp(ITEMS[ITEMS_POSITION], "Animated") == 0) {
+			animated = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(strcmp(ITEMS[ITEMS_POSITION], "Keep proportion") == 0) {
+			keep_prop = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(strcmp(ITEMS[ITEMS_POSITION], "Number of columns") == 0) {
+			grid_nb_columns = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(strcmp(ITEMS[ITEMS_POSITION], "Number of lines") == 0) {
+			grid_nb_lines = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		}
+	} else 
+	if(UI_position==FLOW) {
+		if(strcmp(ITEMS[ITEMS_POSITION], "Inverse button") == 0) {
+			FLOW_inverse_button = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(strcmp(ITEMS[ITEMS_POSITION], "Use Cover") == 0) {
+			FLOW_use_Cover = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		}
+	}
+	
+	init_SETTINGS();
+}
+
+u8 SETTINGS_CROSS()
+{
+	if(strcmp(ITEMS[ITEMS_POSITION], "Adjust screen") == 0) {
+		Draw_AdjustScreen();
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Download covers") == 0) {
+		start_loading();
+		Download_covers();
+		end_loading();
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Dir. to scan") == 0) {
+		char tmpName[128];
+		if(Get_OSK_String("New Directory", tmpName, 128) == SUCCESS) {
+			if(tmpName[0]!=0) {
+				scan_dir_number++;
+				strcpy(scan_dir[scan_dir_number], tmpName);
+				write_scan_dir();
+			}
+		}
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Plugins Manager") == 0) {
+		open_PLUGINS_MANAGER();
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Themes") == 0) {
+		start_loading();
+		print_load("Loading theme...");
+		u8 ret = ExtractTheme();
+		if(ret==SUCCESS) {
+			strcpy(Themes[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);		
+			Load_Themes();
+			start_Load_GamePIC();
+		} else print_load("Failed to extract theme");
+		end_loading();
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 1") == 0) {
+		Draw_ChooseColor(1);
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 2") == 0) {
+		Draw_ChooseColor(2);
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 3") == 0) {
+		Draw_ChooseColor(3);
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 4") == 0) {
+		Draw_ChooseColor(4);
+	}
+	
+	return CONTINUE;
+}
+
+u8 SETTINGS_SQUARE()
+{
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 1") == 0) {
+		COLOR_1 = WHITE;
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 2") == 0) {
+		COLOR_2 = GREEN;
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 3") == 0) {
+		COLOR_3 = ORANGE;
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Color 4") == 0) {
+		COLOR_4 = RED;
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Themes") == 0) {
+		u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		if(ThemeType == MGZ) {
+			char tmpName[128];
+			strcpy(tmpName, Themes_Names_list[UI_position][Themes_position[UI_position]]);
+			if(Get_OSK_String("Rename", tmpName, 128) == SUCCESS) {
+				char old[128], new[128];
+				sprintf(old, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
+				sprintf(new, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], tmpName);
+				if( rename(old, new) == 0 ) {
+					strcpy(Themes_Names_list[UI_position][Themes_position[UI_position]], tmpName);
+					show_msg("Theme renamed");
+				} else show_msg("Failed");	
+			}	
+		}
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Dir. to scan") == 0) {
+		if(Get_OSK_String("Rename", scan_dir[scan_dir_position], 64) == SUCCESS) {
+			if(scan_dir[scan_dir_position][0] != 0) {
+				write_scan_dir();
+			}
 		}
 	}
 	
 	return CONTINUE;
 }
 
-void Draw_PS2_Game_Menu()
-{	
-	start_loading();
+u8 SETTINGS_TRIANGLE()
+{
+	if(strcmp(ITEMS[ITEMS_POSITION], "Themes") == 0) {
+		start_loading();
+		
+		if(strcmp(Themes_Names_list[UI_position][Themes_position[UI_position]], Themes[UI_position]) != 0) {
+			
+			char locPath[128];
+			sprintf(locPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
+			Delete(locPath);
+			
+			Delete(Themes_Paths_list[UI_position][Themes_position[UI_position]]);
+			
+			if(path_info(Themes_Paths_list[UI_position][Themes_position[UI_position]]) == _NOT_EXIST) {
+				GetThemes();
+				if(Themes_position[UI_position] > Themes_number[UI_position]) Themes_position[UI_position]=Themes_number[UI_position];
+				show_msg("Theme removed");
+				init_SETTINGS();
+			} else show_msg("Failed");
+		} else show_msg("Theme used");
+		
+		end_loading();
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], "Dir. to scan") == 0) {
+		if(scan_dir_number>0) {
+			int i;
+			for(i=scan_dir_position; i < scan_dir_number; i++) {
+				strcpy(scan_dir[i], scan_dir[i+1]);
+			}
+			memset(scan_dir[scan_dir_number], 0, sizeof(scan_dir[scan_dir_number]));
+			if(scan_dir_number==scan_dir_position) scan_dir_position--;
+			scan_dir_number--;
+			write_scan_dir();
+			init_SETTINGS();
+		}
+	}
 	
-	Get_PS2ID(list_game_path[position], PS2_ID);
-	sprintf(CRC_STR, "%08lX", (long unsigned int) Get_CRC(PS2_ID));
+	return CONTINUE;
+}
+
+void input_SETTINGS()
+{
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
 	
-	init_ps2_menu();
-	end_loading();
+	if(old_pad & BUTTON_R2) {
+		scroll_speed = 6 - paddata.PRE_R2/50;
+	} else scroll_speed = 6;
+
 	
-	ps2_menu_position=0;
+	if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+			else ITEMS_POSITION--;
+		} else {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+		}
+	}
 	
-	while(1)
-	{
-		scene = SCENE_PS2_OPTION;
-		
-		cls();
-		
-		Draw_BGS();
-		Draw_Notification();
-		
-		Draw_PS2_menu();
-		
-		Draw_PS2_input();
-		
-		tiny3d_Flip();
-		
-		ps3pad_read();
-		
-		if( PS2_input() == BREAK ) break;
-		
+	if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
+		if(IN_ITEMS_VALUE == NO) {
+			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+			else ITEMS_POSITION++;
+		} else {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+		}
+	}
+	
+	SETTINGS_UPDATE();
+	
+	if(new_pad & BUTTON_CROSS) {
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			IN_ITEMS_VALUE = YES;
+		} else {
+			if(SETTINGS_CROSS() == BREAK) close_SETTINGS();
+		}
+	} else
+	if(new_pad & BUTTON_SQUARE) {
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+		} else {
+			if(SETTINGS_SQUARE() == BREAK) close_SETTINGS();
+		}
+	} else
+	if(new_pad & BUTTON_TRIANGLE) {
+		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+		} else {
+			if(SETTINGS_TRIANGLE() == BREAK) close_SETTINGS();
+		}
+	} else
+	if(new_pad & BUTTON_CIRCLE) {
+		if(IN_ITEMS_VALUE == NO) close_SETTINGS();
+		else {
+			init_SETTINGS();
+			IN_ITEMS_VALUE = NO;
+		}
+	}
+}
+
+void Draw_SETTINGS_input()
+{
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	if(IN_ITEMS_VALUE == YES) {
+		if(strcmp(ITEMS[ITEMS_POSITION], "Dir. to scan") == 0) {
+			x=DrawButton(x, y, "Add", BUTTON_CROSS);
+			if(scan_dir_number>0) {
+				x=DrawButton(x, y, "Delete", BUTTON_TRIANGLE);
+				x=DrawButton(x, y, "Rename", BUTTON_SQUARE);
+			}
+		} else
+		if(strcmp(ITEMS[ITEMS_POSITION], "Themes") == 0) {
+			x=DrawButton(x, y, "Load", BUTTON_CROSS);
+			x=DrawButton(x, y, "Delete", BUTTON_TRIANGLE);
+			u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+			if(ThemeType == MGZ) {
+				x=DrawButton(x, y, "Rename", BUTTON_SQUARE);
+			}
+		}		
+		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	} else {
+		if(strstr(ITEMS[ITEMS_POSITION], "Color") != NULL) {
+			x=DrawButton(x, y, "Change", BUTTON_CROSS);
+			x=DrawButton(x, y, "Reset", BUTTON_SQUARE);
+		} else {
+			x=DrawButton(x, y, "Enter", BUTTON_CROSS);
+			x=DrawButton(x, y, "Change", BUTTON_SQUARE);
+		}
+		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
 	}
 
 }
 
-void Draw_scene()  // for OSK
+void open_SETTINGS()
 {
-	if(scene == SCENE_FILEMANAGER) 
-	{
-		Draw_BGS();
-		Draw_window();
-		Draw_option();
-		Draw_properties();
-		Draw_Notification();
-		Draw_input();
-		Draw_cursor();
-	} else
-	if(scene == SCENE_PS2_OPTION) 
-	{
-		Draw_BGS();
-		Draw_Notification();
-		
-		Draw_PS2_menu();
-		
-		Draw_PS2_input();
-	}
+	start_loading();
+	read_scan_dir();
+	read_setting();
+	ITEMS_POSITION=0;
+	IN_ITEMS_VALUE = NO;
+	memset(ITEMS_VALUE_POSITION, 0, sizeof(ITEMS_VALUE_POSITION));
+	init_SETTINGS();
+	MENU_SIDE=NO;
+	Draw_MENU_input = &Draw_SETTINGS_input;
+	input_MENU = &input_SETTINGS;
+	end_loading();
+	MENU=YES;
 }
 
 //*******************************************************
@@ -19177,7 +20003,7 @@ void AutoMount()
 	strcpy(GamPath, list_game_path[0]);
 	GetParamSFO("TITLE", list_game_title[0], 0, NULL);
 
-	if(change_IDPS_position == YES) change_IDPS();
+	if(change_IDPS == YES) poke_IDPS();
 
 	u8 Path_exist=NO;
 	
@@ -19252,26 +20078,35 @@ void AutoMount()
 	
 	if(gui_called==YES) {
 		end_loading();
-		while(1) {
+		
+		open_GameMenu();
+		
+		while(MENU){
 			cls();
-			ps3pad_read();
 			
-			if(Draw_Game_Menu(0, NO) == BREAK) break;
-			
+			Draw_MENU();
+			Draw_MENU_input();
+		
+			check_device();
+		
 			tiny3d_Flip();
-			
+		
+			ps3pad_read();
+
+			input_MENU();
 		}
+		
 		write_AutoMount_setting(GamPath);
 	}
 
-	if(payload_position==IRIS) iris_Mount(); else
-	if(payload_position==MM) mm_Mount(); else
-	if(payload_position==COBRA) cobra_Mount(); else 
-	if(payload_position==MAMB) mamba_Mount();
+	if(payload==IRIS) iris_Mount(); else
+	if(payload==MM) mm_Mount(); else
+	if(cobra) cobra_Mount(); else 
+	mamba_Mount();
 	
-	if(clean_syscall_position) remove_cfw_syscalls();
+	if(clean_syscall) remove_cfw_syscalls();
 
-	if(direct_boot_position) {
+	if(direct_boot) {
 		if(mount_app_home == NO) {
 			sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
 		} else {
@@ -19286,8 +20121,940 @@ void AutoMount()
 }
 
 //*******************************************************
+// Filter
+//*******************************************************
+
+u8 filter=NO;
+u8 filter_position=0;
+
+void open_filter()
+{
+	filter = YES;
+	read_setting();
+}
+
+void close_filter()
+{
+	filter=NO;
+	write_setting();
+	position=0;
+	for(position=0; position<=game_number; position++) {
+		if(Show_it(position)==YES) break;
+	}
+	Grid_curs_move_x=0;
+	Grid_curs_move_y=0;
+	Grid_move=0;
+	first_icon=position;
+	Flow_curs_move_x = 0;
+}
+
+void input_filter()
+{
+	if(filter==NO) return;
+	
+	if(new_pad & BUTTON_CROSS) {
+		if(filter_position==0) {
+			if(Only_FAV==YES) Only_FAV=NO;
+			else Only_FAV=YES;
+		} else
+		if(filter_position==1) {
+			if(Show_PS3==YES) Show_PS3=NO;
+			else Show_PS3=YES;
+		} else
+		if(filter_position==2) {
+			if(Show_PS2==YES) Show_PS2=NO;
+			else Show_PS2=YES;
+		} else
+		if(filter_position==3) {
+			if(Show_PS1==YES) Show_PS1=NO;
+			else Show_PS1=YES;
+		} else
+		if(filter_position==4) {
+			if(Show_PSP==YES) Show_PSP=NO;
+			else Show_PSP=YES;
+		}
+	}
+	
+	if(new_pad & BUTTON_UP) {
+		if(filter_position==0) filter_position=4;
+		else filter_position--;
+	}
+	
+	if(new_pad & BUTTON_DOWN) {
+		if(filter_position==4) filter_position=0;
+		else filter_position++;
+	}
+	
+	if(new_pad & BUTTON_CIRCLE) {
+		close_filter();
+	}
+}
+
+void Draw_filter_input()
+{
+	if(filter==NO) return;
+	
+	float x=25;
+	float y=485;
+	SetFontSize(15, 15);
+	SetFontColor(COLOR_1, 0x0);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, "Check/Uncheck", BUTTON_CROSS);
+	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+}
+
+void Draw_filter()
+{
+	if(filter==NO) return;
+	
+	SetFontZ(0);
+	u32 color=0;
+	float x=700;
+	float y=300;
+	
+	Draw_Box(x, y, 0, 10, 100, 115, GREY, NO);
+	SetFontSize(18, 18);
+	SetFontColor(COLOR_3, 0x0);
+	DrawStringFromCenterX(x+50, y+5, "FILTER");
+	Draw_Box(x+5, y+23, 0, 0, 90, 2, WHITE, NO);
+	SetFontSize(15, 15);
+	x+=8;
+	y+=33;
+	if(filter_position==0) color = COLOR_2; else color = COLOR_1;
+	Draw_checkbox(Only_FAV, x+5, y, "Favorite", color);
+	y+=15;
+	if(filter_position==1) color = COLOR_2; else color = COLOR_1;
+	Draw_checkbox(Show_PS3, x+5, y, "PS3", color);
+	y+=15;
+	if(filter_position==2) color = COLOR_2; else color = COLOR_1;
+	Draw_checkbox(Show_PS2, x+5, y, "PS2", color);
+	y+=15;
+	if(filter_position==3) color = COLOR_2; else color = COLOR_1;
+	Draw_checkbox(Show_PS1, x+5, y, "PS1", color);
+	y+=15;
+	if(filter_position==4) color = COLOR_2; else color = COLOR_1;
+	Draw_checkbox(Show_PSP, x+5, y, "PSP", color);
+	
+	SetFontColor(COLOR_1, 0x0);
+}
+
+//*******************************************************
 //Main
 //*******************************************************
+		
+void input_MAIN()
+{
+	if(filter==YES) return;
+	if(MENU==YES) return;
+	if(txt_viewer_activ == YES) return;
+	
+	int i,j,k;
+	
+	u8 old_x = x_L;
+	u8 old_y = y_L;
+	
+	x_L = (paddata.button[6] - 128);
+	y_L = (paddata.button[7] - 128);
+	
+	if (y_L < -28) {
+		if(old_y == 0) new_pad |= BUTTON_UP; else
+		{
+			old_pad |= BUTTON_UP;
+			scroll_speed = 6 + y_L/20;
+		}
+	} else 
+	if (28 < y_L) {
+		if(old_y == 0) new_pad |= BUTTON_DOWN; else
+		{
+			old_pad |= BUTTON_DOWN;
+			scroll_speed = 6 - y_L/20;
+		}
+	} else 
+	if (x_L < -28) {
+		if(old_x == 0) new_pad |= BUTTON_LEFT; else
+		{
+			old_pad |= BUTTON_LEFT;
+			scroll_speed = 6 + x_L/20 ;
+		}
+	} else 
+	if (28 < x_L) {
+		if(old_x == 0) new_pad |= BUTTON_RIGHT; else
+		{
+			old_pad |= BUTTON_RIGHT;
+			scroll_speed = 6 - x_L/20;
+		}
+	} else { 
+		x_L=0; y_L=0;
+		if(old_pad & BUTTON_R2) {
+			scroll_speed = 6 - paddata.PRE_R2/50;
+		} else scroll_speed=6;
+	}
+	
+	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
+		hold_it++;
+		if(hold_it>30) {
+			slow_it++;
+			if(slow_it>scroll_speed) slow_it=0;
+		}
+	} else {slow_it=1; hold_it=0;}
+	
+	if(old_pad & BUTTON_CIRCLE) {
+		hold_CIRCLE++;
+		if(hold_CIRCLE>100) {
+			if(Load_GamePIC==YES) end_Load_GamePIC();
+			end_load_PIC1();
+			end_checking();
+			sysModuleUnload(SYSMODULE_PNGDEC);
+			sysModuleUnload(SYSMODULE_JPGDEC);
+			ioPadEnd();
+			exit(0);
+		}
+	} else hold_CIRCLE=0;
+	
+	if((old_pad & BUTTON_L3) && (old_pad & BUTTON_R3)) {
+		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+	}
+	
+	if(old_pad & BUTTON_R1) Display_PIC1=YES;
+	else Display_PIC1=NO;
+	
+	if(new_pad & BUTTON_CROSS && Game_stuff == YES) {
+		
+		if( list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3
+		||	list_game_platform[position] == _ISO_PS2 
+		||	list_game_platform[position] == _ISO_PS1
+		||	list_game_platform[position] == _ISO_PSP			
+		) {
+			if(Load_GamePIC==YES) end_Load_GamePIC();
+			end_load_PIC1();
+			end_checking();
+			
+			start_loading();	
+			
+			strcpy(GamPath, list_game_path[position]);
+				
+			print_load("Mounting %s", list_game_title[position]);
+				
+			if(list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3) {
+					
+				read_game_setting(list_game_title[position]);
+				
+				if(payload==IRIS) iris_Mount(); else
+				if(payload==MM) mm_Mount(); else
+				if(cobra) cobra_Mount(); else
+				mamba_Mount();
+				
+				if(change_IDPS) poke_IDPS();	
+				if(clean_syscall) remove_cfw_syscalls();	
+
+				if(direct_boot) {
+					end_loading();
+					sysModuleUnload(SYSMODULE_PNGDEC);
+					sysModuleUnload(SYSMODULE_JPGDEC);
+					ioPadEnd();
+					if(mount_app_home == NO) {
+						sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+					} else {
+						sysProcessExitSpawn2("/app_home/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+					}
+				}
+			} else {
+				int emul;
+				
+				if(list_game_platform[position] == _ISO_PS2) emul = EMU_PS2_DVD;
+				if(list_game_platform[position] == _ISO_PS1) emul = EMU_PSX;
+				if(list_game_platform[position] == _ISO_PSP) emul = EMU_PSP;
+				
+				if(!cobra && !mamba) mamba = install_mamba();
+				
+				if(emul == EMU_PS2_DVD) patch_PS2();
+				if(emul == EMU_PS2_DVD) use_CONFIG();
+				
+				cobra_MountISO(emul);
+				cobra_MountISO(emul);
+			}
+			
+			end_loading();
+			
+			sysModuleUnload(SYSMODULE_PNGDEC);
+			sysModuleUnload(SYSMODULE_JPGDEC);
+			ioPadEnd();
+			
+			exit(0);
+		} else show_msg("TODO");
+	}
+	
+	if(new_pad & BUTTON_TRIANGLE && Game_stuff == YES) {
+		open_GameMenu();
+	}
+	
+	if(new_pad & BUTTON_SELECT) {
+		Draw_FileExplorer(NULL);
+	}
+	
+	if(new_pad & BUTTON_SQUARE && UI_position!=XMB) {
+		open_filter();
+	}
+	
+	if(new_pad & BUTTON_START) {
+		open_SETTINGS();
+	}
+	
+	if(UI_position==LIST) {
+		if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
+			for(i=0; i<=game_number;i++) {
+				position--;
+				if(position<0) position=game_number;
+				if(Show_it(position) == YES) break;
+			}
+			if(position>last_line) {
+				last_line=position;
+				j=0;
+				for(i=last_line;  j<=nb_line; i--) {
+					if(Show_it(i) == NO) continue;
+					j++;
+				}
+				first_line=i+1;
+			} else
+			if(position<first_line) {
+				first_line=position;
+				j=0;
+				for(i=first_line; j<=nb_line; i++) {
+					if(Show_it(i) == NO) continue;
+					j++;
+				}
+				last_line=i-1;
+			}
+		}
+		if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
+			for(i=0; i<=game_number;i++) {
+				position++;
+				if(position>game_number) position=0;
+				if(Show_it(position) == YES) break;
+			}
+			if(position>last_line) {
+				last_line=position;
+				j=0;
+				for(i=last_line;  j<=nb_line; i--) {
+					if(Show_it(i) == NO) continue;
+					j++;
+				}
+				first_line=i+1;
+			} else
+			if(position<first_line) {
+				first_line=position;
+				j=0;
+				for(i=first_line; j<=nb_line; i++) {
+					if(Show_it(i) == NO) continue;
+					j++;
+				}
+				last_line=i-1;
+			}	
+		}
+	} else
+	if(UI_position==GRID) {
+		if( ((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && direction==HORIZONTAL)  ||
+			((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && direction==VERTICAL  )  )
+		{
+			j=-1;
+			for(i=position; i>=0;i--){
+				if(Show_it(i)==NO) continue;
+				j++;
+				position=i;
+				if(j==1) break;
+			}
+		}
+		if( ((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && direction==HORIZONTAL)  ||
+			((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && direction==VERTICAL  )  )
+		{
+			j=-1;
+			for(i=position; i<=game_number;i++){
+				if(Show_it(i)==NO) continue;
+				j++;
+				position=i;
+				if(j==1) break;
+			}
+		}
+		if( ((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && direction==HORIZONTAL)  ||
+			((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && direction==VERTICAL  )  )
+		{
+			j=-1;
+			for(i=position; i>=0;i--){
+				if(Show_it(i)==NO) continue;
+				j++;
+				position=i;
+				if(direction==VERTICAL   && j==grid_nb_columns) break;
+				if(direction==HORIZONTAL && j==grid_nb_lines) break;
+			}
+		}
+		if( ((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && direction==HORIZONTAL)  ||
+			((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && direction==VERTICAL  )  )
+		{
+			j=-1;
+			for(i=position; i<=game_number;i++){
+				if(Show_it(i)==NO) continue;
+				j++;
+				position=i;
+				if(direction==VERTICAL   && j==grid_nb_columns) break;
+				if(direction==HORIZONTAL && j==grid_nb_lines) break;
+			}
+		}	
+		if( (new_pad & BUTTON_UP	|| ((old_pad & BUTTON_UP)	&& slow_it==0)) ||
+			(new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) ||
+			(new_pad & BUTTON_LEFT  || ((old_pad & BUTTON_LEFT)  && slow_it==0)) ||
+			(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0))   )
+		{
+			if(grid_type == SCROLL) {
+				speed = 9;
+				if(position < first_icon) {
+					j=-1;
+					for(i=first_icon; i>=0; i--){
+						if(Show_it(i)==NO) continue;
+						j++;
+						first_icon=i;
+						if(j==grid_nb_lines) break;
+					}
+					if(direction==HORIZONTAL) {
+						if(animated == YES) Grid_move -= w_ICON0 + e_w ;
+						else Grid_curs_move_x += w_ICON0 + e_w ;
+					} else
+					if(direction==VERTICAL) {
+						if(animated == YES) Grid_move -= h_ICON0 + e_h ;
+						else Grid_curs_move_y += h_ICON0 + e_h ;
+					}
+				}
+				if(position > last_icon) {
+					j=-1;
+					for(i=last_icon; i<=game_number; i++){
+						if(Show_it(i)==NO) continue;
+						j++;
+						last_icon=i;
+						if(direction==VERTICAL   && j==grid_nb_columns) break;
+						if(direction==HORIZONTAL && j==grid_nb_lines) break;
+					}
+					j=-1;
+					for(i=first_icon; i<=game_number; i++){
+						if(Show_it(i)==NO) continue;
+						j++;
+						first_icon=i;
+						if(direction==VERTICAL   && j==grid_nb_columns) break;
+						if(direction==HORIZONTAL && j==grid_nb_lines) break;
+					}
+					if(direction==HORIZONTAL) {
+						if(animated == YES) Grid_move += w_ICON0 + e_w ;
+						else Grid_curs_move_x -= w_ICON0 + e_w ;
+					} else
+					if(direction==VERTICAL) {
+						if(animated == YES) Grid_move += h_ICON0 + e_h ;
+						else Grid_curs_move_y -= h_ICON0 + e_h ;
+					}
+				}
+			} else
+			if(grid_type == PAGE) {
+				speed = 18;
+				if(position < first_icon) {
+					j=-1;
+					for(i=first_icon; i>=0; i--){
+						if(Show_it(i)==NO) continue;
+						j++;
+						first_icon=i;
+						if(j==nb_icon) break;
+					}
+					if(direction==HORIZONTAL) {
+						if(animated == YES) Grid_move -= (w_ICON0 + e_w) * grid_nb_columns ;
+						else Grid_curs_move_x += (w_ICON0 + e_w) * grid_nb_columns;
+					} else
+					if(direction==VERTICAL) {
+						if(animated == YES) Grid_move -= (h_ICON0 + e_h) * grid_nb_lines ;
+						else Grid_curs_move_y += (h_ICON0 + e_h) * grid_nb_lines;
+					}
+				}
+				if(position > last_icon) {
+					j=-1;
+					for(i=last_icon; i<=game_number; i++){
+						if(Show_it(i)==NO) continue;
+						j++;
+						if(j==1) {first_icon=i;	break;}
+					}
+					if(direction==HORIZONTAL) {
+						if(animated == YES) Grid_move += (w_ICON0 + e_w) * grid_nb_columns;
+						else Grid_curs_move_x -= (w_ICON0 + e_w) * grid_nb_columns;
+					} else
+					if(direction==VERTICAL) {
+						if(animated == YES) Grid_move += (h_ICON0 + e_h) * grid_nb_lines;
+						else Grid_curs_move_y -= (h_ICON0 + e_h) * grid_nb_lines;
+					}
+				}
+			}
+		}
+	} else
+	if(UI_position==XMB) {
+		if(new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0) ) {
+			if(XMB_H_position > 0) XMB_H_position--;
+		}
+		if(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0) ) {
+			if(XMB_H_position < 5) XMB_H_position++;
+		}
+		if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0) ) {
+			if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_lin[XMB_H_position] != 0) {
+				XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
+				XMB_curs_move_y[XMB_H_position] = (XMB_h - XMB_h*(XMB_V_position[XMB_H_position]-1)) - 200; 
+			} 
+			else if(XMB_V_position[XMB_H_position] > 0) XMB_V_position[XMB_H_position]--;
+		}
+		if(new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN) && slow_it==0) ) {
+			if(XMB_V_position[XMB_H_position] == XMB_nb_lin[XMB_H_position] && XMB_nb_lin[XMB_H_position] != 0) {
+				XMB_V_position[XMB_H_position] = 0;
+				XMB_curs_move_y[XMB_H_position] = 0; 
+			} else if(XMB_V_position[XMB_H_position] < XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position]++;
+		}
+	} else
+	if(UI_position==FLOW) {
+		if( (FLOW_inverse_button==NO  && (new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0))) ||
+			(FLOW_inverse_button==YES && (new_pad & BUTTON_LEFT  || ((old_pad & BUTTON_LEFT)  && slow_it==0)))   ) 
+		{
+			for(i=0; i<game_number;i++) {
+				position--;
+				
+				if(position < 0) {
+					j=-1;
+					for(k=0; k<=game_number; k++) {
+						if(Show_it(k) == NO) continue;
+						j++;
+						position=k;
+						if(j==0) Flow_curs_move_x = 0;
+						else Flow_curs_move_x = - 2*FLOW_w - FLOW_w*(j-1);
+					}
+				}
+				
+				if(Show_it(position) == YES) break;
+			}
+		}
+		if( (FLOW_inverse_button==NO  && (new_pad & BUTTON_LEFT   || ((old_pad & BUTTON_LEFT ) && slow_it==0))) ||
+			(FLOW_inverse_button==YES && (new_pad & BUTTON_RIGHT  || ((old_pad & BUTTON_RIGHT) && slow_it==0)))   ) 
+		{
+			for(i=0; i<game_number;i++) {
+				position++;
+				if(position > game_number) {
+					for(k=0; k<=game_number; k++) {
+						if(Show_it(k) == NO) continue;
+						position=k;
+						Flow_curs_move_x = 0;
+						break;
+					}
+				}
+				if(Show_it(position) == YES) break;
+			}
+		}
+	}
+}
+
+void Draw_MAIN_input()
+{
+	if(MENU==YES) return;
+	if(filter==YES) return;
+	
+	int x=25, y=485;
+	
+	SetFontColor(COLOR_1, 0x0);
+	SetFontSize(15, 15);
+	x=DrawButton(x, y, "Settings", BUTTON_START);
+	if(Game_stuff==YES) {
+		x=DrawButton(x, y, "Game Menu", BUTTON_TRIANGLE);
+		x=DrawButton(x, y, "Mount game", BUTTON_CROSS);
+	}
+	if(UI_position!=XMB) {
+		x=DrawButton(x, y, "Filter", BUTTON_SQUARE);
+	}
+	x=DrawButton(x, y, "File Manager", BUTTON_SELECT);
+		
+	SetFontColor(COLOR_4, 0x0);
+	x=DrawString( x+10, y, "Hold");
+	SetFontColor(COLOR_1, 0x0);
+	x=Draw_Button_Circle(x+5, y, 15);
+	x=DrawString( x+5, y, "Back to XMB ");
+	if(hold_CIRCLE != 0) {
+		SetFontColor(COLOR_3, 0x0);
+		x=DrawFormatString( x+5, y, "in %d", (100 - hold_CIRCLE)/30);
+		SetFontColor(COLOR_1, 0x0);
+	}
+	x=750;
+	
+	if(Game_stuff == YES) {
+		if(usb==YES) {
+			int t;
+			sscanf(list_game_path[position], "/dev_usb%d%*s" , &t);
+			x = Draw_USB(x , y, 20, COLOR_1, t);
+		}
+		if(is_ntfs(list_game_path[position]) == YES) {
+			int t;
+			sscanf(list_game_path[position], "/ntfs%d%*s" , &t);
+			SetFontColor(COLOR_3, 0x0);
+			x = DrawString(x, y, "NTFS ");
+			x = Draw_USB(x , y, 20, COLOR_3 , t);
+		}
+		
+		if(list_game_platform[position] == _ISO_PS3) {
+			Draw_DISK( x + 5, y, 0, 20, COLOR_PS3);
+		} else
+		if(list_game_platform[position] == _ISO_PS2) {
+			Draw_DISK( x + 5, y, 0, 20, COLOR_PS2);
+		} else
+		if(list_game_platform[position] == _ISO_PS1) {
+			Draw_DISK( x + 5, y, 0, 20, COLOR_PS1);
+		} else
+		if(list_game_platform[position] == _ISO_PSP) {
+			Draw_DISK( x + 5, y, 0, 20, COLOR_PSP);
+		}
+	}
+}
+
+void Draw_MAIN()
+{
+	if(MENU==YES && MENU_SIDE == NO) return;
+	
+	SetFontZ(10);
+	
+	int x, y, i, j, k;
+	
+	iso = is_iso(list_game_path[position]);
+	usb = is_usb(list_game_path[position]);	
+	
+	Game_stuff = YES;
+	
+	if(UI_position==LIST) {
+		
+		if(LIST_Show_ICON0 == YES) {
+			Draw_ICON0(position, 630, 30, 100, 141.3, 75.9);
+		}
+		if(Show_COVER == YES) {
+			Draw_COVER(position, 630, 150, 100, 141.3, 0);
+		}
+		
+		x=50, y=40;
+		SetFontColor(COLOR_1, 0x0);
+		SetFontAutoCenter(0);
+		SetFontSize(size_font,size_font);
+	
+		nb_line = (460 - y - size_font) / size_font;
+		
+		SetFontZ(105);
+		
+		int j=0;
+		for(i=first_line;  j <= nb_line; i++) {
+			if(i>game_number) break;
+			if(Show_it(i) == NO) continue;
+			j++;
+			
+			if(i==position) SetFontColor(COLOR_2, 0x0);
+			else SetFontColor(COLOR_1, 0x0);
+			
+			DrawFormatString(x, y, "%s", list_game_title[i]);
+			y+=size_font;
+		}
+		SetFontZ(10);
+		last_line=i-1;
+		
+		if(position<first_line) position = first_line;
+		if(last_line<position) position = last_line;
+	}
+	else if (UI_position==GRID) {
+	
+		float x1, y1;
+		
+		x=20;
+		y=20;
+		
+		float grid_w = X_MAX - 40;
+		float grid_h = Y_MAX - 50;
+		
+		if(keep_prop == NO) {
+			w_ICON0 = (grid_w - (grid_nb_columns-1) * e_w) / grid_nb_columns;  
+			h_ICON0 = (grid_h - (grid_nb_lines-1) * e_h) / grid_nb_lines;
+		}
+		else {
+			w_ICON0 = (grid_w - (grid_nb_columns-1) * e_w)/grid_nb_columns ; 
+			h_ICON0 = w_ICON0/1.86;
+			grid_nb_lines = (grid_h+e_h) / (e_h+h_ICON0);
+		}
+		
+		nb_icon = grid_nb_lines * grid_nb_columns;
+		
+		j=0;
+		for(i=first_icon; i<=game_number; i++){
+			if(Show_it(i)==NO) continue;
+			j++;
+			last_icon=i;
+			if(j==nb_icon) break;
+		}
+		
+		y += (grid_h - (grid_nb_lines*(h_ICON0+e_h)-e_h))/2 ; // center
+
+		//if(position>game_number) position = game_number ;// ex : si je debranche et rebranche le hdd ext
+
+		y1=y; x1=x;
+		
+		if(direction == HORIZONTAL)  {
+			if(Grid_move != 0) {
+				if(Grid_move >= speed ) {Grid_curs_move_x -= speed; Grid_move -= speed;} else 
+				if(Grid_move <= -speed) {Grid_curs_move_x += speed; Grid_move += speed;} else 
+				{ Grid_curs_move_x -= Grid_move ; Grid_move = 0; }				
+			}
+				
+			x += Grid_curs_move_x ;
+		} else
+		if(direction == VERTICAL)  {
+			if(Grid_move != 0 ) {
+				if(Grid_move >= speed ) {Grid_curs_move_y -= speed; Grid_move -= speed;} else 
+				if(Grid_move <= -speed) {Grid_curs_move_y += speed; Grid_move += speed;} else 
+				{ Grid_curs_move_y -= Grid_move ; Grid_move = 0; }
+			}
+			y += Grid_curs_move_y;
+		}
+		
+		k=0;
+		for(i = 0 ; i<=game_number ; i++) {
+			if(Show_it(i)==NO) continue;
+			k++;
+			
+			if(i==position) {
+				Draw_ICON0(i, x, y, 100, w_ICON0, h_ICON0);
+				Draw_Box(x-5, y-5, 101, 0, w_ICON0+10, h_ICON0+10, 0xFFFFFFFF, NO);
+				Draw_Box(x, y, 101, 0, w_ICON0, h_ICON0, 0x000000FF, NO);
+			} else {
+				Draw_ICON0(i, x, y, 100, w_ICON0, h_ICON0);
+				Draw_Box(x, y, 99, 0, w_ICON0, h_ICON0, 0xFFFFFF80, NO); 
+			}
+			
+			if(direction == HORIZONTAL)  {
+				y+= h_ICON0 + e_h;
+				if(k==grid_nb_lines) {k=0; y = y1; x += w_ICON0 + e_w;}
+			} else
+			if(direction == VERTICAL)  {
+				x+= w_ICON0 + e_w;
+				if(k==grid_nb_columns) {k=0; x = x1; y += h_ICON0 + e_h;}
+			}
+		}
+	}
+	else if (UI_position==XMB) {
+		
+		if(XMB_H_position == COL_SET) Game_stuff = NO; else Game_stuff = YES;
+		
+		x = 250;
+		y = 200;
+		
+		int position_x;
+		int position_y;
+		
+		position_x = x - 90 * XMB_H_position;
+		
+		int slide_speed;
+		
+		if(0 <= scroll_speed && scroll_speed < 3) slide_speed = 40; else
+		if(3 <= scroll_speed && scroll_speed < 6) slide_speed = 20; else
+		slide_speed = 10;
+		
+		x += XMB_curs_move_x;
+		
+		if(position_x > x) XMB_curs_move_x+=slide_speed; else
+		if(position_x < x) XMB_curs_move_x-=slide_speed;
+		
+		Draw_Col_header(x);
+		
+		if(XMB_V_position[XMB_H_position] == 0) {
+			position_y = y;
+		} else
+		if(XMB_V_position[XMB_H_position] > 0) {
+			position_y = XMB_h - XMB_h*(XMB_V_position[XMB_H_position]-1); 
+		}
+		
+		y += XMB_curs_move_y[XMB_H_position];
+		
+		if(position_y > y) {
+			if(y == 2*XMB_h) XMB_curs_move_y[XMB_H_position] += 120; else XMB_curs_move_y[XMB_H_position]+=slide_speed;
+		}
+		else if(position_y < y) {
+			if(y==200-XMB_h) XMB_curs_move_y[XMB_H_position] -= 120; else XMB_curs_move_y[XMB_H_position]-=slide_speed;
+		}
+		
+		SetFontZ(90);
+		if(XMB_H_position==COL_FAV) {
+			int real_FAV_game_number=-1;
+			for(j = 0 ; j <= game_number ; j++) {
+				if(is_favorite(list_game_path[j]) == NO) continue;
+				
+				real_FAV_game_number++;
+				
+				if(y>XMB_h && y<3*XMB_h) y=200-2*XMB_h+y ; else
+				if(3*XMB_h<y && y<=200-XMB_h) y=XMB_h;else
+				if(y==300-XMB_h) y=200;else
+				if(y==2*XMB_h) y=200;
+				
+				if(200-XMB_h < y && y < 200+XMB_h) {
+					position = j;
+					if(MENU==NO) {
+						Draw_ICON0(position, 250-XMB_w , y, 10, XMB_w*2, XMB_h*2);
+						DrawFormatString(250+XMB_w+20, y+XMB_h-10, "%s", list_game_title[position]);
+					} else {
+						DrawFormatString(250+XMB_w+XMB_w+20, 200+XMB_h-10, "%s", list_game_title[position]);
+					}
+					y+=2*XMB_h + XMB_h/2;
+					if(Show_COVER == YES) {
+						Draw_COVER(j, 20, 200, 10, 138, 0);
+					}
+				}
+				else {
+					Draw_ICON0(j, 250-XMB_w/2, y, 100, XMB_w, XMB_h);
+					y+=XMB_h;
+				}
+			}
+			
+			XMB_nb_lin[XMB_H_position] = real_FAV_game_number;
+			if(real_FAV_game_number<0) Game_stuff = NO;
+			if(XMB_V_position[XMB_H_position]>XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
+			
+			
+		}
+		else if(XMB_H_position==COL_PS3 || XMB_H_position==COL_PS2 || XMB_H_position==COL_PS1 || XMB_H_position==COL_PSP) {
+
+			XMB_nb_lin[XMB_H_position]=-1;
+			
+			for(j = 0 ; j <= game_number ; j++) {
+				if(XMB_H_position==COL_PS3 && (list_game_platform[j] !=_ISO_PS3 && list_game_platform[j] !=_JB_PS3)) continue;
+				if(XMB_H_position==COL_PS2 && (list_game_platform[j] !=_ISO_PS2 && list_game_platform[j] !=_JB_PS2)) continue;
+				if(XMB_H_position==COL_PS1 && (list_game_platform[j] !=_ISO_PS1 && list_game_platform[j] !=_JB_PS1)) continue;
+				if(XMB_H_position==COL_PSP && (list_game_platform[j] !=_ISO_PSP && list_game_platform[j] !=_JB_PSP)) continue;
+				
+				XMB_nb_lin[XMB_H_position]++;
+				
+				if(y>XMB_h && y<3*XMB_h) y=200-2*XMB_h+y ; else
+				if(3*XMB_h<y && y<=200-XMB_h) y=XMB_h;else
+				if(y==300-XMB_h) y=200;else
+				if(y==2*XMB_h) y=200;
+				
+				if(200-XMB_h < y && y < 200+XMB_h) {
+					position = j;
+					if(MENU==NO) {
+						Draw_ICON0(position, 250-XMB_w , y, 10, XMB_w*2, XMB_h*2);
+						DrawFormatString(250+XMB_w+20, y+XMB_h-10, "%s", list_game_title[position]);
+					} else {
+						DrawFormatString(250+XMB_w+XMB_w+20, 200+XMB_h-10, "%s", list_game_title[position]);
+					}
+					y=300;
+					if(Show_COVER == YES) {
+						Draw_COVER(position, 20, 200, 10, 138, 0);
+					}
+				}
+				else {
+					Draw_ICON0(j, 250-XMB_w/2, y, 100, XMB_w, XMB_h);
+					y+=XMB_h;
+				}
+			}
+			
+			if(XMB_V_position[XMB_H_position]>XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
+			
+			if(XMB_nb_lin[XMB_H_position]==-1) Game_stuff=NO;
+		}
+			
+		SetFontZ(10);
+		
+	}
+	else if (UI_position==FLOW) {
+		
+		x=848/2;
+		y=512/2;
+		
+		int FLOW_speed;
+		
+		int FLOW_position_x=x;
+		float FLOW_a;
+		int FLOW_slide_speed;
+		
+		if(0 <= scroll_speed && scroll_speed < 3) FLOW_slide_speed = 40; else
+		if(3 <= scroll_speed && scroll_speed < 6) FLOW_slide_speed = 20; else
+		FLOW_slide_speed = 10;
+		
+		j=-1;
+		for(i=0; i<=game_number; i++) {
+			if(Show_it(i) == NO) continue;
+			j++;
+			if(i==position) {
+				if(j==0) FLOW_position_x = x;
+				else FLOW_position_x = x - 2*FLOW_w - FLOW_w*(j-1);
+				break;
+			}
+		}
+		
+		x += Flow_curs_move_x;
+		
+		if(FLOW_position_x > x) {
+			if(264 <= x && x < 584) FLOW_speed=FLOW_slide_speed*2; else FLOW_speed=FLOW_slide_speed;
+		} else
+		if(FLOW_position_x < x) {
+			if(264 < x && x <= 584) FLOW_speed=-FLOW_slide_speed*2; else FLOW_speed=-FLOW_slide_speed;
+		} else FLOW_speed=0;
+		
+		Flow_curs_move_x+=FLOW_speed;
+		
+		for(j = 0 ; j <= game_number ; j++) {
+			if(Show_it(j) == NO) continue;
+			
+			if(264 < x && x < 584) {
+				if(x<=424) {
+					FLOW_a= 1/(424-264)*x - (1/(424-264)*424) + 2 ;
+				}
+				else {
+					FLOW_a= 1/(424-584)*x - (1/(424-584)*424) + 2 ;
+				}
+			} else {
+				FLOW_a=1;
+			}
+			if(x==424) {
+				SetFontSize(20, 20);
+				DrawStringFromCenterX(424, 100, list_game_title[j]);
+			}
+			
+			if(j==position) {
+				if(FLOW_use_Cover == YES && COVER_offset[j] != 0) Draw_CoverFromCenter(j, x, y, 0, FLOW_w*FLOW_a, 0);
+				else Draw_ICON0(j, x-(FLOW_w*FLOW_a)/2, y-(FLOW_h*FLOW_a)/2, 0, FLOW_w*FLOW_a, FLOW_h*FLOW_a);
+			} else {
+				if(FLOW_use_Cover == YES && COVER_offset[j] != 0) Draw_CoverFromCenter(j, x, y, 100, FLOW_w*FLOW_a, 0);
+				else Draw_ICON0(j, x-(FLOW_w*FLOW_a)/2, y-(FLOW_h*FLOW_a)/2, 100, FLOW_w*FLOW_a, FLOW_h*FLOW_a);
+			}
+			
+			if(x==424 || x==264) x+=2*FLOW_w; else  
+			if(264 < x && x < 424) {
+			   x+=FLOW_w*FLOW_a;
+			} else
+			if(424 < x && x < 584) {
+				x+=FLOW_w*(FLOW_a-1) + fabs(584-x)/2;
+			} else
+			if(184 < x && x < 424) {
+				if(speed<0){
+					x+=2*FLOW_w;
+				}
+				if(speed>0){
+					x+=FLOW_w;
+				}
+			} else x+=FLOW_w;
+			
+			if(speed!=20) {
+				if(speed<0){
+					if(264 < x && x < 424) {
+					x+=fabs(424-x)*speed/10;
+					}
+				}
+				if(speed>0){
+					if(264 < x && x < 424) {
+						x+=fabs(264-x)*speed/10;
+					}
+				}
+			}
+		}
+	}
+
+}
 
 u8 Show_it(int pos)
 {
@@ -19296,19 +21063,15 @@ u8 Show_it(int pos)
 	if(	Show_PS1==NO && (list_game_platform[pos]==_ISO_PS1 || list_game_platform[pos]==_JB_PS1)) return NO;
 	if(	Show_PSP==NO && (list_game_platform[pos]==_ISO_PSP || list_game_platform[pos]==_JB_PSP)) return NO;
 	
+	if( UI_position != XMB && Only_FAV==YES && is_favorite(list_game_path[pos])==NO) return NO;
+	
 	return YES;
 }
 
 int main(void)
 {
-	
-	int i=0, j=0, k=0;
+	int i, j;
 	char scan_path[128];
-	int first_line = 0, nb_line=0, last_line;
-	int hold_CIRCLE=0;
-	int first_icon = 0, nb_icon, last_icon=-1;
-	int x_L = 0;
-	int y_L = 0;
 	
 	NTFS_init_system_io();
 	
@@ -19548,10 +21311,9 @@ int main(void)
 	print_load("Get Favorite game list");
 	read_fav();
 	
-	for(i=0; i<=game_number; i++) {
-		if(Show_it(i)==NO) continue;
-		position=i;
-		break;
+	position=0;
+	for(position=0; position<=game_number; position++) {
+		if(Show_it(position)==YES) break;
 	}
 	
 	end_loading();
@@ -19593,880 +21355,57 @@ int main(void)
 				return 0;
 			}
 		}
-	
-		tiny3d_Flip();
+		
+		scene = SCENE_MAIN;
+		
 		cls();
-		ps3pad_read();
-		SetFontZ(10);
 		
-		i=0;
-		int x, y;
-		
+		Draw_BG();
+		Draw_PIC1();
+		Draw_MAIN();
+		Draw_MAIN_input();
 		Draw_Load_GamePIC();
+		
+		Draw_filter();
+		Draw_filter_input();
+		
+		Draw_MENU();
+		Draw_MENU_input();
+		
+		Draw_txt_viewer();
+		
 		Draw_Notification();
 		
 		check_device();
-		Draw_BG();
-		Draw_PIC1();
 		
-		iso = is_iso(list_game_path[position]);
-		usb = is_usb(list_game_path[position]);	
-				
-		u8 old_x = x_L;
-		u8 old_y = y_L;
+		tiny3d_Flip();
 		
-		x_L = (paddata.button[6] - 128);
-		y_L = (paddata.button[7] - 128);
+		ps3pad_read();
 		
-		if (y_L < -28) {
-			if(old_y == 0) new_pad |= BUTTON_UP; else
-			{
-				old_pad |= BUTTON_UP;
-				scroll_speed = 6 + y_L/20;
-			}
-		} else 
-		if (28 < y_L) {
-			if(old_y == 0) new_pad |= BUTTON_DOWN; else
-			{
-				old_pad |= BUTTON_DOWN;
-				scroll_speed = 6 - y_L/20;
-			}
-		} else 
-        if (x_L < -28) {
-			if(old_x == 0) new_pad |= BUTTON_LEFT; else
-			{
-				old_pad |= BUTTON_LEFT;
-				scroll_speed = 6 + x_L/20 ;
-			}
-		} else 
-		if (28 < x_L) {
-			if(old_x == 0) new_pad |= BUTTON_RIGHT; else
-			{
-				old_pad |= BUTTON_RIGHT;
-				scroll_speed = 6 - x_L/20;
-			}
-		} else { 
-			x_L=0; y_L=0;
-			if(old_pad & BUTTON_R2) {
-				scroll_speed = 6 - paddata.PRE_R2/50;
-			} else scroll_speed=6;
-		}
-		
-		if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
-			hold_it++;
-			if(hold_it>30) {
-				slow_it++;
-				if(slow_it>scroll_speed) slow_it=0;
-			}
-		} else {slow_it=1; hold_it=0;}
-		
-		if(UI_position==LIST) {
-			
-			Game_stuff = YES;
-			use_sidebar_menu = NO;
-			
-			if(Show_ICON0_position == YES) {
-				Draw_ICON0(position, 630, 30, 100, 141.3, 75.9);
-			}
-			if(LIST_Show_COVER_position == YES) {
-				Draw_COVER(position, 630, 150, 100, 141.3, 0);
-			}
-			
-			x=50, y=40;
-			SetFontColor(COLOR_1, 0x0);
-			SetFontAutoCenter(0);
-			SetFontSize(size_font,size_font);
-		
-			nb_line = (460 - y - size_font) / size_font;
-			
-			SetFontZ(105);
-			
-			int j=0;
-			for(i=first_line;  j <= nb_line; i++) {
-				if(Show_it(i) == NO) continue;
-				j++;
-				
-				if(i==position) SetFontColor(COLOR_2, 0x0);
-				else SetFontColor(COLOR_1, 0x0);
-				
-				DrawFormatString(x, y, "%s", list_game_title[i]);
-				y+=size_font;
-			}
-			SetFontZ(10);
-			last_line=i-1;
-			
-			if(position<first_line) position = first_line;
-			if(last_line<position) position = last_line;
-
-			if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0)) {
-				for(i=0; i<=game_number;i++) {
-					position--;
-					
-					if(position<0) position=game_number;
-					if(Show_it(position) == YES) break;
-				}
-				
-				if(position>last_line) {
-					last_line=position;
-					j=0;
-					for(i=last_line;  j<=nb_line; i--) {
-						if(Show_it(i) == NO) continue;
-						j++;
-					}
-					first_line=i+1;
-				} else
-				if(position<first_line) {
-					first_line=position;
-					j=0;
-					for(i=first_line; j<=nb_line; i++) {
-						if(Show_it(i) == NO) continue;
-						j++;
-					}
-					last_line=i-1;
-				}
-				
-			}
-			if(new_pad & BUTTON_DOWN || ((old_pad & BUTTON_DOWN) && slow_it==0)) {
-				for(i=0; i<=game_number;i++) {
-					position++;
-					if(position>game_number) position=0;
-					if(Show_it(position) == YES) break;
-				}
-				
-				if(position>last_line) {
-					last_line=position;
-					j=0;
-					for(i=last_line;  j<=nb_line; i--) {
-						if(Show_it(i) == NO) continue;
-						j++;
-					}
-					first_line=i+1;
-				} else
-				if(position<first_line) {
-					first_line=position;
-					j=0;
-					for(i=first_line; j<=nb_line; i++) {
-						if(Show_it(i) == NO) continue;
-						j++;
-					}
-					last_line=i-1;
-				}
-				
-			}
-		}
-		else if (UI_position==GRID) {
-			Game_stuff = YES;
-			use_sidebar_menu = NO;
-			float e_w = 10;
-			float e_h = 10;
-			float speed = 9;
-			float x1, y1;
-			
-			x=20;
-			y=20;
-			
-			float grid_w = X_MAX - 40;
-			float grid_h = Y_MAX - 50;
-			
-			float w_ICON0;  
-			float h_ICON0;
-			
-			if(keep_prop == NO) {
-				w_ICON0 = (grid_w - (grid_nb_columns-1) * e_w) / grid_nb_columns;  
-				h_ICON0 = (grid_h - (grid_nb_lines-1) * e_h) / grid_nb_lines;
-			}
-			else {
-				w_ICON0 = (grid_w - (grid_nb_columns-1) * e_w)/grid_nb_columns ; 
-				h_ICON0 = w_ICON0/1.86;
-				grid_nb_lines = (grid_h+e_h) / (e_h+h_ICON0);
-			}
-			
-			nb_icon = grid_nb_lines * grid_nb_columns;
-			
-			j=0;
-			for(i=first_icon; i<=game_number; i++){
-				if(Show_it(i)==NO) continue;
-				j++;
-				last_icon=i;
-				if(j==nb_icon) break;
-			}
-			
-			y += (grid_h - (grid_nb_lines*(h_ICON0+e_h)-e_h))/2 ; // center
-
-			//if(position>game_number) position = game_number ;// ex : si je debranche et rebranche le hdd ext
-
-			y1=y; x1=x;
-			
-			if(direction == HORIZONTAL)  {
-				if(move != 0) {
-					if(move >= speed ) {List_curs_move_x -= speed; move -= speed;} else 
-					if(move <= -speed) {List_curs_move_x += speed; move += speed;} else 
-					{ List_curs_move_x -= move ; move = 0; }				
-				}
-					
-				x += List_curs_move_x ;
-			} else
-			if(direction == VERTICAL)  {
-				if(move != 0 ) {
-					if(move >= speed ) {List_curs_move_y -= speed; move -= speed;} else 
-					if(move <= -speed) {List_curs_move_y += speed; move += speed;} else 
-					{ List_curs_move_y -= move ; move = 0; }
-				}
-				y += List_curs_move_y;
-			}
-			
-			k=0;
-			for(i = 0 ; i<=game_number ; i++) {
-				if(Show_it(i)==NO) continue;
-				k++;
-				
-				if(i==position) {
-					Draw_ICON0(i, x, y, 100, w_ICON0, h_ICON0);
-					Draw_Box(x-5, y-5, 101, 0, w_ICON0+10, h_ICON0+10, 0xFFFFFFFF, NO);
-					Draw_Box(x, y, 101, 0, w_ICON0, h_ICON0, 0x000000FF, NO);
-				} else {
-					Draw_ICON0(i, x, y, 100, w_ICON0, h_ICON0);
-					Draw_Box(x, y, 99, 0, w_ICON0, h_ICON0, 0xFFFFFF80, NO); 
-				}
-				
-				if(direction == HORIZONTAL)  {
-					y+= h_ICON0 + e_h;
-					if(k==grid_nb_lines) {k=0; y = y1; x += w_ICON0 + e_w;}
-				} else
-				if(direction == VERTICAL)  {
-					x+= w_ICON0 + e_w;
-					if(k==grid_nb_columns) {k=0; x = x1; y += h_ICON0 + e_h;}
-				}
-			}	
-				
-			if( ((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && direction==HORIZONTAL)  ||
-				((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && direction==VERTICAL  )  )
-			{
-				j=-1;
-				for(i=position; i>=0;i--){
-					if(Show_it(i)==NO) continue;
-					j++;
-					position=i;
-					if(j==1) break;
-				}
-			}
-			if( ((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && direction==HORIZONTAL)  ||
-				((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && direction==VERTICAL  )  )
-			{
-				j=-1;
-				for(i=position; i<=game_number;i++){
-					if(Show_it(i)==NO) continue;
-					j++;
-					position=i;
-					if(j==1) break;
-				}
-			}
-			if( ((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && direction==HORIZONTAL)  ||
-				((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && direction==VERTICAL  )  )
-			{
-				j=-1;
-				for(i=position; i>=0;i--){
-					if(Show_it(i)==NO) continue;
-					j++;
-					position=i;
-					if(direction==VERTICAL   && j==grid_nb_columns) break;
-					if(direction==HORIZONTAL && j==grid_nb_lines) break;
-				}
-			}
-			if( ((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && direction==HORIZONTAL)  ||
-				((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && direction==VERTICAL  )  )
-			{
-				j=-1;
-				for(i=position; i<=game_number;i++){
-					if(Show_it(i)==NO) continue;
-					j++;
-					position=i;
-					if(direction==VERTICAL   && j==grid_nb_columns) break;
-					if(direction==HORIZONTAL && j==grid_nb_lines) break;
-				}
-			}
-				
-			if( (new_pad & BUTTON_UP	|| ((old_pad & BUTTON_UP)	&& slow_it==0)) ||
-				(new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) ||
-				(new_pad & BUTTON_LEFT  || ((old_pad & BUTTON_LEFT)  && slow_it==0)) ||
-				(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0))   )
-			{
-				if(grid_type == SCROLL) {
-					speed = 9;
-					if(position < first_icon) {
-						j=-1;
-						for(i=first_icon; i>=0; i--){
-							if(Show_it(i)==NO) continue;
-							j++;
-							first_icon=i;
-							if(j==grid_nb_lines) break;
-						}
-						if(direction==HORIZONTAL) {
-							if(animated == YES) move -= w_ICON0 + e_w ;
-							else List_curs_move_x += w_ICON0 + e_w ;
-						} else
-						if(direction==VERTICAL) {
-							if(animated == YES) move -= h_ICON0 + e_h ;
-							else List_curs_move_y += h_ICON0 + e_h ;
-						}
-					}
-					if(position > last_icon) {
-						j=-1;
-						for(i=last_icon; i<=game_number; i++){
-							if(Show_it(i)==NO) continue;
-							j++;
-							last_icon=i;
-							if(direction==VERTICAL   && j==grid_nb_columns) break;
-							if(direction==HORIZONTAL && j==grid_nb_lines) break;
-						}
-						j=-1;
-						for(i=first_icon; i<=game_number; i++){
-							if(Show_it(i)==NO) continue;
-							j++;
-							first_icon=i;
-							if(direction==VERTICAL   && j==grid_nb_columns) break;
-							if(direction==HORIZONTAL && j==grid_nb_lines) break;
-						}
-						if(direction==HORIZONTAL) {
-							if(animated == YES) move += w_ICON0 + e_w ;
-							else List_curs_move_x -= w_ICON0 + e_w ;
-						} else
-						if(direction==VERTICAL) {
-							if(animated == YES) move += h_ICON0 + e_h ;
-							else List_curs_move_y -= h_ICON0 + e_h ;
-						}
-					}
-				} else
-				if(grid_type == PAGE) {
-					speed = 18;
-					if(position < first_icon) {
-						j=-1;
-						for(i=first_icon; i>=0; i--){
-							if(Show_it(i)==NO) continue;
-							j++;
-							first_icon=i;
-							if(j==nb_icon) break;
-						}
-						if(direction==HORIZONTAL) {
-							if(animated == YES) move -= (w_ICON0 + e_w) * grid_nb_columns ;
-							else List_curs_move_x += (w_ICON0 + e_w) * grid_nb_columns;
-						} else
-						if(direction==VERTICAL) {
-							if(animated == YES) move -= (h_ICON0 + e_h) * grid_nb_lines ;
-							else List_curs_move_y += (h_ICON0 + e_h) * grid_nb_lines;
-						}
-					}
-					if(position > last_icon) {
-						j=-1;
-						for(i=last_icon; i<=game_number; i++){
-							if(Show_it(i)==NO) continue;
-							j++;
-							if(j==1) {first_icon=i;	break;}
-						}
-						if(direction==HORIZONTAL) {
-							if(animated == YES) move += (w_ICON0 + e_w) * grid_nb_columns;
-							else List_curs_move_x -= (w_ICON0 + e_w) * grid_nb_columns;
-						} else
-						if(direction==VERTICAL) {
-							if(animated == YES) move += (h_ICON0 + e_h) * grid_nb_lines;
-							else List_curs_move_y -= (h_ICON0 + e_h) * grid_nb_lines;
-						}
-					}
-				}
-			}
-		}
-		else if (UI_position==XMB) {
-			
-			if(XMB_H_position == COL_SET) Game_stuff = NO; else Game_stuff = YES;
-			
-			use_sidebar_menu = YES;
-			
-			x = 250;
-			y = 200;
-			
-			float w = 72;
-			float h = 40;
-			int position_x;
-			int position_y;
-			
-			position_x = x - 90 * XMB_H_position;
-			
-			int slide_speed;
-			
-			if(0 <= scroll_speed && scroll_speed < 3) slide_speed = 40; else
-			if(3 <= scroll_speed && scroll_speed < 6) slide_speed = 20; else
-			slide_speed = 10;
-			
-			x += XMB_curs_move_x;
-			
-			if(position_x > x) XMB_curs_move_x+=slide_speed; else
-			if(position_x < x) XMB_curs_move_x-=slide_speed;
-			
-			Draw_Col_header(x);
-			
-			if(XMB_V_position[XMB_H_position] == 0) {
-				position_y = y;
-			} else
-			if(XMB_V_position[XMB_H_position] > 0) {
-				position_y = h - h*(XMB_V_position[XMB_H_position]-1); 
-			}
-			
-			y += XMB_curs_move_y[XMB_H_position];
-			
-			if(position_y > y) {
-				if(y == 2*h) XMB_curs_move_y[XMB_H_position] += 120; else XMB_curs_move_y[XMB_H_position]+=slide_speed;
-			}
-			else if(position_y < y) {
-				if(y==200-h) XMB_curs_move_y[XMB_H_position] -= 120; else XMB_curs_move_y[XMB_H_position]-=slide_speed;
-			}
-			
-			SetFontZ(90);
-			if(XMB_H_position==COL_FAV) {
-				
-				XMB_nb_lin[XMB_H_position] = real_FAV_game_number;
-				if(real_FAV_game_number<0) Game_stuff = NO;
-				if(XMB_V_position[XMB_H_position]>XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
-				
-				for(j = 0 ; j <= FAV_game_number ; j++) {
-					if(FAV_positions_in_list[j]==-1) continue;
-				
-					if(y>h && y<3*h) y=200-2*h+y ; else
-					if(3*h<y && y<=200-h) y=h;else
-					if(y==300-h) y=200;else
-					if(y==2*h) y=200;
-					
-					if(200-h < y && y < 200+h) {
-						position = FAV_positions_in_list[j];
-						Draw_ICON0(FAV_positions_in_list[j], 250-w , y, 10, w*2, h*2);
-						DrawFormatString(250+w+20, y+h-10, "%s", list_game_title[FAV_positions_in_list[j]]);
-						y+=2*h + h/2;
-					}
-					else {
-						Draw_ICON0(FAV_positions_in_list[j], 250-w/2, y, 100, w, h);
-						y+=h;
-					}
-				}
-				if(XMB_Show_COVER_position == YES) {
-					Draw_COVER(FAV_positions_in_list[j], 20, 200, 10, 138, 0);
-				}
-			}
-			else if(XMB_H_position==COL_PS3 || XMB_H_position==COL_PS2 || XMB_H_position==COL_PS1 || XMB_H_position==COL_PSP) {
-
-				XMB_nb_lin[XMB_H_position]=-1;
-				
-				for(j = 0 ; j <= game_number ; j++) {
-					if(XMB_H_position==COL_PS3 && (list_game_platform[j] !=_ISO_PS3 && list_game_platform[j] !=_JB_PS3)) continue;
-					if(XMB_H_position==COL_PS2 && (list_game_platform[j] !=_ISO_PS2 && list_game_platform[j] !=_JB_PS2)) continue;
-					if(XMB_H_position==COL_PS1 && (list_game_platform[j] !=_ISO_PS1 && list_game_platform[j] !=_JB_PS1)) continue;
-					if(XMB_H_position==COL_PSP && (list_game_platform[j] !=_ISO_PSP && list_game_platform[j] !=_JB_PSP)) continue;
-					
-					XMB_nb_lin[XMB_H_position]++;
-					
-					if(y>h && y<3*h) y=200-2*h+y ; else
-					if(3*h<y && y<=200-h) y=h;else
-					if(y==300-h) y=200;else
-					if(y==2*h) y=200;
-					
-					if(200-h < y && y < 200+h) {
-						position = j;
-						Draw_ICON0(position, 250-w , y, 10, w*2, h*2);
-						DrawFormatString(250+w+20, y+h-10, "%s", list_game_title[position]);
-						y=300;
-						if(XMB_Show_COVER_position == YES) {
-							Draw_COVER(position, 20, 200, 10, 138, 0);
-						}
-					}
-					else {
-						Draw_ICON0(j, 250-w/2, y, 100, w, h);
-						y+=h;
-					}
-				}
-				
-				if(XMB_V_position[XMB_H_position]>XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
-				
-				if(XMB_nb_lin[XMB_H_position]==-1) Game_stuff=NO;
-			}
-				
-			SetFontZ(10);
-			
-			if(g_menu == OFF) {
-				if(new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0) ) {
-					if(XMB_H_position > 0) XMB_H_position--;
-				}
-				if(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0) ) {
-					if(XMB_H_position < 5) XMB_H_position++;
-				}
-				if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0) ) {
-					if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_lin[XMB_H_position] != 0) {
-						XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
-						XMB_curs_move_y[XMB_H_position] = (h - h*(XMB_V_position[XMB_H_position]-1)) - 200; 
-					} 
-					else if(XMB_V_position[XMB_H_position] > 0) XMB_V_position[XMB_H_position]--;
-				}
-				if(new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN) && slow_it==0) ) {
-					if(XMB_V_position[XMB_H_position] == XMB_nb_lin[XMB_H_position] && XMB_nb_lin[XMB_H_position] != 0) {
-						XMB_V_position[XMB_H_position] = 0;
-						XMB_curs_move_y[XMB_H_position] = 0; 
-					} else if(XMB_V_position[XMB_H_position] < XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position]++;
-				}
-				
-			} else 
-			if(g_menu == ON) {
-				Draw_Game_Menu(position, YES);
-			}
-		}
-		else if (UI_position==FLOW) {
-			Game_stuff = YES;
-			use_sidebar_menu = NO;
-			
-			x=848/2;
-			y=512/2;
-			
-			int speed;
-			float w = 80;
-			float h = 44;
-			
-			int position_x=x;
-			float a;
-			int slide_speed;
-			
-			if(0 <= scroll_speed && scroll_speed < 3) slide_speed = 40; else
-			if(3 <= scroll_speed && scroll_speed < 6) slide_speed = 20; else
-			slide_speed = 10;
-			
-			j=-1;
-			for(i=0; i<=game_number; i++) {
-				if(Show_it(i) == NO) continue;
-				j++;
-				if(i==position) {
-					if(j==0) position_x = x;
-					else position_x = x - 2*w - w*(j-1);
-					break;
-				}
-			}
-			
-			x += Flow_curs_move_x;
-			
-			if(position_x > x) {
-				if(264 <= x && x < 584) speed=slide_speed*2; else speed=slide_speed;
-			} else
-			if(position_x < x) {
-				if(264 < x && x <= 584) speed=-slide_speed*2; else speed=-slide_speed;
-			} else speed=0;
-			
-			Flow_curs_move_x+=speed;
-			
-			for(j = 0 ; j <= game_number ; j++) {
-				if(Show_it(j) == NO) continue;
-				
-				if(264 < x && x < 584) {
-					if(x<=424) {
-						a= 1/(424-264)*x - (1/(424-264)*424) + 2 ;
-					}
-					else {
-						a= 1/(424-584)*x - (1/(424-584)*424) + 2 ;
-					}
-				} else {
-					a=1;
-				}
-				if(x==424) {
-					SetFontSize(20, 20);
-					DrawStringFromCenterX(424, 100, list_game_title[j]);
-				}
-				
-				if(FLOW_use_Cover == YES && COVER_offset[j] != 0) Draw_CoverFromCenter(j, x, y, 100, w*a, 0);
-				else Draw_ICON0(j, x-(w*a)/2, y-(h*a)/2, 100, w*a, h*a);
-				
-				if(x==424 || x==264) x+=2*w; else  
-				if(264 < x && x < 424) {
-				   x+=w*a;
-				} else
-				if(424 < x && x < 584) {
-					x+=w*(a-1) + fabs(584-x)/2;
-				} else
-				if(184 < x && x < 424) {
-					if(speed<0){
-						x+=2*w;
-					}
-					if(speed>0){
-						x+=w;
-					}
-				} else x+=w;
-				
-				if(speed!=20) {
-					if(speed<0){
-						if(264 < x && x < 424) {
-							x+=fabs(424-x)*speed/10;
-						}
-					}
-					if(speed>0){
-						if(264 < x && x < 424) {
-							x+=fabs(264-x)*speed/10;
-						}
-					}
-				}
-			}
-			
-			if( (inverse_button==NO  && (new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0))) ||
-				(inverse_button==YES && (new_pad & BUTTON_LEFT  || ((old_pad & BUTTON_LEFT)  && slow_it==0)))   ) 
-			{
-				for(i=0; i<game_number;i++) {
-					position--;
-					
-					if(position < 0) {
-						j=-1;
-						for(k=0; k<=game_number; k++) {
-							if(Show_it(k) == NO) continue;
-							j++;
-							position=k;
-							if(j==0) Flow_curs_move_x = 0;
-							else Flow_curs_move_x = - 2*w - w*(j-1);
-						}
-					}
-					
-					if(Show_it(position) == YES) break;
-				}
-			}
-			if( (inverse_button==NO  && (new_pad & BUTTON_LEFT   || ((old_pad & BUTTON_LEFT ) && slow_it==0))) ||
-				(inverse_button==YES && (new_pad & BUTTON_RIGHT  || ((old_pad & BUTTON_RIGHT) && slow_it==0)))   ) 
-			{
-				for(i=0; i<game_number;i++) {
-					position++;
-					if(position > game_number) {
-						for(k=0; k<=game_number; k++) {
-							if(Show_it(k) == NO) continue;
-							position=k;
-							Flow_curs_move_x = 0;
-							break;
-						}
-					}
-					if(Show_it(position) == YES) break;
-				}
-			}
-		}
-		
-		if(g_menu==OFF) {
-			SetFontColor(COLOR_1, 0x0);
-			SetFontSize(15, 15);
-			x=Draw_Button_Start(25, 485, 15);
-			x=DrawString( x+5, 485, "Settings  ");
-			if(Game_stuff==YES) {
-				x=Draw_Button_Triangle(x, 485, 15);
-				x=DrawString( x+5, 485, "Game Menu  ");
-				x=Draw_Button_Cross(x, 485, 15);
-				x=DrawString( x+5, 485, "Mount game  ");
-			}
-			x=DrawButton(x, 485, "File Manager", BUTTON_SELECT);
-			SetFontColor(COLOR_4, 0x0);
-			x=DrawString( x+10, 485, "Hold");
-			SetFontColor(COLOR_1, 0x0);
-			x=Draw_Button_Circle(x+5, 485, 15);
-			x=DrawString( x+5, 485, "Back to XMB ");
-			if(hold_CIRCLE != 0) {
-				SetFontColor(COLOR_3, 0x0);
-				x=DrawFormatString( x+5, 485, "in %d", (100 - hold_CIRCLE)/30);
-				SetFontColor(COLOR_1, 0x0);
-			}
-			x=750;
-			if(Game_stuff == YES) {
-				if(usb==YES) {
-					int t;
-					sscanf(list_game_path[position], "/dev_usb%d%*s" , &t);
-					x = Draw_USB(x , 485, 20, COLOR_1, t);
-				}
-				if(is_ntfs(list_game_path[position]) == YES) {
-					int t;
-					sscanf(list_game_path[position], "/ntfs%d%*s" , &t);
-					SetFontColor(COLOR_3, 0x0);
-					x = DrawString(x, 485, "NTFS ");
-					x = Draw_USB(x , 485, 20, COLOR_3 , t);
-				}
-				
-				if(list_game_platform[position] == _ISO_PS3) {
-					Draw_DISK( x + 5, 485, 0, 20, COLOR_PS3);
-				} else
-				if(list_game_platform[position] == _ISO_PS2) {
-					Draw_DISK( x + 5, 485, 0, 20, COLOR_PS2);
-				} else
-				if(list_game_platform[position] == _ISO_PS1) {
-					Draw_DISK( x + 5, 485, 0, 20, COLOR_PS1);
-				} else
-				if(list_game_platform[position] == _ISO_PSP) {
-					Draw_DISK( x + 5, 485, 0, 20, COLOR_PSP);
-				}
-			}
-		}
-		
-		if(old_pad & BUTTON_CIRCLE && g_menu == OFF) {
-			hold_CIRCLE++;
-			if(hold_CIRCLE>100) {
-				if(Load_GamePIC==YES) end_Load_GamePIC();
-				end_load_PIC1();
-				end_checking();
-				sysModuleUnload(SYSMODULE_PNGDEC);
-				sysModuleUnload(SYSMODULE_JPGDEC);
-				ioPadEnd();
-				return 0;
-			}
-		} else hold_CIRCLE=0;
-		
-		if((old_pad & BUTTON_L3) && (old_pad & BUTTON_R3)) {
-			sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
-		}
-		
-		if(old_pad & BUTTON_R1) {
-			Show_PIC1=YES;
-		} else Show_PIC1=NO;
-		
-		if(new_pad & BUTTON_CROSS && Game_stuff == YES && g_menu == OFF ) {
-			
-			if( list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3
-			||	list_game_platform[position] == _ISO_PS2 
-			||	list_game_platform[position] == _ISO_PS1
-			||	list_game_platform[position] == _ISO_PSP			
-			) {
-				if(Load_GamePIC==YES) end_Load_GamePIC();
-				end_load_PIC1();
-				end_checking();
-				
-				start_loading();	
-				
-				strcpy(GamPath, list_game_path[position]);
-					
-				print_load("Mounting %s", list_game_title[position]);
-					
-				if(list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3) {
-						
-					read_game_setting(list_game_title[position]);
-					
-					if(payload_position==IRIS) iris_Mount(); else
-					if(payload_position==MM) mm_Mount(); else
-					if(payload_position==COBRA) cobra_Mount(); else
-					if(payload_position==MAMB) mamba_Mount();
-						
-					if(clean_syscall_position) remove_cfw_syscalls();
-						
-					if(direct_boot_position) {
-						end_loading();
-						sysModuleUnload(SYSMODULE_PNGDEC);
-						sysModuleUnload(SYSMODULE_JPGDEC);
-						ioPadEnd();
-						if(mount_app_home == NO) {
-							sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
-						} else {
-							sysProcessExitSpawn2("/app_home/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
-						}
-					}
-				} else {
-					int emu;
-					
-					if(list_game_platform[position] == _ISO_PS2) emu = EMU_PS2_DVD;
-					if(list_game_platform[position] == _ISO_PS1) emu = EMU_PSX;
-					if(list_game_platform[position] == _ISO_PSP) emu = EMU_PSP;
-					
-					if(!cobra && !mamba) mamba = install_mamba();
-					
-					if(emu == EMU_PS2_DVD) patch_PS2();
-					if(emu == EMU_PS2_DVD) use_CONFIG();
-					
-					cobra_MountISO(emu);
-					cobra_MountISO(emu);
-				}
-				
-				end_loading();
-				
-				sysModuleUnload(SYSMODULE_PNGDEC);
-				sysModuleUnload(SYSMODULE_JPGDEC);
-				ioPadEnd();
-				
-				exit(0);
-			} else show_msg("TODO");
-		}
-		
-		if(new_pad & BUTTON_TRIANGLE && Game_stuff == YES && use_sidebar_menu == NO) {
-		
-			if( list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3 ) {
-				
-				read_game_setting(list_game_title[position]);
-				g_menu_position=0;
-				
-				while(1) {
-					
-					cls();
-					ps3pad_read();
-					
-					if(Draw_Game_Menu(position, NO) == BREAK) break;
-					
-					tiny3d_Flip();
-				}
-			} else
-			if( list_game_platform[position] == _ISO_PS2 || list_game_platform[position] == _JB_PS2 ) {
-				
-				Draw_PS2_Game_Menu();
-				
-			}
-			else show_msg("TODO");
-			
-		}
-		
-		if(new_pad & BUTTON_TRIANGLE && Game_stuff == YES && use_sidebar_menu == YES) {
-			if( list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3 ) {
-				if(g_menu==OFF) {
-					read_game_setting(list_game_title[position]);
-					g_menu = ON;
-				}
-			} else show_msg("TODO");
-		}
-		
-		if(new_pad & BUTTON_SELECT) {
-			Draw_FileExplorer(NULL);
-		}
-		
-		if(new_pad & BUTTON_START && g_menu==OFF) {
-			
-			read_scan_dir();
-			read_setting();
-			
-			while(1) {
-				cls();
-				ps3pad_read();
-				
-				if(DrawSettings()==BREAK) break;
-				
-				tiny3d_Flip();
-			}
-
-			if(UI_position==LIST) {
-				if(Show_it(position)==NO) {
-					position=0;
-					for(position=0; position<=game_number; position++) {
-						if(Show_it(position)==YES) break;
-					}
-				}
-			} else
-			if(UI_position==GRID) {
-				position=0;
-				for(i=0; i<=game_number; i++) {
-					if(Show_it(i)==NO) continue;
-					position=i;
-					break;
-				}
-				List_curs_move_x=0;
-				List_curs_move_y=0;
-				move=0;
-				first_icon=position;
-			} else
-			if(UI_position==FLOW) {
-				for(i=0; i<=game_number; i++) {
-					if(Show_it(i) == NO) continue;
-					position=i;
-					Flow_curs_move_x = 0;
-					break;
-				}
-			}
-			
-		}
+		input_MAIN();
+		input_filter();
+		input_MENU();
+		txt_viewer_input();
 	}
 
 	return 0;
+}
+
+void Draw_scene()
+{
+	if(scene == SCENE_FILEMANAGER) 
+	{
+		Draw_BGS();
+		Draw_window();
+		Draw_option();
+		Draw_properties();
+		Draw_Notification();
+	} else
+	if(scene == SCENE_MAIN) 
+	{
+		Draw_BG();
+		Draw_MAIN();
+		Draw_filter();
+		Draw_MENU();
+	}
 }

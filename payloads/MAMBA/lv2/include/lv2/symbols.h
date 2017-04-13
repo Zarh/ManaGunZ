@@ -198,7 +198,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -424,7 +424,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -644,7 +644,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -870,7 +870,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -1090,7 +1090,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -1316,7 +1316,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -1542,7 +1542,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -1768,7 +1768,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -1988,7 +1988,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -2214,7 +2214,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -2434,7 +2434,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -2660,7 +2660,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -2880,7 +2880,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -3106,7 +3106,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -3326,7 +3326,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -3552,7 +3552,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46D4
 	#define psp_savedata_patch2                         0x46AC
-	#define psp_savedata_patch3                         0x4514
+	#define psp_savedata_patch3                         0x450C
 	#define psp_savedata_patch4                         0x4544
 	#define psp_savedata_patch5                         0x4558
 	#define psp_savedata_patch6                         0x46C0
@@ -3772,7 +3772,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -3998,7 +3998,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -4224,7 +4224,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -4444,7 +4444,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -4670,7 +4670,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -4890,7 +4890,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -5116,7 +5116,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -5336,7 +5336,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -5562,7 +5562,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -5782,7 +5782,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -6008,7 +6008,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -6228,7 +6228,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -6454,7 +6454,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -6674,7 +6674,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8
@@ -6900,7 +6900,7 @@
 	/* libsysutil_savedata_psp */
 	#define psp_savedata_patch1                         0x46CC
 	#define psp_savedata_patch2                         0x46A4
-	#define psp_savedata_patch3                         0x450C
+	#define psp_savedata_patch3                         0x4504
 	#define psp_savedata_patch4                         0x453C
 	#define psp_savedata_patch5                         0x4550
 	#define psp_savedata_patch6                         0x46B8

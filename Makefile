@@ -23,7 +23,7 @@ INCLUDES	:=	include
 PKGFILES	:=	$(CURDIR)/pkgfiles
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.27
+VERSION		:=  1.28
 
 TITLE		:=	$(TARGET) v$(VERSION)
 APPID		:=	MANAGUNZ0
@@ -130,13 +130,14 @@ clean:
 	@echo clean ...
 	@rm -fr $(BUILD) *.elf *.self *.pkg
 	@$(MAKE) clean -C MGZ --no-print-directory
-	@$(MAKE) clean -C MGZ/lib/cobralib --no-print-directory
+	@$(MAKE) clean -C MGZ/lib/cobra --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/ImageMagick --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libapputil --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libgtfconv --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libiconv --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libntfs_ext --no-print-directory
 	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
+	@rm -fr pkgfiles/USRDIR/$(TARGET).self
 	
 #---------------------------------------------------------------------------------
 payload:

@@ -10,12 +10,9 @@ OffsetFinder/*
 !OffsetFinder/main.c
 !OffsetFinder/makefile
 
-
 !/MGZ/data/*.bin
 
 MGZ/lib/*
-
-!/MGZ/lib/cobralib/include
 
 !/MGZ/lib/ImageMagick
 /MGZ/lib/ImageMagick/*
