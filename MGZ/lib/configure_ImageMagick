@@ -24,7 +24,6 @@ sh configure --host="ppu" --enable-static --disable-shared \
 --without-gslib \
 --without-gvc \
 --without-jbig \
---without-jpeg \
 --without-lcms \
 --without-lqr \
 --without-lzma \

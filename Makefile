@@ -23,7 +23,7 @@ INCLUDES	:=	include
 PKGFILES	:=	$(CURDIR)/pkgfiles
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.28
+VERSION		:=  1.29
 
 TITLE		:=	$(TARGET) v$(VERSION)
 APPID		:=	MANAGUNZ0

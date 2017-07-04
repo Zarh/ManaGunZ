@@ -3,7 +3,6 @@ _ ftp
 _ wihtout peek&poke (only cobra)
 _ NETISO
 _ group PKG
-_ auto update
 _ Add : PFD extractor
 _ Add : Speed Start / Speed Scan
 _ UI XMB : Use setting column
@@ -12,6 +11,27 @@ _ IRD iso
 _ debug EBOOT
 _ tool TIP HELP
 _ filemanager standalone
+_ add : choose font
+_ flow 3D
+_ make pkg : keep only usefull files in pkg.
+_ "stealth" loading screen for FileManager
+
+v1.29
+Fix : Several issues.
+Fix : It detect iso built without the 'official' structure.
+Fix : System crash after mounting a game in olders firmwares. Bug introduced in v1.26.
+Add : [Themes] Display TAGS when you choose a theme to be aware of the path and the type of the theme.
+Add : [Themes] Disable theme.
+Add : [Themes] A default theme is loaded in a fresh install.
+Add : [Themes] If there isn't a 'settings background' then the 'main background' is used for the setting menu.
+Add : [Interface] Show game case.
+Add : [Settings] Add TV test screen.
+Add : [Settings] 'Update ManaGunZ'.
+Add : [PS1][PSP] Game menu.
+Add : [PS1][PS2] ICON0 creator. It allow you to 'cut' an ICON0 from the cover to use it as the main icon.
+Fix : [PS2] Function to apply patches.
+Add : [PS2] It can apply widescreen patches and another pnach file silmutaneously. 
+Add : [PS2] '480P', 'YFIX' and 'FMV skip' options. ps2wide.net/480p.html
 
 v1.28
 Add : PS2 CONFIG creator.

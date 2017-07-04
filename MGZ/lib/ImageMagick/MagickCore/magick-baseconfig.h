@@ -1001,7 +1001,9 @@
 /* #undef JBIG_DELEGATE */
 
 /* Define if you have JPEG library */
-/* #undef JPEG_DELEGATE */
+#ifndef MAGICKCORE_JPEG_DELEGATE
+#define MAGICKCORE_JPEG_DELEGATE 1
+#endif
 
 /* Define if you have LCMS library */
 /* #undef LCMS_DELEGATE */
@@ -1346,7 +1348,7 @@
 
 /* Location of X11 configure files */
 #ifndef MAGICKCORE_X11_CONFIGURE_PATH
-#define MAGICKCORE_X11_CONFIGURE_PATH "/home/Zar/managunz/mgz/lib/ImageMagick/winpath.sh: path "=" is not mounted"
+#define MAGICKCORE_X11_CONFIGURE_PATH "/home/Zar/managunz/MGZ/lib/ImageMagick/winpath.sh: path "=" is not mounted"
 #endif
 
 /* Define if you have X11 library */
