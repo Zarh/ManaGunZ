@@ -384,8 +384,8 @@ static INLINE int setup_iso(void)
 		release_temp_buf();
 		return -1;
 	}
-	uint8_t disable=0x00;
-	ufs_write(cfg_fd, 0x702, &disable, 1);
+	//uint8_t disable=0x00;
+	//ufs_write(cfg_fd, 0x702, &disable, 1);
 	
 	file = buf+10;
 	

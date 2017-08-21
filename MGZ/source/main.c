@@ -435,6 +435,9 @@ u16 * ttf_texture;
 
 #define MAX_FRAME	1024
 
+#define FREE(x) if(x) {free(x);x=NULL;}
+#define FCLOSE(x) if(x) {fclose(x);x=NULL;}
+
 #define SCENE_FILEMANAGER			0
 #define SCENE_PS3_MENU				1
 #define SCENE_PS2_MENU				2
@@ -884,6 +887,8 @@ void peek_IDPS();
 void start_load_PIC1();
 void end_load_PIC1();
 int SaveFile(char *path, char *mem, int file_size);
+void read_setting();
+void write_setting();
 
 //*******************************************************
 // 
@@ -2942,6 +2947,238 @@ u8 make_ABG(char *dir_path, char *file_out)
 
 	return Build_APNG(PNGS, png_number, file_out, time);
 	
+}
+
+//###################################################
+//	LANGUAGE
+//###################################################
+
+#define MAX_LANG 32
+
+/*
+	0x0=German
+	0x1=English (US)
+	0x2=Spanish
+	0x3=French
+	0x4=Italian
+	0x5=Dutch
+	0x6=Portuguese (Por)
+	0x7=Russian
+	0x8=Japanese
+	0x9=Korean
+	0xA=Chinese (traditional)
+	0xB=Chinese (simplified)
+	0xC=Finnish
+	0xD=Swedish
+	0xE=Danish
+	0xF=Norwegian
+	0x10=Polish
+	0x11=Portuguese (Bra)
+	0x12=English (UK)
+	0x13=Turkish
+*/
+
+FILE *flang=NULL;
+uint8_t lang;
+uint8_t lang_N;
+uint8_t lang_code = 0xFF;
+
+char *STR_LANGUAGE[MAX_LANG];
+char *STR_LANGCODE[MAX_LANG];
+char *lang_path[MAX_LANG];
+
+
+char *STR_EIDRK;
+
+
+char *language(const char *str_name)
+{
+	int c;
+	int i;
+	
+	char str[255];
+	
+	if(flang == NULL) {
+		flang = fopen(lang_path[lang], "rb");	
+		if(flang == NULL) return FAILED;
+	}
+	
+	uint8_t do_retry = YES;
+		
+	int l = strlen(str_name);
+	
+retry:
+
+	do {
+		c = fgetc(flang);
+		for(i=0; i < l; i++)
+		{
+			if( c != str_name[i]) break;
+			else if (i==l-1)
+			{
+				
+				while(c != '{') {
+					c = fgetc(flang);
+					if(c == EOF) break;
+				}
+				
+				int str_len = 0;
+				
+				do {
+					
+					c = fgetc(flang);
+					
+					if (c == '}') {
+						str[str_len] = '\0';
+						
+						char *ret = (char *) malloc((size_t) strlen+1);
+						strcpy(ret, str);
+						return ret;
+					}
+					
+					if (c == 92) { 
+						c = fgetc(flang);
+						if (c == 'n') {
+							str[str_len] = '\n';
+							str_len++;
+						} 
+						else if (c == 'r') {
+							str[str_len] = '\r';
+							str_len++;
+						} 
+						else if (c == 'x') {
+							c = fgetc(flang);
+							uint8_t val=0, val_tmp=0;
+							sscanf((char*) &c, "%hX", (short unsigned int *) &val_tmp);
+							val = val_tmp*0x10;
+							c = fgetc(flang);
+							sscanf((char*) &c, "%hX", (short unsigned int *) &val_tmp);
+							val += val_tmp;
+							str[str_len] = val;
+							str_len++;
+						}
+						else {
+							str[str_len] = 92;
+							str_len++;
+							str[str_len] = c;
+							str_len++;
+						}
+						
+					} else {
+						str[str_len] = c;
+						str_len++;
+					}
+					
+				} while (c != EOF);
+				
+			} 
+			else c = fgetc(flang);
+		}
+		
+	} while (c != EOF);
+	
+	if(do_retry == YES) {do_retry=NO; fseek(flang, 0, SEEK_SET); goto retry;}
+
+	return NULL;
+}
+
+void init_lang()
+{
+	
+	char LOCPath[128];
+	char TXTPath[128];
+	
+	lang_N = 0;
+	STR_LANGUAGE[lang_N] = (char *)  malloc((size_t)18);
+	STR_LANGCODE[lang_N] = (char *)  malloc((size_t)2);
+	
+	strcpy(STR_LANGUAGE[lang_N], "English (default)");
+	STR_LANGCODE[lang_N][0] = 0xFF;
+
+	lang_N++;
+	
+	sprintf(LOCPath, "/dev_hdd0/game/%s/USRDIR/sys/loc", ManaGunZ_id);
+	
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir(LOCPath);
+	if(d==NULL) return;
+
+	while ((dir = readdir(d))) {
+		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+		
+		sprintf(TXTPath, "%s/%s", LOCPath, dir->d_name);
+		
+		flang=NULL;
+		
+		flang = fopen(TXTPath, "rb");
+		if(flang==NULL) continue;
+		
+		
+		STR_LANGUAGE[lang_N] = language("STR_LANGUAGE");
+		
+		if(STR_LANGUAGE[lang_N] != NULL ) {
+			STR_LANGCODE[lang_N] = language("STR_LANGCODE");
+			FREE(lang_path[lang_N]);
+			lang_path[lang_N] = (char *) malloc(strlen(TXTPath)+1);
+			strcpy(lang_path[lang_N], TXTPath);
+			lang_N++;
+		}
+		
+		FCLOSE(flang);
+	}
+	closedir(d);
+	
+}
+
+void update_lang()
+{
+	
+	FREE(STR_EIDRK);
+	STR_EIDRK = language("STR_EIDRK");
+	
+	
+	FCLOSE(flang);
+}
+
+void load_lang()
+{
+	int i;
+	
+	if(lang_code == 0xFF) read_setting();
+	
+	if(lang_code != 0xFF) {
+		for(i=1; i < lang_N ;i++) {
+			if((uint8_t) STR_LANGCODE[i][0] == lang_code) {
+				lang = i;
+				write_setting();
+				update_lang();
+				return;
+			}
+		}
+	} else {
+	
+		int lang_xreg = get_xreg_value((char*)"/setting/system/language");
+		
+		for(i=1; i < lang_N ;i++) {
+			if((uint8_t) STR_LANGCODE[i][0] == lang_xreg) {
+				lang = i;
+				lang_code = lang_xreg;
+				write_setting();
+				update_lang();
+				return;
+			}
+		}
+		
+	}
+	
+	lang = 0;
+	lang_code = 0xFF;
+	
+	write_setting();
+	
+	update_lang();
 }
 
 //###################################################
@@ -10637,6 +10874,8 @@ u8 re_sign_GAME(char *path)
 		}
 	}
 	closedir(d);
+	
+	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", position, NULL) == FAILED) return FAILED;
 
 	return SUCCESS;
 }
@@ -14695,6 +14934,7 @@ void read_setting()
 		fread(&Only_FAV, sizeof(u8), 1, fp);
 		fread(&use_sidemenu, sizeof(u8), 1, fp);
 		fread(&Show_GameCase, sizeof(u8), 1, fp);
+		fread(&lang_code, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
 	
@@ -14737,6 +14977,7 @@ void write_setting()
 		fwrite(&Only_FAV, sizeof(u8), 1, fp);
 		fwrite(&use_sidemenu, sizeof(u8), 1, fp);
 		fwrite(&Show_GameCase, sizeof(u8), 1, fp);
+		fwrite(&lang_code, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
 	
@@ -17735,7 +17976,7 @@ void Draw_input()
 	float y=485;
 	FontSize(15);
 	FontColor(COLOR_1);
-	SetFontZ(1);
+	SetFontZ(0);
 	
 	if(option_activ == NO 
 	&& prop_activ == NO 
@@ -17759,7 +18000,7 @@ void Draw_input()
 		x=DrawButton(x, y, "Click", BUTTON_CROSS);
 		x=DrawButton(x, y, "Cursor", BUTTON_L);
 	} else
-	if(prop_activ == YES || SFO_viewer_activ == YES)	{
+	if(prop_activ == YES || SFO_viewer_activ == YES) {
 		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
 	} else
 	if(txt_viewer_activ == YES){

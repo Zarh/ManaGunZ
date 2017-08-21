@@ -9,12 +9,23 @@ _ UI XMB : Use setting column
 _ Add filemanager : mount iso
 _ IRD iso
 _ debug EBOOT
-_ tool TIP HELP
 _ filemanager standalone
 _ add : choose font
 _ flow 3D
 _ make pkg : keep only usefull files in pkg.
 _ "stealth" loading screen for FileManager
+_ read/write speed
+_ multilangage
+_ 666 files
+_ TXT edit
+_ Hexa edit
+_ Audio
+_ tool TIP HELP
+_ create boot_plugin.txt et le dossier plugins.
+_ ps2 en bin/cue ya pas de config creator
+
+v1.30
+Add : Re-sign option change the fw version in param.sfo too.
 
 v1.29
 Fix : Several issues.
@@ -48,7 +59,7 @@ Add : Plugin manager. See note(3).
 Add FileManager : Extract ZIP files.
 Add : New covers server.
 Add : Re-signed games can be restored.
-Add : For PS2 and PS1 the main icon (aka 'ICON0') is loaded at the path of the game. See note (4). 
+Add : For PS2 and PS1 the main icon (aka 'ICON0') is loaded at the path of the game. See note (4).
 
 Note :
 (1) It use the included WideScreen pnach collection from PCSX2. 

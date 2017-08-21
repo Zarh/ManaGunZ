@@ -1449,7 +1449,6 @@ void JSX_to_JS(char *jsx_p, char *js_p)
 			CODE[i][strlen(CODE[i])] = 0;
 		}
 		
-
 	}
 	
 	free(BUFFER);
