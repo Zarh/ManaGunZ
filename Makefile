@@ -9,24 +9,45 @@ endif
 
 include $(PSL1GHT)/ppu_rules
 
+
+#---------------------------------------------------------------------------------
+# ManaGunZ : "make pkg"
+# ManaGunZ for rpcs3 : "RPCS3=1 make pkg"
+# FileManger : "FILEMANAGER=1 make pkg"
+# FileManager for rpcs3 : "FILEMANAGER=1 RPCS3=1 make pkg"
+# 
+# Note : RPCS3 doesn't support "opendir" on the system root
+#---------------------------------------------------------------------------------
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
-TARGET		:=	ManaGunZ
+
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
-PKGFILES	:=	$(CURDIR)/pkgfiles
+PKGFILES1	:=	$(CURDIR)/pkgfiles
+PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.29
+VERSION		:=  1.30
 
+ifeq ($(FILEMANAGER), 1)
+PKGFILES	:=	$(PKGFILES2)
+MACHDEP		+= -DFILEMANAGER
+TARGET		:=	FileManager
+TITLE		:=	File Manager v$(VERSION)
+APPID		:=	FILEMANAG
+else
+PKGFILES	:=	$(PKGFILES1)
+TARGET		:=	ManaGunZ
 TITLE		:=	$(TARGET) v$(VERSION)
 APPID		:=	MANAGUNZ0
+endif
 CONTENTID	:=	EP0001-$(APPID)_00-0000000000000000
 
 SCETOOL_FLAGS	+=	--self-ctrl-flags 4000000000000000000000000000000000000000000000000000000000000002
@@ -120,12 +141,29 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)_v$(VERSION)
 
 #---------------------------------------------------------------------------------
 $(BUILD):
+	@$(MAKE) small_clean --no-print-directory
 	@$(MAKE) -C MGZ --no-print-directory
-	@cp -f MGZ/MGZ.self pkgfiles/USRDIR/$(TARGET).self
+	@cp -f MGZ/MGZ.self $(PKGFILES)/USRDIR/$(TARGET).self
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+ifeq ($(FILEMANAGER), 1)
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/sys/data $(PKGFILES2)/USRDIR/sys/data
+	@cp -fr $(PKGFILES1)/USRDIR/sys/loc $(PKGFILES2)/USRDIR/sys/loc
+	@cp -fr $(PKGFILES1)/USRDIR/sys/RCO $(PKGFILES2)/USRDIR/sys/RCO
+endif
 	
 #---------------------------------------------------------------------------------
+# To compile filemanager and managunz without recompiling everything,
+# it'll recompile files where the "FILEMANAGER" and "RPCS3" are used
+#---------------------------------------------------------------------------------
+
+small_clean:
+	@rm -fr $(BUILD) *.elf *.self *.pkg
+	@rm -fr MGZ/build/main.o
+
+#---------------------------------------------------------------------------------
+	
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) *.elf *.self *.pkg
@@ -137,7 +175,9 @@ clean:
 	@$(MAKE) clean -C MGZ/lib/libiconv --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libntfs_ext --no-print-directory
 	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
-	@rm -fr pkgfiles/USRDIR/$(TARGET).self
+	@rm -fr $(PKGFILES1)/USRDIR/$(TARGET).self
+	@rm -fr $(PKGFILES2)/USRDIR/$(TARGET).self
+	@rm -fr $(PKGFILES2)/USRDIR
 	
 #---------------------------------------------------------------------------------
 payload:
@@ -155,7 +195,7 @@ payload:
 #---------------------------------------------------------------------------------
 sprx_iso:
 	$(MAKE) -C payloads/rawseciso --no-print-directory
-	@cp -f payloads/rawseciso/rawseciso.sprx pkgfiles/USRDIR/sys/sprx_iso
+	@cp -f payloads/rawseciso/rawseciso.sprx $(PKGFILES)/USRDIR/sys/sprx_iso
 #---------------------------------------------------------------------------------
 lib:
 	$(MAKE) -C MGZ/lib/cobra --no-print-directory

@@ -1,6 +1,5 @@
 TODO
 _ ftp
-_ wihtout peek&poke (only cobra)
 _ NETISO
 _ group PKG
 _ Add : PFD extractor
@@ -9,23 +8,37 @@ _ UI XMB : Use setting column
 _ Add filemanager : mount iso
 _ IRD iso
 _ debug EBOOT
-_ filemanager standalone
 _ add : choose font
-_ flow 3D
-_ make pkg : keep only usefull files in pkg.
-_ "stealth" loading screen for FileManager
-_ read/write speed
-_ multilangage
+_ shortcut pkg : keep only usefull files in pkg.
 _ 666 files
 _ TXT edit
 _ Hexa edit
 _ Audio
-_ tool TIP HELP
-_ create boot_plugin.txt et le dossier plugins.
-_ ps2 en bin/cue ya pas de config creator
+_ system info
 
 v1.30
 Add : Re-sign option change the fw version in param.sfo too.
+Add : PS2 bin/cue image.
+Fix : Paths containing a point.
+Add : Remote control.
+Add : Without peek&poke. 
+Add : Filemanager standalone. To compile it, type 'FILEMANAGER=1 make pkg'.
+Fix : Increased read&write file speed.
+Add : New loading screen for the file manager.
+Fix : Movements in UI are more smooth/fuild.
+Add : Flow 3D. See note (1).
+Add : Plugin Manager can create the boot file.
+Add : Plugin Manager can create '/dev_hdd0/plugins'.
+Add : Plugin Manager can move the enabled plugins (from the boot file) to '/dev_hdd0/plugins'.
+Add : Languages.
+Add : Help.
+Add : New CONFIG file management. See note (1).
+
+Note :
+(1) If the CONFIG file exist in MGZ folder, MGZ force the use of it and 'PS2 CONFIG creator' is not available. 
+I removed the option 'CONFIG to use' it became useless. I removed the distinction between OFFICIAL and CUSTOM.
+I added the file DBCONFIG.txt to manage the CONFIG file used by several GAME, so I don't have to dulicate the same file.
+(2) The full covers must in the folder 'USRDIR/covers/3D/[gameID].jpg'. For PS1, it will use the front cover from 'USRDIR/covers/[gameID].jpg' and the back from 'USRDIR/covers/3D/[gameID].jpg'.
 
 v1.29
 Fix : Several issues.

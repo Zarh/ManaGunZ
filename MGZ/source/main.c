@@ -379,6 +379,8 @@
 #define PSP_CASE		35
 #define FOLDER			36
 #define FILES			37
+#define BR_LOGO			38
+#define PS_LOGO			39
 
 #define NONE		0
 #define BDMIRROR	1
@@ -433,8 +435,6 @@ u16 * ttf_texture;
 
 #define MAX_SECTIONS	((0x10000-sizeof(rawseciso_args))/8)
 
-#define MAX_FRAME	1024
-
 #define FREE(x) if(x) {free(x);x=NULL;}
 #define FCLOSE(x) if(x) {fclose(x);x=NULL;}
 
@@ -447,7 +447,10 @@ u16 * ttf_texture;
 #define SCENE_SETTINGS				6
 #define SCENE_MAIN					7
 
-u8 scene;
+#define PI 3.14159265f
+#define DEG(x) PI/180*x
+
+u8 scene=SCENE_MAIN;
 
 typedef struct
 {
@@ -459,34 +462,33 @@ typedef struct
 
 SYS_PROCESS_PARAM(1200, 0x80000);
 
-u64 SYSCALL_TABLE;
-u64 HV_START_OFFSET;
-u64 OFFSET_FIX;
-u64 OFFSET_2_FIX;
-u64 OFFSET_FIX_3C;
-u64 OFFSET_FIX_2B17;
-u64 OFFSET_FIX_LIC;
-u64 OPEN_HOOK;
-u64 BASE_ADDR;
-u64 UMOUNT_SYSCALL_OFFSET;
-u64 LV2MOUNTADDR;
-u64 LV2MOUNTADDR_ESIZE;
-u64 LV2MOUNTADDR_CSIZE;
-u64 NEW_POKE_SYSCALL_ADDR;
-u64 PAYLOAD_SKY;
-size_t PAYLOAD_SKY_SIZE;
-u64 UMOUNT;
-size_t UMOUNT_SIZE;
-u64 MAMBA;
-size_t MAMBA_SIZE;
-u64 *MAMBA_LOADER;
-size_t MAMBA_LOADER_SIZE;
-u64 OFFSET_1_IDPS;
-u64 OFFSET_2_IDPS;
+static u64 SYSCALL_TABLE;
+static u64 HV_START_OFFSET;
+static u64 OFFSET_FIX;
+static u64 OFFSET_2_FIX;
+static u64 OFFSET_FIX_3C;
+static u64 OFFSET_FIX_2B17;
+static u64 OFFSET_FIX_LIC;
+static u64 OPEN_HOOK;
+static u64 BASE_ADDR;
+static u64 UMOUNT_SYSCALL_OFFSET;
+static u64 LV2MOUNTADDR;
+static u64 LV2MOUNTADDR_ESIZE;
+static u64 LV2MOUNTADDR_CSIZE;
+static u64 NEW_POKE_SYSCALL_ADDR;
+static u64 PAYLOAD_SKY;
+static size_t PAYLOAD_SKY_SIZE;
+static u64 UMOUNT;
+static size_t UMOUNT_SIZE;
+static u64 MAMBA;
+static size_t MAMBA_SIZE;
+static u64 *MAMBA_LOADER;
+static size_t MAMBA_LOADER_SIZE;
+static u64 OFFSET_1_IDPS;
+static u64 OFFSET_2_IDPS;
 
-char temp_buffer[8192];
-char temp_title[128];
-u64 restore_syscall8[2] = {0,0};
+static char temp_buffer[8192];
+static u64 restore_syscall8[2] = {0,0};
 
 static char *table_compare[19];
 static char *table_replace[19];
@@ -507,18 +509,29 @@ static u8 Load_GamePIC=NO;
 
 static u8 load_PIC1=NO;
 
-#define MAX_GAME 512
+#define MAX_GAME 		512
+#define MAX_FAV 		32
+#define MAX_SCANDIR 	10			
+#define MAX_FRAME		1024
+#define MAX_THEME		32
+
 static char list_game_path[MAX_GAME][128] = {{0}};
 static char list_game_title[MAX_GAME][128] = {{0}};
 static u8 list_game_platform[MAX_GAME] = {0};
 static int game_number = -1;
 
-static char list_FAV_game_path[100][128] = {{0}};
-static char list_FAV_game_title[100][128]= {{0}};
+static char list_FAV_game_path[MAX_FAV][128] = {{0}};
+static char list_FAV_game_title[MAX_FAV][128]= {{0}};
 static int8_t FAV_game_number = -1;
 
-static char scan_dir[30][128];
+static char scan_dir[MAX_SCANDIR][128];
 static int8_t scan_dir_number=0;
+
+static char Themes_Names_list[4][MAX_THEME][128];
+static char Themes_Paths_list[4][MAX_THEME][255];
+static char Themes[4][128] = {"Default", "Default", "Default", "Default"};
+static u8 Themes_position[4] = {0}; 
+static int8_t Themes_number[4] = {-1,-1,-1,-1}; // ou {[0 ... 3] = -1}
 
 int firmware = 0;
 
@@ -530,6 +543,25 @@ typedef struct
 static redir_files_struct file_to_map[8];
 static u8 max_mapped=0;
 
+static float ITEM_moveX[MAX_GAME] = {0.0};
+static float ITEM_moveY[MAX_GAME] = {0.0};
+static float ITEM_moveZ[MAX_GAME] = {0.0};
+static float ITEM_angleX[MAX_GAME] = {0.0};
+static float ITEM_angleY[MAX_GAME] = {0.0};
+static float ITEM_angleZ[MAX_GAME] = {0.0};
+
+static u8 FLOW_3D=YES;
+static u8 MOVE_init=NO;
+static u8 FLOW_Zoom=NO;
+static u8 FLOW_ShowBack=NO;
+
+#define POINT(X,Y,Z) \
+		tiny3d_VertexPos(X, Y, Z);\
+		tiny3d_Normal(X, Y, Z);
+
+MATRIX matrix;
+
+static u8 PEEKnPOKE;
 static u8 cobra = NO, iso = NO, splitted_iso = NO, mamba = NO, usb = NO;
 static u8 FLOW_inverse_button=YES;
 static u8 mount_app_home = NO;
@@ -562,11 +594,10 @@ static u8 Only_FAV = NO;
 static u8 Show_GameCase = NO;
 
 #define LIST_SizeFont		20
-#define XMB_SizeFont		20
 #define FLOW_SizeFont		20
 
-float X_MAX = 848.0;
-float Y_MAX = 512.0;
+#define X_MAX		848.0f
+#define Y_MAX		512.0f
 
 typedef struct
 {
@@ -577,127 +608,114 @@ typedef struct
 	u32 height;
 } imgData; // pngData = jpgData = imgData
 
-u32 * texture_mem;
+static u32 * texture_mem;
 
-u32 * ICON0_texture_mem;
+static u32 * ICON0_texture_mem;
 imgData ICON0[MAX_GAME];
-u32 ICON0_offset[MAX_GAME];
+static u32 ICON0_offset[MAX_GAME];
 
-u32 * COVER_texture_mem;
+static u32 * COVER_texture_mem;
 imgData COVER[MAX_GAME];
-u32 COVER_offset[MAX_GAME];
+static u32 COVER_offset[MAX_GAME];
+
+imgData COVER3D[MAX_GAME];
+static u32 COVER3D_offset[MAX_GAME];
 
 // *************************** LIST ***************************
-u32 * List_BG_texture_mem;
-u32 List_BG_offset;
+static u32 * List_BG_texture_mem;
+static u32 List_BG_offset;
 imgData List_BG;
 
-u32 * List_BGS_texture_mem;
-u32 List_BGS_offset;
+static u32 * List_BGS_texture_mem;
+static u32 List_BGS_offset;
 imgData List_BGS;
 
-u32 * List_BG_ICON0_texture_mem;
+static u32 * List_BG_ICON0_texture_mem;
 imgData List_BG_ICON0;
-u32 List_BG_ICON0_offset;
+static u32 List_BG_ICON0_offset;
 
 // *************************** GRID ***************************
-u32 * GRID_BG_texture_mem;
+static u32 * GRID_BG_texture_mem;
 imgData GRID_BG;
-u32 GRID_BG_offset;
+static u32 GRID_BG_offset;
 
-u32 * GRID_BGS_texture_mem;
+static u32 * GRID_BGS_texture_mem;
 imgData GRID_BGS;
-u32 GRID_BGS_offset;
+static u32 GRID_BGS_offset;
 
 // *************************** XMB ***************************
 
-u32 * XMB_Col_texture_mem[6];
+static u32 * XMB_Col_texture_mem[6];
 imgData XMB_Col[6];
-u32 XMB_Col_offset[6];
-
-#define COL_SET		0
-#define COL_FAV		1
-#define COL_PS3		2
-#define COL_PS2		3
-#define COL_PS1		4
-#define COL_PSP		5
-static char *Columns[6]={"SETTINGS", "FAVORITES", "PS3", "PS2", "PS1", "PSP"};
+static u32 XMB_Col_offset[6];
 
 //Icons frm MM thm XMB.PNG
-u32 * XMB_MMTHM_XMB_texture_mem;
+static u32 * XMB_MMTHM_XMB_texture_mem;
 imgData XMB_MMTHM_XMB;
-u32 XMB_MMTHM_XMB_offset;
+static u32 XMB_MMTHM_XMB_offset;
 //Icons frm MM thm XMB2.PNG
-u32 * XMB_MMTHM_XMB2_texture_mem;
+static u32 * XMB_MMTHM_XMB2_texture_mem;
 imgData XMB_MMTHM_XMB2;
-u32 XMB_MMTHM_XMB2_offset;
+static u32 XMB_MMTHM_XMB2_offset;
 //BG
-u32 * XMB_BG_texture_mem;
+static u32 * XMB_BG_texture_mem;
 imgData XMB_BG[MAX_FRAME];
-u32 XMB_BG_offset[MAX_FRAME];
+static u32 XMB_BG_offset[MAX_FRAME];
 
 //BG Setting
-u32 * XMB_BGS_texture_mem;
+static u32 * XMB_BGS_texture_mem;
 imgData XMB_BGS;
-u32 XMB_BGS_offset;
+static u32 XMB_BGS_offset;
 //Side BG
-u32 * XMB_SIDEBAR_texture_mem;
+static u32 * XMB_SIDEBAR_texture_mem;
 imgData XMB_SIDEBAR;
-u32 XMB_SIDEBAR_offset;
+static u32 XMB_SIDEBAR_offset;
 
 // *************************** FLOW ***************************
 //Flow BG
-u32 * Flow_BG_texture_mem;
+static u32 * Flow_BG_texture_mem;
 imgData Flow_BG;
-u32 Flow_BG_offset;
+static u32 Flow_BG_offset;
 //Flow BG Settings
-u32 * Flow_BGS_texture_mem;
+static u32 * Flow_BGS_texture_mem;
 imgData Flow_BGS;
-u32 Flow_BGS_offset;
+static u32 Flow_BGS_offset;
 
 // *************************File Manager **********************
 
-u32 * FM_PIC_texture_mem;
+static u32 * FM_PIC_texture_mem;
 imgData FM_PIC;
-u32 FM_PIC_offset;
+static u32 FM_PIC_offset;
 char FM_PIC_path[255];
-
-static u8 XMB_H_position = 2;
-static u32 XMB_nb_lin[6] = {0};
-static u32 XMB_V_position[6] = {0};
-static int XMB_curs_move_x = -180;
-static long int XMB_curs_move_y[6] = {0};
 
 static u8 use_sidemenu = NO;
 static u8 scan_dir_position=0;
 
-static int Flow_curs_move_x = 0;
-
-u32 * COMMON_texture_mem;
-imgData COMMON[38];
-u32 COMMON_offset[38];
+static u32 * COMMON_texture_mem;
+imgData COMMON[40];
+static u32 COMMON_offset[40];
 
 static u8 XMB_priority = NO;
+static u8 Show_help = YES;
 
-char *UI[4] = {"List", "Grid", "XMB", "Flow"};
+static char *UI[4] = {"List", "Grid", "XMB", "Flow"};
 static u8 UI_position = LIST;
 
-static char Themes_Names_list[4][128][255];
-static char Themes_Paths_list[4][128][255];
-static char Themes[4][128] = {"Default", "Default", "Default", "Default"};
-static u8 Themes_position[4] = {0}; 
-static int8_t Themes_number[4] = {-1,-1,-1,-1}; // ou {[0 ... 3] = -1}
-
-static u8 grid_nb_lines = 5;
-static u8 grid_nb_columns = 5;
-static u8 grid_type = SCROLL;
-static u8 direction = VERTICAL;
-static u8 animated = YES;
-static u8 keep_prop = YES;
-static float Grid_move = 0;
-
-static float Grid_curs_move_x = 0;
-static float Grid_curs_move_y = 0;
+static s16 GRID_FIRST_ICON = 0, GRID_LAST_ICON=-1;
+static u8 GRID_NB_LINES = 5;
+static u8 GRID_NB_COLUMNS = 5;
+static u8 GRID_TYPE = SCROLL;
+static u8 GRID_DIRECTION = VERTICAL;
+static u8 GRID_ANIMATED = YES;
+static u8 GRID_KEEP_PROP = YES;
+#define GRID_e 10
+#define GRID_X 20
+#define GRID_Y 25
+#define GRID_W X_MAX-GRID_X*2
+#define GRID_H Y_MAX-GRID_Y*2
+#define GRID_W_ICON0	(GRID_W - (GRID_NB_COLUMNS-1) * GRID_e) / GRID_NB_COLUMNS 
+#define GRID_H_ICON0    ((GRID_H - (GRID_NB_LINES-1) * GRID_e) / GRID_NB_LINES)*(1-GRID_KEEP_PROP) + GRID_KEEP_PROP*GRID_W_ICON0/1.86
+#define GRID_NB_ICON0 	GRID_NB_LINES*GRID_NB_COLUMNS
 
 static char copy_log[10][128];
 static char copy_file[128];
@@ -705,7 +723,7 @@ static char copy_src[128];
 static char copy_dst[128];
 
 static u64 copy_current_size;
-u64 total_size;
+static u64 total_size;
 static u64 file_copy_prog_bar;
 static u8 gathering;
 
@@ -721,42 +739,58 @@ int64_t prog_bar1_value=-1;
 int64_t prog_bar2_value=-1;
 u8 cancel = NO;
 
-int8_t videoscale_x = 0;
-int8_t videoscale_y = 0;
+static int8_t videoscale_x = 0;
+static int8_t videoscale_y = 0;
 
 static int slow_it;
 static u64 hold_it;
 static int scroll_speed=6;
 
-u32 COLOR_1 = WHITE;
-u32 COLOR_2 = GREEN;
-u32 COLOR_3 = ORANGE;
-u32 COLOR_4 = RED;
+static u32 COLOR_1 = WHITE;
+static u32 COLOR_2 = GREEN;
+static u32 COLOR_3 = ORANGE;
+static u32 COLOR_4 = RED;
 
 uint8_t ERR = FALSE;
 uint8_t WAR = FALSE;
 
-int position=0;
-int first_line = 0, nb_line=0, last_line;
-int hold_CIRCLE=0;
-int first_icon = 0, nb_icon, last_icon=-1;
-int x_L = 0;
-int y_L = 0;
+static int position=0;
+static int first_line = 0, nb_line=0, last_line;
+static int hold_CIRCLE=0;
+static int x_L = 0;
+static int y_L = 0;
 
-float w_ICON0;  
-float h_ICON0;
-float e_w = 10;
-float e_h = 10;
-float speed = 9;
-float XMB_w = 72;
-float XMB_h = 40;
+#define FLOW_W  	80.0f
+#define FLOW_H		44.0f
 
-#define FLOW_W  	80
-#define FLOW_H		44
+#define XMB_W 72.0f
+#define XMB_H 40.0f
+
+#define XMB_COLUMN_NUMBER 6
+
+#define XMB_COLUMN_SETTINGS		0
+#define XMB_COLUMN_FAVORITES	1
+#define XMB_COLUMN_PS3			2
+#define XMB_COLUMN_PS2			3
+#define XMB_COLUMN_PS1			4
+#define XMB_COLUMN_PSP			5
+
+static u8 XMB_H_position = 2;
+static s16 XMB_nb_line = -1;
+static u16 XMB_value_line[MAX_GAME] = {0};
+static u16 XMB_V_position[XMB_COLUMN_NUMBER] = {0};
+
+static char *XMB_COLUMN_NAME[XMB_COLUMN_NUMBER]={"SETTINGS", "FAVORITES", "PS3", "PS2", "PS1", "PSP"};
+static float XMB_columnX[XMB_COLUMN_NUMBER]={0.0};
+static float XMB_columnY[XMB_COLUMN_NUMBER]={0.0};
+static float XMB_columnZ[XMB_COLUMN_NUMBER]={0.0};
+
 
 static u8 picture_viewer_activ = NO;
 
-u8 Display_PIC1 = NO;
+static u8 Display_PIC1 = NO;
+
+static u32 cursor_rotate=0;
 
 // ******* MENU **********
 
@@ -771,64 +805,64 @@ u8 Display_PIC1 = NO;
 #define ITEM_CHECKBOX	1
 #define ITEM_COLORBOX	2
 
-u8 MENU=NO;
+static u8 MENU=NO;
 
-char ITEMS[MAX_ITEMS][MAX_ITEMS_LENGTH];
-s8 ITEMS_NUMBER;
-char ITEMS_VALUE[MAX_ITEMS][MAX_ITEMS_VALUE][MAX_ITEMS_VALUE_LENGTH];
-s8 ITEMS_VALUE_NUMBER[MAX_ITEMS];
+static char ITEMS[MAX_ITEMS][MAX_ITEMS_LENGTH];
+static s8 ITEMS_NUMBER;
+static char ITEMS_VALUE[MAX_ITEMS][MAX_ITEMS_VALUE][MAX_ITEMS_VALUE_LENGTH];
+static s8 ITEMS_VALUE_NUMBER[MAX_ITEMS];
 
-u8 ITEMS_POSITION;
-u8 ITEMS_VALUE_POSITION[MAX_ITEMS];
-u8 ITEMS_VALUE_SHOW[MAX_ITEMS];
-u8 ITEMS_TYPE[MAX_ITEMS];
+static u8 ITEMS_POSITION;
+static u8 ITEMS_VALUE_POSITION[MAX_ITEMS];
+static u8 ITEMS_VALUE_SHOW[MAX_ITEMS];
+static u8 ITEMS_TYPE[MAX_ITEMS];
 
-u8 IN_ITEMS_VALUE=NO;
+static u8 IN_ITEMS_VALUE=NO;
 
-float MENU_ITEMS_X;
-float MENU_ITEMS_VALUE_X;
-int MENU_SCROLL;
-int MENU_SCROLL_START;
+static float MENU_ITEMS_X;
+static float MENU_ITEMS_VALUE_X;
+static int MENU_SCROLL;
+static int MENU_SCROLL_START;
 
-int MENU_COLUMN_ITEMS_NUMBER;
-float MENU_COLUMN_ITEMS_W;
+static int MENU_COLUMN_ITEMS_NUMBER;
+static float MENU_COLUMN_ITEMS_W;
 
-char TITLES[MAX_ITEMS][MAX_TITLE_LENGHT];
+static char TITLES[MAX_ITEMS][MAX_TITLE_LENGHT];
 
-u8 MENU_SIDE;
+static u8 MENU_SIDE;
 
-float x_COLOR;
-float y_COLOR;
+static float x_COLOR;
+static float y_COLOR;
 
-char *PS2ELF_mem = NULL;
-int PS2ELF_mem_size = 0;
-char PS2CRC_STR[8];
-char PS2ORICRC_STR[8];
-char PS2_ID[12];
-char pnach[128];
-char WS[128];
+static char *PS2ELF_mem = NULL;
+static int PS2ELF_mem_size = 0;
+static char PS2CRC_STR[8];
+static char PS2ORICRC_STR[8];
+static char PS2_ID[12];
+static char pnach[128];
+static char WS[128];
 
-u8 PS2PATCH_480P = NO;
-u8 PS2PATCH_YFIX = NO;
-u8 PS2PATCH_FMVSKIP = NO;
+static u8 PS2PATCH_480P = NO;
+static u8 PS2PATCH_YFIX = NO;
+static u8 PS2PATCH_FMVSKIP = NO;
 
 u32 PS2PATCH_480P_offset;
 u32 PS2PATCH_YFIX_offset;
 u32 PS2PATCH_FMVSKIP_offset;
 
-u8 PS2PATCH_480P_FLAG_DISABLE[] = { 
+static u8 PS2PATCH_480P_FLAG_DISABLE[] = { 
 									0x00, 0x2C, 0x05, 0x00, 0x20, 0x00, 0xB2, 0xFF, 
 									0x00, 0x34, 0x06, 0x00, 0x10, 0x00, 0xB1, 0xFF, 
 									0x00, 0x3C, 0x07, 0x00
 								  };
 
-u8 PS2PATCH_480P_FLAG_ENABLE[] = { 
+static u8 PS2PATCH_480P_FLAG_ENABLE[] = { 
 								   0x00, 0x00, 0x05, 0x3C, 0x20, 0x00, 0xB2, 0xFF,
 								   0x50, 0x00, 0x06, 0x3C, 0x10, 0x00, 0xB1, 0xFF,
 								   0x01, 0x00, 0x07, 0x3C
 								 };
 
-u8 PS2PATCH_YFIX_FLAG_DISABLE[] = { 
+static u8 PS2PATCH_YFIX_FLAG_DISABLE[] = { 
 									0x70, 0xFF, 0xBD, 0x27, 0x00, 0x2C, 0x05, 0x00,
 									0x70, 0x00, 0xB6, 0xFF, 0x00, 0x34, 0x06, 0x00,
 									0x60, 0x00, 0xB5, 0xFF, 0x00, 0x3C, 0x07, 0x00,
@@ -836,7 +870,7 @@ u8 PS2PATCH_YFIX_FLAG_DISABLE[] = {
 									0x40, 0x00, 0xB3, 0xFF, 0x00, 0x4C, 0x09, 0x00
 								  };
 
-u8 PS2PATCH_YFIX_FLAG_ENABLE[] = { 
+static u8 PS2PATCH_YFIX_FLAG_ENABLE[] = { 
 								   0x70, 0xFF, 0xBD, 0x27, 0x00, 0x2C, 0x05, 0x00,
 								   0x70, 0x00, 0xB6, 0xFF, 0x00, 0x34, 0x06, 0x00, 
 								   0x60, 0x00, 0xB5, 0xFF, 0x00, 0x3C, 0x07, 0x00, 
@@ -844,17 +878,604 @@ u8 PS2PATCH_YFIX_FLAG_ENABLE[] = {
 								   0x40, 0x00, 0xB3, 0xFF, 0x10, 0x00, 0x09, 0x3C
 								 };
 
-u8 PS2PATCH_FMVSKIP_FLAG_DISABLE[] = {
+static u8 PS2PATCH_FMVSKIP_FLAG_DISABLE[] = {
 									   0x40, 0x00, 0x83, 0x8C, 0x08, 0x00, 0xE0, 0x03,
 									   0x00, 0x00, 0x62, 0x8C, 0x00, 0x00, 0x00, 0x00
 									 };
 
-u8 PS2PATCH_FMVSKIP_FLAG_ENABLE[] = {
+static u8 PS2PATCH_FMVSKIP_FLAG_ENABLE[] = {
 									  0x40, 0x00, 0x83, 0x8C, 0x08, 0x00, 0xE0, 0x03,
 									  0x01, 0x00, 0x02, 0x24, 0x00, 0x00, 0x00, 0x00
 									};
-	
-// **************** //
+
+//***********************************************************
+// Language
+//***********************************************************
+// 0x0=German
+// 0x1=English (US)
+// 0x2=Spanish
+// 0x3=French
+// 0x4=Italian
+// 0x5=Dutch
+// 0x6=Portuguese (Por)
+// 0x7=Russian
+// 0x8=Japanese
+// 0x9=Korean
+// 0xA=Chinese (traditional)
+// 0xB=Chinese (simplified)
+// 0xC=Finnish
+// 0xD=Swedish
+// 0xE=Danish
+// 0xF=Norwegian
+// 0x10=Polish
+// 0x11=Portuguese (Bra)
+// 0x12=English (UK)
+// 0x13=Turkish
+//***********************************************************
+
+#define MAX_LANG 32
+#define LANG_DEFAULT		0xFF
+#define LANG_UNDEFINED		0xEE
+#define LANG_NONE			0xDD
+
+uint8_t lang=0;
+uint8_t lang_N;
+uint8_t lang_code = LANG_UNDEFINED;
+uint8_t lang_code_loaded = LANG_NONE;
+
+static char *STR_LANGUAGE[MAX_LANG]; // "English"
+static char *STR_LANGCODE[MAX_LANG];
+static char *lang_path[MAX_LANG];
+
+static char *STR_LANG;
+#define STR_LANG_DEFAULT					"Language"
+static char *STR_LANG_DESC;
+#define STR_LANG_DESC_DEFAULT				"Choose your language."
+static char *STR_GATHERING;
+#define STR_GATHERING_DEFAULT				"Gathering data..."
+static char *STR_COPYING;
+#define STR_COPYING_DEFAULT					"Copying..."
+static char *STR_FROM;
+#define STR_FROM_DEFAULT					"from"
+static char *STR_TO;
+#define STR_TO_DEFAULT						"to"
+static char *STR_FILES;
+#define STR_FILES_DEFAULT					"Files"
+static char *STR_DIRS;
+#define STR_DIRS_DEFAULT					"Directories"
+static char *STR_UNKNOWN;
+#define STR_UNKNOWN_DEFAULT					"Unknown"
+static char *STR_FILE;
+#define STR_FILE_DEFAULT					"File"
+static char *STR_CANCEL;
+#define STR_CANCEL_DEFAULT					"Cancel"
+static char *STR_TURNOFF_YES;
+#define STR_TURNOFF_YES_DEFAULT				"Turn OFF = YES"
+static char *STR_TURNOFF_NO;
+#define STR_TURNOFF_NO_DEFAULT				"Turn OFF = NO"
+static char *STR_CANCELLED;
+#define STR_CANCELLED_DEFAULT				"Cancelled"
+static char *STR_UNIT;
+#define STR_UNIT_DEFAULT					"Bytes"
+static char *STR_TOTALSIZE;
+#define STR_TOTALSIZE_DEFAULT				"Total size"
+static char *STR_HIDELOGS;
+#define STR_HIDELOGS_DEFAULT				"Hide logs"
+static char *STR_SHOWLOGS;
+#define STR_SHOWLOGS_DEFAULT				"Show logs"
+static char *STR_BOOST;
+#define STR_BOOST_DEFAULT					"Boost!"
+static char *STR_GAMEMENU;
+#define STR_GAMEMENU_DEFAULT				"Game Menu"
+static char *STR_SETTINGS;
+#define STR_SETTINGS_DEFAULT				"Settings"
+static char *STR_MOUNTGAME;
+#define STR_MOUNTGAME_DEFAULT				"Mount Game"
+static char *STR_FILTER;
+#define	STR_FILTER_DEFAULT					"Filter"
+static char *STR_FAVORITE;
+#define STR_FAVORITE_DEFAULT				"Favorite"
+static char *STR_FILEMANAGER;
+#define STR_FILEMANAGER_DEFAULT				"File Manager"
+static char *STR_HOLD;
+#define STR_HOLD_DEFAULT					"Hold"
+static char *STR_BACKTOXMB;
+#define STR_BACKTOXMB_DEFAULT				"Back to XMB"
+static char *STR_GAME_PROP;
+#define STR_GAME_PROP_DEFAULT				"Game Properties"
+static char *STR_GAME;
+#define STR_GAME_DEFAULT					"Game"
+static char *STR_GAME_PATH;
+#define STR_GAME_PATH_DEFAULT				"Game path"
+static char *STR_GAME_FORMAT;
+#define STR_GAME_FORMAT_DEFAULT				"Game format"
+static char *STR_GAME_SIZE;
+#define STR_GAME_SIZE_DEFAULT				"Game size"
+static char *STR_SYSVERS;
+#define STR_SYSVERS_DEFAULT					"System version"
+static char *STR_GAMEID;
+#define STR_GAMEID_DEFAULT					"Game ID"
+static char *STR_ELFCRC;
+#define STR_ELFCRC_DEFAULT					"ELF CRC"
+static char *STR_ELFCRCO;
+#define STR_ELFCRCO_DEFAULT					"ELF CRC (Original)"
+static char *STR_BACK;
+#define STR_BACK_DEFAULT					"Back"
+static char *STR_ENTER;
+#define STR_ENTER_DEFAULT					"Enter"
+static char *STR_UPDATE_FOUND;
+#define STR_UPDATE_FOUND_DEFAULT			"Update found"
+static char *STR_UPDATE;
+#define STR_UPDATE_DEFAULT					"Update"
+static char *STR_SIZE;
+#define STR_SIZE_DEFAULT					"Size"
+static char *SYSTEM;
+#define SYSTEM_DEFAULT						"System"
+static char *STR_DL;
+#define STR_DL_DEFAULT						"Download"
+static char *STR_DL_ALL;
+#define STR_DL_ALL_DEFAULT					"Download ALL"
+static char *STR_UNPLUG;
+#define STR_UNPLUG_DEFAULT					"Unplug the following device(s)"
+static char *STR_PATH;
+#define STR_PATH_DEFAULT					"Path"
+static char *STR_TYPE;
+#define STR_TYPE_DEFAULT					"Type"
+static char *STR_FOLDER;
+#define STR_FOLDER_DEFAULT					"Folder"
+static char *STR_DIR;
+#define STR_DIR_DEFAULT						"Directory"
+static char *STR_MULT;
+#define STR_MULT_DEFAULT					"Multiple"
+static char *STR_THM_SETTINGS;
+#define STR_THM_SETTINGS_DEFAULT			"Themes settings"
+static char *STR_THM;
+#define STR_THM_DEFAULT						"Theme"
+static char *STR_THM_DESC;
+#define STR_THM_DESC_DEFAULT				"Load the theme you want. You can install them from /dev_usbXXX/Themes."
+static char *STR_CREATE;
+#define STR_CREATE_DEFAULT					"Create"
+static char *STR_ZOOM_OUT;
+#define STR_ZOOM_OUT_DEFAULT				"Zoom OUT"
+static char *STR_ZOOM_IN;
+#define STR_ZOOM_IN_DEFAULT					"Zoom IN"
+static char *STR_MOVE_FRAME;
+#define STR_MOVE_FRAME_DEFAULT				"Move Frame"
+static char *STR_CHECK;
+#define STR_CHECK_DEFAULT					"Check"
+static char *STR_UNCHECK;
+#define STR_UNCHECK_DEFAULT					"Uncheck"
+static char *STR_GAME_OPTION;
+#define STR_GAME_OPTION_DEFAULT				"Game Options"
+static char *STR_ADD_FAV;
+#define STR_ADD_FAV_DEFAULT					"Add to favorites"
+static char *STR_REM_FAV;
+#define STR_REM_FAV_DEFAULT					"Remove from favorites"
+static char *STR_FAV_DESC;
+#define STR_FAV_DESC_DEFAULT				"Manage a list your favorite games."
+static char *STR_RENAME;
+#define STR_RENAME_DEFAULT					"Rename"
+static char *STR_RENAME_DESC;
+#define STR_RENAME_DESC_DEFAULT				"Rename the title of your backup."
+static char *STR_DELETE;
+#define STR_DELETE_DEFAULT					"Delete"
+static char *STR_DELETE_DESC;
+#define STR_DELETE_DESC_DEFAULT				"Delete your backup."
+static char *STR_COPY;
+#define STR_COPY_DEFAULT					"Copy"
+static char *STR_COPY_DESC;
+#define STR_COPY_DESC_DEFAULT				"Copy your backup to another path."
+static char *STR_CREATE_ICON0;
+#define STR_CREATE_ICON0_DEFAULT			"Create ICON0"
+static char *STR_CREATE_ICON0_DESC;
+#define STR_CREATE_ICON0_DESC_DEFAULT		"Create an 'fake' ICON0 from the cover."
+static char *STR_REST_PNACH;
+#define STR_REST_PNACH_DEFAULT				"Restore PNACH"
+static char *STR_REST_PNACH_DESC;
+#define STR_REST_PNACH_DESC_DEFAULT			"Remove the patches applied by the pnach file to the backup."
+static char *STR_APPLY_PNACH;
+#define STR_APPLY_PNACH_DEFAULT				"Apply PNACH"
+static char *STR_APPLY_PNACH_DESC;
+#define STR_APPLY_PNACH_DESC_DEFAULT		"Apply the patches from pnach file to the backup."
+static char *STR_DISABLE_WS;
+#define STR_DISABLE_WS_DEFAULT				"Disable WideScreen"
+static char *STR_ENABLE_WS;
+#define STR_ENABLE_WS_DEFAULT				"Enable WideScreen"
+static char *STR_WS_DESC;
+#define STR_WS_DESC_DEFAULT					"Display the game in 16:9 instead of 4:3."
+static char *STR_DISABLE_480P;
+#define STR_DISABLE_480P_DEFAULT			"Disable 480P"
+static char *STR_ENABLE_480P;
+#define STR_ENABLE_480P_DEFAULT				"Enable 480P"
+static char *STR_480P_DESC;
+#define STR_480P_DESC_DEFAULT				"Progressive scan mode in 480P."
+static char *STR_DISABLE_YFIX;
+#define STR_DISABLE_YFIX_DEFAULT			"Disable YFIX"
+static char *STR_ENABLE_YFIX;
+#define STR_ENABLE_YFIX_DEFAULT				"Enable YFIX"
+static char *STR_YFIX_DESC;
+#define STR_YFIX_DESC_DEFAULT				"Fix the vertical position."
+static char *STR_DISABLE_FMVSKIP;
+#define STR_DISABLE_FMVSKIP_DEFAULT			"Disable FMV skip"
+static char *STR_ENABLE_FMVSKIP;
+#define STR_ENABLE_FMVSKIP_DEFAULT			"Enable FMV skip"
+static char *STR_FMVSKIP_DESC;
+#define STR_FMVSKIP_DESC_DEFAULT			"Allow you to skip the full motion videos."
+static char *STR_DISABLE_NETEMU;
+#define STR_DISABLE_NETEMU_DEFAULT			"Disable NetEMU"
+static char *STR_ENABLE_NETEMU;
+#define STR_ENABLE_NETEMU_DEFAULT			"Enable NetEMU"
+static char *STR_NETEMU_DESC;
+#define STR_NETEMU_DESC_DEFAULT				"Force the use of ps2 netemu."
+static char *STR_CREATE_CONFIG;
+#define STR_CREATE_CONFIG_DEFAULT			"Create CONFIG"
+static char *STR_CREATE_CONFIG_DESC;
+#define STR_CREATE_CONFIG_DESC_DEFAULT		"[Experimental] Create your own CONFIG file to 'fix' your ps2 backup."
+static char *STR_NONE;
+#define STR_NONE_DEFAULT					"None"
+static char *STR_CHECK_MD5;
+#define STR_CHECK_MD5_DEFAULT				"Check MD5"
+static char *STR_PROPS;
+#define STR_PROPS_DEFAULT					"Properties"
+static char *STR_PROPS_DESC;
+#define STR_PROPS_DESC_DEFAULT				"Show the properties of your backup."
+static char *STR_ASK_DEL;
+#define STR_ASK_DEL_DEFAULT					"Do you realy want to delete"
+static char *STR_GAME_SETTINGS;
+#define STR_GAME_SETTINGS_DEFAULT			"Game Settings"
+static char *STR_DIRECT_BOOT;
+#define STR_DIRECT_BOOT_DEFAULT				"Direct boot"
+static char *STR_DIRECT_BOOT_DESC;
+#define STR_DIRECT_BOOT_DESC_DEFAULT		"Launch the game directly without going back to XMB."
+static char *STR_YES;
+#define STR_YES_DEFAULT						"Yes"
+static char *STR_NO;
+#define STR_NO_DEFAULT						"No"
+static char *STR_CLEAN_SYSCALL;
+#define STR_CLEAN_SYSCALL_DEFAULT			"Clean syscall"
+static char *STR_CLEAN_SYSCALL_DESC;
+#define STR_CLEAN_SYSCALL_DESC_DEFAULT		"Disable peek & poke syscalls."
+static char *STR_CHANGE_IDPS;
+#define STR_CHANGE_IDPS_DEFAULT				"Change IDPS"
+static char *STR_CHANGE_IDPS_DESC;
+#define STR_CHANGE_IDPS_DESC_DEFAULT		"Change your IDPS in the lv2;"
+static char *STR_EXT_GAME_DATA;
+#define STR_EXT_GAME_DATA_DEFAULT			"Ext. Game Data"
+static char *STR_EXT_GAME_DATA_DESC;
+#define STR_EXT_GAME_DATA_DESC_DEFAULT		"Install gamedata in your usb device instead of your system."
+static char *STR_PAYLOAD;
+#define STR_PAYLOAD_DEFAULT					"Payload"
+static char *STR_PAYLOAD_DESC;
+#define STR_PAYLOAD_DESC_DEFAULT			"Choose the payload to mount your backup."
+static char *STR_PRIM_USB;
+#define STR_PRIM_USB_DEFAULT				"Set Primary USB"
+static char *STR_PRIM_USB_DESC;
+#define STR_PRIM_USB_DESC_DEFAULT			"Set the USB device where the game is stored as the main USB device."
+static char *STR_BDEMU;
+#define STR_BDEMU_DEFAULT					"BD emulation"
+static char *STR_BDEMU_DESC;
+#define STR_BDEMU_DESC_DEFAULT				"Choose the type of emulation to mount you backup."
+static char *STR_PATCH_LIBFS;
+#define STR_PATCH_LIBFS_DEFAULT				"Patch libfs"
+static char *STR_PATCH_LIBFS_DESC;
+#define STR_PATCH_LIBFS_DESC_DEFAULT		"Choose which patched libfs you want to use."
+static char *STR_MOUNT_APPHOME;
+#define STR_MOUNT_APPHOME_DEFAULT			"Mount /app_home"
+static char *STR_MOUNT_APPHOME_DESC;
+#define STR_MOUNT_APPHOME_DESC_DEFAULT		"Redirect the patch /app_home to /dev_bdvd."
+static char *STR_PATCH_EXP;
+#define STR_PATCH_EXP_DEFAULT				"Patch explore_plugin"
+static char *STR_PATCH_EXP_DESC;
+#define STR_PATCH_EXP_DESC_DEFAULT			"The path /app_home is remplaced by /dev_bdvd inside the plugin explore_plugin."
+static char *STR_MAKE_SHTCUT_PKG;
+#define STR_MAKE_SHTCUT_PKG_DEFAULT			"Make Shortcut PKG"
+static char *STR_MAKE_SHTCUT_PKG_DESC;
+#define STR_MAKE_SHTCUT_PKG_DESC_DEFAULT	"Create a package file stored to /dev_hdd0/packages. Once installed, it will be a 'shortcut' to mount your backup from the XMB."
+static char *STR_PATCH_EBOOT;
+#define STR_PATCH_EBOOT_DEFAULT				"Patch EBOOT"
+static char *STR_PATCH_EBOOT_DESC;
+#define STR_PATCH_EBOOT_DESC_DEFAULT		"Change the firmware version to 4.21 of the EBOOT file to prevent error 0x80010009."
+static char *STR_RESIGN;
+#define STR_RESIGN_DEFAULT					"Re-sign"
+static char *STR_RESIGN_DESC;
+#define STR_RESIGN_DESC_DEFAULT				"Re-sign every executables of your backup with the 4.21 keys."
+static char *STR_RESTORE;
+#define STR_RESTORE_DEFAULT					"Restore"
+static char *STR_RESTORE_DESC;
+#define STR_RESTORE_DESC_DEFAULT			"Restore the originals executables of your backup."
+static char *STR_EXTRACT_ISO;
+#define STR_EXTRACT_ISO_DEFAULT				"Extract ISO"
+static char *STR_EXTRACT_ISO_DESC;
+#define STR_EXTRACT_ISO_DESC_DEFAULT		"Extract files from your ISO to a folder."
+static char *STR_CONVERT_ISO;
+#define STR_CONVERT_ISO_DEFAULT				"Convert to ISO"
+static char *STR_CONVERT_ISO_DESC;
+#define STR_CONVERT_ISO_DESC_DEFAULT		"Convert your JB backup to an ISO."
+static char *STR_FIX_PERMS;
+#define STR_FIX_PERMS_DEFAULT				"Fix permissions"
+static char *STR_FIX_PERMS_DESC;
+#define STR_FIX_PERMS_DESC_DEFAULT			"Set permission value to 0777 of each folders and files of your backup."
+static char *STR_CHECK_IRD;
+#define STR_CHECK_IRD_DEFAULT				"Check files (IRD)"
+static char *STR_CHECK_DESC;
+#define STR_CHECK_DESC_DEFAULT				"Check if the files of your backups aren't modified."
+static char *STR_DL_UPDATE;
+#define STR_DL_UPDATE_DEFAULT				"Download Update"
+static char *STR_DL_UPDATE_DESC;
+#define STR_DL_UPDATE_DESC_DEFAULT			"Download your backup's updates to /dev_hdd0/packages."
+static char *STR_OPEN_WINDOW;
+#define STR_OPEN_WINDOW_DEFAULT				"Open New Window"
+static char *STR_MOUNT_DEVBLIND;
+#define STR_MOUNT_DEVBLIND_DEFAULT			"Mount /dev_blind"
+static char *STR_DUMP_LV1;
+#define STR_DUMP_LV1_DEFAULT				"Dump lv1"
+static char *STR_DUMP_LV2;
+#define STR_DUMP_LV2_DEFAULT				"Dump lv2"
+static char *STR_DUMP_FLASH;
+#define STR_DUMP_FLASH_DEFAULT				"Dump flash"
+static char *STR_REFRESH;
+#define STR_REFRESH_DEFAULT					"Refresh"
+static char *STR_NEWFOLDER;
+#define STR_NEWFOLDER_DEFAULT				"New Folder"
+static char *STR_NEWFILE;
+#define STR_NEWFILE_DEFAULT					"New File"
+static char *STR_PASTE;
+#define STR_PASTE_DEFAULT					"Paste"
+static char *STR_CUT;
+#define STR_CUT_DEFAULT						"Cut"
+static char *STR_UNSELECT_ALL;
+#define STR_UNSELECT_ALL_DEFAULT			"Unselect all"
+static char *STR_SELECT_ALL;
+#define STR_SELECT_ALL_DEFAULT				"Select all"
+static char *STR_MAKE_PKG;
+#define STR_MAKE_PKG_DEFAULT				"Make PKG"
+static char *STR_GETMD5;
+#define STR_GETMD5_DEFAULT					"Get MD5"
+static char *STR_GETSHA1;
+#define STR_GETSHA1_DEFAULT					"Get SHA1"
+static char *STR_VIEW;
+#define STR_VIEW_DEFAULT					"View"
+static char *STR_VIEW_TXT;
+#define STR_VIEW_TXT_DEFAULT				"View TXT"
+static char *STR_VIEW_SFO;
+#define STR_VIEW_SFO_DEFAULT				"View SFO"
+static char *STR_READ_XREG;
+#define STR_READ_XREG_DEFAULT				"Read xReg"
+static char *STR_EXTRACT_ELF;
+#define STR_EXTRACT_ELF_DEFAULT				"Extract ELF"
+static char *STR_RESIGN_SELF;
+#define STR_RESIGN_SELF_DEFAULT				"Resign SELF"
+static char *STR_LAUNCH_SELF;
+#define STR_LAUNCH_SELF_DEFAULT				"Launch SELF"
+static char *STR_EXTRACT_EBOOT;
+#define STR_EXTRACT_EBOOT_DEFAULT			"Extract EBOOT"
+static char *STR_RESIGN_EBOOT;
+#define STR_RESIGN_EBOOT_DEFAULT			"Resign EBOOT"
+static char *STR_LAUNCH_EBOOT;
+#define STR_LAUNCH_EBOOT_DEFAULT			"Launch EBOOT"
+static char *STR_SIGN_ELF;
+#define STR_SIGN_ELF_DEFAULT				"Sign ELF"
+static char *STR_SIGN_EBOOT;
+#define STR_SIGN_EBOOT_DEFAULT				"Sign EBOOT"
+static char *STR_SIGN_PRX;
+#define STR_SIGN_PRX_DEFAULT				"Sign PRX"
+static char *STR_EXTRACT_PRX;
+#define STR_EXTRACT_PRX_DEFAULT				"Extract PRX"
+static char *STR_RESIGN_SPRX;
+#define STR_RESIGN_SPRX_DEFAULT				"Resign SPRX"
+static char *STR_REMOVE_PRXLOADER;
+#define STR_REMOVE_PRXLOADER_DEFAULT		"Remove from PRX Loader"
+static char *STR_ADD_PRXLOADER;
+#define STR_ADD_PRXLOADER_DEFAULT			"Add to PRX Loader"
+static char *STR_REMOVE_PRXLOADER2;
+#define STR_REMOVE_PRXLOADER2_DEFAULT		"Remove from PRXLoader"
+static char *STR_ADD_PRXLOADER2;
+#define STR_ADD_PRXLOADER2_DEFAULT			"Add to PRXLoader"
+static char *STR_REMOVE_MAMBA;
+#define STR_REMOVE_MAMBA_DEFAULT			"Remove from Mamba list"
+static char *STR_ADD_MAMBA;
+#define STR_ADD_MAMBA_DEFAULT				"Add to Mamba list"
+static char *STR_REMOVE_COBRA;
+#define STR_REMOVE_COBRA_DEFAULT			"Remove from Cobra list"
+static char *STR_ADD_COBRA;
+#define STR_ADD_COBRA_DEFAULT				"Add to Cobra list"
+static char *STR_EXTRACT_RCO;
+#define STR_EXTRACT_RCO_DEFAULT				"Extract RCO"
+static char *STR_EXTRACT_PKG;
+#define STR_EXTRACT_PKG_DEFAULT				"Extract PKG"
+static char *STR_PKG_INFO;
+#define STR_PKG_INFO_DEFAULT				"PKG info"
+static char *STR_EXTRACT_TRP;
+#define STR_EXTRACT_TRP_DEFAULT				"Extract TRP"
+static char *STR_COMPRESS_ISO;
+#define STR_COMPRESS_ISO_DEFAULT			"Compress ISO"
+static char *STR_CHECK_CRC32;
+#define STR_CHECK_CRC32_DEFAULT				"Check CRC32"
+static char *STR_DECOMPRESS_CSO;
+#define STR_DECOMPRESS_CSO_DEFAULT			"Decompress CSO"
+static char *STR_EXTRACT_THM;
+#define STR_EXTRACT_THM_DEFAULT				"Extract THM"
+static char *STR_EXTRACT_P3T;
+#define STR_EXTRACT_P3T_DEFAULT				"Extract P3T"
+static char *STR_EXTRACT_RAF;
+#define STR_EXTRACT_RAF_DEFAULT				"Extract RAF"
+static char *STR_EXTRACT_QRC;
+#define STR_EXTRACT_QRC_DEFAULT				"Extract QRC"
+static char *STR_EXTRACT_ZIP;
+#define STR_EXTRACT_ZIP_DEFAULT				"Extract ZIP"
+static char *STR_CONVERT_JSX_JS;
+#define STR_CONVERT_JSX_JS_DEFAULT			"Convert JSX to JS"
+static char *STR_CONVERT_VAG_WAV;
+#define STR_CONVERT_VAG_WAV_DEFAULT			"Convert VAG to WAV"
+static char *STR_CONVERT_GTF_DDS;
+#define STR_CONVERT_GTF_DDS_DEFAULT			"Convert GTF to DDS"
+static char *STR_CONVERT_DDS_PNG;
+#define STR_CONVERT_DDS_PNG_DEFAULT			"Convert DDS to PNG"
+static char *STR_MAKE_APNG;
+#define STR_MAKE_APNG_DEFAULT				"Make APNG"
+static char *STR_SET_PERMS;
+#define STR_SET_PERMS_DEFAULT				"Set permission"
+static char *STR_NOGAME;
+#define STR_NOGAME_DEFAULT					"No Game Found"
+static char *STR_GLOB_SETTINGS;
+#define STR_GLOB_SETTINGS_DEFAULT			"Global settings"
+static char *STR_ADJUST;
+#define STR_ADJUST_DEFAULT					"Adjust screen"
+static char *STR_ADJUST_DESC;
+#define STR_ADJUST_DESC_DEFAULT				"Calibrate your display."
+static char *STR_DL_COVER;
+#define STR_DL_COVER_DEFAULT				"Download covers"
+static char *STR_DL_COVER_DESC;
+#define STR_DL_COVER_DESC_DEFAULT			"Download every missing game covers to USRDIR/covers/[gameID].jpg"
+static char *STR_PLUGIN_MANAGER;
+#define STR_PLUGIN_MANAGER_DEFAULT			"Plugins Manager"
+static char *STR_PLUGIN_MANAGER_DESC;
+#define STR_PLUGIN_MANAGER_DESC_DEFAULT		"Manage your plugins stored in /dev_hdd0/plugins."
+static char *STR_UPD_MGZ;
+#define STR_UPD_MGZ_DEFAULT					"Update ManaGunZ"
+static char *STR_UPD_MGZ_DESC;
+#define STR_UPD_MGZ_DESC_DEFAULT			"Download and install the latest version of ManaGunZ."
+static char *STR_GAME_PATHS;
+#define STR_GAME_PATHS_DEFAULT				"Game backup paths"
+static char *STR_GAME_PATHS_DESC;
+#define STR_GAME_PATHS_DESC_DEFAULT			"Configure the name of directories where ManaGunZ will find your backups."
+static char *STR_XMB_PRIO;
+#define STR_XMB_PRIO_DEFAULT				"XMB Priority"
+static char *STR_XMB_PRIO_DESC;
+#define STR_XMB_PRIO_DESC_DEFAULT			"The icon of ManaGunZ in XMB will be displayed at the top. It will be effective after the next system boot."
+static char *STR_HELP;
+#define STR_HELP_DEFAULT					"Show help"
+static char *STR_HELP_DESC;
+#define STR_HELP_DESC_DEFAULT				"Display the sentences you are reading here."
+static char *STR_COLOR_1;
+#define STR_COLOR_1_DEFAULT					"Color 1"
+static char *STR_COLOR_2;
+#define STR_COLOR_2_DEFAULT					"Color 2"
+static char *STR_COLOR_3;
+#define STR_COLOR_3_DEFAULT					"Color 3"
+static char *STR_COLOR_4;
+#define STR_COLOR_4_DEFAULT					"Color 4"
+static char *STR_COLOR_DESC;
+#define STR_COLOR_DESC_DEFAULT				"Change the colors used by ManaGunZ."
+static char *STR_UI_SETTINGS;
+#define STR_UI_SETTINGS_DEFAULT				"User interface settings"
+static char *STR_UI;
+#define STR_UI_DEFAULT						"User interface"
+static char *STR_UI_DESC;
+#define STR_UI_DESC_DEFAULT					"Change the interface."
+static char *STR_SIDE_MENU;
+#define STR_SIDE_MENU_DEFAULT				"Game SideMenu"
+static char *STR_SIDE_MENU_DESC;
+#define STR_SIDE_MENU_DESC_DEFAULT			"Display the game menu in the right side of the screen."
+static char *STR_SHOW_PIC1;
+#define STR_SHOW_PIC1_DEFAULT				"Show PIC1"
+static char *STR_SHOW_PIC1_DESC;
+#define STR_SHOW_PIC1_DESC_DEFAULT			"Display the background picture of the current selected games 'PIC1'. Use R1 with the UI LIST and GRID to display it."
+static char *STR_SHOW_COVER;
+#define STR_SHOW_COVER_DEFAULT				"Show Cover"
+static char *STR_SHOW_COVER_DESC;
+#define STR_SHOW_COVER_DESC_DEFAULT			"Display the game cover."
+static char *STR_SHOW_GAMECASE;
+#define STR_SHOW_GAMECASE_DEFAULT			"Show Game Case"
+static char *STR_SHOW_GAMECASE_DESC;
+#define STR_SHOW_GAMECASE_DESC_DEFAULT		"Display the game cover with the game case."
+static char *STR_SHOW_ICON0;
+#define STR_SHOW_ICON0_DEFAULT				"Show ICON0"
+static char *STR_SHOW_ICON0_DESC;
+#define STR_SHOW_ICON0_DESC_DEFAULT			"Display the main picture of the game 'ICON0'."
+static char *STR_GRID_TYPE;
+#define STR_GRID_TYPE_DEFAULT				"Grid type"
+static char *STR_GRID_TYPE_DESC;
+#define STR_GRID_TYPE_DESC_DEFAULT			"Choose how to make the grid move."
+static char *STR_SCROLL;
+#define STR_SCROLL_DEFAULT					"Scroll"
+static char *STR_PAGE;	
+#define STR_PAGE_DEFAULT					"Page"
+static char *STR_DIRECTION;
+#define STR_DIRECTION_DEFAULT				"Direction"
+static char *STR_DIRECTION_DESC;
+#define STR_DIRECTION_DESC_DEFAULT			"Choose in which direction the grid will move."
+static char *STR_VERTICAL;
+#define STR_VERTICAL_DEFAULT				"Vertical"
+static char *STR_HORIZONTAL;
+#define STR_HORIZONTAL_DEFAULT				"Horizontal"
+static char *STR_ANIMATED;
+#define STR_ANIMATED_DEFAULT				"Animated"
+static char *STR_ANIMATED_DESC;
+#define STR_ANIMATED_DESC_DEFAULT			"Make the grid's moves sliding."
+static char *STR_KEEP_PROP;
+#define STR_KEEP_PROP_DEFAULT				"Keep proportion"
+static char *STR_KEEP_PROP_DESC;
+#define STR_KEEP_PROP_DESC_DEFAULT			"Keep the original aspect ratio of the ICON0."
+static char *STR_NB_COL;	
+#define STR_NB_COL_DEFAULT					"Number of columns"
+static char *STR_NB_COL_DESC;	
+#define STR_NB_COL_DESC_DEFAULT				"Choose the number of columns of the grid."
+static char *STR_NB_LINE;	
+#define STR_NB_LINE_DEFAULT					"Number of lines"
+static char *STR_NB_LINE_DESC;	
+#define STR_NB_LINE_DESC_DEFAULT			"Choose the number of lines of the grid."
+static char *STR_INVERSE;	
+#define STR_INVERSE_DEFAULT					"Inverse button"
+static char *STR_INVERSE_DESC;	
+#define STR_INVERSE_DESC_DEFAULT			"Inverse the buttons right and left.​"
+static char *STR_3D;	
+#define STR_3D_DEFAULT						"3D"
+static char *STR_3D_DESC;	
+#define STR_3D_DESC_DEFAULT					"Display the menu with 3D models of gamecases."
+static char *STR_ADD;	
+#define STR_ADD_DEFAULT						"Add"
+static char *STR_LOAD;	
+#define STR_LOAD_DEFAULT					"Load"
+static char *STR_CHANGE;	
+#define STR_CHANGE_DEFAULT					"Change"
+static char *STR_COLOR;	
+#define STR_COLOR_DEFAULT					"Color"
+static char *STR_RESET;	
+#define STR_RESET_DEFAULT					"Reset"
+static char *STR_FAILED;
+#define STR_FAILED_DEFAULT					"Failed"
+static char *STR_DONE;
+#define STR_DONE_DEFAULT					"Done"
+static char *STR_OPEN;
+#define STR_OPEN_DEFAULT					"Open"
+static char *STR_CLOSE;
+#define STR_CLOSE_DEFAULT					"Close"
+static char *STR_OPTION;
+#define STR_OPTION_DEFAULT					"Option"
+static char *STR_SELECT;
+#define STR_SELECT_DEFAULT					"Select"
+static char *STR_WINDOW;
+#define STR_WINDOW_DEFAULT					"Window"
+static char *STR_CLICK;
+#define STR_CLICK_DEFAULT					"Click"
+static char *STR_CURSOR;
+#define STR_CURSOR_DEFAULT					"Cursor"
+static char *STR_NEXT;
+#define STR_NEXT_DEFAULT					"Next"
+static char *STR_PREVIOUS;
+#define STR_PREVIOUS_DEFAULT				"Previous"
+static char *STR_SET_COLOR;
+#define STR_SET_COLOR_DEFAULT				"Set color"
+static char *STR_HIDETV;
+#define STR_HIDETV_DEFAULT					"Hide TV screen test"
+static char *STR_SHOWTV;
+#define STR_SHOWTV_DEFAULT					"Show TV screen test"
+static char *STR_MOVE_TO_PLUGINS;
+#define STR_MOVE_TO_PLUGINS_DEFAULT			"Move to /dev_hdd0/plugins"
+static char *STR_ASK_PLUGINS;
+#define STR_ASK_PLUGINS_DEFAULT				"To use the plugin manager, the plugins must be in '/dev_hdd0/plugins'. Do you accept to use this folder ?"
+static char *STR_CHANGE_VALUE;
+#define STR_CHANGE_VALUE_DEFAULT			"Change value"
+static char *STR_LOAD_IDPS_LV2;
+#define STR_LOAD_IDPS_LV2_DEFAULT			"Load IDPS from lv2"
+static char *STR_LOAD_IDPS_EID5;
+#define STR_LOAD_IDPS_EID5_DEFAULT			"Load IDPS from EID5"
+
+
+//***********************************************************
+// Functions
+//***********************************************************
 
 u8 Copy(char *src, char *dst);
 void Delete(char* path);
@@ -889,6 +1510,34 @@ void end_load_PIC1();
 int SaveFile(char *path, char *mem, int file_size);
 void read_setting();
 void write_setting();
+void Draw_input();
+void cursor_input();
+
+//***********************************************************
+// Ugly SpeedFix : Original standard I/O function are slow
+//***********************************************************
+
+//todo ftell fseek fopen fclose fgetc fputc fgets fputs with ps3ntfs
+
+size_t FAKE_fread(void *ptr, size_t size, size_t count, FILE* fp)
+{
+	int fd = fileno(fp);
+	lseek(fd, ftell(fp), SEEK_SET);
+	size_t rd = read(fd, ptr, size*count);
+	fseek(fp, rd, SEEK_CUR); // ftell can be used after...
+	return rd;
+}
+
+size_t FAKE_fwrite(const void * ptr, size_t size, size_t count, FILE* fp)
+{
+	int fd = fileno(fp);
+	lseek(fd, ftell(fp), SEEK_SET);
+	size_t wrote = write(fd, ptr, size*count);
+	fseek(fp, wrote, SEEK_CUR); // ftell can be used after...
+	return wrote;
+}
+#define fread FAKE_fread
+#define fwrite FAKE_fwrite
 
 //*******************************************************
 // 
@@ -939,8 +1588,8 @@ void Init_Graph()
 		(float) ((sy - sy * psy) / 2.0), 
 		(float) ((sx * psx) / X_MAX),	// 2D scale
 		(float) ((sy * psy) / Y_MAX),
-		(float) ((sx / 1920.0) * psx),  // 3D scale
-		(float) ((sy / 1080.0) * psy));
+		(float) ((sx / X_MAX) * psx),  // 3D scale
+		(float) ((sy / Y_MAX) * psy));
 
 }
 
@@ -956,8 +1605,8 @@ void adjust_screen()
 		(float) ((sy - sy * psy) / 2.0), 
 		(float) ((sx * psx) / X_MAX),	// 2D scale
 		(float) ((sy * psy) / Y_MAX),
-		(float) ((sx / 1920.0) * psx),  // 3D scale
-		(float) ((sy / 1080.0) * psy));
+		(float) ((sx / X_MAX) * psx),  // 3D scale
+		(float) ((sy / Y_MAX) * psy));
 }
 
 //*******************************************************
@@ -1015,8 +1664,7 @@ void Draw_Box(float x, float y, float z, float r, float w, float h, u32 rgba, u8
 	}
 	else {
 		int t;
-		float PI = 3.14159265;
-		tiny3d_SetPolygon(TINY3D_POLYGON);
+				tiny3d_SetPolygon(TINY3D_POLYGON);
 		tiny3d_VertexColor(rgba);
 		x+=r;
 		y+=r;
@@ -1096,12 +1744,40 @@ u8 exist(char *path)
 	return YES;
 }
 
+char *GetExtention(char *path)
+{
+    int n = strlen(path);
+    int m = n;
+
+    while(m > 1 && path[m] != '.' && path[m] != '/') m--;
+    
+    if(strcmp(&path[m], ".0")==0) { // splitted
+       m--;
+       while(m > 1 && path[m] != '.' && path[m] != '/') m--; 
+    }
+    
+    if(path[m] == '.') return &path[m];
+
+    return &path[n];
+}
+
+void RemoveExtention(char *path)
+{
+    char *extention = GetExtention(path);
+	
+    int le = strlen(extention);
+    int lp = strlen(path);
+    
+    while(le>0) {path[lp-le]=0; le--;}
+}
+
+
 u8 imgLoadFromFile(char *imgPath, imgData *out)
 {
 	int file_size = 0;
 	
 	out->bmp_out = NULL;
-
+	
 	if(path_info(imgPath) == _NOT_EXIST) return FAILED;
 
 	char *buff = LoadFile((char *) imgPath, &file_size);
@@ -1308,6 +1984,32 @@ void Load_FM()
 	if(loaded == YES) end_loading();
 }
 
+void Read_COVER3D(int position)
+{
+	char temp[128];
+	char title_id[20];
+	
+	if(Get_ID(list_game_path[position], list_game_platform[position], title_id) == FAILED) {
+		print_load("Error: Read_COVER3D : Get_ID %s", list_game_path[position]);
+		return;
+	}
+
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.JPG", ManaGunZ_id, title_id);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.jpg", ManaGunZ_id, title_id);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.PNG", ManaGunZ_id, title_id);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.png", ManaGunZ_id, title_id);
+	if(path_info(temp) == _FILE) goto read;
+	
+	return;
+read:
+
+	if( imgLoadFromFile(temp, &COVER[position]) == 0) return;
+	
+}
+
 void Read_COVER(int position)
 {
 	char temp[128];
@@ -1403,7 +2105,7 @@ void Load_COVER()
 	
 	COVER_Loaded = NO;
 	
-	if(Show_COVER==YES) {
+	if(Show_COVER==YES || (UI_position==FLOW && FLOW_3D==YES) ) {
 		Load_GamePIC_progbar=0;
 		for(i=0; i<=game_number; i++) {
 			Load_GamePIC_progbar = (i*100)/game_number;
@@ -1416,6 +2118,21 @@ void Load_COVER()
 				COVER_offset[i] = tiny3d_TextureOffset(texture_pointer);
 				texture_pointer += ((COVER[i].pitch * COVER[i].height + 15) & ~15) / 4;
 			} else COVER_offset[i] = 0;
+		}
+		if(UI_position==FLOW && FLOW_3D==YES) {
+			Load_GamePIC_progbar=0;
+			for(i=0; i<=game_number; i++) {
+				Load_GamePIC_progbar = (i*100)/game_number;
+				if(Load_GamePIC==NO) return;
+				Read_COVER3D(i);
+				if(Load_GamePIC==NO) return;
+				if(COVER3D[i].bmp_out) {
+					memcpy(texture_pointer, COVER3D[i].bmp_out, COVER3D[i].pitch * COVER3D[i].height);
+					free(COVER3D[i].bmp_out);
+					COVER3D_offset[i] = tiny3d_TextureOffset(texture_pointer);
+					texture_pointer += ((COVER3D[i].pitch * COVER3D[i].height + 15) & ~15) / 4;
+				} else COVER3D_offset[i] = 0;
+			}
 		}
 		COVER_Loaded = YES;
 	}
@@ -1432,6 +2149,8 @@ void Load_GamePIC_thread(void *unused)
 	memset(ICON0, 0, sizeof(ICON0));
 	memset(COVER_offset, 0, sizeof(COVER_offset));
 	memset(COVER, 0, sizeof(COVER));
+	memset(COVER3D_offset, 0, sizeof(COVER3D_offset));
+	memset(COVER3D, 0, sizeof(COVER3D));
 	FM_PIC_offset = 0;
 	
 	Load_ICON0();
@@ -1845,10 +2564,10 @@ void Extract_IconParam()
 		}
 		
 		strcpy(ICON_OUT, list_game_path[i]);
-		strtok(ICON_OUT, ".");
+		RemoveExtention(ICON_OUT);
 		strcat(ICON_OUT, ".PNG");
 		strcpy(PARAM_OUT, list_game_path[i]);
-		strtok(PARAM_OUT, ".");
+		RemoveExtention(PARAM_OUT);
 		strcat(PARAM_OUT, ".SFO");
 		
 		if(path_info(ICON_OUT)==_NOT_EXIST) {
@@ -1859,7 +2578,7 @@ void Extract_IconParam()
 				if(GetParamSFO("TITLE", list_game_title[i], i, NULL)==FAILED) {
 					strcpy(list_game_title[i], list_game_path[i]);
 					strcpy(list_game_title[i], &strrchr(list_game_title[i], '/')[1]);
-					strtok(list_game_title[i], ".");
+					RemoveExtention(list_game_title[i]);
 				}
 			}
 		}
@@ -1922,7 +2641,11 @@ void Draw_ICON0(int pos, float x, float y, float z,  float w, float h)
 	}
 	else Draw_DEFAULT(pos, x, y, z, w, h);
 	
-	
+}
+
+void DrawFromCenter_ICON0(int pos, float x, float y, float z,  float w, float h)
+{
+	Draw_ICON0(pos, x-w/2, y-h/2, z, w, h);
 }
 
 void Draw_MMTHM_XMB(float x , float y, float z, float w, float h,  u8 n_icon)
@@ -2120,7 +2843,7 @@ void init_timer(u8 i)
 	time_n_s[i]=0;
 	time_n_e[i]=0;
 }
-							
+			
 u8 is_apng(char *file)
 {
 	FILE* f;
@@ -2135,21 +2858,21 @@ u8 is_apng(char *file)
 	
 	f=fopen(file, "rb");
 	if(f==NULL) return NO;
-	
+
 	fread(&magic, 1, 8, f);
 	
 	if(magic != MAGIC_PNG) { 
 		//print_load("Error : Magic number is not correct");
 		fclose(f); return NO;
 	}
-	
+
 	fread(&ch, 1, 8, f); 
 	
 	if(ch.type != IHDR) {
 		//print_load("Error : ch.type != IHDR");
 		fclose(f); return NO;
 	}
-	
+
 	do { // loop to ignore unknown chunk
 		pos = ftell(f) + ch.length + 4; // length of chunk_data + CRC
 		
@@ -2162,7 +2885,7 @@ u8 is_apng(char *file)
 		}
 		
 	} while (ch.type != IDAT);
-		
+	
 	fclose(f);
 	
 	return NO;
@@ -2217,7 +2940,7 @@ u8 Load_APNG(char* filename)
 			//print_load("Error : no actl");
 			fclose(f);
 			return NO;
-		} // not animated
+		} // not GRID_ANIMATED
 	}
 	
 
@@ -2464,7 +3187,7 @@ u32 *Load_XMB_BG(char* filename, u32* texture_pointer)
 			//print_load("Error : no actl");
 			fclose(f);
 			return texture_pointer;
-		} // not animated
+		} // not GRID_ANIMATED
 	}
 
 	fread(&ad, 1, ch.length, f);
@@ -2686,7 +3409,7 @@ int Build_APNG(char (*pngs)[512], uint32_t nb, char *apng, float time)
 		if(in == NULL) {
 			fclose(out);
 			Delete(apng);
-			printf("Error : Failed to open %s", pngs[i]);
+			print_load("Error : Failed to open %s", pngs[i]);
 			return FAILED;
 		}
 		
@@ -2953,69 +3676,37 @@ u8 make_ABG(char *dir_path, char *file_out)
 //	LANGUAGE
 //###################################################
 
-#define MAX_LANG 32
-
-/*
-	0x0=German
-	0x1=English (US)
-	0x2=Spanish
-	0x3=French
-	0x4=Italian
-	0x5=Dutch
-	0x6=Portuguese (Por)
-	0x7=Russian
-	0x8=Japanese
-	0x9=Korean
-	0xA=Chinese (traditional)
-	0xB=Chinese (simplified)
-	0xC=Finnish
-	0xD=Swedish
-	0xE=Danish
-	0xF=Norwegian
-	0x10=Polish
-	0x11=Portuguese (Bra)
-	0x12=English (UK)
-	0x13=Turkish
-*/
-
-FILE *flang=NULL;
-uint8_t lang;
-uint8_t lang_N;
-uint8_t lang_code = 0xFF;
-
-char *STR_LANGUAGE[MAX_LANG];
-char *STR_LANGCODE[MAX_LANG];
-char *lang_path[MAX_LANG];
-
-
-char *STR_EIDRK;
-
-
-char *language(const char *str_name)
+char *strcpy_malloc(const char *STR_DEFAULT)
 {
+	char *STR = malloc( strlen(STR_DEFAULT)+1);
+	if(STR==NULL) return NULL;
+	strcpy(STR, STR_DEFAULT);
+	return STR;
+}
+
+char *language(FILE *flang, const char *str_name, const char *str_default)
+{
+	if(flang==NULL) return strcpy_malloc(str_default);
+	
 	int c;
 	int i;
 	
 	char str[255];
-	
-	if(flang == NULL) {
-		flang = fopen(lang_path[lang], "rb");	
-		if(flang == NULL) return FAILED;
-	}
 	
 	uint8_t do_retry = YES;
 		
 	int l = strlen(str_name);
 	
 retry:
-
 	do {
 		c = fgetc(flang);
 		for(i=0; i < l; i++)
 		{
 			if( c != str_name[i]) break;
-			else if (i==l-1)
+			else if (i==l-1) 
 			{
+				c = fgetc(flang);
+				if(c != '\t' && c != ' ') break;
 				
 				while(c != '{') {
 					c = fgetc(flang);
@@ -3031,8 +3722,8 @@ retry:
 					if (c == '}') {
 						str[str_len] = '\0';
 						
-						char *ret = (char *) malloc((size_t) strlen+1);
-						strcpy(ret, str);
+						char *ret = (char *) malloc((size_t) str_len+1);
+						memcpy(ret, str, str_len+1);
 						return ret;
 					}
 					
@@ -3047,13 +3738,11 @@ retry:
 							str_len++;
 						} 
 						else if (c == 'x') {
-							c = fgetc(flang);
-							uint8_t val=0, val_tmp=0;
-							sscanf((char*) &c, "%hX", (short unsigned int *) &val_tmp);
-							val = val_tmp*0x10;
-							c = fgetc(flang);
-							sscanf((char*) &c, "%hX", (short unsigned int *) &val_tmp);
-							val += val_tmp;
+							char Number[2];
+							Number[0] = fgetc(flang);
+							Number[1] = fgetc(flang);
+							short unsigned int val=0;
+							sscanf(Number, "%hX", &val);
 							str[str_len] = val;
 							str_len++;
 						}
@@ -3079,7 +3768,7 @@ retry:
 	
 	if(do_retry == YES) {do_retry=NO; fseek(flang, 0, SEEK_SET); goto retry;}
 
-	return NULL;
+	return strcpy_malloc(str_default);
 }
 
 void init_lang()
@@ -3093,7 +3782,7 @@ void init_lang()
 	STR_LANGCODE[lang_N] = (char *)  malloc((size_t)2);
 	
 	strcpy(STR_LANGUAGE[lang_N], "English (default)");
-	STR_LANGCODE[lang_N][0] = 0xFF;
+	STR_LANGCODE[lang_N][0] = LANG_DEFAULT;
 
 	lang_N++;
 	
@@ -3110,20 +3799,18 @@ void init_lang()
 		
 		sprintf(TXTPath, "%s/%s", LOCPath, dir->d_name);
 		
-		flang=NULL;
-		
-		flang = fopen(TXTPath, "rb");
+		FILE *flang = fopen(TXTPath, "rb");
 		if(flang==NULL) continue;
 		
-		
-		STR_LANGUAGE[lang_N] = language("STR_LANGUAGE");
+		STR_LANGUAGE[lang_N] = language(flang, "STR_LANGUAGE", NULL);
 		
 		if(STR_LANGUAGE[lang_N] != NULL ) {
-			STR_LANGCODE[lang_N] = language("STR_LANGCODE");
+			STR_LANGCODE[lang_N] = language(flang, "STR_LANGCODE", NULL);
 			FREE(lang_path[lang_N]);
 			lang_path[lang_N] = (char *) malloc(strlen(TXTPath)+1);
 			strcpy(lang_path[lang_N], TXTPath);
 			lang_N++;
+			
 		}
 		
 		FCLOSE(flang);
@@ -3135,50 +3822,581 @@ void init_lang()
 void update_lang()
 {
 	
-	FREE(STR_EIDRK);
-	STR_EIDRK = language("STR_EIDRK");
+	FILE *flang=NULL;
+	if(lang>0) flang = fopen(lang_path[lang], "r");	
 	
+	FREE(STR_LANG);
+	STR_LANG = language(flang, "STR_LANG", STR_LANG_DEFAULT);
+	FREE(STR_LANG_DESC);
+	STR_LANG_DESC = language(flang, "STR_LANG_DESC", STR_LANG_DESC_DEFAULT);
+	FREE(STR_GATHERING);
+	STR_GATHERING = language(flang, "STR_GATHERING", STR_GATHERING_DEFAULT);
+	FREE(STR_COPYING);
+	STR_COPYING = language(flang, "STR_COPYING", STR_COPYING_DEFAULT);
+	FREE(STR_FROM);
+	STR_FROM = language(flang, "STR_FROM", STR_FROM_DEFAULT);
+	FREE(STR_TO);
+	STR_TO = language(flang, "STR_TO", STR_TO_DEFAULT);
+	FREE(STR_FILES);
+	STR_FILES = language(flang, "STR_FILES", STR_FILES_DEFAULT);
+	FREE(STR_DIRS);
+	STR_DIRS = language(flang, "STR_DIRS", STR_DIRS_DEFAULT);
+	FREE(STR_UNKNOWN);
+	STR_UNKNOWN = language(flang, "STR_UNKNOWN", STR_UNKNOWN_DEFAULT);
+	FREE(STR_FILE);
+	STR_FILE = language(flang, "STR_FILE", STR_FILE_DEFAULT);
+	FREE(STR_CANCEL);
+	STR_CANCEL = language(flang, "STR_CANCEL", STR_CANCEL_DEFAULT);
+	FREE(STR_TURNOFF_YES);
+	STR_TURNOFF_YES = language(flang, "STR_TURNOFF_YES", STR_TURNOFF_YES_DEFAULT);
+	FREE(STR_TURNOFF_NO);
+	STR_TURNOFF_NO = language(flang, "STR_TURNOFF_NO", STR_TURNOFF_NO_DEFAULT);
+	FREE(STR_CANCELLED);
+	STR_CANCELLED = language(flang, "STR_CANCELLED", STR_CANCELLED_DEFAULT);
+	FREE(STR_UNIT);
+	STR_UNIT = language(flang, "STR_UNIT", STR_UNIT_DEFAULT);
+	FREE(STR_TOTALSIZE);
+	STR_TOTALSIZE = language(flang, "STR_TOTALSIZE", STR_TOTALSIZE_DEFAULT);
+	FREE(STR_HIDELOGS);
+	STR_HIDELOGS = language(flang, "STR_HIDELOGS", STR_HIDELOGS_DEFAULT);
+	FREE(STR_SHOWLOGS);
+	STR_SHOWLOGS = language(flang, "STR_SHOWLOGS", STR_SHOWLOGS_DEFAULT);
+	FREE(STR_BOOST);
+	STR_BOOST = language(flang, "STR_BOOST", STR_BOOST_DEFAULT);
+	FREE(STR_GAMEMENU);
+	STR_GAMEMENU = language(flang, "STR_GAMEMENU", STR_GAMEMENU_DEFAULT);
+	FREE(STR_SETTINGS);
+	STR_SETTINGS = language(flang, "STR_SETTINGS", STR_SETTINGS_DEFAULT);
+	FREE(STR_MOUNTGAME);
+	STR_MOUNTGAME = language(flang, "STR_MOUNTGAME", STR_MOUNTGAME_DEFAULT);
+	FREE(STR_FILTER);
+	STR_FILTER = language(flang, "STR_FILTER", STR_FILTER_DEFAULT);
+	FREE(STR_FAVORITE);
+	STR_FAVORITE = language(flang, "STR_FAVORITE", STR_FAVORITE_DEFAULT);
+	FREE(STR_FILEMANAGER);
+	STR_FILEMANAGER = language(flang, "STR_FILEMANAGER", STR_FILEMANAGER_DEFAULT);
+	FREE(STR_HOLD);
+	STR_HOLD = language(flang, "STR_HOLD", STR_HOLD_DEFAULT);
+	FREE(STR_BACKTOXMB);
+	STR_BACKTOXMB = language(flang, "STR_BACKTOXMB", STR_BACKTOXMB_DEFAULT);
+	FREE(STR_GAME_PROP);
+	STR_GAME_PROP = language(flang, "STR_GAME_PROP", STR_GAME_PROP_DEFAULT);
+	FREE(STR_GAME);
+	STR_GAME = language(flang, "STR_GAME", STR_GAME_DEFAULT);
+	FREE(STR_GAME_PATH);
+	STR_GAME_PATH = language(flang, "STR_GAME_PATH", STR_GAME_PATH_DEFAULT);
+	FREE(STR_GAME_FORMAT);
+	STR_GAME_FORMAT = language(flang, "STR_GAME_FORMAT", STR_GAME_FORMAT_DEFAULT);
+	FREE(STR_GAME_SIZE);
+	STR_GAME_SIZE = language(flang, "STR_GAME_SIZE", STR_GAME_SIZE_DEFAULT);
+	FREE(STR_SYSVERS);
+	STR_SYSVERS = language(flang, "STR_SYSVERS", STR_SYSVERS_DEFAULT);
+	FREE(STR_GAMEID);
+	STR_GAMEID = language(flang, "STR_GAMEID", STR_GAMEID_DEFAULT);
+	FREE(STR_ELFCRC);
+	STR_ELFCRC = language(flang, "STR_ELFCRC", STR_ELFCRC_DEFAULT);
+	FREE(STR_ELFCRCO);
+	STR_ELFCRCO = language(flang, "STR_ELFCRCO", STR_ELFCRCO_DEFAULT);
+	FREE(STR_BACK);
+	STR_BACK = language(flang, "STR_BACK", STR_BACK_DEFAULT);
+	FREE(STR_ENTER);
+	STR_ENTER = language(flang, "STR_ENTER", STR_ENTER_DEFAULT);
+	FREE(STR_UPDATE_FOUND);
+	STR_UPDATE_FOUND = language(flang, "STR_UPDATE_FOUND", STR_UPDATE_FOUND_DEFAULT);
+	FREE(STR_UPDATE);
+	STR_UPDATE = language(flang, "STR_UPDATE", STR_UPDATE_DEFAULT);
+	FREE(STR_SIZE);
+	STR_SIZE = language(flang, "STR_SIZE", STR_SIZE_DEFAULT);
+	FREE(SYSTEM);
+	SYSTEM = language(flang, "SYSTEM", SYSTEM_DEFAULT);
+	FREE(STR_DL);
+	STR_DL = language(flang, "STR_DL", STR_DL_DEFAULT);
+	FREE(STR_DL_ALL);
+	STR_DL_ALL = language(flang, "STR_DL_ALL", STR_DL_ALL_DEFAULT);
+	FREE(STR_UNPLUG);
+	STR_UNPLUG = language(flang, "STR_UNPLUG", STR_UNPLUG_DEFAULT);
+	FREE(STR_PATH);
+	STR_PATH = language(flang, "STR_PATH", STR_PATH_DEFAULT);
+	FREE(STR_TYPE);
+	STR_TYPE = language(flang, "STR_TYPE", STR_TYPE_DEFAULT);
+	FREE(STR_FOLDER);
+	STR_FOLDER = language(flang, "STR_FOLDER", STR_FOLDER_DEFAULT);
+	FREE(STR_DIR);
+	STR_DIR = language(flang, "STR_DIR", STR_DIR_DEFAULT);
+	FREE(STR_MULT);
+	STR_MULT = language(flang, "STR_MULT", STR_MULT_DEFAULT);
+	FREE(STR_THM_SETTINGS);
+	STR_THM_SETTINGS = language(flang, "STR_THM_SETTINGS", STR_THM_SETTINGS_DEFAULT);
+	FREE(STR_THM);
+	STR_THM = language(flang, "STR_THM", STR_THM_DEFAULT);
+	FREE(STR_THM_DESC);
+	STR_THM_DESC = language(flang, "STR_THM_DESC", STR_THM_DESC_DEFAULT);
+	FREE(STR_CREATE);
+	STR_CREATE = language(flang, "STR_CREATE", STR_CREATE_DEFAULT);
+	FREE(STR_ZOOM_OUT);
+	STR_ZOOM_OUT = language(flang, "STR_ZOOM_OUT", STR_ZOOM_OUT_DEFAULT);
+	FREE(STR_ZOOM_IN);
+	STR_ZOOM_IN = language(flang, "STR_ZOOM_IN", STR_ZOOM_IN_DEFAULT);
+	FREE(STR_MOVE_FRAME);
+	STR_MOVE_FRAME = language(flang, "STR_MOVE_FRAME", STR_MOVE_FRAME_DEFAULT);
+	FREE(STR_CHECK);
+	STR_CHECK = language(flang, "STR_CHECK", STR_CHECK_DEFAULT);
+	FREE(STR_UNCHECK);
+	STR_UNCHECK = language(flang, "STR_UNCHECK", STR_UNCHECK_DEFAULT);
+	FREE(STR_GAME_OPTION);
+	STR_GAME_OPTION = language(flang, "STR_GAME_OPTION", STR_GAME_OPTION_DEFAULT);
+	FREE(STR_ADD_FAV);
+	STR_ADD_FAV = language(flang, "STR_ADD_FAV", STR_ADD_FAV_DEFAULT);
+	FREE(STR_REM_FAV);
+	STR_REM_FAV = language(flang, "STR_REM_FAV", STR_REM_FAV_DEFAULT);
+	FREE(STR_FAV_DESC);
+	STR_FAV_DESC = language(flang, "STR_FAV_DESC", STR_FAV_DESC_DEFAULT);
+	FREE(STR_RENAME);
+	STR_RENAME = language(flang, "STR_RENAME", STR_RENAME_DEFAULT);
+	FREE(STR_RENAME_DESC);
+	STR_RENAME_DESC = language(flang, "STR_RENAME_DESC", STR_RENAME_DESC_DEFAULT);
+	FREE(STR_DELETE);
+	STR_DELETE = language(flang, "STR_DELETE", STR_DELETE_DEFAULT);
+	FREE(STR_DELETE_DESC);
+	STR_DELETE_DESC = language(flang, "STR_DELETE_DESC", STR_DELETE_DESC_DEFAULT);
+	FREE(STR_COPY);
+	STR_COPY = language(flang, "STR_COPY", STR_COPY_DEFAULT);
+	FREE(STR_COPY_DESC);
+	STR_COPY_DESC = language(flang, "STR_COPY_DESC", STR_COPY_DESC_DEFAULT);
+	FREE(STR_CREATE_ICON0);
+	STR_CREATE_ICON0 = language(flang, "STR_CREATE_ICON0", STR_CREATE_ICON0_DEFAULT);
+	FREE(STR_CREATE_ICON0_DESC);
+	STR_CREATE_ICON0_DESC = language(flang, "STR_CREATE_ICON0_DESC", STR_CREATE_ICON0_DESC_DEFAULT);
+	FREE(STR_REST_PNACH);
+	STR_REST_PNACH = language(flang, "STR_REST_PNACH", STR_REST_PNACH_DEFAULT);
+	FREE(STR_REST_PNACH_DESC);
+	STR_REST_PNACH_DESC = language(flang, "STR_REST_PNACH_DESC", STR_REST_PNACH_DESC_DEFAULT);
+	FREE(STR_APPLY_PNACH);
+	STR_APPLY_PNACH = language(flang, "STR_APPLY_PNACH", STR_APPLY_PNACH_DEFAULT);
+	FREE(STR_APPLY_PNACH_DESC);
+	STR_APPLY_PNACH_DESC = language(flang, "STR_APPLY_PNACH_DESC", STR_APPLY_PNACH_DESC_DEFAULT);
+	FREE(STR_DISABLE_WS);
+	STR_DISABLE_WS = language(flang, "STR_DISABLE_WS", STR_DISABLE_WS_DEFAULT);
+	FREE(STR_ENABLE_WS);
+	STR_ENABLE_WS = language(flang, "STR_ENABLE_WS", STR_ENABLE_WS_DEFAULT);
+	FREE(STR_WS_DESC);
+	STR_WS_DESC = language(flang, "STR_WS_DESC", STR_WS_DESC_DEFAULT);
+	FREE(STR_DISABLE_480P);
+	STR_DISABLE_480P = language(flang, "STR_DISABLE_480P", STR_DISABLE_480P_DEFAULT);
+	FREE(STR_ENABLE_480P);
+	STR_ENABLE_480P = language(flang, "STR_ENABLE_480P", STR_ENABLE_480P_DEFAULT);
+	FREE(STR_480P_DESC);
+	STR_480P_DESC = language(flang, "STR_480P_DESC", STR_480P_DESC_DEFAULT);
+	FREE(STR_DISABLE_YFIX);
+	STR_DISABLE_YFIX = language(flang, "STR_DISABLE_YFIX", STR_DISABLE_YFIX_DEFAULT);
+	FREE(STR_ENABLE_YFIX);
+	STR_ENABLE_YFIX = language(flang, "STR_ENABLE_YFIX", STR_ENABLE_YFIX_DEFAULT);
+	FREE(STR_YFIX_DESC);
+	STR_YFIX_DESC = language(flang, "STR_YFIX_DESC", STR_YFIX_DESC_DEFAULT);
+	FREE(STR_DISABLE_FMVSKIP);
+	STR_DISABLE_FMVSKIP = language(flang, "STR_DISABLE_FMVSKIP", STR_DISABLE_FMVSKIP_DEFAULT);
+	FREE(STR_ENABLE_FMVSKIP);
+	STR_ENABLE_FMVSKIP = language(flang, "STR_ENABLE_FMVSKIP", STR_ENABLE_FMVSKIP_DEFAULT);
+	FREE(STR_FMVSKIP_DESC);
+	STR_FMVSKIP_DESC = language(flang, "STR_FMVSKIP_DESC", STR_FMVSKIP_DESC_DEFAULT);
+	FREE(STR_DISABLE_NETEMU);
+	STR_DISABLE_NETEMU = language(flang, "STR_DISABLE_NETEMU", STR_DISABLE_NETEMU_DEFAULT);
+	FREE(STR_ENABLE_NETEMU);
+	STR_ENABLE_NETEMU = language(flang, "STR_ENABLE_NETEMU", STR_ENABLE_NETEMU_DEFAULT);
+	FREE(STR_NETEMU_DESC);
+	STR_NETEMU_DESC = language(flang, "STR_NETEMU_DESC", STR_NETEMU_DESC_DEFAULT);
+	FREE(STR_CREATE_CONFIG);
+	STR_CREATE_CONFIG = language(flang, "STR_CREATE_CONFIG", STR_CREATE_CONFIG_DEFAULT);
+	FREE(STR_CREATE_CONFIG_DESC);
+	STR_CREATE_CONFIG_DESC = language(flang, "STR_CREATE_CONFIG_DESC", STR_CREATE_CONFIG_DESC_DEFAULT);
+	FREE(STR_NONE);
+	STR_NONE = language(flang, "STR_NONE", STR_NONE_DEFAULT);
+	FREE(STR_CHECK_MD5);
+	STR_CHECK_MD5 = language(flang, "STR_CHECK_MD5", STR_CHECK_MD5_DEFAULT);
+	FREE(STR_PROPS);
+	STR_PROPS = language(flang, "STR_PROPS", STR_PROPS_DEFAULT);
+	FREE(STR_PROPS_DESC);
+	STR_PROPS_DESC = language(flang, "STR_PROPS_DESC", STR_PROPS_DESC_DEFAULT);
+	FREE(STR_ASK_DEL);
+	STR_ASK_DEL = language(flang, "STR_ASK_DEL", STR_ASK_DEL_DEFAULT);
+	FREE(STR_GAME_SETTINGS);
+	STR_GAME_SETTINGS = language(flang, "STR_GAME_SETTINGS", STR_GAME_SETTINGS_DEFAULT);
+	FREE(STR_DIRECT_BOOT);
+	STR_DIRECT_BOOT = language(flang, "STR_DIRECT_BOOT", STR_DIRECT_BOOT_DEFAULT);
+	FREE(STR_DIRECT_BOOT_DESC);
+	STR_DIRECT_BOOT_DESC = language(flang, "STR_DIRECT_BOOT_DESC", STR_DIRECT_BOOT_DESC_DEFAULT);
+	FREE(STR_YES);
+	STR_YES = language(flang, "STR_YES", STR_YES_DEFAULT);
+	FREE(STR_NO);
+	STR_NO = language(flang, "STR_NO", STR_NO_DEFAULT);
+	FREE(STR_CLEAN_SYSCALL);
+	STR_CLEAN_SYSCALL = language(flang, "STR_CLEAN_SYSCALL", STR_CLEAN_SYSCALL_DEFAULT);
+	FREE(STR_CLEAN_SYSCALL_DESC);
+	STR_CLEAN_SYSCALL_DESC = language(flang, "STR_CLEAN_SYSCALL_DESC", STR_CLEAN_SYSCALL_DESC_DEFAULT);
+	FREE(STR_CHANGE_IDPS);
+	STR_CHANGE_IDPS = language(flang, "STR_CHANGE_IDPS", STR_CHANGE_IDPS_DEFAULT);
+	FREE(STR_CHANGE_IDPS_DESC);
+	STR_CHANGE_IDPS_DESC = language(flang, "STR_CHANGE_IDPS_DESC", STR_CHANGE_IDPS_DESC_DEFAULT);
+	FREE(STR_EXT_GAME_DATA);
+	STR_EXT_GAME_DATA = language(flang, "STR_EXT_GAME_DATA", STR_EXT_GAME_DATA_DEFAULT);
+	FREE(STR_EXT_GAME_DATA_DESC);
+	STR_EXT_GAME_DATA_DESC = language(flang, "STR_EXT_GAME_DATA_DESC", STR_EXT_GAME_DATA_DESC_DEFAULT);
+	FREE(STR_PAYLOAD);
+	STR_PAYLOAD = language(flang, "STR_PAYLOAD", STR_PAYLOAD_DEFAULT);
+	FREE(STR_PAYLOAD_DESC);
+	STR_PAYLOAD_DESC = language(flang, "STR_PAYLOAD_DESC", STR_PAYLOAD_DESC_DEFAULT);
+	FREE(STR_PRIM_USB);
+	STR_PRIM_USB = language(flang, "STR_PRIM_USB", STR_PRIM_USB_DEFAULT);
+	FREE(STR_PRIM_USB_DESC);
+	STR_PRIM_USB_DESC = language(flang, "STR_PRIM_USB_DESC", STR_PRIM_USB_DESC_DEFAULT);
+	FREE(STR_BDEMU);
+	STR_BDEMU = language(flang, "STR_BDEMU", STR_BDEMU_DEFAULT);
+	FREE(STR_BDEMU_DESC);
+	STR_BDEMU_DESC = language(flang, "STR_BDEMU_DESC", STR_BDEMU_DESC_DEFAULT);
+	FREE(STR_PATCH_LIBFS);
+	STR_PATCH_LIBFS = language(flang, "STR_PATCH_LIBFS", STR_PATCH_LIBFS_DEFAULT);
+	FREE(STR_PATCH_LIBFS_DESC);
+	STR_PATCH_LIBFS_DESC = language(flang, "STR_PATCH_LIBFS_DESC", STR_PATCH_LIBFS_DESC_DEFAULT);
+	FREE(STR_MOUNT_APPHOME);
+	STR_MOUNT_APPHOME = language(flang, "STR_MOUNT_APPHOME", STR_MOUNT_APPHOME_DEFAULT);
+	FREE(STR_MOUNT_APPHOME_DESC);
+	STR_MOUNT_APPHOME_DESC = language(flang, "STR_MOUNT_APPHOME_DESC", STR_MOUNT_APPHOME_DESC_DEFAULT);
+	FREE(STR_PATCH_EXP);
+	STR_PATCH_EXP = language(flang, "STR_PATCH_EXP", STR_PATCH_EXP_DEFAULT);
+	FREE(STR_PATCH_EXP_DESC);
+	STR_PATCH_EXP_DESC = language(flang, "STR_PATCH_EXP_DESC", STR_PATCH_EXP_DESC_DEFAULT);
+	FREE(STR_MAKE_SHTCUT_PKG);
+	STR_MAKE_SHTCUT_PKG = language(flang, "STR_MAKE_SHTCUT_PKG", STR_MAKE_SHTCUT_PKG_DEFAULT);
+	FREE(STR_MAKE_SHTCUT_PKG_DESC);
+	STR_MAKE_SHTCUT_PKG_DESC = language(flang, "STR_MAKE_SHTCUT_PKG_DESC", STR_MAKE_SHTCUT_PKG_DESC_DEFAULT);
+	FREE(STR_PATCH_EBOOT);
+	STR_PATCH_EBOOT = language(flang, "STR_PATCH_EBOOT", STR_PATCH_EBOOT_DEFAULT);
+	FREE(STR_PATCH_EBOOT_DESC);
+	STR_PATCH_EBOOT_DESC = language(flang, "STR_PATCH_EBOOT_DESC", STR_PATCH_EBOOT_DESC_DEFAULT);
+	FREE(STR_RESIGN);
+	STR_RESIGN = language(flang, "STR_RESIGN", STR_RESIGN_DEFAULT);
+	FREE(STR_RESIGN_DESC);
+	STR_RESIGN_DESC = language(flang, "STR_RESIGN_DESC", STR_RESIGN_DESC_DEFAULT);
+	FREE(STR_RESTORE);
+	STR_RESTORE = language(flang, "STR_RESTORE", STR_RESTORE_DEFAULT);
+	FREE(STR_RESTORE_DESC);
+	STR_RESTORE_DESC = language(flang, "STR_RESTORE_DESC", STR_RESTORE_DESC_DEFAULT);
+	FREE(STR_EXTRACT_ISO);
+	STR_EXTRACT_ISO = language(flang, "STR_EXTRACT_ISO", STR_EXTRACT_ISO_DEFAULT);
+	FREE(STR_EXTRACT_ISO_DESC);
+	STR_EXTRACT_ISO_DESC = language(flang, "STR_EXTRACT_ISO_DESC", STR_EXTRACT_ISO_DESC_DEFAULT);
+	FREE(STR_CONVERT_ISO);
+	STR_CONVERT_ISO = language(flang, "STR_CONVERT_ISO", STR_CONVERT_ISO_DEFAULT);
+	FREE(STR_CONVERT_ISO_DESC);
+	STR_CONVERT_ISO_DESC = language(flang, "STR_CONVERT_ISO_DESC", STR_CONVERT_ISO_DESC_DEFAULT);
+	FREE(STR_FIX_PERMS);
+	STR_FIX_PERMS = language(flang, "STR_FIX_PERMS", STR_FIX_PERMS_DEFAULT);
+	FREE(STR_FIX_PERMS_DESC);
+	STR_FIX_PERMS_DESC = language(flang, "STR_FIX_PERMS_DESC", STR_FIX_PERMS_DESC_DEFAULT);
+	FREE(STR_CHECK_IRD);
+	STR_CHECK_IRD = language(flang, "STR_CHECK_IRD", STR_CHECK_IRD_DEFAULT);
+	FREE(STR_CHECK_DESC);
+	STR_CHECK_DESC = language(flang, "STR_CHECK_DESC", STR_CHECK_DESC_DEFAULT);
+	FREE(STR_DL_UPDATE);
+	STR_DL_UPDATE = language(flang, "STR_DL_UPDATE", STR_DL_UPDATE_DEFAULT);
+	FREE(STR_DL_UPDATE_DESC);
+	STR_DL_UPDATE_DESC = language(flang, "STR_DL_UPDATE_DESC", STR_DL_UPDATE_DESC_DEFAULT);
+	FREE(STR_OPEN_WINDOW);
+	STR_OPEN_WINDOW = language(flang, "STR_OPEN_WINDOW", STR_OPEN_WINDOW_DEFAULT);
+	FREE(STR_MOUNT_DEVBLIND);
+	STR_MOUNT_DEVBLIND = language(flang, "STR_MOUNT_DEVBLIND", STR_MOUNT_DEVBLIND_DEFAULT);
+	FREE(STR_DUMP_LV1);
+	STR_DUMP_LV1 = language(flang, "STR_DUMP_LV1", STR_DUMP_LV1_DEFAULT);
+	FREE(STR_DUMP_LV2);
+	STR_DUMP_LV2 = language(flang, "STR_DUMP_LV2", STR_DUMP_LV2_DEFAULT);
+	FREE(STR_DUMP_FLASH);
+	STR_DUMP_FLASH = language(flang, "STR_DUMP_FLASH", STR_DUMP_FLASH_DEFAULT);
+	FREE(STR_REFRESH);
+	STR_REFRESH = language(flang, "STR_REFRESH", STR_REFRESH_DEFAULT);
+	FREE(STR_NEWFOLDER);
+	STR_NEWFOLDER = language(flang, "STR_NEWFOLDER", STR_NEWFOLDER_DEFAULT);
+	FREE(STR_NEWFILE);
+	STR_NEWFILE = language(flang, "STR_NEWFILE", STR_NEWFILE_DEFAULT);
+	FREE(STR_PASTE);
+	STR_PASTE = language(flang, "STR_PASTE", STR_PASTE_DEFAULT);
+	FREE(STR_CUT);
+	STR_CUT = language(flang, "STR_CUT", STR_CUT_DEFAULT);
+	FREE(STR_UNSELECT_ALL);
+	STR_UNSELECT_ALL = language(flang, "STR_UNSELECT_ALL", STR_UNSELECT_ALL_DEFAULT);
+	FREE(STR_SELECT_ALL);
+	STR_SELECT_ALL = language(flang, "STR_SELECT_ALL", STR_SELECT_ALL_DEFAULT);
+	FREE(STR_MAKE_PKG);
+	STR_MAKE_PKG = language(flang, "STR_MAKE_PKG", STR_MAKE_PKG_DEFAULT);
+	FREE(STR_GETMD5);
+	STR_GETMD5 = language(flang, "STR_GETMD5", STR_GETMD5_DEFAULT);
+	FREE(STR_GETSHA1);
+	STR_GETSHA1 = language(flang, "STR_GETSHA1", STR_GETSHA1_DEFAULT);
+	FREE(STR_VIEW);
+	STR_VIEW = language(flang, "STR_VIEW", STR_VIEW_DEFAULT);
+	FREE(STR_VIEW_TXT);
+	STR_VIEW_TXT = language(flang, "STR_VIEW_TXT", STR_VIEW_TXT_DEFAULT);
+	FREE(STR_VIEW_SFO);
+	STR_VIEW_SFO = language(flang, "STR_VIEW_SFO", STR_VIEW_SFO_DEFAULT);
+	FREE(STR_READ_XREG);
+	STR_READ_XREG = language(flang, "STR_READ_XREG", STR_READ_XREG_DEFAULT);
+	FREE(STR_EXTRACT_ELF);
+	STR_EXTRACT_ELF = language(flang, "STR_EXTRACT_ELF", STR_EXTRACT_ELF_DEFAULT);
+	FREE(STR_RESIGN_SELF);
+	STR_RESIGN_SELF = language(flang, "STR_RESIGN_SELF", STR_RESIGN_SELF_DEFAULT);
+	FREE(STR_LAUNCH_SELF);
+	STR_LAUNCH_SELF = language(flang, "STR_LAUNCH_SELF", STR_LAUNCH_SELF_DEFAULT);
+	FREE(STR_EXTRACT_EBOOT);
+	STR_EXTRACT_EBOOT = language(flang, "STR_EXTRACT_EBOOT", STR_EXTRACT_EBOOT_DEFAULT);
+	FREE(STR_RESIGN_EBOOT);
+	STR_RESIGN_EBOOT = language(flang, "STR_RESIGN_EBOOT", STR_RESIGN_EBOOT_DEFAULT);
+	FREE(STR_LAUNCH_EBOOT);
+	STR_LAUNCH_EBOOT = language(flang, "STR_LAUNCH_EBOOT", STR_LAUNCH_EBOOT_DEFAULT);
+	FREE(STR_SIGN_ELF);
+	STR_SIGN_ELF = language(flang, "STR_SIGN_ELF", STR_SIGN_ELF_DEFAULT);
+	FREE(STR_SIGN_EBOOT);
+	STR_SIGN_EBOOT = language(flang, "STR_SIGN_EBOOT", STR_SIGN_EBOOT_DEFAULT);
+	FREE(STR_SIGN_PRX);
+	STR_SIGN_PRX = language(flang, "STR_SIGN_PRX", STR_SIGN_PRX_DEFAULT);
+	FREE(STR_EXTRACT_PRX);
+	STR_EXTRACT_PRX = language(flang, "STR_EXTRACT_PRX", STR_EXTRACT_PRX_DEFAULT);
+	FREE(STR_RESIGN_SPRX);
+	STR_RESIGN_SPRX = language(flang, "STR_RESIGN_SPRX", STR_RESIGN_SPRX_DEFAULT);
+	FREE(STR_REMOVE_PRXLOADER);
+	STR_REMOVE_PRXLOADER = language(flang, "STR_REMOVE_PRXLOADER", STR_REMOVE_PRXLOADER_DEFAULT);
+	FREE(STR_ADD_PRXLOADER);
+	STR_ADD_PRXLOADER = language(flang, "STR_ADD_PRXLOADER", STR_ADD_PRXLOADER_DEFAULT);
+	FREE(STR_REMOVE_PRXLOADER2);
+	STR_REMOVE_PRXLOADER2 = language(flang, "STR_REMOVE_PRXLOADER2", STR_REMOVE_PRXLOADER2_DEFAULT);
+	FREE(STR_ADD_PRXLOADER2);
+	STR_ADD_PRXLOADER2 = language(flang, "STR_ADD_PRXLOADER2", STR_ADD_PRXLOADER2_DEFAULT);
+	FREE(STR_REMOVE_MAMBA);
+	STR_REMOVE_MAMBA = language(flang, "STR_REMOVE_MAMBA", STR_REMOVE_MAMBA_DEFAULT);
+	FREE(STR_ADD_MAMBA);
+	STR_ADD_MAMBA = language(flang, "STR_ADD_MAMBA", STR_ADD_MAMBA_DEFAULT);
+	FREE(STR_REMOVE_COBRA);
+	STR_REMOVE_COBRA = language(flang, "STR_REMOVE_COBRA", STR_REMOVE_COBRA_DEFAULT);
+	FREE(STR_ADD_COBRA);
+	STR_ADD_COBRA = language(flang, "STR_ADD_COBRA", STR_ADD_COBRA_DEFAULT);
+	FREE(STR_EXTRACT_RCO);
+	STR_EXTRACT_RCO = language(flang, "STR_EXTRACT_RCO", STR_EXTRACT_RCO_DEFAULT);
+	FREE(STR_EXTRACT_PKG);
+	STR_EXTRACT_PKG = language(flang, "STR_EXTRACT_PKG", STR_EXTRACT_PKG_DEFAULT);
+	FREE(STR_PKG_INFO);
+	STR_PKG_INFO = language(flang, "STR_PKG_INFO", STR_PKG_INFO_DEFAULT);
+	FREE(STR_EXTRACT_TRP);
+	STR_EXTRACT_TRP = language(flang, "STR_EXTRACT_TRP", STR_EXTRACT_TRP_DEFAULT);
+	FREE(STR_COMPRESS_ISO);
+	STR_COMPRESS_ISO = language(flang, "STR_COMPRESS_ISO", STR_COMPRESS_ISO_DEFAULT);
+	FREE(STR_CHECK_CRC32);
+	STR_CHECK_CRC32 = language(flang, "STR_CHECK_CRC32", STR_CHECK_CRC32_DEFAULT);
+	FREE(STR_DECOMPRESS_CSO);
+	STR_DECOMPRESS_CSO = language(flang, "STR_DECOMPRESS_CSO", STR_DECOMPRESS_CSO_DEFAULT);
+	FREE(STR_EXTRACT_THM);
+	STR_EXTRACT_THM = language(flang, "STR_EXTRACT_THM", STR_EXTRACT_THM_DEFAULT);
+	FREE(STR_EXTRACT_P3T);
+	STR_EXTRACT_P3T = language(flang, "STR_EXTRACT_P3T", STR_EXTRACT_P3T_DEFAULT);
+	FREE(STR_EXTRACT_RAF);
+	STR_EXTRACT_RAF = language(flang, "STR_EXTRACT_RAF", STR_EXTRACT_RAF_DEFAULT);
+	FREE(STR_EXTRACT_QRC);
+	STR_EXTRACT_QRC = language(flang, "STR_EXTRACT_QRC", STR_EXTRACT_QRC_DEFAULT);
+	FREE(STR_EXTRACT_ZIP);
+	STR_EXTRACT_ZIP = language(flang, "STR_EXTRACT_ZIP", STR_EXTRACT_ZIP_DEFAULT);
+	FREE(STR_CONVERT_JSX_JS);
+	STR_CONVERT_JSX_JS = language(flang, "STR_CONVERT_JSX_JS", STR_CONVERT_JSX_JS_DEFAULT);
+	FREE(STR_CONVERT_VAG_WAV);
+	STR_CONVERT_VAG_WAV = language(flang, "STR_CONVERT_VAG_WAV", STR_CONVERT_VAG_WAV_DEFAULT);
+	FREE(STR_CONVERT_GTF_DDS);
+	STR_CONVERT_GTF_DDS = language(flang, "STR_CONVERT_GTF_DDS", STR_CONVERT_GTF_DDS_DEFAULT);
+	FREE(STR_CONVERT_DDS_PNG);
+	STR_CONVERT_DDS_PNG = language(flang, "STR_CONVERT_DDS_PNG", STR_CONVERT_DDS_PNG_DEFAULT);
+	FREE(STR_MAKE_APNG);
+	STR_MAKE_APNG = language(flang, "STR_MAKE_APNG", STR_MAKE_APNG_DEFAULT);
+	FREE(STR_SET_PERMS);
+	STR_SET_PERMS = language(flang, "STR_SET_PERMS", STR_SET_PERMS_DEFAULT);
+	FREE(STR_NOGAME);
+	STR_NOGAME = language(flang, "STR_NOGAME", STR_NOGAME_DEFAULT);
+	FREE(STR_GLOB_SETTINGS);
+	STR_GLOB_SETTINGS = language(flang, "STR_GLOB_SETTINGS", STR_GLOB_SETTINGS_DEFAULT);
+	FREE(STR_ADJUST);
+	STR_ADJUST = language(flang, "STR_ADJUST", STR_ADJUST_DEFAULT);
+	FREE(STR_ADJUST_DESC);
+	STR_ADJUST_DESC = language(flang, "STR_ADJUST_DESC", STR_ADJUST_DESC_DEFAULT);
+	FREE(STR_DL_COVER);
+	STR_DL_COVER = language(flang, "STR_DL_COVER", STR_DL_COVER_DEFAULT);
+	FREE(STR_DL_COVER_DESC);
+	STR_DL_COVER_DESC = language(flang, "STR_DL_COVER_DESC", STR_DL_COVER_DESC_DEFAULT);
+	FREE(STR_PLUGIN_MANAGER);
+	STR_PLUGIN_MANAGER = language(flang, "STR_PLUGIN_MANAGER", STR_PLUGIN_MANAGER_DEFAULT);
+	FREE(STR_PLUGIN_MANAGER_DESC);
+	STR_PLUGIN_MANAGER_DESC = language(flang, "STR_PLUGIN_MANAGER_DESC", STR_PLUGIN_MANAGER_DESC_DEFAULT);
+	FREE(STR_UPD_MGZ);
+	STR_UPD_MGZ = language(flang, "STR_UPD_MGZ", STR_UPD_MGZ_DEFAULT);
+	FREE(STR_UPD_MGZ_DESC);
+	STR_UPD_MGZ_DESC = language(flang, "STR_UPD_MGZ_DESC", STR_UPD_MGZ_DESC_DEFAULT);
+	FREE(STR_GAME_PATHS);
+	STR_GAME_PATHS = language(flang, "STR_GAME_PATHS", STR_GAME_PATHS_DEFAULT);
+	FREE(STR_GAME_PATHS_DESC);
+	STR_GAME_PATHS_DESC = language(flang, "STR_GAME_PATHS_DESC", STR_GAME_PATHS_DESC_DEFAULT);
+	FREE(STR_XMB_PRIO);
+	STR_XMB_PRIO = language(flang, "STR_XMB_PRIO", STR_XMB_PRIO_DEFAULT);
+	FREE(STR_XMB_PRIO_DESC);
+	STR_XMB_PRIO_DESC = language(flang, "STR_XMB_PRIO_DESC", STR_XMB_PRIO_DESC_DEFAULT);
+	FREE(STR_HELP);
+	STR_HELP = language(flang, "STR_HELP", STR_HELP_DEFAULT);
+	FREE(STR_HELP_DESC);
+	STR_HELP_DESC = language(flang, "STR_HELP_DESC", STR_HELP_DESC_DEFAULT);
+	FREE(STR_COLOR_1);
+	STR_COLOR_1 = language(flang, "STR_COLOR_1", STR_COLOR_1_DEFAULT);
+	FREE(STR_COLOR_2);
+	STR_COLOR_2 = language(flang, "STR_COLOR_2", STR_COLOR_2_DEFAULT);
+	FREE(STR_COLOR_3);
+	STR_COLOR_3 = language(flang, "STR_COLOR_3", STR_COLOR_3_DEFAULT);
+	FREE(STR_COLOR_4);
+	STR_COLOR_4 = language(flang, "STR_COLOR_4", STR_COLOR_4_DEFAULT);
+	FREE(STR_COLOR_DESC);
+	STR_COLOR_DESC = language(flang, "STR_COLOR_DESC", STR_COLOR_DESC_DEFAULT);
+	FREE(STR_UI_SETTINGS);
+	STR_UI_SETTINGS = language(flang, "STR_UI_SETTINGS", STR_UI_SETTINGS_DEFAULT);
+	FREE(STR_UI);
+	STR_UI = language(flang, "STR_UI", STR_UI_DEFAULT);
+	FREE(STR_UI_DESC);
+	STR_UI_DESC = language(flang, "STR_UI_DESC", STR_UI_DESC_DEFAULT);
+	FREE(STR_SIDE_MENU);
+	STR_SIDE_MENU = language(flang, "STR_SIDE_MENU", STR_SIDE_MENU_DEFAULT);
+	FREE(STR_SIDE_MENU_DESC);
+	STR_SIDE_MENU_DESC = language(flang, "STR_SIDE_MENU_DESC", STR_SIDE_MENU_DESC_DEFAULT);
+	FREE(STR_SHOW_PIC1);
+	STR_SHOW_PIC1 = language(flang, "STR_SHOW_PIC1", STR_SHOW_PIC1_DEFAULT);
+	FREE(STR_SHOW_PIC1_DESC);
+	STR_SHOW_PIC1_DESC = language(flang, "STR_SHOW_PIC1_DESC", STR_SHOW_PIC1_DESC_DEFAULT);
+	FREE(STR_SHOW_COVER);
+	STR_SHOW_COVER = language(flang, "STR_SHOW_COVER", STR_SHOW_COVER_DEFAULT);
+	FREE(STR_SHOW_COVER_DESC);
+	STR_SHOW_COVER_DESC = language(flang, "STR_SHOW_COVER_DESC", STR_SHOW_COVER_DESC_DEFAULT);
+	FREE(STR_SHOW_GAMECASE);
+	STR_SHOW_GAMECASE = language(flang, "STR_SHOW_GAMECASE", STR_SHOW_GAMECASE_DEFAULT);
+	FREE(STR_SHOW_GAMECASE_DESC);
+	STR_SHOW_GAMECASE_DESC = language(flang, "STR_SHOW_GAMECASE_DESC", STR_SHOW_GAMECASE_DESC_DEFAULT);
+	FREE(STR_SHOW_ICON0);
+	STR_SHOW_ICON0 = language(flang, "STR_SHOW_ICON0", STR_SHOW_ICON0_DEFAULT);
+	FREE(STR_SHOW_ICON0_DESC);
+	STR_SHOW_ICON0_DESC = language(flang, "STR_SHOW_ICON0_DESC", STR_SHOW_ICON0_DESC_DEFAULT);
+	FREE(STR_GRID_TYPE);
+	STR_GRID_TYPE = language(flang, "STR_GRID_TYPE", STR_GRID_TYPE_DEFAULT);
+	FREE(STR_GRID_TYPE_DESC);
+	STR_GRID_TYPE_DESC = language(flang, "STR_GRID_TYPE_DESC", STR_GRID_TYPE_DESC_DEFAULT);
+	FREE(STR_SCROLL);
+	STR_SCROLL = language(flang, "STR_SCROLL", STR_SCROLL_DEFAULT);
+	FREE(STR_PAGE);
+	STR_PAGE = language(flang, "STR_PAGE", STR_PAGE_DEFAULT);
+	FREE(STR_DIRECTION);
+	STR_DIRECTION = language(flang, "STR_DIRECTION", STR_DIRECTION_DEFAULT);
+	FREE(STR_DIRECTION_DESC);
+	STR_DIRECTION_DESC = language(flang, "STR_DIRECTION_DESC", STR_DIRECTION_DESC_DEFAULT);
+	FREE(STR_VERTICAL);
+	STR_VERTICAL = language(flang, "STR_VERTICAL", STR_VERTICAL_DEFAULT);
+	FREE(STR_HORIZONTAL);
+	STR_HORIZONTAL = language(flang, "STR_HORIZONTAL", STR_HORIZONTAL_DEFAULT);
+	FREE(STR_ANIMATED);
+	STR_ANIMATED = language(flang, "STR_ANIMATED", STR_ANIMATED_DEFAULT);
+	FREE(STR_ANIMATED_DESC);
+	STR_ANIMATED_DESC = language(flang, "STR_ANIMATED_DESC", STR_ANIMATED_DESC_DEFAULT);
+	FREE(STR_KEEP_PROP);
+	STR_KEEP_PROP = language(flang, "STR_KEEP_PROP", STR_KEEP_PROP_DEFAULT);
+	FREE(STR_KEEP_PROP_DESC);
+	STR_KEEP_PROP_DESC = language(flang, "STR_KEEP_PROP_DESC", STR_KEEP_PROP_DESC_DEFAULT);
+	FREE(STR_NB_COL);
+	STR_NB_COL = language(flang, "STR_NB_COL", STR_NB_COL_DEFAULT);
+	FREE(STR_NB_COL_DESC);
+	STR_NB_COL_DESC = language(flang, "STR_NB_COL_DESC", STR_NB_COL_DESC_DEFAULT);
+	FREE(STR_NB_LINE);
+	STR_NB_LINE = language(flang, "STR_NB_LINE", STR_NB_LINE_DEFAULT);
+	FREE(STR_NB_LINE_DESC);
+	STR_NB_LINE_DESC = language(flang, "STR_NB_LINE_DESC", STR_NB_LINE_DESC_DEFAULT);
+	FREE(STR_INVERSE);
+	STR_INVERSE = language(flang, "STR_INVERSE", STR_INVERSE_DEFAULT);
+	FREE(STR_INVERSE_DESC);
+	STR_INVERSE_DESC = language(flang, "STR_INVERSE_DESC", STR_INVERSE_DESC_DEFAULT);
+	FREE(STR_3D);
+	STR_3D = language(flang, "STR_3D", STR_3D_DEFAULT);
+	FREE(STR_3D_DESC);
+	STR_3D_DESC = language(flang, "STR_3D_DESC", STR_3D_DESC_DEFAULT);
+	FREE(STR_ADD);
+	STR_ADD = language(flang, "STR_ADD", STR_ADD_DEFAULT);
+	FREE(STR_LOAD);
+	STR_LOAD = language(flang, "STR_LOAD", STR_LOAD_DEFAULT);
+	FREE(STR_CHANGE);
+	STR_CHANGE = language(flang, "STR_CHANGE", STR_CHANGE_DEFAULT);
+	FREE(STR_COLOR);
+	STR_COLOR = language(flang, "STR_COLOR", STR_COLOR_DEFAULT);
+	FREE(STR_RESET);
+	STR_RESET = language(flang, "STR_RESET", STR_RESET_DEFAULT);
+	FREE(STR_FAILED);
+	STR_FAILED = language(flang, "STR_FAILED", STR_FAILED_DEFAULT);
+	FREE(STR_DONE);
+	STR_DONE = language(flang, "STR_DONE", STR_DONE_DEFAULT);
+	FREE(STR_OPEN);
+	STR_OPEN = language(flang, "STR_OPEN", STR_OPEN_DEFAULT);
+	FREE(STR_CLOSE);
+	STR_CLOSE = language(flang, "STR_CLOSE", STR_CLOSE_DEFAULT);
+	FREE(STR_OPTION);
+	STR_OPTION = language(flang, "STR_OPTION", STR_OPTION_DEFAULT);
+	FREE(STR_SELECT);
+	STR_SELECT = language(flang, "STR_SELECT", STR_SELECT_DEFAULT);
+	FREE(STR_WINDOW);
+	STR_WINDOW = language(flang, "STR_WINDOW", STR_WINDOW_DEFAULT);
+	FREE(STR_CLICK);
+	STR_CLICK = language(flang, "STR_CLICK", STR_CLICK_DEFAULT);
+	FREE(STR_CURSOR);
+	STR_CURSOR = language(flang, "STR_CURSOR", STR_CURSOR_DEFAULT);
+	FREE(STR_NEXT);
+	STR_NEXT = language(flang, "STR_NEXT", STR_NEXT_DEFAULT);
+	FREE(STR_PREVIOUS);
+	STR_PREVIOUS = language(flang, "STR_PREVIOUS", STR_PREVIOUS_DEFAULT);
+	FREE(STR_SET_COLOR);
+	STR_SET_COLOR = language(flang, "STR_SET_COLOR", STR_SET_COLOR_DEFAULT);
+	FREE(STR_HIDETV);
+	STR_HIDETV = language(flang, "STR_HIDETV", STR_HIDETV_DEFAULT);
+	FREE(STR_SHOWTV);
+	STR_SHOWTV = language(flang, "STR_SHOWTV", STR_SHOWTV_DEFAULT);
+	FREE(STR_MOVE_TO_PLUGINS);
+	STR_MOVE_TO_PLUGINS = language(flang, "STR_MOVE_TO_PLUGINS", STR_MOVE_TO_PLUGINS_DEFAULT);
+	FREE(STR_ASK_PLUGINS);
+	STR_ASK_PLUGINS = language(flang, "STR_ASK_PLUGINS", STR_ASK_PLUGINS_DEFAULT);
+	FREE(STR_CHANGE_VALUE);
+	STR_CHANGE_VALUE = language(flang, "STR_CHANGE_VALUE", STR_CHANGE_VALUE_DEFAULT);
+	FREE(STR_LOAD_IDPS_LV2);
+	STR_LOAD_IDPS_LV2 = language(flang, "STR_LOAD_IDPS_LV2", STR_LOAD_IDPS_LV2_DEFAULT);
+	FREE(STR_LOAD_IDPS_EID5);
+	STR_LOAD_IDPS_EID5 = language(flang, "STR_LOAD_IDPS_EID5", STR_LOAD_IDPS_EID5_DEFAULT);
 	
 	FCLOSE(flang);
+	
+	lang_code_loaded = lang_code;
 }
 
 void load_lang()
 {
 	int i;
 	
-	if(lang_code == 0xFF) read_setting();
+	read_setting();
 	
-	if(lang_code != 0xFF) {
-		for(i=1; i < lang_N ;i++) {
-			if((uint8_t) STR_LANGCODE[i][0] == lang_code) {
-				lang = i;
-				write_setting();
-				update_lang();
-				return;
-			}
+#ifndef RPCS3	
+	if(lang_code == LANG_UNDEFINED) lang_code = get_xreg_value((char*)"/setting/system/language");	
+#endif
+
+	for(i=0; i < lang_N ;i++) {
+		if((uint8_t) STR_LANGCODE[i][0] == lang_code) {
+			lang = i;
+			write_setting();
+			return;
 		}
-	} else {
-	
-		int lang_xreg = get_xreg_value((char*)"/setting/system/language");
-		
-		for(i=1; i < lang_N ;i++) {
-			if((uint8_t) STR_LANGCODE[i][0] == lang_xreg) {
-				lang = i;
-				lang_code = lang_xreg;
-				write_setting();
-				update_lang();
-				return;
-			}
-		}
-		
 	}
 	
 	lang = 0;
-	lang_code = 0xFF;
+	lang_code = LANG_DEFAULT;
 	
 	write_setting();
-	
-	update_lang();
 }
 
 //###################################################
@@ -3369,7 +4587,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 	u32 file_offset;
 	u32 file_size_c;
 	int file_size_d;
-	u8 animated = NO;
+	u8 GRID_ANIMATED = NO;
 	FILE *fp;
 	
 	fp=fopen(src, "rb");
@@ -3401,7 +4619,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 		unsigned int n;
 		for(n=0; n < string_table_size; n++){
 			if(memcmp((char *) &string_table[n], "anim\0", 5) == 0) {
-				animated = YES;
+				GRID_ANIMATED = YES;
 				flag=n;
 				break;
 			} else
@@ -3490,7 +4708,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 	fclose(fp);
 
 	if(strcmp(file, "background") == 0) {
-		if(animated == NO) {
+		if(GRID_ANIMATED == NO) {
 			fp=fopen(dst, "wb");
 			fwrite(file_data_c, file_size_c, 1, fp);
 			fclose(fp);
@@ -3528,7 +4746,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 				dst[strlen(dst)-2] = 'N';
 				dst[strlen(dst)-1] = 'G';
 				
-				print_head("Making animated Background...");
+				print_head("Making GRID_ANIMATED Background...");
 				if(make_ABG((char *) raf_tmp, (char *) dst)  == FAILED) {
 					Delete(tmp_dir);
 					print_load("Error : Failed to build Animated Background");
@@ -3547,7 +4765,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 		// .gim to .png
 		char gim[128];
 		strcpy(gim, dst);
-		strtok(gim, ".");
+		RemoveExtention(gim);
 		strcat(gim, ".gim");
 		fp=fopen(gim, "wb");
 
@@ -3905,22 +5123,22 @@ u8 InstallTheme()
 		char dst[255];
 		if(UI_position == XMB) {
 					
-			sprintf(dst, "%s/%s.PNG", folder, Columns[0]);
+			sprintf(dst, "%s/%s.PNG", folder, XMB_COLUMN_NAME[0]);
 			ret=GetFromP3T(tmp, "icon_setting", dst);
 			
-			sprintf(dst, "%s/%s.PNG", folder, Columns[1]);
+			sprintf(dst, "%s/%s.PNG", folder, XMB_COLUMN_NAME[1]);
 			ret=GetFromP3T("/dev_hdd0/tmp.p3t", "icon_playermet", dst);
 			
-			sprintf(dst, "%s/%s.PNG", folder, Columns[2]);
+			sprintf(dst, "%s/%s.PNG", folder, XMB_COLUMN_NAME[2]);
 			ret=GetFromP3T(tmp, "icon_game", dst);
 			
-			sprintf(dst, "%s/%s.PNG", folder, Columns[3]);
+			sprintf(dst, "%s/%s.PNG", folder, XMB_COLUMN_NAME[3]);
 			ret=GetFromP3T(tmp, "icon_game", dst);
 			
-			sprintf(dst, "%s/%s.PNG", folder, Columns[4]);
+			sprintf(dst, "%s/%s.PNG", folder, XMB_COLUMN_NAME[4]);
 			ret=GetFromP3T(tmp, "icon_game", dst);
 			
-			sprintf(dst, "%s/%s.PNG", folder, Columns[5]);
+			sprintf(dst, "%s/%s.PNG", folder, XMB_COLUMN_NAME[5]);
 			ret=GetFromP3T(tmp, "icon_remoteplay", dst);
 			
 			sprintf(dst, "%s/BG.JPG", folder);
@@ -3984,7 +5202,7 @@ void Load_Themes()
 	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[0], Themes[0]);
 	
 	if(path_info(thmPath) == _NOT_EXIST) {
-		strcpy(Themes[0], "None");
+		strcpy(Themes[0], STR_NONE);
 		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[0], Themes[0]);
 	}
 	
@@ -4045,7 +5263,7 @@ void Load_Themes()
 	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[1], Themes[1]);
 	
 	if(path_info(thmPath) == _NOT_EXIST) {
-		strcpy(Themes[1], "None");
+		strcpy(Themes[1], STR_NONE);
 		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[1], Themes[1]);
 	}
 	
@@ -4089,7 +5307,7 @@ void Load_Themes()
 
 	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[2], Themes[2]);
 	if(path_info(thmPath) == _NOT_EXIST) {
-		strcpy(Themes[2], "None");
+		strcpy(Themes[2], STR_NONE);
 		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[2], Themes[2]);
 	}
 	
@@ -4156,10 +5374,10 @@ void Load_Themes()
 		
 		texture_pointer = XMB_Col_texture_mem[i];
 		
-		sprintf(temp, "%s/%s.PNG", thmPath, Columns[i]);
+		sprintf(temp, "%s/%s.PNG", thmPath, XMB_COLUMN_NAME[i]);
 
 		if(imgLoadFromFile(temp, &XMB_Col[i]) == FAILED) {
-			sprintf(temp, "%s/%s.JPG", thmPath, Columns[i]);
+			sprintf(temp, "%s/%s.JPG", thmPath, XMB_COLUMN_NAME[i]);
 			imgLoadFromFile(temp, &XMB_Col[i]);
 		}
 
@@ -4211,7 +5429,7 @@ void Load_Themes()
 
 	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[3], Themes[3]);
 	if(path_info(thmPath) == _NOT_EXIST) {
-		strcpy(Themes[3], "None");
+		strcpy(Themes[3], STR_NONE);
 		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s",  ManaGunZ_id, UI[3], Themes[3]);
 	}
 	
@@ -4349,8 +5567,11 @@ void Draw_PIC1()
 	if(FM_PIC_offset != 0 ) {
 		if( UI_position==XMB || UI_position==FLOW)
 		{
-			tiny3d_SetTexture(0, FM_PIC_offset, FM_PIC.width, FM_PIC.height, FM_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);	
-			Draw_Box(0, 0, 99, 0, 848, 512, WHITE, YES);
+			tiny3d_SetTexture(0, FM_PIC_offset, FM_PIC.width, FM_PIC.height, FM_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			if(UI_position==FLOW)
+				Draw_Box(0, 0, ITEM_moveZ[position]+1, 0, 848, 512, WHITE, YES);
+			else 
+				Draw_Box(0, 0, 11, 0, 848, 512, WHITE, YES);
 		} else
 		if( UI_position==LIST || UI_position==GRID) 
 		{
@@ -4479,7 +5700,7 @@ void Load_COMMON()
 	int i;
 	texture_pointer = COMMON_texture_mem;
 	
-	char *COMMON_FILE[38] = {"ALL" , 
+	char *COMMON_FILE[40] = {"ALL" , 
 							"UP" , "LEFT" , "DOWN" , "RIGHT" , 
 							"SELECT" , "START" , 
 							"SQUARE" , "CROSS" , "CIRCLE" , "TRIANGLE", 
@@ -4491,9 +5712,10 @@ void Load_COMMON()
 							"PS1_STR", "PS2_STR", "PS3_STR", "PSP_STR",
 							"TVTEST",
 							"PS1_CASE", "PS2_CASE", "PS3_CASE", "PSP_CASE",
-							"FOLDER", "FILES"};
+							"FOLDER", "FILES",
+							"BR_LOGO", "PS_LOGO"};
 	
-	for(i=0; i<38; i++) {
+	for(i=0; i<40; i++) {
 		sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_id, COMMON_FILE[i]);
 		
 		if(imgLoadFromFile(temp, &COMMON[i]) == FAILED) {
@@ -4537,8 +5759,7 @@ void Draw_DISK(float x, float y, float z, float d, u32 color)
 	x+=d/2;
 	y+=d/2;
 	int t;
-	float PI = 3.14159265;
-	
+		
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(color);
 	for(t=0; t<=360 ; t+=10) {
@@ -4687,8 +5908,7 @@ void Draw_Button(float x, float y, float d)
 	x+=d/2;
 	y+=d/2;
 	int t;
-	float PI = 3.14159265;
-	
+		
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(0x3F3F41ff);
 	for(t=0; t<=360 ; t+=10) {
@@ -4713,7 +5933,6 @@ int Draw_Button_Circle(float x, float y, float size)
 		x+=size/2;
 		y+=size/2;
 		int t;
-		float PI = 3.14159265;
 		
 		tiny3d_SetPolygon(TINY3D_POLYGON);
 		tiny3d_VertexColor(0xFF646Fff);
@@ -5136,11 +6355,6 @@ void Draw_SIDEBAR(float x)
 		Draw_Box(x, 0, 9, 0, 1, 512, 0xFFFFFFFF, NO);
 	}
 	
-	if(UI_position==XMB) {
-		Draw_ICON0(position, 250-XMB_w-XMB_w , 200-XMB_h, 0, XMB_w*4, XMB_h*4);
-	}
-	
-	
 }
 
 int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color)
@@ -5217,52 +6431,64 @@ void show_msg(char *str)
 char *get_unit(u64 nb);
 
 static sys_ppu_thread_t loading_id;
+		
 
 void Draw_Loading(void *unused)
 {
 	int i=0;
-	int show_log=YES;
-	int direction = 1;
+	int show_log=NO;
+	int GRID_DIRECTION = 1;
 	int h=20, v=70;
 	int speed = 3;
 	int boost=100;
 	cancel=NO;
+	u32 color=GREEN;
+	u8 have_log=NO;
+	
+	strcpy(head_title, "\0");
+	for(i=0; i<=20; i++){
+		strcpy(loading_log[i], "\0");
+	}
 	
 	while(loading) {
 		cls();
 		
-		Draw_BGS();
+		if(loading_log[0][0]!=0) have_log=YES;
+		
+		if(scene == SCENE_FILEMANAGER) {
+			Draw_scene();
+			if(show_log==YES) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000A0, NO);	
+		} else Draw_BGS();
+
 		int x=50, y=40;
 		
 		FontSize(20);
 		FontColor(COLOR_1);
 		
-		if(head_title[0] != 0) {
-			FontColor(COLOR_2);
-			DrawString(x, y, head_title);
-			FontColor(COLOR_1);
-			y+=20;
-		}
-		if(prog_bar1_value >= 0) {
-			Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
-			y+=15;
-			if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
-			y+=25;
-		}
-		
-		if(gathering==YES){
-			DrawString(x, y, "Gathering data...");
-			y+=20;
-			DrawFormatString(x, y, "Nb of file = %i", nb_file);
-			y+=20;
-			DrawFormatString(x, y, "Nb of Dir. = %i", nb_directory);
-			y+=20;
-			char *size_tot = get_unit(total_size);
-			DrawFormatString(x, y,"Total size = %s", size_tot);
-			y+=20;
-		}
-		
-		if(show_log) {
+		if(show_log && have_log) {
+			if(head_title[0] != 0) {
+				FontColor(COLOR_2);
+				DrawString(x, y, head_title);
+				FontColor(COLOR_1);
+				y+=20;
+			}
+			if(prog_bar1_value >= 0) {
+				Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
+				y+=15;
+				if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
+				y+=25;
+			}		
+			if(gathering==YES){
+				DrawString(x, y, STR_GATHERING);
+				y+=20;
+				DrawFormatString(x, y, "%s = %i", STR_FILES, nb_file);
+				y+=20;
+				DrawFormatString(x, y, "%s = %i", STR_DIRS, nb_directory);
+				y+=20;
+				char *size_tot = get_unit(total_size);
+				DrawFormatString(x, y,"%s = %s", STR_TOTALSIZE, size_tot);
+				y+=20;
+			}
 			for(i=0; i<=20; i++){
 			
 				if(strstr(loading_log[i], "Error")) FontColor(RED);
@@ -5274,173 +6500,183 @@ void Draw_Loading(void *unused)
 				if(y>450) break;
 			}
 		}
-	
-		int t;
-		float PI = 3.14159265;
-		switch(direction){
-			case 1: //droite
-			{
-				if(speed==9) {
-					Draw_Box(h-17, v+2 , 0, 0, 15, 2, 0xFFFFFF50, NO);
-					Draw_Box(h-22, v+9 , 0, 0, 20, 2, 0xFFFFFF50, NO);
-					Draw_Box(h-17, v+16, 0, 0, 15, 2, 0xFFFFFF50, NO);
+		
+		if(scene != SCENE_FILEMANAGER) {	
+			int t;
+			switch(GRID_DIRECTION){
+				case 1: //droite
+				{
+					if(speed==9) {
+						Draw_Box(h-17, v+2 , 0, 0, 15, 2, 0xFFFFFF50, NO);
+						Draw_Box(h-22, v+9 , 0, 0, 20, 2, 0xFFFFFF50, NO);
+						Draw_Box(h-17, v+16, 0, 0, 15, 2, 0xFFFFFF50, NO);
+					}
+					Draw_Box(h  , v, 0, 0, 3 , 20, 0xFFFFFF50, NO);
+					Draw_Box(h+4, v, 0, 0, 16, 20, 0xFFFFFF50, NO);
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0xFFFFFF50);
+					for(t=0; t<=180 ; t+=15) {
+						tiny3d_VertexPos( h + 20 + 10*sin(t*PI/180), v + 10 + 10*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0x000000A0);
+					for(t=-135; t<=45 ; t+=15) {
+						tiny3d_VertexPos( h + 20 + 2*sin(t*PI/180), v + 7 + 3*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+					
+					if(h>= 820) GRID_DIRECTION = 2; else h+=speed;
 				}
-				Draw_Box(h  , v, 0, 0, 3 , 20, 0xFFFFFF50, NO);
-				Draw_Box(h+4, v, 0, 0, 16, 20, 0xFFFFFF50, NO);
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0xFFFFFF50);
-				for(t=0; t<=180 ; t+=15) {
-					tiny3d_VertexPos( h + 20 + 10*sin(t*PI/180), v + 10 + 10*cos(t*PI/180), 0);
+				break;
+				case 2: //gauche
+				{
+					if(speed==9) {
+						Draw_Box(h+22, v+2 , 0, 0, 15, 2, 0xFFFFFF50, NO);
+						Draw_Box(h+22, v+9 , 0, 0, 20, 2, 0xFFFFFF50, NO);
+						Draw_Box(h+22, v+16, 0, 0, 15, 2, 0xFFFFFF50, NO);
+					}
+					Draw_Box(h+17, v, 0, 0, 3 , 20, 0xFFFFFF50, NO);
+					Draw_Box(h   , v, 0, 0, 16, 20, 0xFFFFFF50, NO);
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0xFFFFFF50);
+					for(t=-180; t<=0 ; t+=15) {
+						tiny3d_VertexPos( h + 10*sin(t*PI/180), v + 10 + 10*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0x000000A0);
+					for(t=-45; t<=135 ; t+=15) {
+						tiny3d_VertexPos( h + 2*sin(t*PI/180), v + 7 + 3*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+							
+					if(h < 20) GRID_DIRECTION = 1; else h-=speed;
 				}
-				tiny3d_End();
+				break;
+				case 3: // haut
+				{
+					if(speed==9) {
+						Draw_Box(h+2 , v+22, 0, 0, 2, 15, 0xFFFFFF50, NO);
+						Draw_Box(h+9 , v+22, 0, 0, 2, 20, 0xFFFFFF50, NO);
+						Draw_Box(h+16, v+22, 0, 0, 2, 15, 0xFFFFFF50, NO);
+					}
+					
+					Draw_Box(h, v+17, 0, 0, 20,  3, 0xFFFFFF50, NO);
+					Draw_Box(h, v   , 0, 0, 20, 16, 0xFFFFFF50, NO);
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0xFFFFFF50);
+					for(t=90; t<=270 ; t+=15) {
+						tiny3d_VertexPos( h + 10 + 10*sin(t*PI/180), v + 10*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0x000000A0);
+					for(t=45; t<=225 ; t+=15) {
+						tiny3d_VertexPos( h + 7 + 2*sin(t*PI/180), v + 3*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
 				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0x000000A0);
-				for(t=-135; t<=45 ; t+=15) {
-					tiny3d_VertexPos( h + 20 + 2*sin(t*PI/180), v + 7 + 3*cos(t*PI/180), 0);
+					if(v < 20) GRID_DIRECTION = 4; else v-=speed;
 				}
-				tiny3d_End();
-				
-				if(h>= 820) direction = 2; else h+=speed;
+				break;
+				case 4: // bas
+				{
+					if(speed==9) {
+						Draw_Box(h+2 , v-17, 0, 0, 2, 15, 0xFFFFFF50, NO);
+						Draw_Box(h+9 , v-22, 0, 0, 2, 20, 0xFFFFFF50, NO);
+						Draw_Box(h+16, v-17, 0, 0, 2, 15, 0xFFFFFF50, NO);
+					}
+					Draw_Box(h, v  , 0, 0, 20, 3 , 0xFFFFFF50, NO);
+					Draw_Box(h, v+4, 0, 0, 20, 16, 0xFFFFFF50, NO);
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0xFFFFFF50);
+					for(t=-90; t<=90 ; t+=15) {
+						tiny3d_VertexPos( h + 10 + 10*sin(t*PI/180), v + 20 + 10*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+					
+					tiny3d_SetPolygon(TINY3D_POLYGON);
+					tiny3d_VertexColor(0x000000A0);
+					for(t=45; t<=225 ; t+=15) {
+						tiny3d_VertexPos( h + 7 + 2*sin(t*PI/180), v + 20 + 3*cos(t*PI/180), 0);
+					}
+					tiny3d_End();
+					
+					if(v > 490) GRID_DIRECTION = 3; else v+=speed;
+				}
+				break;
+				default: //droite
+				{
+					GRID_DIRECTION = 1;
+				}
 			}
-			break;
-			case 2: //gauche
-			{
-				if(speed==9) {
-					Draw_Box(h+22, v+2 , 0, 0, 15, 2, 0xFFFFFF50, NO);
-					Draw_Box(h+22, v+9 , 0, 0, 20, 2, 0xFFFFFF50, NO);
-					Draw_Box(h+22, v+16, 0, 0, 15, 2, 0xFFFFFF50, NO);
-				}
-				Draw_Box(h+17, v, 0, 0, 3 , 20, 0xFFFFFF50, NO);
-				Draw_Box(h   , v, 0, 0, 16, 20, 0xFFFFFF50, NO);
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0xFFFFFF50);
-				for(t=-180; t<=0 ; t+=15) {
-					tiny3d_VertexPos( h + 10*sin(t*PI/180), v + 10 + 10*cos(t*PI/180), 0);
-				}
-				tiny3d_End();
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0x000000A0);
-				for(t=-45; t<=135 ; t+=15) {
-					tiny3d_VertexPos( h + 2*sin(t*PI/180), v + 7 + 3*cos(t*PI/180), 0);
-				}
-				tiny3d_End();
-						
-				if(h < 20) direction = 1; else h-=speed;
-			}
-			break;
-			case 3: // haut
-			{
-				if(speed==9) {
-					Draw_Box(h+2 , v+22, 0, 0, 2, 15, 0xFFFFFF50, NO);
-					Draw_Box(h+9 , v+22, 0, 0, 2, 20, 0xFFFFFF50, NO);
-					Draw_Box(h+16, v+22, 0, 0, 2, 15, 0xFFFFFF50, NO);
-				}
-				
-				Draw_Box(h, v+17, 0, 0, 20,  3, 0xFFFFFF50, NO);
-				Draw_Box(h, v   , 0, 0, 20, 16, 0xFFFFFF50, NO);
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0xFFFFFF50);
-				for(t=90; t<=270 ; t+=15) {
-					tiny3d_VertexPos( h + 10 + 10*sin(t*PI/180), v + 10*cos(t*PI/180), 0);
-				}
-				tiny3d_End();
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0x000000A0);
-				for(t=45; t<=225 ; t+=15) {
-					tiny3d_VertexPos( h + 7 + 2*sin(t*PI/180), v + 3*cos(t*PI/180), 0);
-				}
-				tiny3d_End();
 			
-				if(v < 20) direction = 4; else v-=speed;
-			}
-			break;
-			case 4: // bas
-			{
-				if(speed==9) {
-					Draw_Box(h+2 , v-17, 0, 0, 2, 15, 0xFFFFFF50, NO);
-					Draw_Box(h+9 , v-22, 0, 0, 2, 20, 0xFFFFFF50, NO);
-					Draw_Box(h+16, v-17, 0, 0, 2, 15, 0xFFFFFF50, NO);
-				}
-				Draw_Box(h, v  , 0, 0, 20, 3 , 0xFFFFFF50, NO);
-				Draw_Box(h, v+4, 0, 0, 20, 16, 0xFFFFFF50, NO);
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0xFFFFFF50);
-				for(t=-90; t<=90 ; t+=15) {
-					tiny3d_VertexPos( h + 10 + 10*sin(t*PI/180), v + 20 + 10*cos(t*PI/180), 0);
-				}
-				tiny3d_End();
-				
-				tiny3d_SetPolygon(TINY3D_POLYGON);
-				tiny3d_VertexColor(0x000000A0);
-				for(t=45; t<=225 ; t+=15) {
-					tiny3d_VertexPos( h + 7 + 2*sin(t*PI/180), v + 20 + 3*cos(t*PI/180), 0);
-				}
-				tiny3d_End();
-				
-				if(v > 490) direction = 3; else v+=speed;
-			}
-			break;
-			default: //droite
-			{
-				direction = 1;
+			if(speed==9) rumble2_on=1; else rumble2_on=0;
+			if(boost<30) {
+				color = RED;
+			} else
+			if(boost==100) {
+				color = BLUE;
+			} else
+			if(boost<100) {
+				color = GREEN;
 			}
 		}
-		
-		if(speed==9) rumble2_on=1; else rumble2_on=0;
-		u32 color;
-		if(boost<30) {
-			color = RED;
-		} else
-		if(boost==100) {
-			color = BLUE;
-		} else
-		if(boost<100) {
-			color = GREEN;
-		}
-		
 		
 		// *** DISPLAY BUTTONS ***
 		x=25; y=485;
+		if(scene == SCENE_FILEMANAGER) {
+			if(cursor_rotate<360 && !have_log) {
+				Draw_input();
+				y=-50;
+			}
+		}
+		
 		FontSize(15);
 		FontColor(COLOR_1);
-		
-		if(show_log)	x=DrawButton(x, y, "Hide logs", BUTTON_SELECT);
-		else x=DrawButton(x, y, "Show logs", BUTTON_SELECT);
-		
-		x=Draw_Button_Square(x, y, 15);
-		x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
-		x=DrawString( x+5, y, "Boost!  ");
+
+		if(have_log) {
+			if(show_log)	x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
+			else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
+		}
+			
+		if(scene != SCENE_FILEMANAGER) {
+			x=Draw_Button_Square(x, y, 15);
+			x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
+			x=DrawFormatString( x+5, y, "%s  ", STR_BOOST);
+		}
 		
 		if(AutoM == YES) {
-			x=DrawButton(x, y, "Game menu", BUTTON_TRIANGLE);
+			x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
 		}
-		if(prog_bar1_value >= 0) {
-			x=DrawButton(x, y, "Cancel", BUTTON_CIRCLE);
-		}
-		if(gathering==YES) {
-			x=DrawButton(x, y, "Cancel Gathering", BUTTON_CIRCLE);
+		if(prog_bar1_value >= 0 || gathering) {
+			x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		}
 		tiny3d_Flip();
 		
 		ps3pad_read();
+		
+		if(scene == SCENE_FILEMANAGER) cursor_input();
+		
 		if(new_pad & BUTTON_RIGHT) {
-			direction = 1;
+			GRID_DIRECTION = 1;
 		}
 		if(new_pad & BUTTON_LEFT) {
-			direction = 2;
+			GRID_DIRECTION = 2;
 		}
 		if(new_pad & BUTTON_UP) {
-			direction = 3;
+			GRID_DIRECTION = 3;
 		}
 		if(new_pad & BUTTON_DOWN) {
-			direction = 4;
+			GRID_DIRECTION = 4;
 		}
 		if(new_pad & BUTTON_CIRCLE && prog_bar1_value >= 0) {
 			cancel=YES;
@@ -5538,7 +6774,7 @@ void print_head(char *format2, ...)
 void start_loading()
 {
 	loading=YES;
-	sysThreadCreate(&loading_id, Draw_Loading, NULL, 999, 0x2000, THREAD_JOINABLE, "loading");	
+	sysThreadCreate(&loading_id, Draw_Loading, NULL, 999, 0x2000, THREAD_JOINABLE, "loading");
 }
 
 void end_loading()
@@ -5551,96 +6787,6 @@ void end_loading()
 float DrawStringFromCenterX(float x, float y, char *txt)
 {
 	return DrawString(x-GetWidth(txt)/2, y, txt);
-}
-
-void Draw_Col_header(int x)
-{
-	int y = 165;
-	float y_top;
-	
-	float w;
-	float h;
-	
-	float BIG = 65;
-	float SMALL = 50;
-	
-	/*
-	XMB original look like something like
-		...
-		-5  x=250-95-90-85-80-75
-		-4  x=250-95-90-85-80
-		-3  x=250-95-90-85
-		-2  x=250-95-90
-		-1  x=250-95
-		0   x=250
-		1   x=250+95
-		2   x=250+95+90
-		3   x=250+95+90+85
-		4   x=250+95+90+85+80
-		5   x=250+95+90+85+80+75
-		6   x=250+95+90+85+80+75+70
-		...
-	*/	
-	
-	int i;
-	
-	SetFontZ(90);
-	if(Themes[UI_position][0] == 0) {
-		
-		for(i=0; i<6;i++) {
-			if(x==250) {FontSize(30);	y_top = y-30;}
-			else {FontSize(20); 	y_top = y-20;}
-			DrawStringFromCenterX(x, y_top, Columns[i]);
-			x+=90;
-		}
-		
-		FontSize(20);
-		SetFontZ(10);
-		return;
-	}
-	
-	for(i=0; i<6 ; i++) {
-		w=h=SMALL;
-		if(XMB_Col_offset[i] != 0) {
-			if( x==250) {
-				w=h=BIG;
-				FontSize(15);
-				DrawStringFromCenterX(x, y, Columns[i]);
-			}
-			tiny3d_SetTexture(0, XMB_Col_offset[i], XMB_Col[i].width, XMB_Col[i].height, XMB_Col[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(x-w/2, y-h, 90, 0, w, h, WHITE, YES);
-		} 
-		else if(XMB_MMTHM_XMB_offset != 0 && XMB_MMTHM_XMB2_offset != 0) { 
-			if( x==250) {
-				w=h=BIG;
-				FontSize(15);
-				DrawStringFromCenterX(x, y, Columns[i]);
-			}
-			u8 ico=6;
-			if(i==0) ico=2 ;else
-			if(i==1) ico=12;else
-			if(i==2) ico=6 ;else
-			if(i==3) ico=29;else
-			if(i==4) ico=28;else
-			if(i==5) ico=30;
-			Draw_MMTHM_XMB(x-w/2 , y-h, 90, w, h,  ico);
-		}
-		else { 
-			if(x==250) {
-				FontSize(30);
-				DrawStringFromCenterX(x, y-30, Columns[i]);
-			}
-			else {
-				FontSize(20);
-				DrawStringFromCenterX(x, y-20, Columns[i]);
-			}
-		}
-		x+=90;
-	}
-
-	FontSize(20);
-	SetFontZ(10);
-	
 }
 
 //*******************************************************
@@ -6751,7 +7897,7 @@ u8 ExtractZip(char* ZipFile)
 		}
 		
 		u64 pos = 0ULL;
-		u64 readed = 0, writed = 0;
+		u64 read = 0, writed = 0;
 		FILE *f;
 		
 		prog_bar2_value=0;
@@ -6778,9 +7924,9 @@ u8 ExtractZip(char* ZipFile)
 				return FAILED;
 			}
 			
-			readed = file_stat.size - pos; if(readed > mem_size) readed = mem_size;
+			read = file_stat.size - pos; if(read > mem_size) read = mem_size;
 			
-			writed = zip_fread(file_zip, mem, (size_t) readed);
+			writed = zip_fread(file_zip, mem, (size_t) read);
 			if(writed<0) {
 				zip_fclose(file_zip);
 				zip_close(f_zip);
@@ -6797,7 +7943,7 @@ u8 ExtractZip(char* ZipFile)
 				return FAILED;
 			}
 			
-			if(readed != writed) {
+			if(read != writed) {
 				zip_fclose(file_zip);
 				zip_close(f_zip);
 				fclose(f);
@@ -6805,7 +7951,7 @@ u8 ExtractZip(char* ZipFile)
 				return FAILED;
 			}
 			
-			writed = fwrite(mem, 1, readed, f);
+			writed = fwrite(mem, 1, read, f);
 			if(writed<0) {
 				zip_fclose(file_zip);
 				zip_close(f_zip);
@@ -6814,7 +7960,7 @@ u8 ExtractZip(char* ZipFile)
 				return FAILED;
 			}
 			
-			if(readed != writed) {
+			if(read != writed) {
 				zip_fclose(file_zip);
 				zip_close(f_zip);
 				fclose(f);
@@ -6822,7 +7968,7 @@ u8 ExtractZip(char* ZipFile)
 				return FAILED;
 			}
 			
-			pos += readed;
+			pos += read;
 			
 			prog_bar2_value=pos*100/file_stat.size;
 		}
@@ -7192,7 +8338,7 @@ int Delete_Game(char *path, int position)
 
 	if(iso) {
 	
-		strtok(game_path,".");
+		RemoveExtention(game_path);
 		
 		sprintf(temp , "%s.PNG" , game_path);
 		Delete(temp);
@@ -7263,15 +8409,16 @@ void Get_Game_Size(char *path)
 		
 		strcpy(iso_path, path);
 		
-		strtok(iso_path,".");
+		char *extention = GetExtention(path);
+		RemoveExtention(iso_path);
 		
-		if(strstr(path, ".iso.0") != NULL) {
+		if(strcmp(extention, ".iso.0") == 0) {
 			for(i=0; i<30; i++) {
 				sprintf(temp , "%s.iso.%d" , iso_path, i);
 				get_size(temp, YES);
 			}
-		}
-		else if(strstr(path, ".ISO.0") != NULL) {
+		} else 
+		if(strcmp(extention, ".ISO.0") == 0) {
 			for(i=0; i<30; i++) {
 				sprintf(temp , "%s.ISO.%d" , iso_path, i);
 				get_size(temp, YES);
@@ -7296,21 +8443,21 @@ char *get_unit(u64 nb)
 	
 	if(nb >= 1073741824) {
 		size = (float) nb / 1073741824;
-		strcpy(unit, " Gb");
+		sprintf(unit, " G%c", STR_UNIT[0]);
 	}
 	else
 	if(nb >= 1048576) {
 		size = (float) nb / 1048576;
-		strcpy(unit, " Mb");
+		sprintf(unit, " M%c", STR_UNIT[0]);
 	}
 	else
 	if(nb >= 1024) {
 		size = (float) nb / 1024;
-		strcpy(unit, " Kb");
+		sprintf(unit, " K%c", STR_UNIT[0]);
 	} 
 	else {
 		size = (float) nb;
-		strcpy(unit, "  b");
+		sprintf(unit, "  %c", STR_UNIT[0]);
 	}
   
 	float decimal = (int)(100*(size - (int)size));
@@ -7326,6 +8473,7 @@ char *get_unit(u64 nb)
 	
 }
 
+
 static sys_ppu_thread_t Copy_id;
 
 void Draw_Copy_screen(void *unused)
@@ -7339,6 +8487,14 @@ void Draw_Copy_screen(void *unused)
 	nb_directory=0;
 	gathering_cancel=NO;
 	copy_cancel=NO;
+	u8 is_dir = NO;
+	if(path_info(copy_src) == _DIRECTORY) is_dir=YES;
+	
+	u64 previous_size=0;
+	
+	char speed_STR[32];
+	init_timer(4);
+	start_timer(4);
 	
 	while(copy_flag) {
 		
@@ -7354,48 +8510,62 @@ void Draw_Copy_screen(void *unused)
 		FontColor(COLOR_4);
 		
 		if(gathering==YES) {
-			DrawString(x , y, "Gathering data...");
-		} else DrawString(x , y, "Copying...");
+			DrawString(x , y, STR_GATHERING);
+		} else DrawString(x , y, STR_COPYING);
 		
 		FontColor(COLOR_1);
 		
 		y+=new_line(1);
 		
-		DrawString(x , y, "from :");
+		DrawFormatString(x , y, "%s :", STR_FROM);
 		DrawString(120, y, copy_src);
 		
 		y+=new_line(1);
 		
-		DrawString(x , y, "to :");
+		DrawFormatString(x , y, "%s :", STR_TO);
 		DrawString(120, y, copy_dst);
 		
 		y+=new_line(1);
 		
-		if(gathering_cancel==YES) {
-			DrawString(x , y, "Nb of file : Unknown");
-		} else
-		DrawFormatString(x , y, "Nb of file : %d", nb_file);
+		if(gathering_cancel==YES)
+			DrawFormatString(x , y, "%s : %s", STR_FILES, STR_UNKNOWN);
+		else
+			DrawFormatString(x , y, "%s : %d", STR_FILES, nb_file);
 		
 		y+=new_line(1);
 		
-		if(iso==YES) {
-			if(gathering_cancel==YES) {
-				DrawString(x , y, "Nb of directory : Unknown");
-			} else
-			DrawFormatString(x , y, "Nb of directory : %d", nb_directory);
+		if(is_dir) {
+			if(gathering_cancel==YES)
+				DrawFormatString(x , y, "%s : %s", STR_DIRS, STR_UNKNOWN);
+			else
+				DrawFormatString(x , y, "%s : %d", STR_DIRS, nb_directory);
 			
 			y+=new_line(1);
 		}
 		
 		char *size_current = get_unit(copy_current_size);
-		
 		DrawString(x, y, size_current);
+		if(size_current) free(size_current);
 		
-		if(gathering_cancel==YES) DrawString(x+400-GetWidth("Unknown"), y, "Unknown"); 
+		if(gathering_cancel==YES) DrawString(x+400-GetWidth(STR_UNKNOWN), y, STR_UNKNOWN); 
 		else {
+			
 			char *size_tot = get_unit(total_size);
 			DrawString(x+400-GetWidth(size_tot), y, size_tot);
+			if(size_tot) free(size_tot);
 		}
+		
+		if( get_time(4) > 1000 ) {
+			char *copy_speed = get_unit(copy_current_size-previous_size);
+			
+			sprintf(speed_STR, "%s/s", copy_speed);
+			if(copy_speed) free(copy_speed);
+			
+			previous_size = copy_current_size;
+			start_timer(4);
+		}
+		
+		DrawStringFromCenterX(x+200, y, speed_STR);
 		
 		y+=new_line(1);
 		
@@ -7410,7 +8580,7 @@ void Draw_Copy_screen(void *unused)
 	
 		y+=20;
 		
-		DrawFormatString(x, y, "File : %s", copy_file);
+		DrawFormatString(x, y, "%s : %s", STR_FILE, copy_file);
 		
 		y+=new_line(2);
 	
@@ -7427,13 +8597,13 @@ void Draw_Copy_screen(void *unused)
 		FontColor(COLOR_1);
 		FontSize(15);
 
-		x=DrawButton(x, y, "Cancel", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 
 		x=Draw_Button_Select(x+5, 485, 15);
 		if(shutdown==YES) {
-			x=DrawButton(x, y, "Turn OFF = YES", BUTTON_SELECT);
+			x=DrawButton(x, y, STR_TURNOFF_YES, BUTTON_SELECT);
 		} else {
-			x=DrawButton(x, y, "Turn OFF = NO", BUTTON_SELECT);
+			x=DrawButton(x, y, STR_TURNOFF_NO, BUTTON_SELECT);
 		}
 		if(new_pad & BUTTON_SELECT) {
 			if(shutdown==YES) shutdown=NO; else shutdown=YES;
@@ -7441,7 +8611,7 @@ void Draw_Copy_screen(void *unused)
 		if(new_pad & BUTTON_CIRCLE) {
 			if(gathering==YES) {
 				gathering_cancel=YES;
-				show_msg("Gathering data cancelled");
+				show_msg(STR_CANCELLED);
 			} else 	copy_cancel = YES;
 		}
 		
@@ -7483,22 +8653,467 @@ void end_copy_loading()
 	sysThreadJoin(Copy_id, &ret);
 }
 
-u8 CopyFile(char* src, char* dst)
+void initAIO()
+{
+
+#ifdef RPCS3
+	sysFsAioInit("/dev_hdd0");
+	sysFsAioInit("/dev_hdd1");
+	sysFsAioInit("/dev_usb000");
+	sysFsAioInit("/dev_flash");
+	return;
+#endif
+	
+	char mount_point[32];
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir("/");		
+	while ((dir = readdir(d))) {
+		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+		if(strncmp(dir->d_name, "dev_", 4)==0) {
+			sprintf(mount_point, "/%s", dir->d_name);
+			if(sysFsAioInit(mount_point) != 0) {
+				print_load("Warning : failed to sysFsAioInit(%s)", mount_point);
+			}
+		}
+	}
+	closedir(d);
+
+}
+
+static sysFSAio t_read;  // used for async read
+static sysFSAio t_write; // used for async write
+
+typedef struct {
+    s64 read;
+    s64 writed;
+} t_async;
+
+t_async async_data;
+
+static void fast_func_read(sysFSAio *xaio, s32 error, s32 xid, u64 size)
+{
+    t_async* fi = (t_async *) xaio->usrdata;
+
+    if(error != 0 || size != xaio->size)
+    {
+        fi->read = -1; return;
+    }
+    else fi->read += (s64) size;
+}
+
+static void fast_func_write(sysFSAio *xaio, s32 error, s32 xid, u64 size)
+{
+    t_async* fi = (t_async *) xaio->usrdata;
+
+    if(error != 0 || size != xaio->size)
+    {
+        fi->writed = -1; return;
+    }
+    else fi->writed += (s64) size;
+}
+
+#define BUFFSIZE 0x20000ULL
+
+// Asynchronous Copy - include <lv2/sysfs.h>
+// sysFsAioInit - sysFsOpen - sysFsAioRead - sysFsAioWrite - sysFsAioFinish - sysFsAioCancel
+int CopyFile_async(char *src, char *dst)
+{
+    t_read.fd  = -1;
+    t_write.fd = -1;
+    int fdr, fdw;
+    static int id_r = -1, id_w = -1;
+	
+    u64 pos = 0ULL;
+    u64 pos2 = 0ULL;
+
+	struct stat s;
+	if(stat(src, &s) != 0) return FAILED; 
+	if(S_ISDIR(s.st_mode)) return FAILED;
+	u64 size = s.st_size;
+	
+    int alternate = 0;
+    char *mem = malloc(BUFFSIZE*2);
+    if(!mem) {
+		print_load("Error : failed to copy_async / malloc");
+		return FAILED;
+	}
+
+	if(sysFsAioInit(src)!= 0) {
+		free(mem);
+		print_load("Error : failed to copy_async / sysFsAioInit(src)");
+		return FAILED;
+	}
+
+	if(sysFsOpen(src, SYS_O_RDONLY, &fdr, 0,0) != 0) {
+		free(mem);
+		sysFsAioFinish(src);
+		print_load("Error : failed to copy_async / sysFsOpen(src)");
+		return FAILED;
+	}
+
+    if(sysFsAioInit(dst)!= 0)  {
+		free(mem);
+		sysFsAioFinish(src);
+		sysFsClose(fdr);
+		print_load("Error : failed to copy_async / sysFsAioInit(dst)");
+		return FAILED;
+	}
+
+	if(sysFsOpen(dst, SYS_O_CREAT | SYS_O_TRUNC | SYS_O_WRONLY, &fdw, 0, 0) != 0) {
+		free(mem);
+		sysFsAioFinish(src);
+		sysFsAioFinish(dst);
+		sysFsClose(fdr);
+		print_load("Error : failed to copy_async / sysFsOpen(src)");
+		return FAILED;
+	}
+
+    async_data.read = -666;
+    async_data.writed = -666;
+
+    while(pos2 < size) {
+
+        if(cancel) goto error;
+        
+        if(async_data.read == -666) {
+            async_data.read = -555;
+            t_read.fd = fdr;
+            t_read.offset = pos;
+            t_read.buffer_addr = (u32) (u64) &mem[alternate*BUFFSIZE];
+            t_read.size = size - pos;
+			if(t_read.size > BUFFSIZE) t_read.size = BUFFSIZE;
+            t_read.usrdata = (u64 ) &async_data;
+			
+			if(sysFsAioRead(&t_read, &id_r, fast_func_read) != 0) {
+				print_load("Error : failed to copy_async / sysFsAioRead");
+				goto error;
+			}
+            
+        } if(async_data.read == -1) {
+			print_load("Error : failed to copy_async / async_data.read = -1");
+			goto error;
+        } else if(async_data.read >= 0 && async_data.writed == -666) {
+            async_data.writed = -555;
+            t_write.fd = fdw;
+            t_write.offset = t_read.offset;
+            t_write.buffer_addr = t_read.buffer_addr;
+            t_write.size = t_read.size;
+            t_write.usrdata = (u64 ) &async_data;
+            pos+= t_read.size;
+            alternate^=1;
+            async_data.read = -666;
+
+            if(sysFsAioWrite(&t_write, &id_w, fast_func_write) != 0) {
+				print_load("Error : failed to copy_async / sysFsAioWrite");
+				goto error;
+            } 
+         
+        }
+        
+        if(async_data.writed == -1) {
+			print_load("Error : failed to copy_async / async_data.read = -1");
+			goto error;
+        } else if(async_data.writed >=0) {
+        
+            if(pos >= size) async_data.read = -555; else async_data.writed = -666;
+            pos2 = t_write.offset + t_write.size;
+			
+			file_copy_prog_bar=pos2*100/size;
+			
+			copy_current_size+=t_write.size;
+        }
+
+        
+		//usleep(4000);
+
+    }
+
+	sysFsClose(t_read.fd);
+    sysFsClose(t_write.fd);
+    sysFsAioFinish(src);
+	sysFsAioFinish(dst);
+    free(mem);
+   // usleep(10000);
+
+    return SUCCESS;
+
+error:
+  
+    sysFsAioCancel(id_r);
+    sysFsAioCancel(id_w);
+    //usleep(200000);
+    sysFsClose(t_read.fd);
+    sysFsClose(t_write.fd);
+    sysFsAioFinish(src);
+	sysFsAioFinish(dst);
+    free(mem);
+   
+    return FAILED;
+}
+
+// sysFs Copy - include <lv2/sysfs.h>
+// sysLv2FsOpen - sysLv2FsRead - sysLv2FsWrite - sysLv2FsClose
+u8 CopyFile_sysFs(char* src, char* dst)
 {
 	u8 ret = SUCCESS;
 	u64 lenght = 0LL;
 	char *mem = NULL;
 	u64 pos = 0ULL;
-	u64 readed = 0, writed = 0;
+	u64 read = 0, writed = 0;
+	int f1;
+	int f2;
 	
+	file_copy_prog_bar=0;
+
+	struct stat s;
+	if(stat(src, &s) != 0) return FAILED; 
+	if(S_ISDIR(s.st_mode)) return FAILED;
+	lenght = s.st_size;
+	
+	ret = sysFsOpen(src, SYS_O_RDONLY, &f1, NULL, 0);
+	if(ret) return FAILED;
+	
+	ret = sysFsOpen(dst, SYS_O_WRONLY | SYS_O_CREAT | SYS_O_TRUNC, &f2, NULL, 0);
+	if(ret) {sysFsClose(f1);return FAILED;}
+	
+	mem = malloc(BUFFSIZE);
+	if(mem == NULL) {
+		sysFsClose(f1);
+		sysFsClose(f2);
+		return FAILED;
+	}
+	
+	while(pos < lenght)
+	{
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		read = lenght - pos; 
+		if(read > BUFFSIZE) read = BUFFSIZE;
+		
+		ret=sysFsRead(f1, mem, read, &writed);
+		if(ret!=0) {ret = FAILED; goto skip;}
+		if(read != writed) {ret = FAILED; goto skip;}
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		
+		ret=sysFsWrite(f2, mem, read, &writed);
+		if(ret!=0) {ret = FAILED; goto skip;}
+		if(read != writed) {ret = FAILED; goto skip;}
+
+		pos += read;
+		
+		file_copy_prog_bar=pos*100/lenght;
+		copy_current_size+=read;
+	}
+
+skip:
+
+	file_copy_prog_bar=0;
+	
+	if(mem) free(mem);
+	if(f1) sysFsClose(f1);
+	if(f2) sysFsClose(f2);
+	
+	return ret;
+}
+
+// sysLv2Fs Copy - include <sys/file.h>
+// sysLv2FsOpen - sysLv2FsRead - sysLv2FsWrite - sysLv2FsClose
+u8 CopyFile_sysFsLv2(char* src, char* dst)
+{
+	u8 ret = SUCCESS;
+	u64 lenght = 0LL;
+	char *mem = NULL;
+	u64 pos = 0ULL;
+	u64 read = 0, writed = 0;
+	s32 fd = -1;
+	s32 fd2 = -1;
+	
+	file_copy_prog_bar=0;
+
+	struct stat s;
+	if(stat(src, &s) != 0) return FAILED; 
+	if(S_ISDIR(s.st_mode)) return FAILED;
+	lenght = s.st_size;
+	
+	ret = sysLv2FsOpen(src, 0, &fd, S_IRWXU | S_IRWXG | S_IRWXO, NULL, 0);
+	if(ret) return FAILED;
+
+	ret = sysLv2FsOpen(dst, SYS_O_WRONLY | SYS_O_CREAT | SYS_O_TRUNC, &fd2, 0777, NULL, 0);
+	if(ret) {sysLv2FsClose(fd); return FAILED;}
+	
+	mem = malloc(BUFFSIZE);
+	if(mem == NULL) return FAILED;
+
+	while(pos < lenght)
+	{
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		read = lenght - pos; 
+		if(read > BUFFSIZE) read = BUFFSIZE;
+		
+		ret=sysLv2FsRead(fd, mem, read, &writed);
+		if(ret!=0) {ret = FAILED; goto skip;}
+		if(read != writed) {ret = FAILED; goto skip;}
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		
+		ret=sysLv2FsWrite(fd2, mem, read, &writed);
+		if(ret!=0) {ret = FAILED; goto skip;}
+		if(read != writed) {ret = FAILED; goto skip;}
+
+		pos += read;
+		
+		file_copy_prog_bar=pos*100/lenght;
+		copy_current_size+=read;
+	}
+
+skip:
+
+	file_copy_prog_bar=0;
+	
+	if(mem) free(mem);
+	if(fd >=0) sysLv2FsClose(fd);
+	if(fd2>=0) sysLv2FsClose(fd2);
+	if(ret) return ret;
+	
+	return ret;
+}
+
+// ps3_ntfs COPY - include <ntfs.h>
+// ps3_ntfs_open/ps3_ntfs_read/ps3_ntfs_write/ps3_ntfs_close
+u8 CopyFile_ps3ntfs(char* src, char* dst)
+{
+	u8 ret = SUCCESS;
+	u64 lenght = 0LL;
+	char *mem = NULL;
+	u64 pos = 0ULL;
+	u64 read = 0, writed = 0;
+	int f1=-1;
+	int f2=-1;
+	
+	file_copy_prog_bar=0;
+	
+	struct stat s;
+	if(stat(src, &s) != 0) return FAILED; 
+	if(S_ISDIR(s.st_mode)) return FAILED;
+	lenght = s.st_size;
+	
+	f1 = ps3ntfs_open(src, O_RDONLY, 0766);
+	if(f1<0) goto skip;
+
+	f2 = ps3ntfs_open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	if(f2<0) {ps3ntfs_close(f2);goto skip;}
+	
+	mem = malloc(BUFFSIZE);
+	if(mem == NULL) return FAILED;
+
+	while(pos < lenght)
+	{
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		read = lenght - pos; 
+		if(read > BUFFSIZE) read = BUFFSIZE;
+		
+		writed=ps3ntfs_read(f1, mem, read);
+		if(read != writed) {ret = FAILED; goto skip;}
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		
+		writed=ps3ntfs_write(f2, mem, read);
+		if(read != writed) {ret = FAILED; goto skip;}
+
+		pos += read;
+		
+		file_copy_prog_bar=pos*100/lenght;
+		copy_current_size+=read;
+	}
+
+skip:
+
+	file_copy_prog_bar=0;
+	
+	if(mem) free(mem);
+	if(f1) ps3ntfs_close(f1);
+	if(f2) ps3ntfs_close(f2);
+	
+	return ret;
+}
+
+// fcntl COPY - include <fcntl.h>
+// open/read/write/close
+u8 CopyFile_fcntl(char* src, char* dst)
+{
+	u8 ret = SUCCESS;
+	u64 lenght = 0LL;
+	char *mem = NULL;
+	u64 pos = 0ULL;
+	u64 rd = 0, writed = 0;
+	int f1=-1;
+	int f2=-1;
+	
+	file_copy_prog_bar=0;
+	
+	struct stat s;
+	if(stat(src, &s) != 0) return FAILED; 
+	if(S_ISDIR(s.st_mode)) return FAILED;
+	lenght = s.st_size;
+	
+	f1 = open(src, O_RDONLY, 0766);
+	if(f1<0) goto skip;
+
+	f2 = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	if(f2<0) {close(f1);goto skip;}
+	
+	mem = malloc(BUFFSIZE);
+	if(mem == NULL) return FAILED;
+
+	while(pos < lenght)
+	{
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		rd = lenght - pos; 
+		if(rd > BUFFSIZE) rd = BUFFSIZE;
+		
+		writed=read(f1, mem, rd);
+		if(rd != writed) {ret = FAILED; goto skip;}
+		if(copy_cancel==YES) {ret = FAILED; goto skip;}
+		
+		writed=write(f2, mem, rd);
+		if(rd != writed) {ret = FAILED; goto skip;}
+
+		pos += rd;
+		
+		file_copy_prog_bar=pos*100/lenght;
+		copy_current_size+=rd;
+	}
+
+skip:
+
+	file_copy_prog_bar=0;
+	
+	if(mem) free(mem);
+	if(f1) close(f1);
+	if(f2) close(f2);
+
+	return ret;
+}
+
+// Standard I/O - include <stdio.h>
+// fopen/fread/fwrite/fclose
+// NTFS supported with NTFS_init_system_io();
+u8 CopyFile_stdio(char* src, char* dst)
+{
+	u8 ret = SUCCESS;
+	u64 lenght = 0LL;
+	char *mem = NULL;
+	u64 pos = 0ULL;
+	u64 read = 0, writed = 0;
+
 	FILE *f;
 	FILE *f2;
 	
 	file_copy_prog_bar=0;
-
-	if(path_info(src) != _FILE) return FAILED;
-
-	lenght = get_size(src, NO);
+	
+	struct stat s;
+	if(stat(src, &s) != 0) return FAILED; 
+	if(S_ISDIR(s.st_mode)) return FAILED;
+	lenght = s.st_size;
 	
 	f = fopen(src, "rb");
 	if(f==NULL) {ret = FAILED; goto skip;}
@@ -7508,31 +9123,31 @@ u8 CopyFile(char* src, char* dst)
 	
 	if( is_ntfs(dst) == NO ) sysLv2FsChmod(dst, 0777);
 	
-	mem = malloc(0x10000);
+	mem = malloc(BUFFSIZE);
 	
 	while(pos < lenght) {
 		
 		if(copy_cancel==YES) {ret = FAILED; goto skip;}
 		
-		readed = lenght - pos; if(readed > 0x10000ULL) readed = 0x10000ULL;
+		read = lenght - pos; if(read > BUFFSIZE) read = BUFFSIZE;
 		
-		writed = fread(mem, 1, readed, f);
+		writed = fread(mem, 1, read, f);
 		if(writed<0) {ret = FAILED; goto skip;}
 		
 		if(copy_cancel==YES) {ret = FAILED; goto skip;}
 		
-		if(readed != writed) {ret = FAILED; goto skip;}
+		if(read != writed) {ret = FAILED; goto skip;}
 		
-		writed =fwrite(mem, 1, readed, f2);
+		writed = fwrite(mem, 1, read, f2);
 		if(writed<0) {ret = FAILED; goto skip;}
 		
-		if(readed != writed) {ret = FAILED; goto skip;}
+		if(read != writed) {ret = FAILED; goto skip;}
 		
-		pos += readed;
+		pos += read;
 		
 		file_copy_prog_bar=pos*100/lenght;
 		
-		copy_current_size+=readed;
+		copy_current_size+=read;
 	
 	}
 	
@@ -7545,6 +9160,109 @@ skip:
 	if(f2) fclose(f2);
 	
 	return ret;
+}
+
+void TestCopy(char *src, char *dst, int i)
+{
+	if(i==0) CopyFile_stdio(src, dst); else
+	if(i==1) CopyFile_fcntl(src, dst); else
+	if(i==2) CopyFile_ps3ntfs(src, dst); else
+	if(i==3) CopyFile_sysFsLv2(src, dst); else
+	if(i==4) CopyFile_sysFs(src, dst); else
+	if(i==5) CopyFile_async(src, dst);
+}
+
+#define CopyFile CopyFile_ps3ntfs
+
+void SpeedTest()
+{
+
+	char *TestFile = "/dev_hdd0/SPEEDTEST.BIN";
+	
+	char dst[128];
+	char dst2[128];
+	char dst3[128];
+	char tmp[128];
+	
+	u64 previous_size=0;
+	
+	if(path_info(TestFile) == _NOT_EXIST) return;
+	char *copy_speed=NULL;
+	
+	init_timer(3);
+	
+	FILE *f=NULL;
+	
+	f = fopen("/dev_hdd0/speed_test.txt", "wb");
+	if(f==NULL) return;
+	
+	gathering_cancel=YES;
+	
+	int i,j;
+	for(j=0; j<1; j++) {
+		if(j==0) {strcpy(tmp, "*** CopyFile_stdio ***\n"); fputs(tmp,f);} else
+		if(j==1) {strcpy(tmp, "\n*** CopyFile_fcntl ***\n"); fputs(tmp,f);} else
+		if(j==2) {strcpy(tmp, "\n*** CopyFile_ps3_ntfs ***\n"); fputs(tmp,f);} else
+		if(j==3) {strcpy(tmp, "\n*** CopyFile_sysFsLv2 ***\n"); fputs(tmp,f);} else
+		if(j==4) {strcpy(tmp, "\n*** CopyFile_sysFs ***\n"); fputs(tmp,f);} else
+		if(j==5) {strcpy(tmp, "\n*** CopyFile_async ***\n"); fputs(tmp,f);}		 
+
+		strcpy(tmp, "HDD0 to HDD0"); fputs(tmp,f); 
+		
+		strcpy(dst, "/dev_hdd0/DST.BIN");
+		
+		start_timer(3);
+		TestCopy(TestFile, dst, j);
+		copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
+		sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+		if(copy_speed) free(copy_speed);
+		previous_size=copy_current_size;
+		
+		Delete(dst);
+	
+		for(i=0; i<=device_number; i++) {
+			if(strstr(list_device[i], "dev_hdd0") != NULL) continue;
+			
+			sprintf(tmp, "HDD0 to %s", list_device[i]); fputs(tmp,f); 
+			
+			sprintf(dst, "/%s/DST.BIN", list_device[i]);
+			
+			start_timer(3);
+			TestCopy(TestFile, dst, j);
+			copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
+			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+			if(copy_speed) free(copy_speed);
+			previous_size=copy_current_size;
+			
+			sprintf(tmp, "%s to HDD0", list_device[i]); fputs(tmp,f); 
+			
+			strcpy(dst2, "/dev_hdd0/DST.BIN");
+			
+			start_timer(3);
+			TestCopy(dst, dst2, j);
+			copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
+			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+			if(copy_speed) free(copy_speed);
+			previous_size=copy_current_size;
+			
+			sprintf(tmp, "%s to %s", list_device[i], list_device[i]); fputs(tmp,f); 
+			
+			sprintf(dst3, "/%s/DST2.BIN", list_device[i]);
+			
+			start_timer(3);
+			TestCopy(dst, dst3, j);
+			copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
+			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+			if(copy_speed) free(copy_speed);
+			previous_size=copy_current_size;
+			
+			Delete(dst);
+			Delete(dst2);
+			Delete(dst3);
+		}
+	}
+
+	if(f) {fclose(f); f=NULL;}
 }
 
 u8 Copy(char *src, char *dst)
@@ -7663,7 +9381,7 @@ u8 AddGame(char *path)
 
 	strcpy(list_game_title[game_number], list_game_path[game_number]);
 	strcpy(list_game_title[game_number], &strrchr(list_game_title[game_number], '/')[1]);
-	strtok(list_game_title[game_number], ".");
+	RemoveExtention(list_game_title[game_number]);
 	
 	u8 ext = get_ext(list_game_path[game_number]);
 	
@@ -7709,8 +9427,8 @@ void Copy_Game(char *src, char *dst)
 		strcpy(temp_src1, copy_src);
 		strcpy(temp_dst1, copy_dst);
 		
-		strtok(temp_src1,".");
-		strtok(temp_dst1,".");
+		RemoveExtention(temp_src1);
+		RemoveExtention(temp_dst1);
 		
 		if(strstr(copy_src, ".iso.0") != NULL ) {
 			for(i=0; i<32; i++) {
@@ -7751,12 +9469,12 @@ cancel:
 	
 		AddGame(copy_dst);
 		
-		show_msg("Game Copied !");
+		show_msg(STR_DONE);
 	} else {
 		Delete_Game(copy_dst, -1);
 		
-		if(copy_cancel==YES) show_msg("Copy cancelled !"); else 
-		show_msg("Copy Failed !");
+		if(copy_cancel==YES) show_msg(STR_CANCELLED); else 
+		show_msg(STR_FAILED);
 	}
 	
 	end_copy_loading();
@@ -7774,7 +9492,7 @@ void Draw_GameProperties()
 	
 	char Game_id[20];
 	if(Get_ID(list_game_path[position], list_game_platform[position], Game_id) == FAILED) {
-		strcpy(Game_id, "Unk");
+		strcpy(Game_id, STR_UNKNOWN);
 	}
 	
 	char platform[30];
@@ -7789,7 +9507,7 @@ void Draw_GameProperties()
 	} else
 	if(list_game_platform[position] == _JB_PSP || list_game_platform[position] == _ISO_PSP) {
 		strcpy(platform, "PlayStation Portable");
-	} else strcpy(platform, "Unk");
+	} else strcpy(platform, STR_UNKNOWN);
 	
 	while(1) {
 		
@@ -7801,48 +9519,47 @@ void Draw_GameProperties()
 		int x1=50, y=40;
 		int xt;
 		
-		
 		Draw_Box(x1+5, y+4, 0, 0, 8, 8, COLOR_3, NO);
 		FontColor(COLOR_3);
 		FontSize(18);
-		xt=DrawString(x1+20, y, "Game Properties");
+		xt=DrawString(x1+20, y, STR_GAME_PROP);
 		y+=new_line(1);
 		Draw_Box(x1, y, 0, 0, xt-x1, 2, COLOR_3, NO);
 
 		y+=new_line(2);
 		
 		FontColor(COLOR_3);
-		xt=DrawString(x1 , y, "Game :");
+		xt=DrawFormatString(x1 , y, "%s :", STR_GAME);
 		FontColor(COLOR_1);
 		DrawString(xt+10 , y,  list_game_title[position]);
 		
 		y+=new_line(1);
 		
 		FontColor(COLOR_3);
-		xt=DrawString(x1 , y, "Game path :");
+		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_PATH);
 		FontColor(COLOR_1);
 		DrawString(xt+10 , y,  list_game_path[position]);
 		
 		y+=new_line(1);
 		
 		FontColor(COLOR_3);
-		xt=DrawString(x1 , y, "Game format :");
+		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_FORMAT);
 		FontColor(COLOR_1);
 		if(iso==YES) {
 			DrawString(xt+10 , y,  "ISO");
-		} else DrawString(xt+10 , y,  "JB (folder)");
+		} else DrawString(xt+10 , y,  "JB");
 		
 		y+=new_line(1);
 		
 		FontColor(COLOR_3);
-		xt=DrawString(x1 , y, "Game size :");
+		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_SIZE);
 		FontColor(COLOR_1);
 		DrawString(xt+10 , y, tot_size);
 		
 		y+=new_line(1);
 		
 		FontColor(COLOR_3);
-		xt=DrawString(x1 , y, "Files :");
+		xt=DrawFormatString(x1 , y, "%s :", STR_FILES);
 		FontColor(COLOR_1);
 		DrawFormatString(xt+10 , y,  "%d", nb_file);
 		
@@ -7850,7 +9567,7 @@ void Draw_GameProperties()
 		
 		if(iso==NO) {
 			FontColor(COLOR_3);
-			xt=DrawString(x1 , y, "Directories :");
+			xt=DrawFormatString(x1 , y, "%s :", STR_DIRS);
 			FontColor(COLOR_1);
 			DrawFormatString(xt+10 , y,  "%d", nb_directory);
 			
@@ -7860,15 +9577,15 @@ void Draw_GameProperties()
 		
 		if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
 			FontColor(COLOR_3);
-			xt=DrawString(x1 , y, "System version :");
+			xt=DrawFormatString(x1 , y, "%s :", STR_SYSVERS);
 			FontColor(COLOR_1);
 			DrawString(xt+10 , y, sys_vers);
 			
 			y+=new_line(1);
 		}
-		
+
 		FontColor(COLOR_3);
-		xt=DrawString(x1 , y, "Game ID :");
+		xt=DrawFormatString(x1 , y, "%s :", STR_GAMEID);
 		FontColor(COLOR_1);
 		DrawString(xt+10 , y, Game_id);
 		
@@ -7878,7 +9595,7 @@ void Draw_GameProperties()
 		
 			
 			FontColor(COLOR_3);
-			xt=DrawString(x1 , y, "ELF CRC :");
+			xt=DrawFormatString(x1 , y, "%s :", STR_ELFCRC);
 			FontColor(COLOR_1);
 			DrawString(xt+10 , y,  PS2CRC_STR);
 			
@@ -7886,7 +9603,7 @@ void Draw_GameProperties()
 			
 			if(strcmp(PS2CRC_STR, PS2ORICRC_STR) != 0) {
 				FontColor(COLOR_3);
-				xt=DrawString(x1 , y, "ELF CRC (Original):");
+				xt=DrawFormatString(x1 , y, "%s :", STR_ELFCRCO);
 				FontColor(COLOR_1);
 				DrawString(xt+10 , y,  PS2ORICRC_STR);
 				
@@ -7900,7 +9617,7 @@ void Draw_GameProperties()
 		FontColor(COLOR_1);
 		FontSize(15);
 
-		x1=DrawButton(x1, y, "Back", BUTTON_CIRCLE);
+		x1=DrawButton(x1, y, STR_BACK , BUTTON_CIRCLE);
 		
 		tiny3d_Flip();
 		
@@ -8786,14 +10503,14 @@ screen:
 		y+=new_line(2);
 
 		FontColor(COLOR_4);
-
-		DrawFormatString(x, y, "Update found = %d", nPKG+1);
+		
+		DrawFormatString(x, y, "%s = %d", STR_UPDATE_FOUND, nPKG+1);
 		
 		y+=new_line(2);
 		
 		for(n=0 ; n<=nPKG; n++) {
 			if(n==d_position) FontColor(COLOR_2); else FontColor(COLOR_1);
-			DrawFormatString(x, y, "Update: %1.2f  -  Size: %s  - System: %1.2f",	data[n].pkgVers, size_str[n], data[n].sysVers);
+			DrawFormatString(x, y, "%s: %1.2f  -  %s: %s  - %s: %1.2f", STR_UPDATE, data[n].pkgVers, STR_SIZE, size_str[n], SYSTEM, data[n].sysVers);
 			y+=new_line(1);
 		}
 		
@@ -8807,19 +10524,19 @@ screen:
 		FontColor(COLOR_1);
 		SetFontZ(0);
 	
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
-	
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+		
 		if(nPKG!=-1)  {
-			x=DrawButton(x, y, "Download", BUTTON_CROSS);
+			x=DrawButton(x, y, STR_DL, BUTTON_CROSS);
 		} 
 		if(nPKG>0) {
-			x=DrawButton(x, y, "Download ALL", BUTTON_SQUARE);
+			x=DrawButton(x, y, STR_DL_ALL, BUTTON_SQUARE);
 		}
 		if(nPKG!=-1)  {
 			if(shutdown==YES) {
-				x=DrawButton(x, y, "Turn OFF = YES", BUTTON_SELECT);
+				x=DrawButton(x, y, STR_TURNOFF_YES, BUTTON_SELECT);
 			} else {
-				x=DrawButton(x, y, "Turn OFF = NO", BUTTON_SELECT);
+				x=DrawButton(x, y, STR_TURNOFF_NO, BUTTON_SELECT);
 			}
 		}
 		
@@ -8842,8 +10559,8 @@ screen:
 			if(path_info(dst) == _FILE) show_msg("This file already exist"); 
 			else {
 				start_loading();
-				if(download(data[d_position].url, dst) == SUCCESS) show_msg("Update Downloaded"); else 
-				show_msg("Download Failed");
+				if(download(data[d_position].url, dst) == SUCCESS) show_msg(STR_DONE); 
+				else show_msg(STR_FAILED);
 				end_loading();
 				if(shutdown==YES) {
 					Delete("/dev_hdd0/tmp/turnoff");
@@ -8856,8 +10573,8 @@ screen:
 			for(n=0; n<=nPKG; n++) {
 				sprintf(dst, "/dev_hdd0/packages%s", strrchr(data[n].url, '/'));
 				if(path_info(dst) == _FILE) continue;
-				if(download(data[n].url, dst) == SUCCESS) show_msg("Update Downloaded"); else
-				show_msg("Download Failed");
+				if(download(data[n].url, dst) == SUCCESS)  show_msg(STR_DONE); 
+				else show_msg(STR_FAILED);
 			}
 			end_loading();
 			if(shutdown==YES) {
@@ -8887,6 +10604,7 @@ int read_scan_dir()
 		strtok(temp, "\r\n");
 		scan_dir_number++;
 		strcpy(scan_dir[scan_dir_number], temp);
+		
 	}
 	
 	if(scan_dir_number != -1) return SUCCESS; else return FAILED;
@@ -9031,6 +10749,12 @@ void check_device()
 				
 				print_load("%s unplugged", path_unplug);
 				
+				if(strncmp(path_unplug, "dev_", 4)==0) {
+					char mount_point[20];
+					sprintf(mount_point, "/%s", path_unplug);
+					sysFsAioFinish(mount_point);
+				} 
+				
 				char new_title_list[MAX_GAME][255]={{0}};
 				char new_path_list[MAX_GAME][255]={{0}};
 				char new_platform_list[MAX_GAME]={0};
@@ -9075,6 +10799,15 @@ void check_device()
 				}
 				
 				print_load("%s plugged", path_plug);
+				
+				if(strncmp(path_plug, "dev_", 4)==0) {
+					char mount_point[20];
+					sprintf(mount_point, "/%s", path_plug);
+					if(sysFsAioInit(mount_point) != 0)
+						print_load("Warning :  failed to sysFsAioInit(%s)", mount_point);
+					
+				} 
+				
 				print_load( "Get directories names from scan_dir.txt");
 				//get scan dir
 				if(read_scan_dir()==FAILED) {
@@ -9113,7 +10846,7 @@ void check_device()
 						
 						strcpy(list_game_title[game_number], list_game_path[game_number]);
 						strcpy(list_game_title[game_number], &strrchr(list_game_title[game_number], '/')[1]);
-						strtok(list_game_title[game_number], ".");
+						RemoveExtention(list_game_title[game_number]);
 						
 						list_game_platform[game_number] = ext;
 						
@@ -9470,30 +11203,6 @@ u8 CheckCRC32(char *path)
 //*******************************************************
 // PS2 emu
 //*******************************************************
-
-void use_CONFIG()
-{
-	char CONFIG_path[128];
-	
-	strcpy(CONFIG_path, list_game_path[position]);
-	strcat(CONFIG_path, ".CONFIG");
-	
-	if( path_info(CONFIG_path) == _FILE ) return;
-	
-	char ID[20];
-	Get_ID(list_game_path[position], _ISO_PS2, ID);
-	
-	char LOC_CONFIG_path[128];
-	
-	sprintf(LOC_CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, ID);
-	
-	if( Copy(LOC_CONFIG_path, CONFIG_path) == SUCCESS ) return;
-	
-	sprintf(LOC_CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, ID);
-	
-	if( Copy(LOC_CONFIG_path, CONFIG_path) == SUCCESS ) return;
-	
-}
 
 uint8_t PS2emu_is_patched()
 {
@@ -9914,7 +11623,7 @@ void Download_covers()
 	
 	print_head("Downloading covers");
 	
-	for(i=0; i<game_number; i++) {
+	for(i=0; i<=game_number; i++) {
 		prog_bar1_value = (i*100)/game_number;
 		
 		if(cancel==YES) break;
@@ -9945,6 +11654,7 @@ void Download_covers()
 		
 		// PS2/PSP/PS3
 		http://sce.scene7.com/is/image/playstation/bljs10332_jacket
+		http://sce.scene7.com/is/image/playstation/bles02250_jacket
 		
 		// PS2/PS2/PSX/PSP
 		http://www.gameswave.com/media/PS3/BCES-00001/pics/_source.png
@@ -10663,7 +12373,7 @@ u8 re_sign_EBOOT(char *path)
 	}
 	
 	strcpy(elf, local_path);	
-	strtok(elf, ".");
+	RemoveExtention(elf);
 	strcat(elf, ".elf");
 	
 	if(Extract(local_path, elf)==FAILED) {
@@ -10715,7 +12425,7 @@ u8 re_sign_SELF(char *path)
 	}
 	
 	strcpy(elf, local_path);	
-	strtok(elf, ".");
+	RemoveExtention(elf);
 	strcat(elf, ".elf");
 	
 	if(Extract(local_path, elf)==FAILED) {
@@ -10767,7 +12477,7 @@ u8 re_sign_SPRX(char *path)
 	}
 	
 	strcpy(prx, local_path);	
-	strtok(prx, ".");
+	RemoveExtention(prx);
 	strcat(prx, ".prx");
 	
 	if(Extract(local_path, prx)==FAILED) {
@@ -10957,8 +12667,8 @@ void unplug_device()
 			
 			FontSize(20);
 			FontColor(COLOR_1);
-		
-			DrawString(x, y, "Unplug the following device(s) :");
+			
+			DrawFormatString(x, y, "%s :", STR_UNPLUG);
 			for(i=0; i<15; i++){
 				y+=20;
 				DrawString(x, y, list_to_unplug[i]);
@@ -11012,99 +12722,95 @@ void SetPrimaryUSB()
 
 char *LoadFileProg(char *path, int *file_size)
 {
-	FILE *fp;
-	char *mem = NULL;
-	
 	*file_size = 0;
 	
-	if( path_info(path) == _NOT_EXIST) return NULL;
-	
 	sysLv2FsChmod(path, FS_S_IFMT | 0777);
-
-	fp = fopen(path, "rb");
-
-	if (fp == NULL) return NULL;
 	
-	fseek(fp, 0, SEEK_END);
-		
-	*file_size = ftell(fp);
-	int size = ftell(fp);
+	struct stat s;
+	if(stat(path, &s) != 0) return NULL;  
+	if(S_ISDIR(s.st_mode)) return NULL;
 	
-	mem = malloc(*file_size);
-
-	if(!mem) {fclose(fp);return NULL;}
-		
-	fseek(fp, 0, SEEK_SET);
-
+	*file_size = s.st_size;
+	int size = s.st_size;
+	
+	char *mem = malloc(*file_size);
+	if(mem==NULL) return NULL;
+	
+	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
+	if(f1<0) return NULL;
+	
 	prog_bar1_value = 0;
 	int read = 0;
 	while(read < size) {
 		int wrlen = 1024;
 		if(read+wrlen > size) wrlen = size-read;
-		fread(mem+read, sizeof(u8), wrlen, fp);
+		ps3ntfs_read(f1, mem+read, wrlen);
 		read += wrlen;
 		prog_bar1_value = (read*100) / size;
 	}
 	prog_bar1_value = -1;
+		
+	if(f1) ps3ntfs_close(f1);
 	
-	fclose(fp);
+	if(read != *file_size) {
+		free(mem); 
+		*file_size=0;
+		return NULL;
+	}
 	
 	return mem;
 }
 
 char *LoadFile(char *path, int *file_size)
 {
-	FILE *fp;
-	char *mem = NULL;
-	
 	*file_size = 0;
 	
-	if( path_info(path) == _NOT_EXIST) return NULL;
-	
 	sysLv2FsChmod(path, FS_S_IFMT | 0777);
-
-	fp = fopen(path, "rb");
-
-	if (fp == NULL) return NULL;
 	
-	fseek(fp, 0, SEEK_END);
-		
-	*file_size = ftell(fp);
-		
-	mem = malloc(*file_size);
-
-	if(!mem) {fclose(fp);return NULL;}
-		
-	fseek(fp, 0, SEEK_SET);
+	struct stat s;
+	if(stat(path, &s) != 0) return NULL;  
+	if(S_ISDIR(s.st_mode)) return NULL;
 	
-	fread((void *) mem, 1, *file_size, fp);
+	*file_size = s.st_size;
 	
-	fclose(fp);
+	char *mem = malloc(*file_size);
+	if(mem==NULL) return NULL;
+	
+	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
+	if(f1<0) return NULL;
+	
+	u64 read = ps3ntfs_read(f1, mem, *file_size);
+		
+	if(f1) ps3ntfs_close(f1);
+	
+	if(read != *file_size) {
+		free(mem); 
+		*file_size=0;
+		return NULL;
+	}
 	
 	return mem;
 }
 
-
-int SaveFileProg(char *path, char *mem, int file_size)
+u8 SaveFileProg(char *path, char *mem, int file_size)
 {
-	FILE *fp;
-   
-	fp = fopen(path, "wb");
-
-	if (fp == NULL) return FAILED;
+	int fd;
+	
+	fd = ps3ntfs_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	if(fd<0) {return FAILED;}
 	
 	prog_bar2_value = 0;
 	int write = 0;
 	while(write < file_size) {
 		int wrlen = 1024;
 		if(write+wrlen > file_size) wrlen = file_size-write;
-		fwrite(mem+write, sizeof(u8), wrlen, fp);
+		ps3ntfs_read(fd, mem+write, wrlen);
 		write += wrlen;
 		prog_bar2_value = (write*100) / file_size;
 	}
 	prog_bar2_value = -1;
 	
-	fclose(fp);
+	ps3ntfs_close(fd);
 
 	sysLv2FsChmod(path, FS_S_IFMT | 0777);
 
@@ -11113,15 +12819,14 @@ int SaveFileProg(char *path, char *mem, int file_size)
 
 int SaveFile(char *path, char *mem, int file_size)
 {
-	FILE *fp;
-   
-	fp = fopen(path, "wb");
-
-	if (fp == NULL) return FAILED;
-	   
-	fwrite((void *) mem, 1, file_size, fp);
-
-	fclose(fp);
+	int fd;
+	
+	fd = ps3ntfs_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	if(fd<0) {return FAILED;}
+	
+	ps3ntfs_read(fd, (void *) mem, file_size);
+	
+	ps3ntfs_close(fd);
 
 	sysLv2FsChmod(path, FS_S_IFMT | 0777);
 
@@ -11539,34 +13244,10 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 		
-		char *data;
-		long size;
-		size_t result;
+		int size;
 		
-		if((fp = fopen(ori_prx, "rb"))!=NULL) {
-
-			fseek (fp , 0 , SEEK_END);
-			size = ftell (fp);
-			fseek(fp, 0, SEEK_SET);
-			
-			data = (char*) malloc (sizeof(char)*size);
-			if (data == NULL) {
-				free(data); 
-				fclose(fp);
-				print_load("Error : failed to malloc data");
-				return NOK;
-			}
-				
-			result = fread(data, 1, size, fp);
-			if (result != size) {
-				free (data);
-				fclose (fp); 
-				print_load("Error : Failed to read data");
-				return NOK;
-			}
-			fclose (fp);
-				
-		} else {
+		char *data = LoadFile(ori_prx, &size);
+		if(data==NULL) {
 			print_load("Error : can't read the original libfs");
 			return NOK;
 		}
@@ -11595,22 +13276,12 @@ int patch_libfs(int8_t device)
 		memcpy(&data[n-0x20], patch_from_MM, 0x84);
 	
 		//write
-		fp = fopen(patched_prx, "wb");
-		if(!fp){
+		if( SaveFile(patched_prx, data, size) == FAILED) 
+		{
 			free(data);
-			fclose(fp);
 			print_load("Error : cannot create the file");
 			return NOK;
 		}
-		result = fwrite(data, 1, size, fp);
-		if(result != size) {
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot write the file\n");
-			return NOK;
-		}
-		fclose(fp);
-		free(data);
 		
 		if(Sign_PRX(patched_prx, patched_libfs_from_MM) == NOK) {
 			print_load("Error : cannot sign the prx\n");
@@ -12198,24 +13869,26 @@ u8 ISOtype(char *isoPath)
 	u32 SectSize=0;
 	u32 JP=0;
 	
-	if( get_SectorSize(f, &SectSize, &JP) == FAILED) return FAILED;
+	if( get_SectorSize(f, &SectSize, &JP) == FAILED) { return FAILED; }
 	
 	memset(mem, 0, sizeof(mem));
 	fseek(f, SectSize*0x10+JP, SEEK_SET);
 
-	fread(mem, 0x40, 1, f);
+	fread(mem, 1, 0x40, f);
 		
 	if(!memcmp((char *) &mem[0x28], (char *) "PS3VOLUME", 0x9)) {
 		free(mem);
 		fclose(f);
 		return _ISO_PS3;
 	}
+/* bad idea : bin/cue PS2 exist too..
 	if(!memcmp((char *) &mem[0x8], (char *) "PLAYSTATION", 0xB)) {
 		free(mem);
 		fclose(f);
 		if(JP==0) return _ISO_PS2; 
 		else	  return _ISO_PS1;
 	}
+*/
 	if(!memcmp((char *) &mem[0x8], (char *) "PSP GAME", 0x8)) {
 		free(mem);
 		fclose(f);
@@ -12243,6 +13916,7 @@ u8 ISOtype(char *isoPath)
 			return _ISO;
 		}
 	}
+
 	mem = LoadFromISO(isoPath, "/PS3_GAME/PARAM.SFO", &file_size);
 	if( mem != NULL ) {
 		free(mem);
@@ -13059,7 +14733,7 @@ void cobra_MountISO(int EMU)
 		switch(splitted_iso) {
 			case 1:
 			{
-				strtok (GamPath,".");
+				RemoveExtention(GamPath);
 				for(i=0; i<30; i++) {
 					char temp[128];
 					sprintf(temp, "%s.iso.%d" , GamPath, i);		
@@ -13075,7 +14749,7 @@ void cobra_MountISO(int EMU)
 			break;
 			case 2:
 			{
-				strtok (GamPath,".");
+				RemoveExtention(GamPath);
 				for(i=0; i<30; i++) {
 					char temp[128];
 					sprintf(temp, "%s.ISO.%d" , GamPath, i);
@@ -13268,12 +14942,12 @@ int load_mamba()
 	u32 size=0;
 	u8 *mamba_data = (u8 *) malloc(0x20000);
 	if(mamba_data==NULL){
-		printf("Error : failed to malloc");
+		print_load("Error : failed to malloc");
 		return FAILED;
 	}
 	zlib_decompress((char *) MAMBA, (char *) mamba_data, MAMBA_SIZE, (int *) &size);
 	if(size==0) {
-		printf("Error : failed to decompress");
+		print_load("Error : failed to decompress");
 		free(mamba_data);
 		return FAILED;
 	}
@@ -13281,7 +14955,7 @@ int load_mamba()
 	FILE *f;
 	f = fopen(mamba_path, "wb");
 	if(f==NULL) {
-		printf("Error : failed to create mamba file");
+		print_load("Error : failed to create mamba file");
 		free(mamba_data);
 		return FAILED;
 	}
@@ -13965,7 +15639,8 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	sha1_context ctx;
 	unsigned char tmpdigest[32];
 	uint64_t tmp;
-	FILE *dec, *out, *temp;
+	FILE *dec, *out;
+	//FILE *temp;
 	char *dec_fname;
 	int i;
 	
@@ -14031,9 +15706,10 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	uint8_t *ou = (uint8_t *) malloc(sizeof(uint8_t)*tmp);
 	uint8_t section[0x80];
 	memcpy(section, &header, sizeof(section));
-	temp=fopen(dec_fname, "rb");
-	fread(in, tmp, sizeof(uint8_t), temp);
-	fclose(temp);
+	
+	//temp=fopen(dec_fname, "rb");
+	//fread(in, tmp, sizeof(uint8_t), temp);
+	//fclose(temp);
 	
 	uint64_t fileDescLength = item_count*sizeof(pkg_file_entry) + n_table_len ;
 	sha1_update(&ctx, section, sizeof(uint8_t)*0x80);
@@ -14095,13 +15771,14 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	u64 write = 0;
 	while(write < tmp)
 	{
+		if(cancel) break;
 		u32 wrlen = 1024;
 		if(write+wrlen > tmp) wrlen = tmp-write;
 		fwrite(ou+write, sizeof(u8), wrlen, out);
 		write += wrlen;
 		prog_bar1_value = (write*100)/tmp;
 	}
-	
+	prog_bar1_value=-1;
 	
 	/*/
 	uint64_t empty[12];
@@ -14117,7 +15794,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	sha1(sha_crap, sizeof(uint8_t)*size, tmpdigest);
 	fwrite(tmpdigest, 1, sizeof(tmpdigest), out);
 	/*/
-	
+
 	fclose(dec);
 	fclose(out);
 	unlink(dec_fname);
@@ -14129,7 +15806,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	free(in);
 	free(dec_fname);
 	
-	if(cancel == YES) {
+	if(cancel) {
 		Delete(fname);
 		return NOK;
 	}
@@ -14536,6 +16213,9 @@ u8 read_AutoMount_setting()
 	fread(list_game_path[0], path_size, 1, fp);
 	fclose(fp);
 	
+	if(iso) payload=SNAKE;
+	if(PEEKnPOKE==NO) payload=SNAKE;
+	
 	return SUCCESS;
 }
 
@@ -14911,12 +16591,12 @@ void read_setting()
 		fread(&Themes[3], sizeof(char), 0x40, fp);
 		fread(&LIST_Show_ICON0, sizeof(u8), 1, fp);
 		fread(&UI_position, sizeof(u8), 1, fp);
-		fread(&grid_type, sizeof(u8), 1, fp);
-		fread(&direction, sizeof(u8), 1, fp);
-		fread(&animated, sizeof(u8), 1, fp);
-		fread(&keep_prop, sizeof(u8), 1, fp);
-		fread(&grid_nb_lines, sizeof(u8), 1, fp);
-		fread(&grid_nb_columns, sizeof(u8), 1, fp);
+		fread(&GRID_TYPE, sizeof(u8), 1, fp);
+		fread(&GRID_DIRECTION, sizeof(u8), 1, fp);
+		fread(&GRID_ANIMATED, sizeof(u8), 1, fp);
+		fread(&GRID_KEEP_PROP, sizeof(u8), 1, fp);
+		fread(&GRID_NB_LINES, sizeof(u8), 1, fp);
+		fread(&GRID_NB_COLUMNS, sizeof(u8), 1, fp);
 		fread(&FLOW_inverse_button, sizeof(u8), 1, fp);
 		fread(&videoscale_x, sizeof(int8_t), 1, fp);
 		fread(&videoscale_y, sizeof(int8_t), 1, fp);
@@ -14935,6 +16615,8 @@ void read_setting()
 		fread(&use_sidemenu, sizeof(u8), 1, fp);
 		fread(&Show_GameCase, sizeof(u8), 1, fp);
 		fread(&lang_code, sizeof(u8), 1, fp);
+		fread(&FLOW_3D, sizeof(u8), 1, fp);
+		fread(&Show_help, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
 	
@@ -14954,12 +16636,12 @@ void write_setting()
 		fwrite(&Themes[3], sizeof(char), 0x40, fp);
 		fwrite(&LIST_Show_ICON0, sizeof(u8), 1, fp);
 		fwrite(&UI_position, sizeof(u8), 1, fp);
-		fwrite(&grid_type, sizeof(u8), 1, fp);
-		fwrite(&direction, sizeof(u8), 1, fp);
-		fwrite(&animated, sizeof(u8), 1, fp);
-		fwrite(&keep_prop, sizeof(u8), 1, fp);
-		fwrite(&grid_nb_lines, sizeof(u8), 1, fp);
-		fwrite(&grid_nb_columns, sizeof(u8), 1, fp);
+		fwrite(&GRID_TYPE, sizeof(u8), 1, fp);
+		fwrite(&GRID_DIRECTION, sizeof(u8), 1, fp);
+		fwrite(&GRID_ANIMATED, sizeof(u8), 1, fp);
+		fwrite(&GRID_KEEP_PROP, sizeof(u8), 1, fp);
+		fwrite(&GRID_NB_LINES, sizeof(u8), 1, fp);
+		fwrite(&GRID_NB_COLUMNS, sizeof(u8), 1, fp);
 		fwrite(&FLOW_inverse_button, sizeof(u8), 1, fp);
 		fwrite(&videoscale_x, sizeof(int8_t), 1, fp);
 		fwrite(&videoscale_y, sizeof(int8_t), 1, fp);
@@ -14978,6 +16660,8 @@ void write_setting()
 		fwrite(&use_sidemenu, sizeof(u8), 1, fp);
 		fwrite(&Show_GameCase, sizeof(u8), 1, fp);
 		fwrite(&lang_code, sizeof(u8), 1, fp);
+		fwrite(&FLOW_3D, sizeof(u8), 1, fp);
+		fwrite(&Show_help, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
 	
@@ -14985,9 +16669,11 @@ void write_setting()
 	sprintf(sfo, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
 	SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, 0, sfo);
 	
+	if(lang_code != lang_code_loaded) update_lang();
+	
 	if(Load_GamePIC == NO && COVER_Loaded == NO && Show_COVER == YES) {
 		start_Load_GamePIC();
-	} 
+	}
 	
 	read_setting();
 }
@@ -15030,6 +16716,7 @@ void read_game_setting(char *file_name)
 	}
 	
 	if(iso) payload=SNAKE;
+	if(PEEKnPOKE==NO) payload=SNAKE;
 }
 
 void write_game_setting(char *file_name)
@@ -15193,27 +16880,17 @@ void clean_tables()
 
 int init_ManaGunZ()
 {
-	FILE* fp;
 	int i;
-	
+
 	cobra = is_cobra();
 	mamba = is_mamba();
 	
-	if((fp = fopen("/dev_hdd0/vsh/pushlist/game.dat", "rb"))!=NULL) {
-		fgets(ManaGunZ_id, 10, fp);
-		fclose(fp);
-	} else {
-		print_load("Error : can't get ManaGunZ_id");
-		return NOK;
+	if(PEEKnPOKE) {
+		peek_IDPS();
+		print_load("Reset BD");
+		unpatch_bdmirror();
+		clean_tables();
 	}
-	
-	peek_IDPS();
-	
-	print_load("Reset BD");
-	
-	unpatch_bdmirror();
-	
-	clean_tables();
 	
 	if(cobra) {
 		cobra_lib_init();
@@ -15241,7 +16918,7 @@ int init_ManaGunZ()
 		{mamba_map("/dev_flash/sys/external/libfs.sprx", NULL);}
 		{mamba_map("/dev_flash/vsh/module/explore_plugin.sprx", NULL);}
 	}
-	
+
 	sys_fs_umount("/dev_bdvd");
 	sys_fs_umount("/dev_ps2disk");
 	sys_fs_mount("CELL_FS_IOS:PATA0_BDVD_DRIVE", "CELL_FS_ISO9660", "/dev_bdvd", 1);
@@ -15263,7 +16940,6 @@ int init_ManaGunZ()
 		sprintf(temp, "/%s", list_device[i]);
 		move_bdemubackup_to_origin(temp);
 	}
-	
 	if(path_info("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt") == _FILE) {
 		open_txt_viewer("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt");
 		Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt");
@@ -15432,6 +17108,48 @@ void remove_from_list(char *file_path, char *str)
 		if(line[0]=='\r' || line[0]=='\n') continue;
 		strtok(line, "\r\n");
 		if(strcmp(line, str) == 0) continue;
+		if(FirstLine==NO) fputs("\n", fw);
+		fputs(line, fw);
+		FirstLine=NO;
+	}
+	
+	fclose(fr);
+	fclose(fw);
+	
+	unlink(file_path);
+	rename(temp, file_path);
+}
+
+void plugins_move(char *file_path, char *plugin_dir)
+{
+	FILE *fr;
+	FILE *fw;
+	char line[255];
+	char temp[255];
+	
+	char Plug_NEW[255];
+	
+	int len = strlen(plugin_dir);
+	
+	strcpy(temp, file_path);
+	strcat(temp, "_temp");
+	
+	fr=fopen(file_path, "rb");
+	if(fr==NULL) return;
+	fw=fopen(temp, "wb");
+	if(fw==NULL) return;
+	
+	uint8_t FirstLine = YES;
+	
+	while(fgets(line, 255, fr) != NULL) {
+		if(line[0]=='\r' || line[0]=='\n') continue;
+		strtok(line, "\r\n");
+		
+		if(strncmp(line, plugin_dir, len) != 0) {
+			sprintf(Plug_NEW, "%s/%s", plugin_dir, &strrchr(line, '/')[1]);
+			if( Move(line, Plug_NEW) == SUCCESS) strcpy(line, Plug_NEW);
+		}
+		
 		if(FirstLine==NO) fputs("\n", fw);
 		fputs(line, fw);
 		FirstLine=NO;
@@ -15722,8 +17440,37 @@ void Draw_window()
 	}
 }
 
+
 void Draw_cursor()
 {	
+	if(loading) {
+		int t;
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(BLACK);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( curs_x + 10*sin(t*PI/180), curs_y + 10*cos(t*PI/180), 0);
+		}
+		tiny3d_End();
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos( curs_x, curs_y, 0);
+		for(t=cursor_rotate; t<=cursor_rotate+270 ; t+=10) {
+			tiny3d_VertexPos( curs_x + 10*sin(t*PI/180), curs_y + 10*cos(t*PI/180), 0);
+		}
+		tiny3d_VertexPos( curs_x, curs_y, 0);
+		tiny3d_End();
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(BLACK);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( curs_x + 5*sin(t*PI/180), curs_y + 5*cos(t*PI/180), 0);
+		}
+		tiny3d_End();
+		
+		cursor_rotate+=10;
+		return;
+	}
+	cursor_rotate=0;
+	
 	if(window_resize_H == YES) {
 		tiny3d_SetPolygon(TINY3D_POLYGON);
 		tiny3d_VertexPos(curs_x-9 , curs_y , 0);
@@ -15871,7 +17618,8 @@ void Draw_cursor()
 	}
 }
 
-void cursor_input() {
+void cursor_input() 
+{
 
 	//L3 Grid_move cursor
 	curs_move_x = (paddata.button[6] - 128)/30;
@@ -16006,6 +17754,14 @@ void sort()
 
 void Window(char *directory)
 {
+	
+	//u8 Started_here=NO;
+	/*
+	if(!loading) {
+		start_loading();
+		if(loading) Started_here=YES;
+	}	
+	*/
 	int n;
 	
 	if(directory==NULL) {
@@ -16016,6 +17772,7 @@ void Window(char *directory)
 			}
 			if(n==9) {
 				show_msg("Error : 10 Windows MAX");
+				//if(Started_here) end_loading();
 				return;
 			}
 		}
@@ -16063,13 +17820,36 @@ void Window(char *directory)
 	memset(window_content_Size[window_activ], 0, sizeof(window_content_Size[window_activ]));
 	memset(window_content_Selected[window_activ], 0, sizeof(window_content_Selected[window_activ]));
 	
+	
+#ifdef RPCS3
+	if(strcmp(window_path[window_activ], "/") == 0) {
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		strcpy(window_content_Name[window_activ][window_content_N[window_activ]], "dev_hdd0");
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		strcpy(window_content_Name[window_activ][window_content_N[window_activ]], "dev_hdd1");
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		strcpy(window_content_Name[window_activ][window_content_N[window_activ]], "dev_usb000");
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		strcpy(window_content_Name[window_activ][window_content_N[window_activ]], "dev_flash");
+		//if(Started_here) end_loading();
+		return;
+	}
+#endif
+	
 	char temp[512];
 	
 	DIR *d;
 	struct dirent *dir;
 	
 	d = opendir(window_path[window_activ]);
-	if(d==NULL) return;
+	if(d==NULL) { 
+		//if(Started_here) end_loading(); 
+		return; 
+	}
 	
 	while ((dir = readdir(d))) {
 		if(strcmp(dir->d_name, ".")==0) continue;
@@ -16096,7 +17876,7 @@ void Window(char *directory)
 	closedir(d);
 	
 // can't see NTFS with opendir("/")
-	if(strcmp(window_path[window_activ], "/") == 0) { 
+	if(strcmp(window_path[window_activ], "/") == 0) {	
 		int r,i;
 		for(i = 0; i < 8 ; i++) {
 			r = -1;
@@ -16116,6 +17896,8 @@ void Window(char *directory)
 	}
 	
 	sort();
+	
+	//if(Started_here) end_loading();
 }
 
 //**** properties ****
@@ -16154,25 +17936,25 @@ void Draw_properties()
 	int prop_N=-1;
 	
 	prop_N++;
-	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, "Path");
+	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, STR_PATH);
 	DrawString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*prop_N, prop_path);
 	
 	prop_N++;
-	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, "Type");
+	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, STR_TYPE);
 	DrawString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*prop_N, prop_type);
 	
 	prop_N++;
-	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, "File");
+	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, STR_FILE);
 	DrawFormatString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*prop_N, "%d", nb_file);
 	
 	prop_N++;
-	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, "Folder");
+	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, STR_FOLDER);
 	DrawFormatString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*prop_N, "%d", nb_directory);
 	
 	prop_N++;
-	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, "Size");
+	DrawString(PROP_X+5, PROP_Y+PROP_FONT*prop_N, STR_SIZE);
 	char *prop_size_str = get_unit(total_size);
-	DrawFormatString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*prop_N, "%s (%llu bytes)", prop_size_str, total_size);
+	DrawFormatString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*prop_N, "%s (%llu %s)", prop_size_str, total_size, STR_UNIT);
 	free(prop_size_str);
 	
 	prop_N++;
@@ -16202,8 +17984,8 @@ void open_properties()
 		get_size(window_path[window_activ], YES);
 		gathering=NO;
 		end_loading();
-		
-		strcpy(prop_type, "Directory");
+			
+		strcpy(prop_type, STR_DIR);
 		strcpy(prop_path, window_path[window_activ]);
 		
 	} else {
@@ -16218,15 +18000,15 @@ void open_properties()
 			if(is_dir==NO) if(path_info(option_sel[i]) == _DIRECTORY) is_dir=YES;
 		}
 		gathering=NO;
-		
+	
 		if(is_dir == YES && is_fil == YES) {
-			strcpy(prop_type, "Multiple");
+			strcpy(prop_type, STR_MULT);
 		} else
 		if(is_dir == YES) {
-			strcpy(prop_type, "Directory");
+			strcpy(prop_type, STR_DIR);
 		} else
 		if(is_fil == YES) {
-			strcpy(prop_type, "File");
+			strcpy(prop_type, STR_FILE);
 		}
 		strcpy(prop_path, option_sel[0]);
 		if(option_sel_N != 0) {
@@ -16493,8 +18275,8 @@ void Draw_txt_viewer_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
-	x=DrawButton(x, y, "Scroll", BUTTON_UP | BUTTON_DOWN);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_SCROLL, BUTTON_UP | BUTTON_DOWN);
 	
 }
 
@@ -16730,7 +18512,7 @@ void Option(char *item)
 	int i;
 	int ret=-1;
 	
-	if(strcmp(item, "New Folder") == 0) {
+	if(strcmp(item, STR_NEWFOLDER) == 0) {
 		sprintf(temp, "%s/New_Folder", window_path[window_activ]);
 		if(path_info(temp) != _NOT_EXIST) {
 			for(i=0; i<10; i++) {
@@ -16748,7 +18530,7 @@ void Option(char *item)
 			show_msg(temp);
 		}
 	} else
-	if(strcmp(item, "New File") == 0) {
+	if(strcmp(item, STR_NEWFILE) == 0) {
 		sprintf(temp, "%s/New_File.txt", window_path[window_activ]);
 		if(path_info(temp) != _NOT_EXIST) {
 			for(i=0; i<10; i++) {
@@ -16770,7 +18552,12 @@ void Option(char *item)
 		}
 		fclose(f);
 	} else
-	if(strcmp(item, "Paste") == 0) {
+	if(strcmp(item, "SpeedTest") == 0) {
+		start_copy_loading();
+		SpeedTest();
+		end_copy_loading();
+	}
+	if(strcmp(item, STR_PASTE) == 0) {
 		start_copy_loading();
 		gathering=YES;
 		for(i=0; i<=option_copy_N; i++){
@@ -16788,7 +18575,7 @@ void Option(char *item)
 		memset(option_copy, 0, sizeof(option_copy));
 		option_copy_N=-1;
 	} else
-	if(strcmp(item, "Copy") == 0) {
+	if(strcmp(item, STR_COPY) == 0) {
 		memset(option_copy, 0, sizeof(option_copy));
 		for(i=0; i<=option_sel_N; i++) {
 			strcpy(option_copy[i], option_sel[i]);
@@ -16796,7 +18583,7 @@ void Option(char *item)
 		option_copy_N = option_sel_N;
 		option_cut = NO;
 	} else
-	if(strcmp(item, "Cut") == 0) {
+	if(strcmp(item, STR_CUT) == 0) {
 		memset(option_copy, 0, sizeof(option_copy));
 		for(i=0; i<=option_sel_N; i++) {
 			strcpy(option_copy[i], option_sel[i]);
@@ -16804,17 +18591,17 @@ void Option(char *item)
 		option_copy_N = option_sel_N;
 		option_cut = YES;
 	} else
-	if(strcmp(item, "Delete") == 0) {
+	if(strcmp(item, STR_DELETE) == 0) {
 		start_loading();
 		for(i=0; i<=option_sel_N; i++) {
 			Delete(option_sel[i]);
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Unselect all") == 0) {
+	if(strcmp(item, STR_UNSELECT_ALL) == 0) {
 		//refresh
 	} else
-	if(strcmp(item, "Select all") == 0) {
+	if(strcmp(item, STR_SELECT_ALL) == 0) {
 		for(i=0; i<=window_content_N[window_activ]; i++) {
 			if(strcmp(window_content_Name[window_activ][i], "..") == 0) {
 				window_content_Selected[window_activ][i] = NO;
@@ -16823,10 +18610,10 @@ void Option(char *item)
 		option_activ=NO;
 		return; //avoid refresh
 	} else
-	if(strcmp(item, "Rename") == 0) {
+	if(strcmp(item, STR_RENAME) == 0) {
 		char New_Name[255];
 		strcpy(New_Name, &strrchr(option_sel[0], '/')[1]);
-		if(Get_OSK_String("Rename", New_Name, 255) == SUCCESS) {
+		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
 			if(New_Name[0] != 0) {
 				char New_Path[512];
 				sprintf(New_Path, "%s/%s", window_path[window_activ], New_Name);
@@ -16834,34 +18621,34 @@ void Option(char *item)
 			}
 		}
 	} else
-	if(strcmp(item, "Open New Window")==0) {
+	if(strcmp(item, STR_OPEN_WINDOW)==0) {
 		Window(NULL);
 	} else
-	if(strcmp(item, "Refresh")==0) {
+	if(strcmp(item, STR_REFRESH)==0) {
 		//Window(".");
 	} else
-	if(strcmp(item, "Mount /dev_blind")==0) {
+	if(strcmp(item, STR_MOUNT_DEVBLIND)==0) {
 		sys_fs_mount("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0);
 	} else
-	if(strcmp(item, "Properties") == 0) {
+	if(strcmp(item, STR_PROPS) == 0) {
 		open_properties();
 	} else
-	if(strcmp(item, "View") == 0) {
+	if(strcmp(item, STR_VIEW) == 0) {
 		open_picture_viewer(option_sel[0]);
 	} else
-	if(strcmp(item, "View TXT") == 0) {
+	if(strcmp(item, STR_VIEW_TXT) == 0) {
 		open_txt_viewer(option_sel[0]);
 	} else
-	if(strcmp(item, "View SFO") == 0) {
+	if(strcmp(item, STR_VIEW_SFO) == 0) {
 		start_loading();
 		open_SFO_viewer(option_sel[0]);
 		end_loading();
 	} else
-	if(strcmp(item, "Extract ELF") == 0) {
+	if(strcmp(item, STR_EXTRACT_ELF) == 0) {
 		start_loading();
 		char elf[255];
 		strcpy(elf, option_sel[0]);	
-		strtok(elf, ".");
+		RemoveExtention(elf);
 		strcat(elf, ".elf");
 		
 		if( path_info(elf) != _NOT_EXIST) Delete(elf);
@@ -16871,19 +18658,19 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Resign SELF") == 0) {
+	if(strcmp(item, STR_RESIGN_SELF) == 0) {
 		start_loading();
 		re_sign_SELF(option_sel[0]);
 		end_loading();
 	} else
-	if(strcmp(item, "Launch SELF") == 0) {
+	if(strcmp(item, STR_LAUNCH_SELF) == 0) {
 		sysProcessExitSpawn2(option_sel[0], NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_64K);
 	} else
-	if(strcmp(item, "Extract EBOOT") == 0) {
+	if(strcmp(item, STR_EXTRACT_EBOOT) == 0) {
 		start_loading();
 		char elf[255];
 		strcpy(elf, option_sel[0]);	
-		strtok(elf, ".");
+		RemoveExtention(elf);
 		strcat(elf, ".ELF");
 		
 		if( path_info(elf) != _NOT_EXIST) Delete(elf);
@@ -16893,19 +18680,19 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Resign EBOOT") == 0) {
+	if(strcmp(item, STR_RESIGN_EBOOT) == 0) {
 		start_loading();
 		re_sign_EBOOT(option_sel[0]);
 		end_loading();
 	} else
-	if(strcmp(item, "Launch EBOOT") == 0) {
+	if(strcmp(item, STR_LAUNCH_EBOOT) == 0) {
 		sysProcessExitSpawn2(option_sel[0], NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_64K);
 	} else
-	if(strcmp(item, "Sign EBOOT") == 0) {
+	if(strcmp(item, STR_SIGN_EBOOT) == 0) {
 		start_loading();
 		char BIN[255];
 		strcpy(BIN, option_sel[0]);	
-		strtok(BIN, ".");
+		RemoveExtention(BIN);
 		strcat(BIN, ".BIN");
 		
 		char BIN_ORI[255];
@@ -16923,11 +18710,11 @@ void Option(char *item)
 		
 		end_loading();
 	} else
-	if(strcmp(item, "Sign ELF") == 0) {
+	if(strcmp(item, STR_SIGN_ELF) == 0) {
 		start_loading();
 		char SELF[255];
 		strcpy(SELF, option_sel[0]);	
-		strtok(SELF, ".");
+		RemoveExtention(SELF);
 		strcat(SELF, ".self");
 		
 		char SELF_ORI[255];
@@ -16945,11 +18732,11 @@ void Option(char *item)
 		
 		end_loading();
 	} else
-	if(strcmp(item, "Extract PRX") == 0) {
+	if(strcmp(item, STR_EXTRACT_PRX) == 0) {
 		start_loading();
 		char prx[255];
 		strcpy(prx, option_sel[0]);	
-		strtok(prx, ".");
+		RemoveExtention(prx);
 		strcat(prx, ".prx");
 		if( path_info(prx) != _NOT_EXIST) Delete(prx);
 		if(Extract(option_sel[0], prx)==FAILED) {
@@ -16957,17 +18744,17 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Resign SPRX") == 0) {
+	if(strcmp(item, STR_RESIGN_SPRX) == 0) {
 		start_loading();
 		re_sign_SPRX(option_sel[0]);
 		end_loading();
 	} else
-	if(strcmp(item, "Sign PRX") == 0) {
+	if(strcmp(item, STR_SIGN_PRX) == 0) {
 		start_loading();
 		
 		char SPRX[255];
 		strcpy(SPRX, option_sel[0]);	
-		strtok(SPRX, ".");
+		RemoveExtention(SPRX);
 		strcat(SPRX, ".sprx");
 		
 		char SPRX_ORI[255];
@@ -16985,7 +18772,7 @@ void Option(char *item)
 		
 		end_loading();
 	} else
-	if(strcmp(item, "Check files (IRD)") == 0) {
+	if(strcmp(item, STR_CHECK_IRD) == 0) {
 		start_loading();
 		if ( CheckIRD(option_sel[0]) == SUCCESS) {
 			sprintf(temp, "%s/MD5_check.txt", option_sel[0]);
@@ -16993,67 +18780,67 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Extract PKG") == 0) {
+	if(strcmp(item, STR_EXTRACT_PKG) == 0) {
 		start_loading();
 		pkg_unpack(option_sel[0], NULL);
 		end_loading();
 	} else
-	if(strcmp(item, "PKG info") == 0) {
+	if(strcmp(item, STR_PKG_INFO) == 0) {
 		start_loading();
 		i=pkg_list(option_sel[0]);
 		end_loading();
 		if(i==SUCCESS) open_txt_viewer("/dev_hdd0/tmp/pkg_list.txt");
 	} else
-	if(strcmp(item, "Make PKG") == 0) {
+	if(strcmp(item, STR_MAKE_PKG) == 0) {
 		start_loading();
 		make_pkg(option_sel[0]);
 		end_loading();
 	} else
-	if(strcmp(item, "Remove from PRX Loader") == 0) {
+	if(strcmp(item, STR_REMOVE_PRXLOADER) == 0) {
 		remove_from_list("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt", option_sel[0]);
 	} else
-	if(strcmp(item, "Add to PRX Loader") == 0) {
+	if(strcmp(item, STR_ADD_PRXLOADER) == 0) {
 		add_to_list("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt", option_sel[0]);
 	}  else
-	if(strcmp(item, "Remove from PRXLoader") == 0) {
+	if(strcmp(item, STR_REMOVE_PRXLOADER2) == 0) {
 		remove_from_list("/dev_hdd0/prx_plugins.txt", option_sel[0]);
 	} else
-	if(strcmp(item, "Add to PRXLoader") == 0) {
+	if(strcmp(item, STR_ADD_PRXLOADER2) == 0) {
 		add_to_list("/dev_hdd0/prx_plugins.txt", option_sel[0]);
 	} else
-	if(strcmp(item, "Remove from Mamba list") == 0) {
+	if(strcmp(item, STR_REMOVE_MAMBA) == 0) {
 		remove_from_list("/dev_hdd0/mamba_plugins.txt", option_sel[0]);
 	} else
-	if(strcmp(item, "Add to Mamba list") == 0) {
+	if(strcmp(item, STR_ADD_MAMBA) == 0) {
 		add_to_list("/dev_hdd0/mamba_plugins.txt", option_sel[0]);
 	}  else
-	if(strcmp(item, "Remove from Cobra list") == 0) {
+	if(strcmp(item, STR_REMOVE_COBRA) == 0) {
 		remove_from_list("/dev_hdd0/boot_plugins.txt", option_sel[0]);
 	} else
-	if(strcmp(item, "Add to Cobra list") == 0) {
+	if(strcmp(item, STR_ADD_COBRA) == 0) {
 		add_to_list("/dev_hdd0/boot_plugins.txt", option_sel[0]);
 	} else
-	if(strcmp(item, "Dump lv2") == 0) {
+	if(strcmp(item, STR_DUMP_LV2) == 0) {
 		start_loading();
 		dump_lv2("/dev_hdd0/LV2.BIN");
 		end_loading();
 	} else
-	if(strcmp(item, "Dump lv1") == 0) {
+	if(strcmp(item, STR_DUMP_LV1) == 0) {
 		start_loading();
 		dump_lv1("/dev_hdd0/LV1.BIN");
 		end_loading();
 	} else
-	if(strcmp(item, "Dump flash") == 0) {
+	if(strcmp(item, STR_DUMP_FLASH) == 0) {
 		start_loading();
 		dump_flash("/dev_hdd0/FLASH.BIN");
 		end_loading();
 	} else
-	if(strcmp(item, "Extract TRP") == 0) {
+	if(strcmp(item, STR_EXTRACT_TRP) == 0) {
 		start_loading();
 		trophy_extract(option_sel[0]);
 		end_loading();
 	} else
-	if(strcmp(item, "Get MD5") == 0) {
+	if(strcmp(item, STR_GETMD5) == 0) {
 		start_loading();
 		HashFolder(MD5_HASH, option_sel[0]);
 		if(cancel == NO) {
@@ -17063,7 +18850,7 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Get SHA1") == 0) {
+	if(strcmp(item, STR_GETSHA1) == 0) {
 		start_loading();
 		HashFolder(SHA1_HASH, option_sel[0]);
 		if(cancel == NO) {
@@ -17073,7 +18860,7 @@ void Option(char *item)
 		}
 		end_loading();
 	} else 
-	if(strcmp(item, "Check CRC32") == 0) {
+	if(strcmp(item, STR_CHECK_CRC32) == 0) {
 		start_loading();
 		if(CheckCRC32(option_sel[0]) == SUCCESS) {
 			char temp[255];
@@ -17084,7 +18871,7 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Check MD5") == 0) {
+	if(strcmp(item, STR_CHECK_MD5) == 0) {
 		start_loading();
 		if(CheckMD5(option_sel[0]) == SUCCESS) {
 			char temp[255];
@@ -17095,13 +18882,13 @@ void Option(char *item)
 		}
 		end_loading();
 	} else
-	if(strcmp(item, "Extract RCO") == 0) {
+	if(strcmp(item, STR_EXTRACT_RCO) == 0) {
 		start_loading();
 		print_head("Extracting RCO");
 		rco_dump(option_sel[0]);
 		end_loading();
 	} else 
-	if(strcmp(item, "Extract ISO") == 0) {
+	if(strcmp(item, STR_EXTRACT_ISO) == 0) {
 		start_loading();
 		print_head("Extracting ISO...");
 		
@@ -17115,7 +18902,7 @@ void Option(char *item)
 		
 		end_loading();
 	} else
-	if(strcmp(item, "Compress ISO") == 0) {
+	if(strcmp(item, STR_COMPRESS_ISO) == 0) {
 		start_loading();
 		print_head("Compressing ISO...");
 		char dst[255];
@@ -17126,7 +18913,7 @@ void Option(char *item)
 		if(comp_ciso(option_sel[0], dst, 1)==FAILED) Delete(dst);
 		end_loading();
 	} else
-	if(strcmp(item, "Decompress CSO") == 0) {
+	if(strcmp(item, STR_DECOMPRESS_CSO) == 0) {
 		start_loading();
 		print_head("Decompressing CSO...");
 		char dst[255];
@@ -17138,35 +18925,35 @@ void Option(char *item)
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Extract THM") == 0) {
+	if(strcmp(item, STR_EXTRACT_THM) == 0) {
 		start_loading();
 		print_head("Extracting THM...");
 		ExtractTHM(option_sel[0]);
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Extract P3T") == 0) {
+	if(strcmp(item, STR_EXTRACT_P3T) == 0) {
 		start_loading();
 		print_head("Extracting P3T...");
 		cxml_extract(option_sel[0]);
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Extract RAF") == 0) {
+	if(strcmp(item, STR_EXTRACT_RAF) == 0) {
 		start_loading();
 		print_head("Extracting RAF...");
 		cxml_extract(option_sel[0]);
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Extract QRC") == 0) {
+	if(strcmp(item, STR_EXTRACT_QRC) == 0) {
 		start_loading();
 		print_head("Extracting QRC...");
 		ExtractQRC(option_sel[0]);
 		end_loading();
 	}
 	else
-	if(strcmp(item, "Convert GTF to DDS") == 0) {
+	if(strcmp(item, STR_CONVERT_GTF_DDS) == 0) {
 		start_loading();
 		print_head("Converting to DDS...");
 		char dst[255];
@@ -17178,7 +18965,7 @@ void Option(char *item)
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Convert VAG to WAV") == 0) {
+	if(strcmp(item,STR_CONVERT_VAG_WAV) == 0) {
 		start_loading();
 		char dst[255];
 		strcpy(dst, option_sel[0]);
@@ -17190,7 +18977,7 @@ void Option(char *item)
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Convert JSX to JS") == 0) {
+	if(strcmp(item, STR_CONVERT_JSX_JS) == 0) {
 		start_loading();
 		print_head("Converting to JS...");
 		char dst[255];
@@ -17200,7 +18987,7 @@ void Option(char *item)
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Convert DDS to PNG") == 0) { 
+	if(strcmp(item, STR_CONVERT_DDS_PNG) == 0) { 
 		start_loading();
 		print_head("Converting to PNG...");
 		char dst[255];
@@ -17212,7 +18999,7 @@ void Option(char *item)
 		end_loading();
 	}
 	else
-	if(strcmp(item, "Make APNG") == 0) { 
+	if(strcmp(item, STR_MAKE_APNG) == 0) { 
 		start_loading();
 		char dst[255];
 		strcpy(dst, option_sel[0]);
@@ -17222,21 +19009,21 @@ void Option(char *item)
 		end_loading();
 	}
 	else 
-	if(strcmp(item, "Read xReg") == 0) { 
+	if(strcmp(item, STR_READ_XREG) == 0) { 
 		start_loading();
 		if( xreg2txt(option_sel[0], "/dev_hdd0/tmp/xreg.txt") == SUCCESS ) 
 			open_txt_viewer("/dev_hdd0/tmp/xreg.txt");
 		end_loading();
 	}
 	else
-	if(strcmp(item, "Set permission") == 0) { 
+	if(strcmp(item, STR_SET_PERMS) == 0) { 
 		start_loading();
 		print_head("Setting permission to 0777...");
 		SetPerms(option_sel[0]);
 		end_loading();
 	}
 	else
-	if(strcmp(item, "Extract ZIP") == 0) { 
+	if(strcmp(item, STR_EXTRACT_ZIP) == 0) { 
 		start_loading();
 		print_head("Extracting ZIP");
 		ExtractZip(option_sel[0]);
@@ -17254,22 +19041,27 @@ void Open_option()
 	memset(option_item, 0, sizeof(option_item));
 	memset(option_sel, 0, sizeof(option_sel));
 	int i;
-	
+		
 	if(window_activ == -1) {
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Open New Window");
+		strcpy( option_item[option_item_N] , STR_OPEN_WINDOW);
 	}
 	else if(strcmp( window_path[window_activ], "/") == 0) {
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Open New Window");
+		strcpy( option_item[option_item_N] , STR_OPEN_WINDOW);
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Mount /dev_blind");
+		strcpy( option_item[option_item_N] , STR_MOUNT_DEVBLIND);
+		if(PEEKnPOKE) {
+			option_item_N++;
+			strcpy( option_item[option_item_N] , STR_DUMP_LV1);
+			option_item_N++;
+			strcpy( option_item[option_item_N] , STR_DUMP_LV2);
+			
+		}
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Dump lv1");
-		option_item_N++;
-		strcpy( option_item[option_item_N] , "Dump lv2");
-		option_item_N++;
-		strcpy( option_item[option_item_N] , "Dump flash");
+		strcpy( option_item[option_item_N] , STR_DUMP_FLASH);
+		//option_item_N++;
+		//strcpy( option_item[option_item_N] , "SpeedTest");
 	}
 	else {
 		u8 all_is_dir=YES;
@@ -17286,207 +19078,206 @@ void Open_option()
 			}
 		}
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Refresh");
+		strcpy( option_item[option_item_N] , STR_REFRESH);
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "New Folder");
+		strcpy( option_item[option_item_N] , STR_NEWFOLDER);
 		option_item_N++;		
-		strcpy( option_item[option_item_N] , "New File");
+		strcpy( option_item[option_item_N] , STR_NEWFILE);
 		if(0 <= option_copy_N) {
 			option_item_N++;
-			strcpy( option_item[option_item_N] , "Paste");
+			strcpy( option_item[option_item_N] , STR_PASTE);
 		}
 		if(0 <= option_sel_N) {
 			option_item_N++;
-			strcpy(option_item[option_item_N] , "Copy");
+			strcpy(option_item[option_item_N] , STR_COPY);
 			option_item_N++;
-			strcpy( option_item[option_item_N] , "Cut");
+			strcpy( option_item[option_item_N] , STR_CUT);
 			option_item_N++;
-			strcpy( option_item[option_item_N] , "Delete");
+			strcpy( option_item[option_item_N] , STR_DELETE);
 			option_item_N++;
-			strcpy( option_item[option_item_N] , "Unselect all");
+			strcpy( option_item[option_item_N] , STR_UNSELECT_ALL);
 		}																									
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Select all");
-		
+		strcpy( option_item[option_item_N] , STR_SELECT_ALL);
+				
 		if(option_sel_N == 0) {
 			option_item_N++;
-			strcpy( option_item[option_item_N] , "Rename");
+			strcpy( option_item[option_item_N] , STR_RENAME);
 			
 			if(path_info(option_sel[0]) == _DIRECTORY ) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Make PKG");
+				strcpy( option_item[option_item_N] , STR_MAKE_PKG);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Get MD5");
+				strcpy( option_item[option_item_N] , STR_GETMD5);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Get SHA1");				
+				strcpy( option_item[option_item_N] , STR_GETSHA1);				
 			}
 			
 			u8 ext = get_ext(option_sel[0]);
 			
 			if(ext == _JPG || ext == _PNG) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "View");
+				strcpy( option_item[option_item_N] , STR_VIEW);
 			} else 
 			if( can_read(ext) == YES) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "View TXT");
+				strcpy( option_item[option_item_N] , STR_VIEW_TXT);
 			} else
 			if(ext == _SFO) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "View SFO");
+				strcpy( option_item[option_item_N] , STR_VIEW_SFO);
 			} else
 			if(ext == _XREG) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Read xReg");
+				strcpy( option_item[option_item_N] , STR_READ_XREG);
 			} else
 			if(ext == _SELF) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract ELF");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_ELF);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Resign SELF");
+				strcpy( option_item[option_item_N] , STR_RESIGN_SELF);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Launch SELF");
+				strcpy( option_item[option_item_N] , STR_LAUNCH_SELF);
 			} else 
 			if(ext == _EBOOT_BIN) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract EBOOT");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_EBOOT);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Resign EBOOT");
+				strcpy( option_item[option_item_N] , STR_RESIGN_EBOOT);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Launch EBOOT");
+				strcpy( option_item[option_item_N] , STR_LAUNCH_EBOOT);
 			} else 
 			if(ext == _EBOOT_ELF) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Sign EBOOT");
+				strcpy( option_item[option_item_N] , STR_SIGN_EBOOT);
 			} else 
 			if(ext == _ELF) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Sign ELF");
-			}  else 
+				strcpy( option_item[option_item_N] , STR_SIGN_ELF);
+			}  else		
 			if(ext == _SPRX) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract PRX");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_PRX);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Resign SPRX");
+				strcpy( option_item[option_item_N] , STR_RESIGN_SPRX);
 				
 				if(path_info("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt") != _NOT_EXIST) {
 					if(is_it_inside("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt", option_sel[0]) == YES) {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Remove from PRX Loader");
+						strcpy( option_item[option_item_N] , STR_REMOVE_PRXLOADER);
 					} else {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Add to PRX Loader");
+						strcpy( option_item[option_item_N] , STR_ADD_PRXLOADER);
 					}					
 				}
 				
 				if(path_info("/dev_hdd0/prx_plugins.txt") != _NOT_EXIST) {
 					if(is_it_inside("/dev_hdd0/prx_plugins.txt", option_sel[0]) == YES) {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Remove from PRXLoader");
+						strcpy( option_item[option_item_N] , STR_REMOVE_PRXLOADER2);
 					} else {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Add to PRXLoader");
+						strcpy( option_item[option_item_N] , STR_ADD_PRXLOADER2);
 					}					
 				}
-				
 				
 				if(path_info("/dev_hdd0/mamba_plugins.txt") != _NOT_EXIST) {
 					if(is_it_inside("/dev_hdd0/mamba_plugins.txt", option_sel[0]) == YES) {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Remove from Mamba list");
+						strcpy( option_item[option_item_N] , STR_REMOVE_MAMBA);
 					} else {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Add to Mamba list");
+						strcpy( option_item[option_item_N] , STR_ADD_MAMBA);
 					}
 				}
 				
 				if(path_info("/dev_hdd0/boot_plugins.txt") != _NOT_EXIST) {
 					if(is_it_inside("/dev_hdd0/boot_plugins.txt", option_sel[0]) == YES) {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Remove from Cobra list");
+						strcpy( option_item[option_item_N] , STR_REMOVE_COBRA);
 					} else {
 						option_item_N++;
-						strcpy( option_item[option_item_N] , "Add to Cobra list");
+						strcpy( option_item[option_item_N] , STR_ADD_COBRA);
 					}
 				}
-			} else 
+			} else
 			if(ext == _PRX) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Sign PRX");
+				strcpy( option_item[option_item_N] , STR_SIGN_PRX);
 			} else
 			if(ext == _RCO) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract RCO");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_RCO);
 			} else 
 			if(ext == _PKG) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract PKG");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_PKG);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "PKG info");
+				strcpy( option_item[option_item_N] , STR_PKG_INFO);
 			} else
 			if(ext == _TRP) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract TRP");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_TRP);
 			} else
 			if(ext == _ISO_PS1 || ext == _ISO_PS2) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Check MD5");
+				strcpy( option_item[option_item_N] , STR_CHECK_MD5);
 			} else
 			if(ext == _ISO_PS3) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract ISO");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_ISO);
 			} else
 			if(ext == _JB_PS3) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Check files (IRD)");
+				strcpy( option_item[option_item_N] , STR_CHECK_IRD);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Compress ISO");
+				strcpy( option_item[option_item_N] , STR_CONVERT_ISO);
 			} else
 			if(ext == _ISO_PSP) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Compress ISO");
+				strcpy( option_item[option_item_N] , STR_COMPRESS_ISO);
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Check CRC32");
+				strcpy( option_item[option_item_N] , STR_CHECK_CRC32);
 			} else
 			if(ext == _CSO) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Decompress CSO");
+				strcpy( option_item[option_item_N] , STR_DECOMPRESS_CSO);
 			} else
 			if(ext == _THM) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract THM");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_THM);
 			} else
 			if(ext == _P3T) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract P3T");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_P3T);
 			} else
 			if(ext == _RAF) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract RAF");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_RAF);
 			} else
 			if(ext == _QRC) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract QRC");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_QRC);
 			} else
 			if(ext == _JSX) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Convert JSX to JS");
+				strcpy( option_item[option_item_N] , STR_CONVERT_JSX_JS);
 			} else
 			if(ext == _VAG) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Convert VAG to WAV");
+				strcpy( option_item[option_item_N] ,STR_CONVERT_VAG_WAV);
 			} else
 			if(ext == _GTF) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Convert GTF to DDS");
+				strcpy( option_item[option_item_N] , STR_CONVERT_GTF_DDS);
 			} else
 			if(ext == _DDS) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Convert DDS to PNG");
+				strcpy( option_item[option_item_N] , STR_CONVERT_DDS_PNG);
 			} else
 			if(ext == _ZIP) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Extract ZIP");
+				strcpy( option_item[option_item_N] , STR_EXTRACT_ZIP);
 			}
 			
 		}
@@ -17494,14 +19285,14 @@ void Open_option()
 		if(all_same_ext >= 0 && option_sel_N > 0) {
 			if(all_same_ext == _PNG) {
 				option_item_N++;
-				strcpy( option_item[option_item_N] , "Make APNG");
+				strcpy( option_item[option_item_N] , STR_MAKE_APNG);
 			}
 		}
 		
 		option_item_N++;
-		strcpy( option_item[option_item_N] , "Set permission");
+		strcpy( option_item[option_item_N] , STR_SET_PERMS);
 		option_item_N++;
-		strcpy(option_item[option_item_N] , "Properties");
+		strcpy(option_item[option_item_N] , STR_PROPS);
 	}
 	
 	float k=0;
@@ -17983,33 +19774,33 @@ void Draw_input()
 	&& picture_viewer_activ == NO 
 	&& txt_viewer_activ == NO
 	&& SFO_viewer_activ == NO) {
-		x=DrawButton(x, y, "Open", BUTTON_SELECT);
-		x=DrawButton(x, y, "Refresh", BUTTON_L3);
-		if(window_activ==-1) x=DrawButton(x, y, "Back", BUTTON_R3);	else
-		x=DrawButton(x, y, "Close", BUTTON_R3);
-		x=DrawButton(x, y, "Click", BUTTON_CROSS);
-		x=DrawButton(x, y, "Option", BUTTON_CIRCLE);
-		x=DrawButton(x, y, "Select", BUTTON_SQUARE);
-		x=DrawButton(x, y, "Scroll", BUTTON_UP | BUTTON_DOWN);
-		x=DrawButton(x, y, "Cursor", BUTTON_L);
-		x=DrawButton(x, y, "Window", BUTTON_R);
+		x=DrawButton(x, y, STR_OPEN, BUTTON_SELECT);
+		x=DrawButton(x, y, STR_REFRESH, BUTTON_L3);
+		if(window_activ==-1) x=DrawButton(x, y, STR_BACK, BUTTON_R3);	else
+		x=DrawButton(x, y, STR_CLOSE, BUTTON_R3);
+		x=DrawButton(x, y, STR_CLICK, BUTTON_CROSS);
+		x=DrawButton(x, y, STR_OPTION, BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_SELECT, BUTTON_SQUARE);
+		x=DrawButton(x, y, STR_SCROLL, BUTTON_UP | BUTTON_DOWN);
+		x=DrawButton(x, y, STR_CURSOR, BUTTON_L);
+		x=DrawButton(x, y, STR_WINDOW, BUTTON_R);
 		
 	} else
 	if(option_activ == YES)	{
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
-		x=DrawButton(x, y, "Click", BUTTON_CROSS);
-		x=DrawButton(x, y, "Cursor", BUTTON_L);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_CLICK, BUTTON_CROSS);
+		x=DrawButton(x, y, STR_CURSOR, BUTTON_L);
 	} else
 	if(prop_activ == YES || SFO_viewer_activ == YES) {
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	} else
 	if(txt_viewer_activ == YES){
 		Draw_txt_viewer_input();
 	} else
 	if(picture_viewer_activ == YES) {
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
-		x=DrawButton(x, y, "Previous", BUTTON_LEFT);
-		x=DrawButton(x, y, "Next", BUTTON_RIGHT);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_PREVIOUS, BUTTON_LEFT);
+		x=DrawButton(x, y, STR_NEXT, BUTTON_RIGHT);
 	}
 }
 
@@ -18110,6 +19901,209 @@ u8 item_value_is(char *str)
 	return NO;
 }
 
+void Draw_HELP()
+{
+	float x=50;
+	float y=23;
+	FontColor(COLOR_1);
+	FontSize(13);
+
+	if(item_is(STR_3D)) {
+		DrawString(x, y, STR_3D_DESC);
+	} else
+	if(item_is(STR_INVERSE)) {
+		DrawString(x, y, STR_INVERSE_DESC);
+	} else
+	if(item_is(STR_NB_LINE)) {
+		DrawString(x, y, STR_NB_LINE_DESC);
+	} else
+	if(item_is(STR_NB_COL)) {
+		DrawString(x, y, STR_NB_COL_DESC);
+	} else
+	if(item_is(STR_KEEP_PROP)) {
+		DrawString(x, y, STR_KEEP_PROP_DESC);
+	} else
+	if(item_is(STR_ANIMATED)) {
+		DrawString(x, y, STR_ANIMATED_DESC);
+	} else
+	if(item_is(STR_DIRECTION)) {
+		DrawString(x, y, STR_DIRECTION_DESC);
+	} else
+	if(item_is(STR_GRID_TYPE)) {
+		DrawString(x, y, STR_GRID_TYPE_DESC);
+	} else
+	if(item_is(STR_SHOW_ICON0)) {
+		DrawString(x, y, STR_SHOW_ICON0_DESC);
+	} else
+	if(item_is(STR_SHOW_GAMECASE)) {
+		DrawString(x, y, STR_SHOW_GAMECASE_DESC);
+	} else
+	if(item_is(STR_SHOW_COVER)) {
+		DrawString(x, y, STR_SHOW_COVER_DESC);
+	} else
+	if(item_is(STR_SHOW_PIC1)) {
+		DrawString(x, y, STR_SHOW_PIC1_DESC);
+	} else
+	if(item_is(STR_SIDE_MENU)) {
+		DrawString(x, y, STR_SIDE_MENU_DESC);
+	} else
+	if(item_is(STR_UI)) {
+		DrawString(x, y, STR_UI_DESC);
+	} else
+	if(item_is(STR_COLOR_1) || item_is(STR_COLOR_2) || item_is(STR_COLOR_3) || item_is(STR_COLOR_4)) {
+		DrawString(x, y, STR_COLOR_DESC);
+	} else
+	if(item_is(STR_XMB_PRIO)) {
+		DrawString(x, y, STR_XMB_PRIO_DESC);
+	} else
+	if(item_is(STR_HELP)) {
+		DrawString(x, y, STR_HELP_DESC);
+	} else
+	if(item_is(STR_GAME_PATHS)) {
+		DrawString(x, y, STR_GAME_PATHS_DESC);
+	} else
+	if(item_is(STR_UPD_MGZ)) {
+		DrawString(x, y, STR_UPD_MGZ_DESC);
+	} else
+	if(item_is(STR_PLUGIN_MANAGER)) {
+		DrawString(x, y, STR_PLUGIN_MANAGER_DESC);
+	} else
+	if(item_is(STR_DL_COVER)) {
+		DrawString(x, y, STR_DL_COVER_DESC);
+	} else
+	if(item_is(STR_ADJUST)) {
+		DrawString(x, y, STR_ADJUST_DESC);
+	} else
+	if(item_is(STR_DL_UPDATE)) {
+		DrawString(x, y, STR_DL_UPDATE_DESC);
+	} else
+	if(item_is(STR_CHECK_IRD) || item_is(STR_CHECK_CRC32) || item_is(STR_CHECK_MD5)) {
+		DrawString(x, y, STR_CHECK_DESC);
+	} else
+	if(item_is(STR_FIX_PERMS)) {
+		DrawString(x, y, STR_FIX_PERMS_DESC);
+	} else
+	if(item_is(STR_CONVERT_ISO)) {
+		DrawString(x, y, STR_CONVERT_ISO_DESC);
+	} else
+	if(item_is(STR_EXTRACT_ISO)) {
+		DrawString(x, y, STR_CONVERT_ISO_DESC);
+	} else
+	if(item_is(STR_RESTORE)) {
+		DrawString(x, y, STR_RESTORE_DESC);
+	} else
+	if(item_is(STR_RESIGN)) {
+		DrawString(x, y, STR_RESIGN_DESC);
+	} else
+	if(item_is(STR_PATCH_EBOOT)) {
+		DrawString(x, y, STR_PATCH_EBOOT_DESC);
+	} else
+	if(item_is(STR_MAKE_SHTCUT_PKG)) {
+		DrawString(x, y, STR_MAKE_SHTCUT_PKG_DESC);
+	} else
+	if(item_is(STR_PATCH_EXP)) {
+		DrawString(x, y, STR_PATCH_EXP_DESC);
+	} else
+	if(item_is(STR_MOUNT_APPHOME)) {
+		DrawString(x, y, STR_MOUNT_APPHOME_DESC);
+	} else
+	if(item_is(STR_PATCH_LIBFS)) {
+		DrawString(x, y, STR_PATCH_LIBFS_DESC);
+	} else
+	if(item_is(STR_BDEMU)) {
+		DrawString(x, y, STR_BDEMU_DESC);
+	} else
+	if(item_is(STR_PRIM_USB)) {
+		DrawString(x, y, STR_PRIM_USB_DESC);
+	} else
+	if(item_is(STR_PAYLOAD)) {
+		DrawString(x, y, STR_PAYLOAD_DESC);
+	} else
+	if(item_is(STR_EXT_GAME_DATA)) {
+		DrawString(x, y, STR_EXT_GAME_DATA_DESC);
+	} else
+	if(item_is(STR_CHANGE_IDPS)) {
+		DrawString(x, y, STR_CHANGE_IDPS_DESC);
+	} else
+	if(item_is(STR_CLEAN_SYSCALL)) {
+		DrawString(x, y, STR_CLEAN_SYSCALL_DESC);
+	} else
+	if(item_is(STR_DIRECT_BOOT)) {
+		DrawString(x, y, STR_DIRECT_BOOT_DESC);
+	} else
+	if(item_is(STR_CREATE_CONFIG)) {
+		DrawString(x, y, STR_CREATE_CONFIG_DESC);
+	} else
+	if(item_is(STR_PROPS)) {
+		DrawString(x, y, STR_PROPS_DESC);
+	} else
+	if(item_is(STR_ENABLE_NETEMU) || item_is(STR_DISABLE_NETEMU)) {
+		DrawString(x, y, STR_NETEMU_DESC);
+	} else
+	if(item_is(STR_ENABLE_YFIX) || item_is(STR_DISABLE_YFIX)) {
+		DrawString(x, y, STR_YFIX_DESC);
+	} else
+	if(item_is(STR_ENABLE_FMVSKIP) || item_is(STR_DISABLE_FMVSKIP)) {
+		DrawString(x, y, STR_FMVSKIP_DESC);
+	} else
+	if(item_is(STR_ENABLE_480P) || item_is(STR_DISABLE_480P)) {
+		DrawString(x, y, STR_480P_DESC);
+	} else
+	if(item_is(STR_ENABLE_WS) || item_is(STR_DISABLE_WS)) {
+		DrawString(x, y, STR_WS_DESC);
+	} else
+	if(item_is(STR_APPLY_PNACH)) {
+		DrawString(x, y, STR_APPLY_PNACH_DESC);
+	} else
+	if(item_is(STR_REST_PNACH)) {
+		DrawString(x, y, STR_REST_PNACH_DESC);
+	} else
+	if(item_is(STR_CREATE_ICON0)) {
+		DrawString(x, y, STR_CREATE_ICON0_DESC);
+	} else
+	if(item_is(STR_COPY)) {
+		DrawString(x, y, STR_COPY_DESC);
+	} else
+	if(item_is(STR_DELETE)) {
+		DrawString(x, y, STR_DELETE_DESC);
+	} else
+	if(item_is(STR_RENAME)) {
+		DrawString(x, y, STR_RENAME_DESC);
+	} else
+	if(item_is(STR_ADD_FAV) || item_is(STR_REM_FAV)) {
+		DrawString(x, y, STR_FAV_DESC);
+	} else
+	if(item_is(STR_THM)) {
+		DrawString(x, y, STR_THM_DESC);
+	} else
+	if(item_is(STR_LANG)) {
+		DrawString(x, y, STR_LANG_DESC);
+	} else
+	if(item_is("0x2B")) {
+		DrawString(x, y, "(?) Something with controller (?)");
+	} else
+	if(item_is("0x35")) {
+		DrawString(x, y, "Enable Force Flip Field  - Fix for '[Hang] For soft-lock'");
+	} else
+	if(item_is("0x41")) {
+		DrawString(x, y, "(?) Speedhack (?)");
+	} else
+	if(item_is("0x44")) {
+		DrawString(x, y, "Disable smoothing");
+	} else
+	if(item_is("0x46")) {
+		DrawString(x, y, "Enable L2H Improvement - Fix screen shakes");
+	} else
+	if(item_is("0x47")) {
+		DrawString(x, y, "Enable XOR CSR - Fix fullscreen line corruption");
+	} else
+	if(item_is("0x50")) {
+		DrawString(x, y, "(?) Switch to default gamepad config (?)");
+	}	
+
+	FontSize(15);
+}
+
 void Draw_MENU()
 {
 	if(MENU == NO) return;
@@ -18144,8 +20138,8 @@ void Draw_MENU()
 			
 			y+=10;
 			Draw_title(x1, y, TITLES[i]);
-			
-			if(strcmp( TITLES[i], "Themes settings")==0) {
+						
+			if(strcmp( TITLES[i], STR_THM_SETTINGS)==0) {
 				FontColor(COLOR_4);
 				FontSize(18);
 				DrawString(x2, y, Themes[UI_position]);
@@ -18189,10 +20183,10 @@ void Draw_MENU()
 						DrawUp(x2+w/2,  y);	
 					}
 					DrawString(x2, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);					
-					
+										
 					// START OF .:THEME TAGS:.
-					if(strcmp(ITEMS[i], "Theme")==0) {
-						if(!(strcmp(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]], "None") == 0)) {
+					if(strcmp(ITEMS[i], STR_THM)==0) {
+						if(!(strcmp(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]], STR_NONE) == 0)) {
 							char tags[10];
 							if(strstr(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0") != NULL) {
 								strcpy(tags, "HDD ");
@@ -18251,7 +20245,7 @@ void Draw_MENU()
 			y+=new_line(1);
 		}
 		
-		FontColor(COLOR_1);
+		if(Show_help) Draw_HELP();
 		
 		if(1<i && MENU_COLUMN_ITEMS_NUMBER != -1) {
 			if( (i+1)%MENU_COLUMN_ITEMS_NUMBER == 0 ) {
@@ -18396,11 +20390,11 @@ void Draw_ICON0_creator_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Create", BUTTON_SQUARE);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
-	x=DrawButton(x, y, "Zoom OUT", BUTTON_L1 );
-	x=DrawButton(x, y, "Zoom IN", BUTTON_L2 );
-	x=DrawButton(x, y, "Move Frame", BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT );
+	x=DrawButton(x, y, STR_CREATE, BUTTON_SQUARE);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_ZOOM_OUT, BUTTON_L1 );
+	x=DrawButton(x, y, STR_ZOOM_IN, BUTTON_L2 );
+	x=DrawButton(x, y, STR_MOVE_FRAME, BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT );
 }
 
 void open_ICON0_creator()
@@ -18595,8 +20589,8 @@ u8 input_PS2_CONFIG_EDITOR()
 		}
 	} else
 	if(new_pad & BUTTON_START) {
-		if( Create_PS2_CONFIG() == SUCCESS ) show_msg("Done !");
-		else show_msg("Failed !");
+		if( Create_PS2_CONFIG() == SUCCESS ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 		return BREAK;
 	} else
 	if(new_pad & BUTTON_CIRCLE) {
@@ -18614,9 +20608,14 @@ void Draw_PS2_CONFIG_EDITOR_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Check/Uncheck", BUTTON_CROSS);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
-	x=DrawButton(x, y, "Create CONFIG", BUTTON_START );
+	if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) {
+		x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
+	} else {
+		x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);
+	}
+	
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_CREATE_CONFIG, BUTTON_START );
 }
 
 void Draw_PS2_CONFIG_EDITOR()
@@ -18829,7 +20828,6 @@ void update_PS2CRC()
 	
 	sprintf(PS2ORICRC_STR, "%08lX", (long unsigned int) Get_Original_PS2CRC());
 }
-
 
 u8 Apply_PS2PATCH(u32 patch_offset, u8 *patch_value, int patch_size)
 {
@@ -19100,46 +21098,6 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 	return SUCCESS;
 }
 
-#define CONFIG_NONE      0
-#define CONFIG_OFFICIAL  1
-#define CONFIG_CUSTOM    2
-#define CONFIG_UNK       3
-
-void check_CONFIG(u8* OFFICIAL, u8* CUSTOM, u8* used)
-{
-	u64 used_md5[2];
-	
-	char CONFIG_path[128];
-	
-	u8 tmp_used = CONFIG_UNK;
-	
-	strcpy(CONFIG_path, list_game_path[position]);
-	strcat(CONFIG_path, ".CONFIG");
-	
-	if( path_info(CONFIG_path) == _NOT_EXIST ) tmp_used = CONFIG_NONE;
-	else md5_file(CONFIG_path, (u8 *) used_md5);	
-	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, PS2_ID);
-	if( path_info(CONFIG_path) == _NOT_EXIST ) *OFFICIAL = 0; else *OFFICIAL = 1;
-	
-	if(tmp_used == CONFIG_UNK) {	
-		u64 md5_off[2];
-		md5_file(CONFIG_path, (u8 *) md5_off);
-		if(used_md5[0]==md5_off[0] && used_md5[1]==md5_off[1]) tmp_used = CONFIG_OFFICIAL;
-	}
-	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);	
-	if( path_info(CONFIG_path) == _NOT_EXIST ) *CUSTOM = 0; else *CUSTOM = 1;
-	
-	if(tmp_used == CONFIG_UNK) {
-		u64 md5_cus[2];
-		md5_file(CONFIG_path, (u8 *) md5_cus);
-		if(used_md5[0]==md5_cus[0] && used_md5[1]==md5_cus[1]) tmp_used = CONFIG_CUSTOM;
-	}
-	
-	*used = tmp_used;
-}
-
 u8 WS_exist()
 {
 	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.ws", ManaGunZ_id, PS2ORICRC_STR);
@@ -19174,26 +21132,93 @@ u8 is_WS()
 	return YES;
 }
 
+u8 MGZCONFIG_exist=NO;
+
+char *get_MGZCONFIG_path()
+{
+	char CONFIG_path[128];
+	char DBCONFIG[128];
+	char line[128];
+	char config_file[16];
+	
+	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	if(path_info(CONFIG_path) == _FILE) {
+		sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/%s.CONFIG", ManaGunZ_id, config_file);
+		char *ret =  malloc(strlen(CONFIG_path)+1);
+		if(ret==NULL) return NULL;
+		strcpy(ret, CONFIG_path);
+		return ret;
+	}
+	
+	sprintf(DBCONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/DBCONFIG.txt", ManaGunZ_id);
+	FILE *f;
+	f = fopen(DBCONFIG, "rb");
+	if(f==NULL) return NULL;
+	
+	while(fgets(line, 128, f) != NULL) {
+		strtok(line, "\r\n");
+		if(line[0] != '\t' && line[0] != ' ') {
+			strncpy(config_file, line, 11);
+		}
+		
+		if(strstr(line, PS2_ID) != NULL && config_file[0] != 0) {
+			fclose(f);
+			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/%s.CONFIG", ManaGunZ_id, config_file);
+			if(path_info(CONFIG_path) == _NOT_EXIST) return NULL;
+			char *ret =  malloc(strlen(CONFIG_path)+1);
+			if(ret==NULL) return NULL;
+			strcpy(ret, CONFIG_path);
+			return ret;
+		}
+	}
+	fclose(f);
+	
+	return NULL;
+}
+
+void Force_MGZCONFIG()
+{
+	char *MGZ_CONFIG = get_MGZCONFIG_path();
+	if(MGZ_CONFIG==NULL) return;
+	
+	char CONFIG_path[128];
+	strcpy(CONFIG_path, list_game_path[position]);
+	strcat(CONFIG_path, ".CONFIG");
+	
+	Delete(CONFIG_path);
+	CopyFile(MGZ_CONFIG, CONFIG_path);
+	
+	free(MGZ_CONFIG);
+}
+
+u8 have_MGZCONFIG()
+{
+	char *MGZ_CONFIG = get_MGZCONFIG_path();
+	if(MGZ_CONFIG==NULL) return NO;
+	free(MGZ_CONFIG);
+	return YES;	
+}
+
 void init_PS2_GAME_MENU()
 {
 	int i,j;
 	
 	init_MENU();
 	
-	add_title_MENU("Game Options");
+	add_title_MENU(STR_GAME_OPTION);
 	
 	if( is_favorite(list_game_path[position]) == NO )
-		add_item_MENU("Add to favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
 	else 
-		add_item_MENU("Remove from favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
 	
 	
-	add_item_MENU("Rename", ITEM_TEXTBOX);
+	add_item_MENU(STR_RENAME, ITEM_TEXTBOX);
 	
-	add_item_MENU("Delete", ITEM_TEXTBOX);
+	add_item_MENU(STR_DELETE, ITEM_TEXTBOX);
 	
 	if(device_number != 0) {
-		add_item_MENU("Copy", ITEM_TEXTBOX);
+		add_item_MENU(STR_COPY, ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
 			for(i=0; i<=device_number; i++) {
 				if(strstr(list_game_path[position], list_device[i])) continue;
@@ -19205,84 +21230,64 @@ void init_PS2_GAME_MENU()
 	}
 	
 	if(COVER_offset[position] != 0) {
-		add_item_MENU("Create ICON0", ITEM_TEXTBOX);
+		add_item_MENU(STR_CREATE_ICON0, ITEM_TEXTBOX);
 	}
 	
 	if( is_pnached() ) {
-		add_item_MENU("Restore PNACH", ITEM_TEXTBOX);
+		add_item_MENU(STR_REST_PNACH, ITEM_TEXTBOX);
 	}
 	else 
 	if( Pnach_exist() ) {
-		add_item_MENU("Apply PNACH", ITEM_TEXTBOX);
+		add_item_MENU(STR_APPLY_PNACH, ITEM_TEXTBOX);
 	}
 	
 	if( is_WS() ) {
-		add_item_MENU("Disable WideScreen", ITEM_TEXTBOX);
+		add_item_MENU(STR_DISABLE_WS, ITEM_TEXTBOX);
 	} else 
 	if( WS_exist() ) {
-		add_item_MENU("Enable WideScreen", ITEM_TEXTBOX);
+		add_item_MENU(STR_ENABLE_WS, ITEM_TEXTBOX);
 	}
 	
 	if(PS2PATCH_480P_offset) {
 		if(PS2PATCH_480P == YES) {
-			add_item_MENU("Disable 480P", ITEM_TEXTBOX);
+			add_item_MENU(STR_DISABLE_480P, ITEM_TEXTBOX);
 		} else {
-			add_item_MENU("Enable 480P", ITEM_TEXTBOX);
+			add_item_MENU(STR_ENABLE_480P, ITEM_TEXTBOX);
 		}
 	}
 	
 	if(PS2PATCH_YFIX_offset) {
 		if(PS2PATCH_YFIX == YES) {
-			add_item_MENU("Disable YFIX", ITEM_TEXTBOX);
+			add_item_MENU(STR_DISABLE_YFIX, ITEM_TEXTBOX);
 		} else {
-			add_item_MENU("Enable YFIX", ITEM_TEXTBOX);
+			add_item_MENU(STR_ENABLE_YFIX, ITEM_TEXTBOX);
 		}
 	}
 	
 	if(PS2PATCH_FMVSKIP_offset) {
 		if(PS2PATCH_FMVSKIP == YES) {
-			add_item_MENU("Disable FMV skip", ITEM_TEXTBOX);
+			add_item_MENU(STR_DISABLE_FMVSKIP, ITEM_TEXTBOX);
 		} else {
-			add_item_MENU("Enable FMV skip", ITEM_TEXTBOX);
+			add_item_MENU(STR_ENABLE_FMVSKIP, ITEM_TEXTBOX);
 		}
 	}
 	
 	i = ps2_netemu_cobra(BCNETEMU_STATUS);
 	if(i != BCNETEMU_ISNOTBC) {
 		if(i == BCNETEMU_OFF) {
-			add_item_MENU("Enable NetEMU", ITEM_TEXTBOX);
+			add_item_MENU(STR_ENABLE_NETEMU, ITEM_TEXTBOX);
 		} else
 		if(i == BCNETEMU_ON) {
-			add_item_MENU("Disable NetEMU", ITEM_TEXTBOX);
+			add_item_MENU(STR_DISABLE_NETEMU, ITEM_TEXTBOX);
 		}	
 	}
 	
-	add_item_MENU("CONFIG to use", ITEM_TEXTBOX);
+	if(MGZCONFIG_exist == NO)
+		add_item_MENU(STR_CREATE_CONFIG, ITEM_TEXTBOX);
 	
-	u8 OFFICIAL, CUSTOM, used;
-	check_CONFIG(&OFFICIAL, &CUSTOM, &used);
+	add_item_MENU(STR_CHECK_MD5, ITEM_TEXTBOX);
 	
-	add_item_value_MENU("None");
-	if(used == CONFIG_NONE) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
-	
-	if(OFFICIAL) {
-		add_item_value_MENU("Official");
-		if(used == CONFIG_OFFICIAL) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
-	}
-	if(CUSTOM) {
-		add_item_value_MENU("Custom");
-		if(used == CONFIG_CUSTOM) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
-	}
-	if(used == CONFIG_UNK) {
-		add_item_value_MENU("Unknown");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ITEMS_VALUE_NUMBER[ITEMS_NUMBER];
-	}
-	
-	add_item_MENU("Create CONFIG", ITEM_TEXTBOX);
-	
-	add_item_MENU("Check MD5", ITEM_TEXTBOX);
-	
-	add_item_MENU("Properties", ITEM_TEXTBOX);
+	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);
 	
 }
 
@@ -19295,86 +21300,84 @@ void close_PS2_GAME_MENU()
 
 u8 PS2_GAME_MENU_CROSS()
 {
-	if(item_is("Rename")) {
+	if(item_is(STR_RENAME)) {
 		char New_Name[255];
-		strcpy(New_Name, &strrchr(list_game_path[position], '/')[1]);
-		strtok(New_Name, ".");
-		if(Get_OSK_String("Rename", New_Name, 255) == SUCCESS) {
+		strcpy(New_Name, list_game_title[position]);
+		char *extention = get_extension(list_game_path[position]);
+		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
 			if(New_Name[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s.iso", DirPath, New_Name);
+				sprintf(NewPath, "%s/%s%s", DirPath, New_Name, extention);
 				if( rename(list_game_path[position], NewPath) == 0) {
 					strcpy(list_game_path[position], NewPath);
-					strcpy(list_game_title[position], list_game_path[position]);
-					strcpy(list_game_title[position], &strrchr(list_game_title[position], '/')[1]);
-					strtok(list_game_title[position], ".");
+					strcpy(list_game_title[position], New_Name);
 				}
 			}
 		}
 	} else 
-	if(item_is("Create ICON0")) {
+	if(item_is(STR_CREATE_ICON0)) {
 		open_ICON0_creator();
 	} else 
-	if(item_is("Add to favorites")) {
-		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
-		else show_msg("Failed");
+	if(item_is(STR_ADD_FAV)) {
+		if(add_favorite()==SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Remove from favorites")) {
-		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
-		else show_msg("Failed");
+	if(item_is(STR_REM_FAV)) {
+		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Restore PNACH")) {
+	if(item_is(STR_REST_PNACH)) {
 		start_loading();
 		char PnachRest[128];
 		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2CRC_STR);
 		u8 ret = restore_pnach(PnachRest);
 		end_loading();
-		if( ret == SUCCESS) show_msg("Done !");
-		else show_msg("Failed !");
+		if( ret == SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Apply PNACH")) {
+	if(item_is(STR_APPLY_PNACH)) {
 		start_loading();
 		char PnachRest[128];
 		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2CRC_STR);
 		u8 ret = apply_pnach(pnach, PnachRest);
 		end_loading();
 		
-		if( ret == SUCCESS) show_msg("Done !");
-		else show_msg("Failed !");
+		if( ret == SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Enable WideScreen")) {
+	if(item_is(STR_ENABLE_WS)) {
 		start_loading();
 		char WSRest[128];
 		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
 		u8 ret = apply_pnach(WS, WSRest);
 		end_loading();
-		if( ret == SUCCESS) show_msg("Done !");
-		else show_msg("Failed !");
+		if( ret == SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Disable WideScreen")) {
+	if(item_is(STR_DISABLE_WS)) {
 		start_loading();
 		char WSRest[128];
 		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
 		u8 ret = restore_pnach(WSRest);
 		end_loading();
-		if( ret == SUCCESS) show_msg("Done !");
-		else show_msg("Failed !");
+		if( ret == SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Enable NetEMU")) {
+	if(item_is(STR_ENABLE_NETEMU)) {
 		if( ps2_netemu_cobra(BCNETEMU_ON) == BCNETEMU_ON) show_msg("NetEMU enabled");
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Disable NetEMU")) {
+	if(item_is(STR_DISABLE_NETEMU)) {
 		if( ps2_netemu_cobra(BCNETEMU_OFF) == BCNETEMU_OFF) show_msg("NetEMU disabled");
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Create CONFIG")) {
+	if(item_is(STR_CREATE_CONFIG)) {
 		Draw_PS2_CONFIG_EDITOR();
 	} else 
-	if(item_is("Check MD5")) {
+	if(item_is(STR_CHECK_MD5)) {
 		start_loading();
 		u8 ret = CheckMD5(list_game_path[position]);
 		end_loading();
@@ -19386,7 +21389,7 @@ u8 PS2_GAME_MENU_CROSS()
 			open_txt_viewer(temp);
 		}
 	} else 
-	if(item_is("Copy")) {
+	if(item_is(STR_COPY)) {
 		start_copy_loading();
 		gathering=YES;
 		get_size(list_game_path[position], YES);
@@ -19394,49 +21397,26 @@ u8 PS2_GAME_MENU_CROSS()
 		strcpy(copy_src, list_game_path[position]);
 		sprintf(copy_dst, "%s/%s", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], &strrchr(list_game_path[position], '/')[1] );
 		if( Copy(copy_src, copy_dst) == SUCCESS )
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		else
-			show_msg("Failed !");
+			show_msg(STR_FAILED);
 		end_copy_loading();
 	} else 
-	if(item_is("Delete")) 
+	if(item_is(STR_DELETE)) 
 	{
 		char diag_msg[512];
-		sprintf(diag_msg, "Do you realy want to delete '%s' ?\nPath : %s\n", list_game_title[position], list_game_path[position]);
+		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_ASK_DEL, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
 			end_loading();
 			if(ret==SUCCESS) {
-				show_msg("Game deleted");
+				show_msg(STR_DONE);
 				return BREAK;
-			} else show_msg("Failed to delete game");
+			} else show_msg(STR_FAILED);
 		}
 	} else 
-	if(item_is("CONFIG to use"))
-	{	
-		char CONFIG_path[128];
-		strcpy(CONFIG_path, list_game_path[position]);
-		strcat(CONFIG_path, ".CONFIG");
-		
-		if(item_value_is("None")) {
-			Delete(CONFIG_path);
-		} else
-		if(item_value_is("Official")) {
-			Delete(CONFIG_path);
-			char loc_CONFIG[128];
-			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/OFFICIAL/%s.CONFIG", ManaGunZ_id, PS2_ID);
-			Copy(loc_CONFIG, CONFIG_path);
-		} else 
-		if(item_value_is("Custom")) {
-			Delete(CONFIG_path);
-			char loc_CONFIG[128];
-			sprintf(loc_CONFIG, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
-			Copy(loc_CONFIG, CONFIG_path);
-		}
-		
-	} else 
-	if(item_is("Properties")) {
+	if(item_is(STR_PROPS)) {
 		start_loading();
 		gathering=YES;
 		Get_Game_Size(list_game_path[position]);
@@ -19449,65 +21429,65 @@ u8 PS2_GAME_MENU_CROSS()
 		nb_file= 0;
 		nb_directory=0;
 	} else
-	if(item_is("Enable 480P")) {
+	if(item_is(STR_ENABLE_480P)) {
 		start_loading();
 		u8 ret = Apply_PS2PATCH(PS2PATCH_480P_offset, PS2PATCH_480P_FLAG_ENABLE, sizeof(PS2PATCH_480P_FLAG_ENABLE));
 		end_loading();
 		if( ret == SUCCESS) {
 			PS2PATCH_480P = YES;
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		} 
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else
-	if(item_is("Disable 480P")) {
+	if(item_is(STR_DISABLE_480P)) {
 		start_loading();
 		u8 ret = Apply_PS2PATCH(PS2PATCH_480P_offset, PS2PATCH_480P_FLAG_DISABLE, sizeof(PS2PATCH_480P_FLAG_DISABLE));
 		end_loading();
 		if( ret == SUCCESS) {
 			PS2PATCH_480P = NO;
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		} 
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else
-	if(item_is("Enable YFIX")) {
+	if(item_is(STR_ENABLE_YFIX)) {
 		start_loading();
 		u8 ret = Apply_PS2PATCH(PS2PATCH_YFIX_offset, PS2PATCH_YFIX_FLAG_ENABLE, sizeof(PS2PATCH_YFIX_FLAG_ENABLE));
 		end_loading();
 		if( ret == SUCCESS) {
 			PS2PATCH_YFIX = YES;
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		} 
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else
-	if(item_is("Disable YFIX")) {
+	if(item_is(STR_DISABLE_YFIX)) {
 		start_loading();
 		u8 ret = Apply_PS2PATCH(PS2PATCH_YFIX_offset, PS2PATCH_YFIX_FLAG_DISABLE, sizeof(PS2PATCH_YFIX_FLAG_DISABLE));
 		end_loading();
 		if( ret == SUCCESS) {
 			PS2PATCH_YFIX = NO;
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		} 
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else
-	if(item_is("Enable FMV skip")) {
+	if(item_is(STR_ENABLE_FMVSKIP)) {
 		start_loading();
 		u8 ret = Apply_PS2PATCH(PS2PATCH_FMVSKIP_offset, PS2PATCH_FMVSKIP_FLAG_ENABLE,  sizeof(PS2PATCH_FMVSKIP_FLAG_ENABLE));
 		end_loading();
 		if( ret == SUCCESS) {
 			PS2PATCH_FMVSKIP = YES;
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		} 
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	} else
-	if(item_is("Disable FMV skip")) {
+	if(item_is(STR_DISABLE_FMVSKIP)) {
 		start_loading();
 		u8 ret = Apply_PS2PATCH(PS2PATCH_FMVSKIP_offset, PS2PATCH_FMVSKIP_FLAG_DISABLE, sizeof(PS2PATCH_FMVSKIP_FLAG_DISABLE));
 		end_loading();
 		if( ret == SUCCESS) {
 			PS2PATCH_FMVSKIP = NO;
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		} 
-		else show_msg("Failed !");
+		else show_msg(STR_FAILED);
 	}
 	
 	init_PS2_GAME_MENU();
@@ -19526,8 +21506,8 @@ void Draw_PS2_GAME_MENU_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Enter", BUTTON_CROSS);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
 void input_PS2_GAME_MENU()
@@ -19596,8 +21576,8 @@ void open_PS2_GAME_MENU()
 	Get_ID(list_game_path[position], list_game_platform[position], PS2_ID);
 	
 	update_PS2CRC();
-	
 	get_WS();
+	MGZCONFIG_exist = have_MGZCONFIG();
 	
 	init_PS2_GAME_MENU();
 	ITEMS_POSITION = 0;
@@ -19620,20 +21600,20 @@ void init_PSP_GAME_MENU()
 	
 	init_MENU();
 	
-	add_title_MENU("Game Options");
+	add_title_MENU(STR_GAME_OPTION);
 	
 	if( is_favorite(list_game_path[position]) == NO )
-		add_item_MENU("Add to favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
 	else 
-		add_item_MENU("Remove from favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
 	
 	
-	add_item_MENU("Rename", ITEM_TEXTBOX);
+	add_item_MENU(STR_RENAME, ITEM_TEXTBOX);
 	
-	add_item_MENU("Delete", ITEM_TEXTBOX);
+	add_item_MENU(STR_DELETE, ITEM_TEXTBOX);
 	
 	if(device_number != 0) {
-		add_item_MENU("Copy", ITEM_TEXTBOX);
+		add_item_MENU(STR_COPY, ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
 			for(i=0; i<=device_number; i++) {
 				if(strstr(list_game_path[position], list_device[i])) continue;
@@ -19644,9 +21624,9 @@ void init_PSP_GAME_MENU()
 		}
 	}
 	
-	add_item_MENU("Check CRC", ITEM_TEXTBOX);
+	add_item_MENU(STR_CHECK_CRC32, ITEM_TEXTBOX);
 	
-	add_item_MENU("Properties", ITEM_TEXTBOX);
+	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);
 	
 }
 
@@ -19659,35 +21639,33 @@ void close_PSP_GAME_MENU()
 
 u8 PSP_GAME_MENU_CROSS()
 {
-	if(item_is("Rename")) {
+	if(item_is(STR_RENAME)) {
 		char New_Name[255];
-		strcpy(New_Name, &strrchr(list_game_path[position], '/')[1]);
-		strtok(New_Name, ".");
-		if(Get_OSK_String("Rename", New_Name, 255) == SUCCESS) {
+		strcpy(New_Name, list_game_title[position]);
+		char *extention = get_extension(list_game_path[position]);
+		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
 			if(New_Name[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s.iso", DirPath, New_Name);
+				sprintf(NewPath, "%s/%s%s", DirPath, New_Name, extention);
 				if( rename(list_game_path[position], NewPath) == 0) {
 					strcpy(list_game_path[position], NewPath);
-					strcpy(list_game_title[position], list_game_path[position]);
-					strcpy(list_game_title[position], &strrchr(list_game_title[position], '/')[1]);
-					strtok(list_game_title[position], ".");
+					strcpy(list_game_title[position], New_Name);
 				}
 			}
 		}
 	} else 
-	if(item_is("Add to favorites")) {
-		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
-		else show_msg("Failed");
+	if(item_is(STR_ADD_FAV)) {
+		if(add_favorite()==SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Remove from favorites")) {
-		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
-		else show_msg("Failed");
+	if(item_is(STR_REM_FAV)) {
+		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Check CRC")) {
+	if(item_is(STR_CHECK_CRC32)) {
 		start_loading();
 		u8 ret = CheckCRC32(list_game_path[position]);
 		end_loading();
@@ -19699,7 +21677,7 @@ u8 PSP_GAME_MENU_CROSS()
 			open_txt_viewer(temp);
 		}
 	} else 
-	if(item_is("Copy")) {
+	if(item_is(STR_COPY)) {
 		start_copy_loading();
 		gathering=YES;
 		get_size(list_game_path[position], YES);
@@ -19707,25 +21685,25 @@ u8 PSP_GAME_MENU_CROSS()
 		strcpy(copy_src, list_game_path[position]);
 		sprintf(copy_dst, "%s/%s", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], &strrchr(list_game_path[position], '/')[1] );
 		if( Copy(copy_src, copy_dst) == SUCCESS )
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		else
-			show_msg("Failed !");
+			show_msg(STR_FAILED);
 		end_copy_loading();
 	} else 
-	if(item_is("Delete")) {
+	if(item_is(STR_DELETE)) {
 		char diag_msg[512];
-		sprintf(diag_msg, "Do you realy want to delete '%s' ?\nPath : %s\n", list_game_title[position], list_game_path[position]);
+		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_DL_UPDATE, list_game_title[position], STR_DONE, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
 			end_loading();
 			if(ret==SUCCESS) {
-				show_msg("Game deleted");
+				show_msg(STR_DONE);
 				return BREAK;
-			} else show_msg("Failed to delete game");
+			} else show_msg(STR_FAILED);
 		}
 	} else 
-	if(item_is("Properties")) {
+	if(item_is(STR_PROPS)) {
 		start_loading();
 		gathering=YES;
 		Get_Game_Size(list_game_path[position]);
@@ -19755,8 +21733,8 @@ void Draw_PSP_GAME_MENU_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Enter", BUTTON_CROSS);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
 void input_PSP_GAME_MENU()
@@ -19836,20 +21814,20 @@ void init_PS1_GAME_MENU()
 	
 	init_MENU();
 	
-	add_title_MENU("Game Options");
+	add_title_MENU(STR_GAME_OPTION);
 	
 	if( is_favorite(list_game_path[position]) == NO )
-		add_item_MENU("Add to favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
 	else 
-		add_item_MENU("Remove from favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
 	
 	
-	add_item_MENU("Rename", ITEM_TEXTBOX);
+	add_item_MENU(STR_RENAME, ITEM_TEXTBOX);
 	
-	add_item_MENU("Delete", ITEM_TEXTBOX);
+	add_item_MENU(STR_DELETE, ITEM_TEXTBOX);
 	
 	if(device_number != 0) {
-		add_item_MENU("Copy", ITEM_TEXTBOX);
+		add_item_MENU(STR_COPY, ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
 			for(i=0; i<=device_number; i++) {
 				if(strstr(list_game_path[position], list_device[i])) continue;
@@ -19861,12 +21839,12 @@ void init_PS1_GAME_MENU()
 	}
 	
 	if(COVER_offset[position] != 0) {
-		add_item_MENU("Create ICON0", ITEM_TEXTBOX);
+		add_item_MENU(STR_CREATE_ICON0, ITEM_TEXTBOX);
 	}
 	
-	add_item_MENU("Check MD5", ITEM_TEXTBOX);
+	add_item_MENU(STR_CHECK_MD5, ITEM_TEXTBOX);
 	
-	add_item_MENU("Properties", ITEM_TEXTBOX);
+	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);
 	
 }
 
@@ -19879,37 +21857,36 @@ void close_PS1_GAME_MENU()
 
 u8 PS1_GAME_MENU_CROSS()
 {
-	if(item_is("Rename")) {
+	if(item_is(STR_RENAME)) {
 		char New_Name[255];
-		strcpy(New_Name, &strrchr(list_game_path[position], '/')[1]);
-		if(Get_OSK_String("Rename", New_Name, 255) == SUCCESS) {
+		strcpy(New_Name, list_game_title[position]);
+		char *extention = get_extension(list_game_path[position]);
+		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
 			if(New_Name[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s", DirPath, New_Name);
+				sprintf(NewPath, "%s/%s%s", DirPath, New_Name, extention);
 				if( rename(list_game_path[position], NewPath) == 0) {
 					strcpy(list_game_path[position], NewPath);
-					strcpy(list_game_title[position], list_game_path[position]);
-					strcpy(list_game_title[position], &strrchr(list_game_title[position], '/')[1]);
-					strtok(list_game_title[position], ".");
+					strcpy(list_game_title[position], New_Name);
 				}
 			}
 		}
 	} else 
-	if(item_is("Create ICON0")) {
+	if(item_is(STR_CREATE_ICON0)) {
 		open_ICON0_creator();
 	} else 
-	if(item_is("Add to favorites")) {
-		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
-		else show_msg("Failed");
+	if(item_is(STR_ADD_FAV)) {
+		if(add_favorite()==SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Remove from favorites")) {
-		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
-		else show_msg("Failed");
+	if(item_is(STR_REM_FAV)) {
+		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Check MD5")) {
+	if(item_is(STR_CHECK_MD5)) {
 		start_loading();
 		u8 ret = CheckMD5(list_game_path[position]);
 		end_loading();
@@ -19921,7 +21898,7 @@ u8 PS1_GAME_MENU_CROSS()
 			open_txt_viewer(temp);
 		}
 	} else 
-	if(item_is("Copy")) {
+	if(item_is(STR_COPY)) {
 		start_copy_loading();
 		gathering=YES;
 		get_size(list_game_path[position], YES);
@@ -19929,25 +21906,25 @@ u8 PS1_GAME_MENU_CROSS()
 		strcpy(copy_src, list_game_path[position]);
 		sprintf(copy_dst, "%s/%s", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], &strrchr(list_game_path[position], '/')[1] );
 		if( Copy(copy_src, copy_dst) == SUCCESS )
-			show_msg("Done !");
+			show_msg(STR_DONE);
 		else
-			show_msg("Failed !");
+			show_msg(STR_FAILED);
 		end_copy_loading();
 	} else 
-	if(item_is("Delete")) {
+	if(item_is(STR_DELETE)) {
 		char diag_msg[512];
-		sprintf(diag_msg, "Do you realy want to delete '%s' ?\nPath : %s\n", list_game_title[position], list_game_path[position]);
+		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_DL_UPDATE, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
 			end_loading();
 			if(ret==SUCCESS) {
-				show_msg("Game deleted");
+				show_msg(STR_DONE);
 				return BREAK;
-			} else show_msg("Failed to delete game");
+			} else show_msg(STR_FAILED);
 		}
 	} else 
-	if(item_is("Properties")) {
+	if(item_is(STR_PROPS)) {
 		start_loading();
 		gathering=YES;
 		Get_Game_Size(list_game_path[position]);
@@ -19977,8 +21954,8 @@ void Draw_PS1_GAME_MENU_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Enter", BUTTON_CROSS);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
 void input_PS1_GAME_MENU()
@@ -20444,10 +22421,10 @@ void Draw_CHOOSE_IDPS_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Change value", BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
-	x=DrawButton(x, y, "Load IDPS from lv2", BUTTON_SQUARE);
-	x=DrawButton(x, y, "Load IDPS from EID5", BUTTON_TRIANGLE);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_CHANGE_VALUE, BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
+	x=DrawButton(x, y, STR_LOAD_IDPS_LV2, BUTTON_SQUARE);
+	x=DrawButton(x, y, STR_LOAD_IDPS_EID5, BUTTON_TRIANGLE);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
 void Draw_CHOOSE_IDPS()
@@ -20484,60 +22461,65 @@ void init_PS3_GAME_MENU()
 	
 	init_MENU();
 	
-	add_title_MENU("Game Settings");
+	add_title_MENU(STR_GAME_SETTINGS);
 	
-	add_item_MENU("Direct boot", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
+	add_item_MENU(STR_DIRECT_BOOT, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direct_boot;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU("Clean syscall", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = clean_syscall;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	if(PEEKnPOKE) {
+
+		add_item_MENU(STR_CLEAN_SYSCALL, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = clean_syscall;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU(STR_CHANGE_IDPS, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = change_IDPS;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	}
 	
-	add_item_MENU("Change IDPS", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = change_IDPS;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	add_item_MENU("Ext. Game Data", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
+	add_item_MENU(STR_EXT_GAME_DATA, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = ext_game_data;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU("Payload", ITEM_TEXTBOX);
+	add_item_MENU(STR_PAYLOAD, ITEM_TEXTBOX);
 	if(cobra) add_item_value_MENU("Cobra");
 	else add_item_value_MENU("Mamba");
-	if(iso == NO) {	
-		add_item_value_MENU("Iris");
-		add_item_value_MENU("multiMAN");
+	if(PEEKnPOKE) {
+		if(iso == NO) {	
+			add_item_value_MENU("Iris");
+			add_item_value_MENU("multiMAN");
+		}
 	}
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = payload;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
 	if(iso == NO) {	
 		if(cobra==YES && usb==YES) {
-			add_item_MENU("Set Primary USB", ITEM_TEXTBOX);
-			add_item_value_MENU("No");
-			add_item_value_MENU("Yes");
+			add_item_MENU(STR_PRIM_USB, ITEM_TEXTBOX);
+			add_item_value_MENU(STR_NO);
+			add_item_value_MENU(STR_YES);
 			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = prim_USB;
 			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		}
 		
-		add_item_MENU("BD emulation", ITEM_TEXTBOX);
-		add_item_value_MENU("None");
+		add_item_MENU(STR_BDEMU, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NONE);
 		add_item_value_MENU("BDMIRROR");
 		add_item_value_MENU("BDEMU");
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
 		if(emu==BDEMU) {
-			add_item_MENU("Patch libfs", ITEM_TEXTBOX);
+			add_item_MENU(STR_PATCH_LIBFS, ITEM_TEXTBOX);
 			add_item_value_MENU("reactPSN");
 			add_item_value_MENU("Iris");
 			add_item_value_MENU("multiMAN");
@@ -20546,34 +22528,34 @@ void init_PS3_GAME_MENU()
 		}
 	}
 	
-	add_item_MENU("Mount /app_home", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
+	add_item_MENU(STR_MOUNT_APPHOME, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = mount_app_home;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
 	if(mount_app_home==YES) {
-		add_item_MENU("Patch explore_plugin", ITEM_TEXTBOX);
-		add_item_value_MENU("No");
-		add_item_value_MENU("Yes");
+		add_item_MENU(STR_PATCH_EXP, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	}
 	
-	add_title_MENU("Game Options");
+	add_title_MENU(STR_GAME_OPTION);
 	
 	if(is_favorite(list_game_path[position]) == NO) {
-		add_item_MENU("Add to favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
 	} else {
-		add_item_MENU("Remove from favorites", ITEM_TEXTBOX);
+		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
 	}
 	
-	add_item_MENU("Rename", ITEM_TEXTBOX);
+	add_item_MENU(STR_RENAME, ITEM_TEXTBOX);
 	
-	add_item_MENU("Delete", ITEM_TEXTBOX);
+	add_item_MENU(STR_DELETE, ITEM_TEXTBOX);
 	
 	if(device_number != 0) {
-		add_item_MENU("Copy", ITEM_TEXTBOX);
+		add_item_MENU(STR_COPY, ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
 			for(i=0; i<=device_number; i++) {
 				if(strstr(list_game_path[position], list_device[i])) continue;
@@ -20584,22 +22566,22 @@ void init_PS3_GAME_MENU()
 		}
 	}
 	
-	add_item_MENU("Make Shortcut PKG", ITEM_TEXTBOX);
+	add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);
 	
-	add_item_MENU("Patch EBOOT", ITEM_TEXTBOX);
+	add_item_MENU(STR_PATCH_EBOOT, ITEM_TEXTBOX);
 	
 	if(iso==NO) {
 		if(is_resigned_GAME(list_game_path[position])==NO) {
-			add_item_MENU("Re-sign", ITEM_TEXTBOX);
+			add_item_MENU(STR_RESIGN, ITEM_TEXTBOX);
 		} else {
-			add_item_MENU("Restore", ITEM_TEXTBOX);
+			add_item_MENU(STR_RESTORE, ITEM_TEXTBOX);
 		}
 	}
 	
 	if(iso) {
-		add_item_MENU("Extract ISO", ITEM_TEXTBOX);
+		add_item_MENU(STR_EXTRACT_ISO, ITEM_TEXTBOX);
 	} else {
-		add_item_MENU("Convert to ISO", ITEM_TEXTBOX);
+		add_item_MENU(STR_CONVERT_ISO, ITEM_TEXTBOX);
 	}
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
@@ -20610,46 +22592,46 @@ void init_PS3_GAME_MENU()
 	}
 	
 	if(iso==NO) {
-		add_item_MENU("Fix permissions", ITEM_TEXTBOX);
-		add_item_MENU("Check files (IRD)", ITEM_TEXTBOX);
+		add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
+		add_item_MENU(STR_CHECK_IRD, ITEM_TEXTBOX);
 	}
 	
-	add_item_MENU("Download Update", ITEM_TEXTBOX);
+	add_item_MENU(STR_DL_UPDATE, ITEM_TEXTBOX);
 	
-	add_item_MENU("Properties", ITEM_TEXTBOX);
+	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);
 	
 }
 
 void PS3_GAME_MENU_UPDATE()
 {
-	if(item_is("Direct boot")) {
+	if(item_is(STR_DIRECT_BOOT)) {
 		direct_boot = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("Clean syscall")) {
+	if(item_is(STR_CLEAN_SYSCALL)) {
 		clean_syscall = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(item_is("Change IDPS")) {
+	if(item_is(STR_CHANGE_IDPS)) {
 		change_IDPS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("Payload")) {
+	if(item_is(STR_PAYLOAD)) {
 		payload = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("Ext. Game Data")) {
+	if(item_is(STR_EXT_GAME_DATA)) {
 		ext_game_data = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("Set Primary USB")) {
+	if(item_is(STR_PRIM_USB)) {
 		prim_USB = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("BD emulation")) {
+	if(item_is(STR_BDEMU)) {
 		emu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("Patch libfs")) {
+	if(item_is(STR_PATCH_LIBFS)) {
 		libfs_from = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(item_is("Mount /app_home")) {
+	if(item_is(STR_MOUNT_APPHOME)) {
 		mount_app_home = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is("Patch explore_plugin")) {
+	if(item_is(STR_PATCH_EXP)) {
 		use_ex_plug = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	}
 	
@@ -20658,30 +22640,30 @@ void PS3_GAME_MENU_UPDATE()
 
 u8 PS3_GAME_MENU_CROSS()
 {
-	if(item_is("Change IDPS")) {
+	if(item_is(STR_CHANGE_IDPS)) {
 		Draw_CHOOSE_IDPS();
 	} else 
-	if(item_is("Rename")) {
+	if(item_is(STR_RENAME)) {
 		char tmpName[128];
 		strcpy(tmpName, list_game_title[position]);
-		if(Get_OSK_String("Rename", tmpName, 128) == SUCCESS) {
+		if(Get_OSK_String(STR_RENAME, tmpName, 128) == SUCCESS) {
 			if(tmpName[0]!=0) {
 				if(SetParamSFO("TITLE", tmpName, position, NULL)==SUCCESS) {
 					strcpy(list_game_title[position], tmpName);
-					show_msg("Game renamed");
+					show_msg(STR_DONE);
 				}
 			}
 		}
 	} else 
-	if(item_is("Add to favorites")) {
-		if(add_favorite()==SUCCESS) show_msg("Added to favorites");
-		else show_msg("Failed");
+	if(item_is(STR_ADD_FAV)) {
+		if(add_favorite()==SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Remove from favorites")) {
-		if(remove_favorite()==SUCCESS) show_msg("Removed from favorites"); 
-		else show_msg("Failed");
+	if(item_is(STR_REM_FAV)) {
+		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
+		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Make Shortcut PKG")) {
+	if(item_is(STR_MAKE_SHTCUT_PKG)) {
 		
 		char mk_pkg_ID[10];
 		if( GetParamSFO("TITLE_ID", mk_pkg_ID, position, NULL) == SUCCESS ) {
@@ -20696,50 +22678,50 @@ u8 PS3_GAME_MENU_CROSS()
 				start_loading();
 				ret=make_launcher_pkg(mk_pkg_ID);
 				end_loading();
-				if(ret == SUCCESS) show_msg("Done");
-				else show_msg("Failed");
+				if(ret == SUCCESS) show_msg(STR_DONE);
+				else show_msg(STR_FAILED);
 			}
 		}
 	
 	} else 
-	if(item_is("Delete")) {
+	if(item_is(STR_DELETE)) {
 		char diag_msg[512];
-		sprintf(diag_msg, "Do you realy want to delete %s ?\nPath : %s", list_game_title[position], list_game_path[position]);
+		sprintf(diag_msg, "%s %s ?\n%s : %s", STR_ASK_DEL, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
 			end_loading();
 			if(ret==SUCCESS) {
-				show_msg("Game deleted");
+				show_msg(STR_DONE);
 				return BREAK;
-			} else show_msg("Failed to delete game");
+			} else show_msg(STR_FAILED);
 		}
 	} else 
-	if(item_is("Copy")) {
+	if(item_is(STR_COPY)) {
 		Copy_Game(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 	} else 
-	if(item_is("Patch EBOOT")) {
+	if(item_is(STR_PATCH_EBOOT)) {
 		start_loading();
 		u8 ret;
 		if(iso==NO) ret = patch_EBOOT(position);
 		else 		ret = patchps3iso(list_game_path[position]);
-		if(ret == SUCCESS) show_msg("EBOOT Patched"); 
-		else show_msg("Failed");
+		if(ret == SUCCESS) show_msg(STR_DONE); 
+		else show_msg(STR_FAILED);
 		end_loading();
 	} else 
-	if(item_is("Re-sign")) {
+	if(item_is(STR_RESIGN)) {
 		start_loading();
-		if(re_sign_GAME(list_game_path[position]) == SUCCESS) show_msg("Game re-signed"); else
-		show_msg("Failed"); 
+		if(re_sign_GAME(list_game_path[position]) == SUCCESS) show_msg(STR_DONE); else
+		show_msg(STR_FAILED); 
 		end_loading();
 	} else 
-	if(item_is("Restore")) {
+	if(item_is(STR_RESTORE)) {
 		start_loading();
-		if(restore_GAME(list_game_path[position]) == SUCCESS) show_msg("Game restored"); else
-		show_msg("Failed"); 
+		if(restore_GAME(list_game_path[position]) == SUCCESS) show_msg(STR_DONE); else
+		show_msg(STR_FAILED); 
 		end_loading();
 	} else 
-	if(item_is("Extract ISO")) {
+	if(item_is(STR_EXTRACT_ISO)) {
 		start_loading();
 		print_head("Converting...");
 		u8 ret;
@@ -20748,11 +22730,12 @@ u8 PS3_GAME_MENU_CROSS()
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL); 
 		else 
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);	
-		if(ret==FAILED) show_msg("Failed"); else
-		show_msg("Done");
+		if(ret==FAILED) show_msg(STR_FAILED);
+		else show_msg(STR_DONE);
+		
 		end_loading();
 	} else 
-	if(item_is("Convert to ISO")) {
+	if(item_is(STR_CONVERT_ISO)) {
 		start_loading();
 		print_head("Converting...");
 		u8 ret;
@@ -20762,18 +22745,18 @@ u8 PS3_GAME_MENU_CROSS()
 		else 
 			ret = makeps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);
 		
-		if(ret==FAILED) show_msg("Failed"); else
-		show_msg("Done");
+		if(ret==FAILED) show_msg(STR_FAILED); 
+		else show_msg(STR_DONE);
 		end_loading();
 	} else 
-	if(item_is("Fix permissions")) {
+	if(item_is(STR_FIX_PERMS)) {
 		start_loading();
 		print_head("Fixing permissions...");
-		if(SetPerms(list_game_path[position]) == SUCCESS) show_msg("Perms Fixed !");
-		else show_msg("Failed");
+		if(SetPerms(list_game_path[position]) == SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 		end_loading();
 	} else 
-	if(item_is("Check files (IRD)")) {
+	if(item_is(STR_CHECK_IRD)) {
 		u8 ret;
 		start_loading();
 		ret = CheckIRD(list_game_path[position]);
@@ -20785,14 +22768,14 @@ u8 PS3_GAME_MENU_CROSS()
 			open_txt_viewer(temp);
 		} 
 		else {
-			show_msg("Failed to check IRD");
+			show_msg(STR_FAILED);
 			end_loading();
 		}
 	} else 
-	if(item_is("Download Update")) {
+	if(item_is(STR_DL_UPDATE)) {
 		get_game_update(position);
 	} else 
-	if(item_is("Properties")) {
+	if(item_is(STR_PROPS)) {
 		start_loading();
 		gathering=YES;
 		Get_Game_Size(list_game_path[position]);
@@ -20904,13 +22887,13 @@ void Draw_PS3_GAME_MENU_input()
 	SetFontZ(0);
 	
 	if(IN_ITEMS_VALUE == YES) {
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	} else {
-		x=DrawButton(x, y, "Enter", BUTTON_CROSS);
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
-				x=DrawButton(x, y, "Change", BUTTON_SQUARE | BUTTON_TRIANGLE);
+				x=DrawButton(x, y, STR_CHANGE, BUTTON_SQUARE | BUTTON_TRIANGLE);
 			}
 		}	
 	}
@@ -20984,6 +22967,21 @@ void init_PLUGINS_MANAGER()
 	
 	if(ITEMS_VALUE_NUMBER[0] == -1) return;
 	
+	FILE *f = fopen(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], "r");
+	if(f) {
+		char line[255];
+		int l = strlen("/dev_hdd0/plugins");
+		while(fgets(line, 255, f) != NULL) {
+			if(line[0]=='\r' || line[0]=='\n') continue;
+			strtok(line, "\r\n");
+			
+			if(strncmp(line, "/dev_hdd0/plugins", l) != 0) {
+				add_item_MENU(line, ITEM_TEXTBOX);
+			}
+		}
+		fclose(f);
+	}
+	
 	char temp[128];
 	DIR *d;
 	struct dirent *dir;
@@ -21007,8 +23005,25 @@ void init_PLUGINS_MANAGER()
 u8 PLUGINS_MANAGER_CROSS()
 {
 	if(item_is("Boot file")) {
-		open_txt_viewer(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-	} else {
+		if((cobra || mamba) && ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
+			FILE *f=NULL;
+			if(cobra) f=fopen("/dev_hdd0/boot_plugins.txt", "wb"); else
+			if(mamba) f=fopen("/dev_hdd0/mamba_plugins.txt", "wb");	
+			if(f) fclose(f);
+		} else {
+			open_txt_viewer(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		}
+
+	}  else 
+	if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_TEXTBOX) {
+		char NewPath[255];
+		sprintf(NewPath, "/dev_hdd0/plugins/%s", &strrchr(ITEMS[ITEMS_POSITION], '/')[1]);
+		if( Move(ITEMS[ITEMS_POSITION], NewPath) == SUCCESS) {
+			remove_from_list(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], ITEMS[ITEMS_POSITION]);
+			add_to_list(ITEMS_VALUE[0][ITEMS_VALUE_POSITION[0]], NewPath);
+		}
+	} else 
+	if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_CHECKBOX) {
 		char temp[128];
 		sprintf(temp, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
 		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) 
@@ -21024,9 +23039,10 @@ u8 PLUGINS_MANAGER_CROSS()
 
 u8 PLUGINS_MANAGER_SQUARE()
 {
+	
 	if( item_is("Boot file") == NO ) {
 		char diag_msg[512];
-		sprintf(diag_msg, "Do you realy want to delete '%s' ?", ITEMS[ITEMS_POSITION]);
+		sprintf(diag_msg, "%s '%s' ?", STR_ASK_DEL, ITEMS[ITEMS_POSITION]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			char temp[128];
 			sprintf(temp, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
@@ -21079,7 +23095,7 @@ void input_PLUGINS_MANAGER()
 			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
 		}
 	}
-	
+
 	if(new_pad & BUTTON_CROSS) {
 		if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX ) {
 			PLUGINS_MANAGER_CROSS();
@@ -21117,23 +23133,39 @@ void Draw_PLUGINS_MANAGER_input()
 	
 	if(IN_ITEMS_VALUE == YES) {
 		if(item_is("Boot file")) {
-			x=DrawButton(x, y, "Show", BUTTON_CROSS);
+			x=DrawButton(x, y, STR_VIEW, BUTTON_CROSS);
 		}	
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	} else {
 		if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX) {
 			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) 
-				x=DrawButton(x, y, "Uncheck", BUTTON_CROSS);
+				x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
 			else 
-				x=DrawButton(x, y, "Check", BUTTON_CROSS);
-			x=DrawButton(x, y, "Delete", BUTTON_SQUARE);
-		} else x=DrawButton(x, y, "Enter", BUTTON_CROSS);
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+				x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);
+			x=DrawButton(x, y, STR_DELETE, BUTTON_SQUARE);
+		} else {
+			if(item_is("Boot file")) {
+				if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
+					if(cobra || mamba)	x=DrawButton(x, y, STR_CREATE, BUTTON_CROSS);
+				} else {
+					x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+				}
+			} else {
+				x=DrawButton(x, y, STR_MOVE_TO_PLUGINS, BUTTON_CROSS);
+			}
+		} 
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	}
 }
 
 void open_PLUGINS_MANAGER()
 {
+	
+	if( path_info("/dev_hdd0/plugins") == _NOT_EXIST) {
+		if( DrawDialogYesNo(STR_ASK_PLUGINS) == YES) mkdir("/dev_hdd0/plugins", 0777);
+		else return;
+	}
+
 	start_loading();
 	
 	close_SETTINGS();
@@ -21151,6 +23183,8 @@ void open_PLUGINS_MANAGER()
 	
 	end_loading();
 }
+
+
 
 void Draw_TVTEST()
 {
@@ -21215,15 +23249,15 @@ void Draw_AdjustScreen()
 
 			FontColor(BLACK);
 			FontSize(15);
-			x=DrawButton(25, 485, "Show TV screen test", BUTTON_CROSS);
-			x=DrawButton(x, 485, "Back", BUTTON_CIRCLE);
+			x=DrawButton(25, 485, STR_SHOWTV, BUTTON_CROSS);
+			x=DrawButton(x, 485, STR_BACK, BUTTON_CIRCLE);
 		} 
 		else {
 			Draw_TVTEST();
 			FontColor(WHITE);
 			FontSize(15);
-			x=DrawButton(25, 485, "Hide TV screen test", BUTTON_CROSS);
-			x=DrawButton(x, 485, "Back", BUTTON_CIRCLE);
+			x=DrawButton(25, 485, STR_HIDETV, BUTTON_CROSS);
+			x=DrawButton(x, 485, STR_BACK, BUTTON_CIRCLE);
 		}
 		
 		tiny3d_Flip();
@@ -21368,8 +23402,8 @@ void Draw_COLOR_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Set color", BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_SET_COLOR, BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
 void Draw_ChooseColor(u8 n)
@@ -21404,143 +23438,162 @@ void init_SETTINGS()
 	
 	init_MENU();
 	
-	add_title_MENU("Global settings");
+	add_title_MENU(STR_GLOB_SETTINGS);
 	
-	add_item_MENU("Adjust screen", ITEM_TEXTBOX);
+	add_item_MENU(STR_ADJUST, ITEM_TEXTBOX);
 	
-	add_item_MENU("Download covers", ITEM_TEXTBOX);
+	add_item_MENU(STR_DL_COVER, ITEM_TEXTBOX);
 	
-	if(path_info("/dev_hdd0/plugins") == _DIRECTORY) {
-		add_item_MENU("Plugins Manager", ITEM_TEXTBOX);
-	}
+	add_item_MENU(STR_PLUGIN_MANAGER, ITEM_TEXTBOX);
 	
-	add_item_MENU("Update ManaGunZ", ITEM_TEXTBOX);
+	add_item_MENU(STR_UPD_MGZ, ITEM_TEXTBOX);
 	
-	add_item_MENU("Game backup paths", ITEM_TEXTBOX);
+	add_item_MENU(STR_GAME_PATHS, ITEM_TEXTBOX);
 	for(i=0; i <= scan_dir_number; i++) {
 		add_item_value_MENU(scan_dir[i]);
 	}
 	
-	add_item_MENU("XMB Priority", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
+	add_item_MENU(STR_LANG, ITEM_TEXTBOX);
+	for(i=0; i < lang_N ;i++) {
+		add_item_value_MENU(STR_LANGUAGE[i]);
+	}
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = lang;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU(STR_XMB_PRIO, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = XMB_priority;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-	add_title_MENU("Themes settings");
 	
-	add_item_MENU("Theme", ITEM_TEXTBOX);
+	add_item_MENU(STR_HELP, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_help;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+	add_title_MENU(STR_THM_SETTINGS);
+	
+	add_item_MENU(STR_THM, ITEM_TEXTBOX);
 	for(i=0; i <= Themes_number[UI_position]; i++) {
 		add_item_value_MENU(Themes_Names_list[UI_position][i]);
 	}
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Themes_position[UI_position];
 	
-	add_item_MENU("Color 1", ITEM_COLORBOX);
+	add_item_MENU(STR_COLOR_1, ITEM_COLORBOX);
 	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_1, 4);
 	
-	add_item_MENU("Color 2", ITEM_COLORBOX);
+	add_item_MENU(STR_COLOR_2, ITEM_COLORBOX);
 	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_2, 4);
 	
-	add_item_MENU("Color 3", ITEM_COLORBOX);
+	add_item_MENU(STR_COLOR_3, ITEM_COLORBOX);
 	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_3, 4);
 
-	add_item_MENU("Color 4", ITEM_COLORBOX);
+	add_item_MENU(STR_COLOR_4, ITEM_COLORBOX);
 	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_4, 4);
 	
-	add_title_MENU("User interface settings");
+	add_title_MENU(STR_UI_SETTINGS);
 	
-	add_item_MENU("User interface", ITEM_TEXTBOX);
+	add_item_MENU(STR_UI, ITEM_TEXTBOX);
 	for(i=0; i < 4; i++) {
 		add_item_value_MENU(UI[i]);
 	}
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = UI_position;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU("Game SideMenu", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
+	add_item_MENU(STR_SIDE_MENU, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_sidemenu;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU("Show PIC1", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
+	add_item_MENU(STR_SHOW_PIC1, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_NO);
+	add_item_value_MENU(STR_YES);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_PIC1;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU("Show Cover", ITEM_TEXTBOX);
-	add_item_value_MENU("No");
-	add_item_value_MENU("Yes");
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_COVER;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	if(Show_COVER==YES) {
-		add_item_MENU("Show Game Case", ITEM_TEXTBOX);
-		add_item_value_MENU("No");
-		add_item_value_MENU("Yes");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_GameCase;
+	if(UI_position!=GRID) {
+		add_item_MENU(STR_SHOW_COVER, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_COVER;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		if(Show_COVER==YES) {
+			add_item_MENU(STR_SHOW_GAMECASE, ITEM_TEXTBOX);
+			add_item_value_MENU(STR_NO);
+			add_item_value_MENU(STR_YES);
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_GameCase;
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		}
 	}
 	
 	if(UI_position==LIST) {
-		add_item_MENU("Show ICON0", ITEM_TEXTBOX);
-		add_item_value_MENU("No");
-		add_item_value_MENU("Yes");
+		add_item_MENU(STR_SHOW_ICON0, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LIST_Show_ICON0;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	}
 	else if(UI_position==GRID) {
 	
-		add_item_MENU("Grid type", ITEM_TEXTBOX);
-		add_item_value_MENU("Scroll");
-		add_item_value_MENU("Page");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = grid_type;
+		add_item_MENU(STR_GRID_TYPE, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_SCROLL);
+		add_item_value_MENU(STR_PAGE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_TYPE;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
-		add_item_MENU("Direction", ITEM_TEXTBOX);
-		add_item_value_MENU("Vertical");
-		add_item_value_MENU("Horizontal");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direction;
+		add_item_MENU(STR_DIRECTION, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_VERTICAL);
+		add_item_value_MENU(STR_HORIZONTAL);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_DIRECTION;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
-		add_item_MENU("Animated", ITEM_TEXTBOX);
-		add_item_value_MENU("No");
-		add_item_value_MENU("Yes");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = animated;
+		add_item_MENU(STR_ANIMATED, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_ANIMATED;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
-		add_item_MENU("Keep proportion", ITEM_TEXTBOX);
-		add_item_value_MENU("No");
-		add_item_value_MENU("Yes");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = keep_prop;
+		add_item_MENU(STR_KEEP_PROP, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_KEEP_PROP;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
-		add_item_MENU("Number of columns", ITEM_TEXTBOX);
+		add_item_MENU(STR_NB_COL, ITEM_TEXTBOX);
 		for(i=0; i < 16; i++) {
 			char tmp[3];
 			sprintf(tmp, "%d", i);
 			add_item_value_MENU(tmp);
 		}
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = grid_nb_columns;
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_NB_COLUMNS;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
-		if(keep_prop==NO) {
-			add_item_MENU("Number of lines", ITEM_TEXTBOX);
+		if(GRID_KEEP_PROP==NO) {
+			add_item_MENU(STR_NB_LINE, ITEM_TEXTBOX);
 			for(i=0; i < 16; i++) {
 				char tmp[3];
 				sprintf(tmp, "%d", i);
 				add_item_value_MENU(tmp);
 			}
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = grid_nb_lines;
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_NB_LINES;
 			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		}
 	} 
 	else if(UI_position==FLOW) {
 		
-		add_item_MENU("Inverse button", ITEM_TEXTBOX);
-		add_item_value_MENU("No");
-		add_item_value_MENU("Yes");
+		add_item_MENU(STR_INVERSE, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_inverse_button;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU(STR_3D, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NO);
+		add_item_value_MENU(STR_YES);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_3D;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	}
 	
@@ -21548,59 +23601,70 @@ void init_SETTINGS()
 
 void SETTINGS_UPDATE()
 {
-	if(strcmp(ITEMS[ITEMS_POSITION], "Game backup paths") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
 		scan_dir_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], "XMB Priority") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_LANG) == 0) {
+		lang = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		lang_code = (uint8_t) STR_LANGCODE[lang][0];
+		if(lang_code != lang_code_loaded) update_lang();
+	} else
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_HELP) == 0) {
+		Show_help = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else 
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_XMB_PRIO) == 0) {
 		XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Game SideMenu") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_SIDE_MENU) == 0) {
 		use_sidemenu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "User interface") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_UI) == 0) {
 		UI_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Theme") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
 		Themes_position[UI_position] = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], "Show Cover") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_COVER) == 0) {
 		Show_COVER = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Show Game Case") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_GAMECASE) == 0) {
 		Show_GameCase = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Show PIC1") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_PIC1) == 0) {
 		Show_PIC1 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	}
 	
 	if(UI_position==LIST) {
-		if(strcmp(ITEMS[ITEMS_POSITION], "Show ICON0") == 0) {
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_ICON0) == 0) {
 			LIST_Show_ICON0 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		}
 	} else 
 	if(UI_position==GRID) {
-		if(strcmp(ITEMS[ITEMS_POSITION], "Grid type") == 0) {
-			grid_type = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_GRID_TYPE) == 0) {
+			GRID_TYPE = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
-		if(strcmp(ITEMS[ITEMS_POSITION], "Direction") == 0) {
-			direction = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_DIRECTION) == 0) {
+			GRID_DIRECTION = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else
-		if(strcmp(ITEMS[ITEMS_POSITION], "Animated") == 0) {
-			animated = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_ANIMATED) == 0) {
+			GRID_ANIMATED = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
-		if(strcmp(ITEMS[ITEMS_POSITION], "Keep proportion") == 0) {
-			keep_prop = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_KEEP_PROP) == 0) {
+			GRID_KEEP_PROP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else
-		if(strcmp(ITEMS[ITEMS_POSITION], "Number of columns") == 0) {
-			grid_nb_columns = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_NB_COL) == 0) {
+			GRID_NB_COLUMNS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
-		if(strcmp(ITEMS[ITEMS_POSITION], "Number of lines") == 0) {
-			grid_nb_lines = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_NB_LINE) == 0) {
+			GRID_NB_LINES = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		}
 	} else 
 	if(UI_position==FLOW) {
-		if(strcmp(ITEMS[ITEMS_POSITION], "Inverse button") == 0) {
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_INVERSE) == 0) {
 			FLOW_inverse_button = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_3D) == 0) {
+			FLOW_3D = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		}
 	}
 	
@@ -21609,17 +23673,17 @@ void SETTINGS_UPDATE()
 
 u8 SETTINGS_CROSS()
 {
-	if(strcmp(ITEMS[ITEMS_POSITION], "Adjust screen") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_ADJUST) == 0) {
 		Draw_AdjustScreen();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Download covers") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_DL_COVER) == 0) {
 		start_loading();
 		Download_covers();
 		end_loading();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Game backup paths") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
 		char tmpName[128];
-		if(Get_OSK_String("New Directory", tmpName, 128) == SUCCESS) {
+		if(Get_OSK_String(STR_NEWFOLDER, tmpName, 128) == SUCCESS) {
 			if(tmpName[0]!=0) {
 				scan_dir_number++;
 				strcpy(scan_dir[scan_dir_number], tmpName);
@@ -21627,13 +23691,13 @@ u8 SETTINGS_CROSS()
 			}
 		}
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Plugins Manager") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_PLUGIN_MANAGER) == 0) {
 		open_PLUGINS_MANAGER();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Update ManaGunZ") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_UPD_MGZ) == 0) {
 		update_MGZ();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Theme") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
 		start_loading();
 		print_load("Loading theme...");
 		u8 ret = InstallTheme();
@@ -21643,16 +23707,16 @@ u8 SETTINGS_CROSS()
 		}
 		end_loading();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 1") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_1) == 0) {
 		Draw_ChooseColor(1);
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 2") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_2) == 0) {
 		Draw_ChooseColor(2);
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 3") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_3) == 0) {
 		Draw_ChooseColor(3);
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 4") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_4) == 0) {
 		Draw_ChooseColor(4);
 	}
 	
@@ -21661,36 +23725,36 @@ u8 SETTINGS_CROSS()
 
 u8 SETTINGS_SQUARE()
 {
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 1") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_1) == 0) {
 		COLOR_1 = WHITE;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 2") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_2) == 0) {
 		COLOR_2 = GREEN;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 3") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_3) == 0) {
 		COLOR_3 = ORANGE;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Color 4") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_4) == 0) {
 		COLOR_4 = RED;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Theme") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
 		u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 		if(ThemeType == MGZ) {
 			char tmpName[128];
 			strcpy(tmpName, Themes_Names_list[UI_position][Themes_position[UI_position]]);
-			if(Get_OSK_String("Rename", tmpName, 128) == SUCCESS) {
+			if(Get_OSK_String(STR_RENAME, tmpName, 128) == SUCCESS) {
 				char old[128], new[128];
 				sprintf(old, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
 				sprintf(new, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], tmpName);
 				if( rename(old, new) == 0 ) {
 					strcpy(Themes_Names_list[UI_position][Themes_position[UI_position]], tmpName);
-					show_msg("Theme renamed");
-				} else show_msg("Failed");	
+					show_msg(STR_DONE);
+				} else show_msg(STR_FAILED);	
 			}	
 		}
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Game backup paths") == 0) {
-		if(Get_OSK_String("Rename", scan_dir[scan_dir_position], 64) == SUCCESS) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
+		if(Get_OSK_String(STR_RENAME, scan_dir[scan_dir_position], 64) == SUCCESS) {
 			if(scan_dir[scan_dir_position][0] != 0) {
 				write_scan_dir();
 			}
@@ -21702,7 +23766,7 @@ u8 SETTINGS_SQUARE()
 
 u8 SETTINGS_TRIANGLE()
 {
-	if(strcmp(ITEMS[ITEMS_POSITION], "Theme") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
 		start_loading();
 				
 		Delete(Themes_Paths_list[UI_position][Themes_position[UI_position]]);
@@ -21710,13 +23774,13 @@ u8 SETTINGS_TRIANGLE()
 		if(path_info(Themes_Paths_list[UI_position][Themes_position[UI_position]]) == _NOT_EXIST) {
 			GetThemes();
 			if(Themes_position[UI_position] > Themes_number[UI_position]) Themes_position[UI_position]=Themes_number[UI_position];
-			show_msg("Theme removed");
+			show_msg(STR_DONE);
 			init_SETTINGS();
-		} else show_msg("Failed");
+		} else show_msg(STR_FAILED);
 		
 		end_loading();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], "Game backup paths") == 0) {
+	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
 		if(scan_dir_number>0) {
 			int i;
 			for(i=scan_dir_position; i < scan_dir_number; i++) {
@@ -21815,32 +23879,32 @@ void Draw_SETTINGS_input()
 	SetFontZ(0);
 	
 	if(IN_ITEMS_VALUE == YES) {
-		if(strcmp(ITEMS[ITEMS_POSITION], "Game backup paths") == 0) {
-			x=DrawButton(x, y, "Add", BUTTON_CROSS);
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
+			x=DrawButton(x, y, STR_ADD, BUTTON_CROSS);
 			if(scan_dir_number>0) {
-				x=DrawButton(x, y, "Delete", BUTTON_TRIANGLE);
-				x=DrawButton(x, y, "Rename", BUTTON_SQUARE);
+				x=DrawButton(x, y, STR_DELETE, BUTTON_TRIANGLE);
+				x=DrawButton(x, y, STR_RENAME, BUTTON_SQUARE);
 			}
 		} else
-		if(strcmp(ITEMS[ITEMS_POSITION], "Theme") == 0) {
-			x=DrawButton(x, y, "Load", BUTTON_CROSS);
-			x=DrawButton(x, y, "Delete", BUTTON_TRIANGLE);
+		if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
+			x=DrawButton(x, y, STR_LOAD, BUTTON_CROSS);
+			x=DrawButton(x, y, STR_DELETE, BUTTON_TRIANGLE);
 			u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 			if(ThemeType == MGZ) {
-				x=DrawButton(x, y, "Rename", BUTTON_SQUARE);
+				x=DrawButton(x, y, STR_RENAME, BUTTON_SQUARE);
 			}
 		}		
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	} else {
-		x=DrawButton(x, y, "Enter", BUTTON_CROSS);
-		x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+		x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
-				x=DrawButton(x, y, "Change", BUTTON_SQUARE | BUTTON_TRIANGLE);
+				x=DrawButton(x, y, STR_CHANGE, BUTTON_SQUARE | BUTTON_TRIANGLE);
 			}
 		} else
-		if(strstr(ITEMS[ITEMS_POSITION], "Color") != NULL) {
-			x=DrawButton(x, y, "Reset", BUTTON_SQUARE);
+		if(strstr(ITEMS[ITEMS_POSITION], STR_COLOR) != NULL) {
+			x=DrawButton(x, y, STR_RESET, BUTTON_SQUARE);
 		}
 		
 	}
@@ -21899,9 +23963,11 @@ void AutoMount()
 	
 	strcpy(GamPath, list_game_path[0]);
 	GetParamSFO("TITLE", list_game_title[0], 0, NULL);
-
-	if(change_IDPS == YES) poke_IDPS();
-
+	
+	if(PEEKnPOKE) {
+		if(change_IDPS == YES) poke_IDPS();
+	}
+	
 	u8 Path_exist=NO;
 	
 	MountNTFS();
@@ -21950,14 +24016,14 @@ void AutoMount()
 			FontSize(20);
 			FontColor(RED);
 			
-			DrawString(x, y, "Error : Game Not Found");
+			DrawString(x, y, STR_NOGAME);
 			y+=20;
-			DrawFormatString(x, y, "Path = %s", list_game_path[0]);
+			DrawFormatString(x, y, "%s = %s", STR_PATH, list_game_path[0]);
 			
 			FontColor(COLOR_1);
 			FontSize(15);
 			
-			DrawButton(25, 485, "Back to XMB", BUTTON_CIRCLE);
+			DrawButton(25, 485, STR_BACKTOXMB, BUTTON_CIRCLE);
 		
 			tiny3d_Flip();
 			
@@ -21995,14 +24061,21 @@ void AutoMount()
 		
 		write_AutoMount_setting(GamPath);
 	}
-
-	if(payload==IRIS) iris_Mount(); else
-	if(payload==MM) mm_Mount(); else
-	if(cobra) cobra_Mount(); else 
-	mamba_Mount();
 	
-	if(clean_syscall) remove_cfw_syscalls();
-
+	if(PEEKnPOKE) {
+		if(payload==IRIS) iris_Mount(); else
+		if(payload==MM) mm_Mount(); else
+		if(cobra) cobra_Mount(); else 
+		mamba_Mount();
+	} else {
+		if(cobra) cobra_Mount(); else 
+		if(mamba) mamba_Mount();
+	}
+	
+	if(PEEKnPOKE) {
+		if(clean_syscall) remove_cfw_syscalls();
+	}
+	
 	if(direct_boot) {
 		if(mount_app_home == NO) {
 			sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
@@ -22034,26 +24107,6 @@ void close_filter()
 {
 	filter=NO;
 	write_setting();
-	
-	if(UI_position==GRID) {
-		position=0;
-		for(position=0; position<=game_number; position++) {
-			if(Show_it(position)==YES) break;
-		}
-		Grid_curs_move_x=0;
-		Grid_curs_move_y=0;
-		Grid_move=0;
-	} else 
-	if(UI_position==LIST || UI_position==FLOW) {
-		int i=0;
-		if(Show_it(position) == NO) {
-			while(position-i<0 && game_number<position+i) {
-				i++;
-				if(Show_it(position+i) == YES) {position+=i; break;}
-				if(Show_it(position-i) == YES) {position-=i; break;}
-			}
-		}
-	}
 }
 
 void input_filter()
@@ -22108,8 +24161,27 @@ void Draw_filter_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	x=DrawButton(x, y, "Check/Uncheck", BUTTON_CROSS);
-	x=DrawButton(x, y, "Back", BUTTON_CIRCLE);
+	u8 is_checked=NO;
+	
+	if(filter_position==0) {
+		if(Only_FAV==YES) is_checked=YES;
+	} else
+	if(filter_position==1) {
+		if(Show_PS3==YES) is_checked=YES;
+	} else
+	if(filter_position==2) {
+		if(Show_PS2==YES) is_checked=YES;
+	} else
+	if(filter_position==3) {
+		if(Show_PS1==YES) is_checked=YES;
+	} else
+	if(filter_position==4) {
+		if(Show_PSP==YES) is_checked=YES;
+	}
+	
+	if(is_checked) x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
+	else x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
 void Draw_filter()
@@ -22124,13 +24196,13 @@ void Draw_filter()
 	Draw_Box(x, y, 0, 10, 100, 115, GREY, NO);
 	FontSize(18);
 	FontColor(COLOR_3);
-	DrawStringFromCenterX(x+50, y+5, "FILTER");
+	DrawStringFromCenterX(x+50, y+5, STR_FILTER);
 	Draw_Box(x+5, y+23, 0, 0, 90, 2, WHITE, NO);
 	FontSize(15);
 	x+=8;
 	y+=33;
 	if(filter_position==0) color = COLOR_2; else color = COLOR_1;
-	Draw_checkbox(Only_FAV, x+5, y, "Favorite", color);
+	Draw_checkbox(Only_FAV, x+5, y, STR_FAVORITE, color);
 	y+=15;
 	if(filter_position==1) color = COLOR_2; else color = COLOR_1;
 	Draw_checkbox(Show_PS3, x+5, y, "PS3", color);
@@ -22145,12 +24217,2944 @@ void Draw_filter()
 	Draw_checkbox(Show_PSP, x+5, y, "PSP", color);
 	
 	FontColor(COLOR_1);
+	
+	if(Show_it(position) == NO) {
+		int i;
+		for(i=0; i<=game_number; i++) {
+			if(position-i<0 && game_number<position+i) break;
+			if(Show_it(position+i) == YES) {position+=i; break;}
+			if(Show_it(position-i) == YES) {position-=i; break;}
+		}
+	}	
+}
+
+//*******************************************************
+// USER INTERFACE
+//*******************************************************
+
+void TranslateTo(float *value, float target)
+{
+	float local;
+	float TranslateSpeed = 1; 
+	memcpy(&local, value, sizeof(float));
+	
+	if(local > target) {
+		while(local-TranslateSpeed*10 > target ) 
+			TranslateSpeed=TranslateSpeed*2;
+	} else
+	if(local < target) {
+		while(local+TranslateSpeed*10 < target ) 
+			TranslateSpeed=TranslateSpeed*2;
+	}
+	
+	if((local - TranslateSpeed < target && target < local + TranslateSpeed) || MOVE_init==NO) {
+		*value = target;
+	} else
+	if(local > target) {
+		local -= TranslateSpeed;
+		*value = local;
+	} else
+	if(local < target) {
+		local += TranslateSpeed;
+		*value = local;
+	}
+}
+
+void RotateTo(float *value, float target)
+{
+	float local;
+	float RotateSpeed = DEG(1);
+	memcpy(&local, value, sizeof(float));
+	
+	if(local > target) {
+		while(local-RotateSpeed*10 > target ) 
+			RotateSpeed=RotateSpeed*2;
+	} else
+	if(local < target) {
+		while(local+RotateSpeed*10 < target ) 
+			RotateSpeed=RotateSpeed*2;
+	}
+	
+	if((local - RotateSpeed < target && target < local + RotateSpeed) || MOVE_init==NO) {
+		*value = target;
+	} else
+	if(local > target) {
+		local -= RotateSpeed;
+		*value = local;
+	} else
+	if(local < target) {
+		local += RotateSpeed;
+		*value = local;
+	}
+}
+
+float FLOW_FakeZoom(float z)
+{
+    return 2-(z-10)/90;
+}
+
+
+//*******************************************************
+// FLOW 3D
+//*******************************************************
+
+// ** TINY3D_QUAD_STRIP **
+//
+// ** FULL COVER OUVERT **
+//
+//	 BACK CORN COTE CORN FRONT
+//	1----3----5----7----9----11
+//  |  / |  / |  / |  / |  / |  
+//	| /  | /  | /  | /  | /  |  
+//  2----4----6----8----10---12
+//
+//
+// ** Inferieur **
+//					|
+//	 CORN BACK      
+//	5----3----1
+//  | \  | \  |
+//	|  \ |  \ |
+//  6----4----2
+//
+
+void Draw_PS3COVER_3D()
+{
+	// la boite est de face
+	
+	//float l;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+	
+	float w=129; // largeur de la jaquette de face
+	float h=149; // hauteur de la jaquettte de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+
+	
+	float l_tot = w*2-2*r + e-2*r + PI*r;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		
+	tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+	
+	tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x-w/2 + r, y+h/2	, z+e/2); // inferieur / haut / gauche [3]
+	tiny3d_Normal(0, 0, 1);
+	SW += w-r;
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	 
+	tiny3d_VertexPos(x-w/2 + r	, y-h/2	, z+e/2); // inferieur / bas / gauche [4]
+	tiny3d_Normal(0, 0, 1);
+	
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	// COIN INFERIEUR
+	int t;
+	for(t=80; t>=0 ; t-=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  [5]
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  [6]
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += e-2*r;
+	tiny3d_VertexPos(x-w/2, y+h/2, z-e/2+r);										// [7]
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	tiny3d_VertexPos(x-w/2, y-h/2, z-e/2+r);										// [8]
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
+	
+	// COIN SUPERIEUR
+	for(t=190; t<=270 ; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] 
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] 
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += w-r;
+	tiny3d_VertexPos(x+w/2, y+h/2, z-e/2); // superieur / haut / droite 		// [11] 
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+w/2, y-h/2, z-e/2); // superieur / bas / droite 		// [12]
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	tiny3d_End();
+	
+}
+
+void Draw_PS3COVER()
+{
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+	
+	float w=129; // largeur de la jaquette de face
+	float h=149; // hauteur de la jaquettte de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+	
+	float l_tot = w-r + PI*r/2 ;
+	
+	y=-h/2;
+	x=-w/2;
+	z=-e/2;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+	tiny3d_VertexPos(x, y+h, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture(0, 0.0f);
+	tiny3d_VertexPos(x, y, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture(0, 1.0f); 
+	
+	// COIN SUPERIEUR
+	int t;
+	for(t=190; t<=270 ; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+h , z+r + r*sin(t*PI/180));
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y , z+r + r*sin(t*PI/180));
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += w-r;
+	tiny3d_VertexPos(x+w, y+h, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+w, y, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	tiny3d_End();
+}
+
+void Draw_PS3GAMECASE_3D()
+{
+	//float l;
+	int t,i;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
+	
+	float w=129; // largeur de la jaquette de face
+	float h=149; // hauteur de la jaquettte de face
+	float e=14; // epaisseur de la boite 
+	float r=3; // rayon des arrondies
+	
+	float wb = 135; // largeur de la boite
+	float hb = 172; // hauteur de la boite
+	//float l1 = 15; // hauteur de l'en-tete de la boite 
+	float r1 = 7.5; // rayon du haut
+	float l2 = 7; // distance entre le bas de la boite et la jaquette
+	float r2 = 5; // rayon du bas
+	
+	float l3 = 36; // distance entre le bas et l'ouverture lateral
+	
+	x = -w/2;
+	y = -h/2-l2;
+	z = -e/2;
+	
+// surface superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*sin(t*PI/180)   , y+hb-r1 + (r1-r)*cos(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*sin(t*PI/180),y+hb-r1  + (r1-r)*cos((t)*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+	
+// arrondie superieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie gauche superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut gauche TORE
+	for(t=180; t<=260; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// surface du bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_End();
+	
+// coin bas droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surfaces de droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+r2, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+r2, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-5, y+l3+5, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+l3+5, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+
+
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+// coin haut droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface du haut
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_End();
+	
+// coin haut gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface de gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x, y+hb-r1, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+hb-r1, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_End();
+	
+	
+// coin bas gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+
+// 	arrondie inferieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin inferieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie gauche inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=180; t<=270; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// surface inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*cos(t*PI/180)   , y+hb-r1 + (r1-r)*sin(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*cos(t*PI/180), y+hb-r1 + (r1-r)*sin((t)*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+	
+	// BR logo
+	if(COMMON_offset[BR_LOGO]) {
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		tiny3d_VertexPos(x+wb-r1-20, y+hb-r   , z);
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexTexture(0.0f, 0.0f);
+		tiny3d_VertexPos(x+wb-r1   , y+hb-r   , z);
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexTexture(1.0f, 0.0f);
+		tiny3d_VertexPos(x+wb-r1   , y+hb-r-10, z);
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexTexture(1.0f, 1.0f);
+		tiny3d_VertexPos(x+wb-r1-20, y+hb-r-10, z);
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexTexture(0.0f, 1.0f);
+		tiny3d_End();
+	}
+
+/*
+// ligne d'ouverture
+	wb+=0.1f;
+	hb+=0.1f;
+	tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+	tiny3d_VertexColor(0x000000FF);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - r1*cos(t*PI/180)   , y+hb-r1 + r1*sin(t*PI/180), z+e/2 );
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+wb-r1 + r1*sin(t*PI/180)   , y+hb-r1 + r1*cos(t*PI/180), z+e/2 );
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+e/2 );
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+l3+5 - 5*sin(t*PI/180) , z+e/2 );
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+wb-r2 - r2*cos(t*PI/180)   , y+r2 - r2*sin(t*PI/180), z+e/2 );
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r2 - r2*sin(t*PI/180)   , y+r2 - r2*cos(t*PI/180), z+e/2 );
+	}
+	tiny3d_End();
+*/
+
+/*	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+// surface gauche
+	tiny3d_VertexPos(x, y+hb , z);  // superieur / haut / gauche  
+	tiny3d_VertexPos(x, y+hb , z+e);  // inferieur / haut / gauche 
+	tiny3d_VertexPos(x, y , z);  // superieur / bas / gauche
+	tiny3d_VertexPos(x, y , z+e);  // superieur / bas / gauche
+
+// surface du bas
+	tiny3d_VertexPos(x+wb, y, z+e);  // inferieur / bas / droite  
+	tiny3d_VertexPos(x, y , z);  // superieur / bas / gauche 
+	tiny3d_VertexPos(x+wb, y , z);  // superieur / bas / droite
+	
+// surface superieur
+	tiny3d_VertexPos(x, y+hb , z);  // superieur / haut / gauche  
+	tiny3d_VertexPos(x+wb, y+hb, z);  // superieur / haut / droite 
+
+// surface du haut
+	tiny3d_VertexPos(x, y+hb , z+e);  // inferieur / haut / gauche  
+	tiny3d_VertexPos(x+wb, y+hb, z+e);  // inferieur / haut / droite
+	
+// surface inferieur
+	tiny3d_VertexPos(x, y , z+e);  // inferieur / bas / gauche  
+	tiny3d_VertexPos(x+wb, y, z+e);  // inferieur / bas / droite
+	
+// surface droite
+	tiny3d_VertexPos(x+wb, y , z);  // superieur / bas / droite  
+	tiny3d_VertexPos(x+wb, y+hb, z+e);  // inferieur / haut / droite
+	tiny3d_VertexPos(x+wb, y+hb, z);  // superieur / haut / droite
+	
+	tiny3d_End();
+*/
+
+}
+
+void Draw_PS2COVER()
+{
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+	
+	float w=130; // largeur de la jaquette de face
+	float h=180; // hauteur de la jaquettte de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+
+	float l_tot = w-r + PI*r/2 ;
+	
+	y=-h/2;
+	x=-w/2;
+	z=-e/2;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+	tiny3d_VertexPos(x, y+h, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture(0, 0.0f);
+	tiny3d_VertexPos(x, y, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture(0, 1.0f); 
+	
+	// COIN SUPERIEUR
+	int t;
+	for(t=190; t<=270 ; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+h , z+r + r*sin(t*PI/180));
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y , z+r + r*sin(t*PI/180));
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += w-r;
+	tiny3d_VertexPos(x+w, y+h, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+w, y, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	tiny3d_End();
+}
+
+void Draw_PS2COVER_3D()
+{
+	// la boite est de face
+	
+	//float l;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+	
+	float w=130; // largeur de la jaquette de face
+	float h=180; // hauteur de la jaquettte de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+
+	
+	float l_tot = w*2-2*r + e-2*r + PI*r;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		
+	tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+	
+	tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x-w/2 + r, y+h/2	, z+e/2); // inferieur / haut / gauche [3]
+	tiny3d_Normal(0, 0, 1);
+	SW += w-r;
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	 
+	tiny3d_VertexPos(x-w/2 + r	, y-h/2	, z+e/2); // inferieur / bas / gauche [4]
+	tiny3d_Normal(0, 0, 1);
+	
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	// COIN INFERIEUR
+	int t;
+	for(t=80; t>=0 ; t-=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  [5]
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  [6]
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += e-2*r;
+	tiny3d_VertexPos(x-w/2, y+h/2, z-e/2+r);										// [7]
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	tiny3d_VertexPos(x-w/2, y-h/2, z-e/2+r);										// [8]
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
+	
+	// COIN SUPERIEUR
+	for(t=190; t<=270 ; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] 
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] 
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += w-r;
+	tiny3d_VertexPos(x+w/2, y+h/2, z-e/2); // superieur / haut / droite 		// [11] 
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+w/2, y-h/2, z-e/2); // superieur / bas / droite 		// [12]
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	tiny3d_End();
+	
+}
+
+void Draw_PS2GAMECASE_3D()
+{
+	//float l;
+	int t,i;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
+	
+	float w=129; // largeur de la jaquette de face
+	float h=180; // hauteur de la jaquettte de face
+	float e=14; // epaisseur de la boite 
+	float r=3; // rayon des arrondies
+	
+	float wb = 135; // largeur de la boite
+	float hb = 190; // hauteur de la boite
+	//float l1 = 15; // hauteur de l'en-tete de la boite 
+	float r1 = 5; // rayon du haut
+	float l2 = 5; // distance entre le coté de la boite et la jaquette = distance entre le bas de la boite et la jaquette
+	float r2 = 5; // rayon du bas
+	
+	float l3 = 50; // distance entre le bas et l'ouverture lateral
+	
+	x = -w/2;
+	y = -h/2-l2;
+	z = -e/2;
+	
+// surface superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*sin(t*PI/180)   , y+hb-r1 + (r1-r)*cos(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*sin(t*PI/180),y+hb-r1  + (r1-r)*cos((t)*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+	
+// arrondie superieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie gauche superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut gauche TORE
+	for(t=180; t<=260; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// surface du bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_End();
+	
+// coin bas droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surfaces de droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+r2, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+r2, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+l3, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-5, y+l3, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-5, y+l3, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-5, y+l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+l3, z+r );
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexPos(x+wb-5, y+l3 , z+r );
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+r );
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3, z+r );
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+l3, z+e-r );
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexPos(x+wb-5, y+l3 , z+e-r );
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r );
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3, z+e-r );
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_End();
+	
+// coin haut droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface du haut
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_End();
+	
+// coin haut gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface de gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x, y+hb-r1, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+hb-r1, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_End();
+	
+	
+// coin bas gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+
+// 	arrondie inferieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin inferieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie gauche inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=180; t<=270; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// surface inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*cos(t*PI/180)   , y+hb-r1 + (r1-r)*sin(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*cos(t*PI/180), y+hb-r1 + (r1-r)*sin((t)*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+
+	
+}
+
+void Draw_PS1COVER_FRONT()
+{
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+		
+	float wb = 140; // largeur de la boite
+	float hb = 130; // hauteur de la boite
+	
+	float w=126; // largeur de la jaquette de face
+	float e=15+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=2; // rayon des arrondies
+
+	float l=wb-r-w; // largeur de la marge noire à gauche
+
+// x,y,z : superieur bas gauche
+	x = -wb/2;
+	y = -hb/2;
+	z = -e/2; 
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+	tiny3d_VertexPos(x+l, y+hb-r , z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+	
+	tiny3d_VertexPos(x+l, y+r , z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x+wb-r, y+hb-r	, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(1.0f, 0.0f);
+	 
+	tiny3d_VertexPos(x+wb-r, y+r	, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(1.0f, 1.0f);
+	
+	tiny3d_End();
+}
+
+void Draw_PS1COVER_BACK()
+{
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+		
+	float wb = 140+0.2; // largeur de la boite
+	float hb = 130; // hauteur de la boite
+	
+	float e=15+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=2; // rayon des arrondies
+
+// x,y,z : superieur bas gauche
+	x = -wb/2;
+	y = -hb/2;
+	z = -e/2;
+	
+	float l_tot = wb-2*r + 2*(e-r) + PI*r;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		
+	tiny3d_VertexPos(x+wb, y+hb-r , z+r);  
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+
+	tiny3d_VertexPos(x+wb, y+r , z+r); 
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x+wb, y+hb-r , z+e-r); 
+	tiny3d_Normal(1, 0, 0);
+	SW+=e-r;
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+
+	tiny3d_VertexPos(x+wb, y+r , z+e-r); 
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+
+	int t;
+	for(t=10; t<=90; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x+wb-r + r*cos(t*PI/180), y+hb-r  , z+e-r + r*sin(t*PI/180) );
+		tiny3d_Normal(cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		
+		tiny3d_VertexPos(x+wb-r + r*cos(t*PI/180), y+r    , z+e-r + r*sin(t*PI/180) );
+		tiny3d_Normal(cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	}
+	
+	SW += wb-2*r;
+	tiny3d_VertexPos(x+r, y+hb-r, z+e);
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+r, y+r, z+e);
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
+	
+	for(t=10; t<=90; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r    , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	}
+	
+	SW += e-r;
+	tiny3d_VertexPos(x, y+hb-r, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x, y+r, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
+	
+	tiny3d_End();
+	
+}
+
+void Draw_PS1GAMECASE_3D()
+{
+	//float l;
+	int t,i;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume
+	
+	float e=15; // epaisseur de la boite 
+	float wb=140; // largeur de la boite
+	float hb=130; // hauteur de la boite
+	
+	float r=2; // rayon des bordures
+	float r1=r, r2=r;
+	
+	float w=126; // largeur de la jaquette de face 
+
+	float l=wb-r-w; // largeur de la marge noire à gauche
+
+	x = -wb/2;
+	y = -hb/2;
+	z = -e/2;
+	
+// surface superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*sin(t*PI/180)   , y+hb-r1 + (r1-r)*cos(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*sin(t*PI/180),y+hb-r1  + (r1-r)*cos((t)*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+	
+// arrondie superieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie gauche superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut gauche TORE
+	for(t=180; t<=260; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// surface du bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_End();
+	
+// coin bas droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surfaces de droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+r2, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+r2, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+// coin haut droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface du haut
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_End();
+	
+// coin haut gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface de gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x, y+hb-r1, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+hb-r1, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_End();
+	
+	
+// coin bas gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+
+// 	arrondie inferieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin inferieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie gauche inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=180; t<=270; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// surface inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*cos(t*PI/180)   , y+hb-r1 + (r1-r)*sin(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*cos(t*PI/180), y+hb-r1 + (r1-r)*sin((t)*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+	
+	
+	if(COMMON_offset[PS_LOGO]) {
+	
+		float l_tot = l-1-r + PI*r/2 ;
+	
+		float SW=0; // longueur de la texture
+		
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		
+		tiny3d_VertexPos(x, y+hb-r, z+r);
+		tiny3d_Normal(-1, 0, 0);
+		tiny3d_VertexTexture(0, 0.0f);
+		tiny3d_VertexPos(x, y+r, z+r);
+		tiny3d_Normal(-1, 0, 0);
+		tiny3d_VertexTexture(0, 1.0f); 
+		
+		// COIN SUPERIEUR
+		for(t=190; t<=270 ; t+=10) {
+			SW += (PI*r) * 10/180;
+			
+			tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+hb-r , z+r + r*sin(t*PI/180));
+			tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+			tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+			tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+r , z+r + r*sin(t*PI/180));
+			tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+			tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+			
+		}
+		
+		
+		SW += l-1-r;
+		tiny3d_VertexPos(x+l-1, y+hb-r, z);
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		
+		tiny3d_VertexPos(x+l-1, y+r, z);
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+		tiny3d_End();
+	}
+}
+
+void Draw_PSPCOVER()
+{
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+
+	float w=92; // largeur de la jaquette de face
+	float h=158; // hauteur de la jaquettte de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+
+	float l_tot = w-r + PI*r/2 ;
+	
+	y=-h/2;
+	x=-w/2;
+	z=-e/2;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+	tiny3d_VertexPos(x, y+h, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture(0, 0.0f);
+	tiny3d_VertexPos(x, y, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture(0, 1.0f); 
+	
+	// COIN SUPERIEUR
+	int t;
+	for(t=190; t<=270 ; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+h , z+r + r*sin(t*PI/180));
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y , z+r + r*sin(t*PI/180));
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += w-r;
+	tiny3d_VertexPos(x+w, y+h, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+w, y, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	tiny3d_End();
+}
+
+void Draw_PSPCOVER_3D()
+{
+	// la boite est de face
+	
+	//float l;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+
+	float w=92; // largeur de la jaquette de face
+	float h=158; // hauteur de la jaquettte de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+
+	float l_tot = w*2-2*r + e-2*r + PI*r;
+	
+	float SW=0; // longueur de la texture
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		
+	tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+	
+	tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
+	tiny3d_Normal(0, 0, 1);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x-w/2 + r, y+h/2	, z+e/2); // inferieur / haut / gauche [3]
+	tiny3d_Normal(0, 0, 1);
+	SW += w-r;
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	 
+	tiny3d_VertexPos(x-w/2 + r	, y-h/2	, z+e/2); // inferieur / bas / gauche [4]
+	tiny3d_Normal(0, 0, 1);
+	
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	// COIN INFERIEUR
+	int t;
+	for(t=80; t>=0 ; t-=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  [5]
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  [6]
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += e-2*r;
+	tiny3d_VertexPos(x-w/2, y+h/2, z-e/2+r);										// [7]
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	tiny3d_VertexPos(x-w/2, y-h/2, z-e/2+r);										// [8]
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
+	
+	// COIN SUPERIEUR
+	for(t=190; t<=270 ; t+=10) {
+		SW += (PI*r) * 10/180;
+		
+		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] 
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] 
+		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		
+	}
+	
+	SW += w-r;
+	tiny3d_VertexPos(x+w/2, y+h/2, z-e/2); // superieur / haut / droite 		// [11] 
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+	
+	tiny3d_VertexPos(x+w/2, y-h/2, z-e/2); // superieur / bas / droite 		// [12]
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+	
+	tiny3d_End();
+	
+}
+
+void Draw_PSPGAMECASE_3D()
+{
+	//float l;
+	int t,i;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
+	
+	float w=92; // largeur de la jaquette de face
+	float h=158; // hauteur de la jaquettte de face
+	float e=14; // epaisseur de la boite 
+	float r=3; // rayon des arrondies
+	
+	float wb = 99; // largeur de la boite
+	float hb = 168; // hauteur de la boite
+	//float l1 = 15; // hauteur de l'en-tete de la boite 
+	float r1 = 5; // rayon du haut
+	float l2 = 5; // distance entre le coté de la boite et la jaquette
+	float r2 = 5; // rayon du bas
+	
+	float l3 = 36; // distance entre le bas et l'ouverture lateral
+	
+	x = -w/2;
+	y = -h/2-l2;
+	z = -e/2;
+	
+// surface superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*sin(t*PI/180)   , y+hb-r1 + (r1-r)*cos(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*sin(t*PI/180),y+hb-r1  + (r1-r)*cos((t)*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+	
+// arrondie superieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie gauche superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut gauche TORE
+	for(t=180; t<=260; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// surface du bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_End();
+	
+// coin bas droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surfaces de droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+r2, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+r2, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-5, y+l3+5, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+l3+5, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+
+
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+// coin haut droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface du haut
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_End();
+	
+// coin haut gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface de gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x, y+hb-r1, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+hb-r1, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_End();
+	
+	
+// coin bas gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+
+// 	arrondie inferieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin inferieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie gauche inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=180; t<=270; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// surface inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*cos(t*PI/180)   , y+hb-r1 + (r1-r)*sin(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*cos(t*PI/180), y+hb-r1 + (r1-r)*sin((t)*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+
+}
+
+void upadte_3DFLOW()
+{
+	float e=0;
+	int i;
+	
+	if(ITEM_moveZ[position]==0) MOVE_init=NO;
+	
+	int previous=-1;
+	int next=-1;
+	
+	e=170;
+	for(i=position+1; i<=game_number; i++) {
+		if(Show_it(i) == NO) continue;
+		TranslateTo(&ITEM_moveX[i], e);
+		TranslateTo(&ITEM_moveY[i], 0.0);
+		TranslateTo(&ITEM_moveZ[i], 700.0);
+		RotateTo(&ITEM_angleX[i], 0.0);
+		RotateTo(&ITEM_angleY[i], -PI/2);
+		RotateTo(&ITEM_angleZ[i], 0.0);
+		e+=30;
+		
+		if(next==-1) next=i;
+	}
+	
+	e=-170;
+	for(i=position-1; i>=0; i--) {
+		if(Show_it(i) == NO) continue;
+		TranslateTo(&ITEM_moveX[i], e);
+		TranslateTo(&ITEM_moveY[i], 0.0);
+		TranslateTo(&ITEM_moveZ[i], 700.0);
+		RotateTo(&ITEM_angleX[i], 0.0);
+		RotateTo(&ITEM_angleY[i], -PI/2);
+		RotateTo(&ITEM_angleZ[i], 0.0);
+		e-=30;
+		
+		if(previous==-1) previous=i;
+	}
+	
+	TranslateTo(&ITEM_moveX[position], 0.0);
+	TranslateTo(&ITEM_moveY[position], 0.0);
+	if(FLOW_Zoom) TranslateTo(&ITEM_moveZ[position], 300.0);
+	else TranslateTo(&ITEM_moveZ[position], 500.0);
+	
+	RotateTo(&ITEM_angleX[position], 0.0);
+	// don't rotate if the boxes are too close
+	if( ( previous!=-1 && ITEM_moveX[position] - ITEM_moveX[previous] < 50)
+	 || ( next!=-1     && ITEM_moveX[next] - ITEM_moveX[position] < 50))
+	{
+		RotateTo(&ITEM_angleY[position], -PI/2);
+	} else {
+		if(FLOW_ShowBack==YES) 
+			RotateTo(&ITEM_angleY[position], PI);
+		else 
+			RotateTo(&ITEM_angleY[position], 0.0);
+	}	
+	RotateTo(&ITEM_angleZ[position], 0.0);
+	
+	MOVE_init=YES;
+}
+
+void Draw_FLOW_3D()
+{
+	MATRIX tmp;
+	
+    // fix Perspective Projection Matrix 
+	// Video_aspect = 1 -> 4:3 
+	// Video_aspect = 2 -> 16:9
+    tmp = MatrixProjPerspective( 90, (float) (Video_aspect == 1) ? 9.0f / 16.0f :  1.0f, 0.00125F, 300.0F);
+    tiny3d_SetProjectionMatrix(&tmp);
+    // calculating modelview
+    tmp    = MatrixTranslation(0, 0, 80);
+    matrix = MatrixRotationY(0);
+    matrix = MatrixMultiply(matrix, tmp);
+    // fix ModelView Matrix
+	tiny3d_SetMatrixModelView(&matrix);
+	
+// *** LIGHT ***
+    tiny3d_SetLightsOff();
+    tiny3d_SetAmbientLight(0.8f, 0.8f, 0.8f);
+	tiny3d_SetLight(0,  0.0f , 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  LIGHT_DIFFUSE);
+	tiny3d_SetLight(1,  0.0f , 0.0f, -500.0f, 1.0f, 1.0f, 1.0f,  LIGHT_DIFFUSE);
+	tiny3d_SetLight(2,  0.0f , 0.0f, -1000.0f, 1.0f, 1.0f, 1.0f,  LIGHT_DIFFUSE);
+	tiny3d_SetLight(3,  -500.0f , 500.0f, 0.0f, 0.5f, 0.5f, 0.5f,  LIGHT_SPECULAR);
+
+	int i=position;
+	int k=0;
+	int j=-1;
+	int Box_Displayed = 0;
+	
+	while(Box_Displayed != 16)
+	{
+		if(Box_Displayed == 8 && j==-1) {j=1; k=0;}
+		
+		i=position+k*j;
+		
+		k++;
+		
+		if(i<0) {j=1; k=0; continue; }
+		if(i>game_number) break;
+		
+		if(Show_it(i)==NO) continue;
+		
+		Box_Displayed++;
+		
+		// *** MOVEMENT ***
+		MATRIX m_axis;
+		m_axis = MatrixRotationX(ITEM_angleX[i]);
+		tmp = MatrixRotationY(ITEM_angleY[i]);
+		m_axis = MatrixMultiply(m_axis, tmp);
+		tmp = MatrixRotationZ(ITEM_angleZ[i]);
+		m_axis = MatrixMultiply(m_axis, tmp);
+		tmp    = MatrixTranslation(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i]);
+		matrix = MatrixMultiply(m_axis, tmp);
+		
+		tiny3d_SetMatrixModelView(&matrix);
+		
+		if( list_game_platform[i] == _ISO_PS3 || list_game_platform[i] == _JB_PS3 ) {
+			// texture
+			if(COMMON_offset[BR_LOGO]) tiny3d_SetTexture(0, COMMON_offset[BR_LOGO], COMMON[BR_LOGO].width, COMMON[BR_LOGO].height, COMMON[BR_LOGO].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+
+			// material
+			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
+			tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f); // r,g,b,a
+			tiny3d_DiffuseMaterial( 0.4f, 0.4f, 0.4f, 1.0f); // r,g,b,enable
+			tiny3d_SpecularMaterial(0.5f, 0.5f, 0.5f, 5.0f); // r,g,b,shininess
+			
+			// Object
+			Draw_PS3GAMECASE_3D();
+			
+			if(COVER3D_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PS3COVER_3D();
+				
+			} else
+			if(COVER_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PS3COVER();
+			}
+		
+		} else
+		if( list_game_platform[i] == _ISO_PS2 || list_game_platform[i] == _JB_PS2 ) {
+			// material
+			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
+			tiny3d_AmbientMaterial( 0.1f, 0.1f, 0.1f, 1.0f); // r,g,b,a
+			tiny3d_DiffuseMaterial( 0.1f, 0.1f, 0.1f, 1.0f); // r,g,b,enable
+			tiny3d_SpecularMaterial(0.2f, 0.2f, 0.2f, 5.0f); // r,g,b,shininess
+			
+			// Object
+			Draw_PS2GAMECASE_3D();
+			
+			if(COVER3D_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PS2COVER_3D();
+				
+			} else
+			if(COVER_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PS2COVER();
+			}
+			
+		} else
+		if( list_game_platform[i] == _ISO_PS1 || list_game_platform[i] == _JB_PS1 ) {
+			
+			// texture
+			if(COMMON_offset[PS_LOGO]) tiny3d_SetTexture(0, COMMON_offset[PS_LOGO], COMMON[PS_LOGO].width, COMMON[PS_LOGO].height, COMMON[PS_LOGO].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+
+			// material
+			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
+			tiny3d_AmbientMaterial( 0.1f, 0.1f, 0.1f, 1.0f); // r,g,b,a
+			tiny3d_DiffuseMaterial( 0.2f, 0.2f, 0.2f, 1.0f); // r,g,b,enable
+			tiny3d_SpecularMaterial(0.3f, 0.3f, 0.3f, 1.0f); // r,g,b,shininess
+			
+			// Object
+			Draw_PS1GAMECASE_3D();
+						
+			if(COVER_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PS1COVER_FRONT();
+			}
+			
+			if(COVER3D_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PS1COVER_BACK();
+			}
+		
+		} else
+		if( list_game_platform[i] == _ISO_PSP || list_game_platform[i] == _JB_PSP ) {
+			// material
+			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
+			tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f); // r,g,b,a
+			tiny3d_DiffuseMaterial( 0.4f, 0.4f, 0.4f, 1.0f); // r,g,b,enable
+			tiny3d_SpecularMaterial(0.5f, 0.5f, 0.5f, 5.0f); // r,g,b,shininess
+			
+			// Object
+			Draw_PSPGAMECASE_3D();
+			
+			if(COVER3D_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PSPCOVER_3D();
+				
+			} else
+			if(COVER_offset[i]) {
+				// texture
+				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+				// material
+				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+				
+				// Object
+				Draw_PSPCOVER();
+			}
+		}
+	}
+}
+
+void update_FLOW()
+{
+	int i;
+	float x=848/2;
+	float y=512/2;
+	float e;
+	
+	// Init
+	if(ITEM_moveX[position]==0 && ITEM_moveY[position]==0) MOVE_init=NO;
+	
+	TranslateTo(&ITEM_moveX[position], x);
+	TranslateTo(&ITEM_moveY[position], y);
+	TranslateTo(&ITEM_moveZ[position], 10.0);
+	
+	e=x+160;
+	for(i=position+1; i<=game_number; i++) {	
+		if(Show_it(i)==NO) continue;
+		TranslateTo(&ITEM_moveX[i], e);
+		TranslateTo(&ITEM_moveY[i], y);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+		e+=FLOW_W * FLOW_FakeZoom(ITEM_moveZ[i]) + 10;
+	}
+	
+	e=x-160;
+	for(i=position-1; i>=0; i--) {
+		if(Show_it(i)==NO) continue;
+		TranslateTo(&ITEM_moveX[i], e);
+		TranslateTo(&ITEM_moveY[i], y);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+		e-=FLOW_W * FLOW_FakeZoom(ITEM_moveZ[i]) + 10;
+	}
+	
+	MOVE_init=YES;
+}
+
+void Draw_FLOW()
+{
+	int i;
+	for(i=0; i<=game_number; i++) {
+		if(Show_it(i)==NO) continue;
+		
+		if( ITEM_moveX[i] < - FLOW_W) continue;
+		if( X_MAX < ITEM_moveX[i] - FLOW_W ) continue;
+		
+		float w_3D = FLOW_W * FLOW_FakeZoom(ITEM_moveZ[i]);
+		float h_3D = FLOW_H * FLOW_FakeZoom(ITEM_moveZ[i]);
+		
+		if(ITEM_moveX[i] < -w_3D) continue;
+		if(X_MAX + w_3D < ITEM_moveX[i]) break;
+		
+		if(Show_COVER == YES && COVER_offset[i] != 0) {
+			Draw_CoverFromCenter(i, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w_3D, 0);
+		}
+		else {
+			Draw_ICON0(i, ITEM_moveX[i]-w_3D/2, ITEM_moveY[i]-h_3D/2, ITEM_moveZ[i], w_3D, h_3D);
+		}
+	}
+
+}
+
+//*******************************************************
+// XMB
+//*******************************************************
+
+#define XMB_X_COLUMN 250.0
+#define XMB_Y_COLUMN 165.0
+
+#define XMB_X_LINE XMB_X_COLUMN
+#define XMB_Y_LINE 240.0
+
+void init_XMB()
+{
+	if(XMB_H_position != XMB_COLUMN_SETTINGS) {
+
+		XMB_nb_line=-1;
+		memset(XMB_value_line, 0, sizeof(XMB_value_line));
+		
+		int i;
+		for(i = 0 ; i <= game_number ; i++) {
+			if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] !=_ISO_PS3 && list_game_platform[i] !=_JB_PS3)) continue;
+			if(XMB_H_position==XMB_COLUMN_PS2 && (list_game_platform[i] !=_ISO_PS2 && list_game_platform[i] !=_JB_PS2)) continue;
+			if(XMB_H_position==XMB_COLUMN_PS1 && (list_game_platform[i] !=_ISO_PS1 && list_game_platform[i] !=_JB_PS1)) continue;
+			if(XMB_H_position==XMB_COLUMN_PSP && (list_game_platform[i] !=_ISO_PSP && list_game_platform[i] !=_JB_PSP)) continue;
+			if(XMB_H_position==XMB_COLUMN_FAVORITES && is_favorite(list_game_path[i]) == NO) continue;
+			
+			XMB_nb_line++;
+			XMB_value_line[XMB_nb_line]=i;
+			
+			if(XMB_V_position[XMB_H_position]==XMB_nb_line) position=i;
+		}
+		
+		if(XMB_V_position[XMB_H_position]>XMB_nb_line) XMB_V_position[XMB_H_position] = XMB_nb_line;
+		if(XMB_nb_line==-1) Game_stuff=NO;
+		
+	}
+}
+
+float XMB_FakeZoom(float z)
+{
+	if(10<=z && z<=100) return 2 - (z-10)/90; else
+	if(0<=z && z<10) return 4 - 3*(z/10); else
+	return 1;
+}
+
+void Draw_XMB_COLUMNS()
+{
+	int i;
+	
+	for(i=0; i<XMB_COLUMN_NUMBER; i++) {
+		
+		float l = 85.0 - XMB_columnZ[i];
+		
+		SetFontZ(XMB_columnZ[i]);
+		
+		if(XMB_Col_offset[i] != 0) {
+			tiny3d_SetTexture(0, XMB_Col_offset[i], XMB_Col[i].width, XMB_Col[i].height, XMB_Col[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(XMB_columnX[i]-l/2, XMB_columnY[i]-l, XMB_columnZ[i], 0, l, l, WHITE, YES);
+		} else
+		if(XMB_MMTHM_XMB_offset != 0 && XMB_MMTHM_XMB2_offset != 0) { 
+			u8 ico=6;
+			if(i==0) ico=2 ;else
+			if(i==1) ico=12;else
+			if(i==2) ico=6 ;else
+			if(i==3) ico=29;else
+			if(i==4) ico=28;else
+			if(i==5) ico=30;
+			Draw_MMTHM_XMB(XMB_columnX[i]-l/2, XMB_columnY[i]-l, XMB_columnZ[i], l, l,  ico);
+		} 
+		else {
+			FontSize(l-30);
+			DrawStringFromCenterX(XMB_columnX[i], XMB_columnY[i]-XMB_columnZ[i], XMB_COLUMN_NAME[i]);
+		}
+	}
+	
+	FontSize(10);
+	SetFontZ(100);	
+	DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, XMB_COLUMN_NAME[XMB_H_position]);
+	
+	FontSize(20);
+	SetFontZ(10);	
+
+}
+
+void Draw_XMB_LINES()
+{	
+	int i;
+	float w, h;
+	
+	SetFontZ(10);
+	FontSize(20);
+	if(XMB_H_position != XMB_COLUMN_SETTINGS && Game_stuff) {
+		
+		for(i=XMB_V_position[XMB_H_position]-6; i<=XMB_V_position[XMB_H_position]+6; i++) {
+			if(i < 0) continue;
+			if(i > XMB_nb_line) break;
+			
+			w = XMB_W * XMB_FakeZoom(ITEM_moveZ[i]);
+			h = XMB_H * XMB_FakeZoom(ITEM_moveZ[i]);
+			DrawFromCenter_ICON0(XMB_value_line[i], ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w, h);			
+		}
+		
+		if(Show_COVER == YES) Draw_COVER(position, 30, 200, 10, 130, 0);
+		
+		if(MENU) w = XMB_W * 4;
+		else w = XMB_W * 2;
+		DrawString(XMB_X_LINE+w/2+20, XMB_Y_LINE, list_game_title[position]);
+	}
+
+}
+
+void update_XMB_COLUMNS()
+{	
+	int i;
+	float x=XMB_X_COLUMN;
+	float y=XMB_Y_COLUMN;
+	float e;
+	float e2=95.0;
+	
+	// Init
+	if(XMB_columnY[XMB_H_position] != y) MOVE_init=NO;
+	else MOVE_init=YES;
+	
+	TranslateTo(&XMB_columnX[XMB_H_position], x);
+	TranslateTo(&XMB_columnY[XMB_H_position], y);
+	TranslateTo(&XMB_columnZ[XMB_H_position], 20.0);
+	
+	e=x+e2;
+	for(i=XMB_H_position+1; i<XMB_COLUMN_NUMBER; i++) {
+		TranslateTo(&XMB_columnX[i], e);
+		TranslateTo(&XMB_columnY[i], y);
+		TranslateTo(&XMB_columnZ[i], 35.0);
+		e2-=5;
+		e+=e2;
+	}
+	
+	e2=95.0;
+	e=x-e2;
+	for(i=XMB_H_position-1; i>=0; i--) {
+		TranslateTo(&XMB_columnX[i], e);
+		TranslateTo(&XMB_columnY[i], y);
+		TranslateTo(&XMB_columnZ[i], 35.0);
+		e2-=5;
+		e-=e2;
+	}
+}
+
+void update_XMB_LINES()
+{
+	int i;
+	float x=XMB_X_LINE;
+	float y=XMB_Y_LINE;
+	float e;
+	
+	if(Game_stuff==NO) return;
+	
+	// Init
+	if(ITEM_moveX[XMB_V_position[XMB_H_position]] != x) MOVE_init=NO;
+	
+	TranslateTo(&ITEM_moveX[XMB_V_position[XMB_H_position]], x);
+	TranslateTo(&ITEM_moveY[XMB_V_position[XMB_H_position]], y);
+	if(MENU) 
+		TranslateTo(&ITEM_moveZ[XMB_V_position[XMB_H_position]], 0.0);
+	else 
+		TranslateTo(&ITEM_moveZ[XMB_V_position[XMB_H_position]], 10.0);
+	
+	e=y+120.0;
+	for(i=XMB_V_position[XMB_H_position]+1; i<=XMB_nb_line; i++) {
+		TranslateTo(&ITEM_moveX[i], x);
+		TranslateTo(&ITEM_moveY[i], e);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+		e+=XMB_H+2;
+	}
+	
+	e=y-175.0;
+	for(i=XMB_V_position[XMB_H_position]-1; i>=0; i--) {
+		TranslateTo(&ITEM_moveX[i], x);
+		TranslateTo(&ITEM_moveY[i], e);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+		e-=XMB_H+2;
+	}
+	
+	MOVE_init=YES;
+	
+}
+
+//*******************************************************
+// GRID
+//*******************************************************
+
+void init_GRID()
+{	
+	int i, j=0;
+	
+	if(GRID_KEEP_PROP==YES) GRID_NB_LINES = (GRID_H+GRID_e) / (GRID_e+GRID_H_ICON0);
+	
+	if(position < GRID_FIRST_ICON) {
+		j=-1;
+		for(i=GRID_FIRST_ICON; i>=0; i--){
+			if(Show_it(i)==NO) continue;
+			j++;
+			GRID_FIRST_ICON=i;
+			if(GRID_TYPE == PAGE && j==GRID_NB_ICON0) break;
+			if(GRID_TYPE == SCROLL && GRID_DIRECTION==HORIZONTAL && j==GRID_NB_LINES) break;
+			if(GRID_TYPE == SCROLL && GRID_DIRECTION==VERTICAL && j==GRID_NB_COLUMNS) break;
+		}
+	} else
+	if(position > GRID_LAST_ICON) {
+		j=-1;
+		for(i=GRID_FIRST_ICON; i<=game_number; i++){
+			if(Show_it(i)==NO) continue;
+			j++;
+			GRID_FIRST_ICON=i;
+			if(GRID_TYPE == PAGE && j==GRID_NB_ICON0) break;
+			if(GRID_TYPE == SCROLL && GRID_DIRECTION==HORIZONTAL && j==GRID_NB_LINES) break;
+			if(GRID_TYPE == SCROLL && GRID_DIRECTION==VERTICAL && j==GRID_NB_COLUMNS) break;
+		}
+	}
+	
+	j=0;
+	for(i=GRID_FIRST_ICON; i<=game_number; i++) {
+		if(Show_it(i)==NO) continue;
+		j++;
+		GRID_LAST_ICON=i;
+		if(j==GRID_NB_ICON0) break;
+	}
+}
+
+void Draw_GRID()
+{
+	int i;
+	for(i = GRID_FIRST_ICON-GRID_NB_ICON0 ; i<=GRID_LAST_ICON+GRID_NB_ICON0 ; i++) {
+		if(i<0) continue;
+		if(i>game_number) break;
+		if(Show_it(i)==NO) continue;
+		
+		Draw_ICON0(i, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], GRID_W_ICON0, GRID_H_ICON0);
+		if(i==position) {
+			Draw_Box(ITEM_moveX[i]-5, ITEM_moveY[i]-5, ITEM_moveZ[i]+1, 0, GRID_W_ICON0+10, GRID_H_ICON0+10, WHITE, NO);
+			Draw_Box(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i]+1, 0, GRID_W_ICON0, GRID_H_ICON0, BLACK, NO);
+		} else {
+			Draw_Box(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i]-1, 0, GRID_W_ICON0, GRID_H_ICON0, 0xFFFFFF80, NO); 
+		}
+	}
+}
+
+void update_GRID()
+{
+	// Init
+	if(ITEM_moveZ[position]!=100.0 || GRID_ANIMATED == NO) MOVE_init=NO;
+	
+	float x, y, x1, y1;
+	int i, k=0;
+	x = GRID_X;
+	y = GRID_Y;
+	x1=x;
+	y1=y;
+	for(i = GRID_FIRST_ICON ; i<=GRID_LAST_ICON ; i++) {
+		if(Show_it(i)==NO) continue;
+		k++;
+		
+		TranslateTo(&ITEM_moveX[i], x);
+		TranslateTo(&ITEM_moveY[i], y);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+			
+		if(GRID_DIRECTION == HORIZONTAL)  {
+			y+= GRID_H_ICON0 + GRID_e;
+			if(k==GRID_NB_LINES) {k=0; y = GRID_Y; x += GRID_W_ICON0 + GRID_e;}
+		} else
+		if(GRID_DIRECTION == VERTICAL)  {
+			x+= GRID_W_ICON0 + GRID_e;
+			if(k==GRID_NB_COLUMNS) {k=0; x = GRID_X; y += GRID_H_ICON0 + GRID_e;}
+		}
+	}
+	
+	x = GRID_X;
+	y = GRID_Y;
+	if(GRID_DIRECTION == HORIZONTAL) {
+		y+= (GRID_NB_LINES-1) * (GRID_H_ICON0 + GRID_e);
+		x-= GRID_W_ICON0 + GRID_e;
+	} else
+	if(GRID_DIRECTION == VERTICAL) {
+		x+= (GRID_NB_COLUMNS-1) * (GRID_W_ICON0 + GRID_e);
+		y-= GRID_H_ICON0 + GRID_e;
+	}
+	x1=x;
+	y1=y;
+	k=0;
+	for(i = GRID_FIRST_ICON-1 ; i>=0 ; i--) {
+		if(Show_it(i)==NO) continue;
+		k++;
+		
+		TranslateTo(&ITEM_moveX[i], x);
+		TranslateTo(&ITEM_moveY[i], y);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+			
+		if(GRID_DIRECTION == HORIZONTAL)  {
+			y-= GRID_H_ICON0 + GRID_e;
+			if(k==GRID_NB_LINES) {k=0; y = y1; x -= GRID_W_ICON0 + GRID_e;}
+		} else
+		if(GRID_DIRECTION == VERTICAL)  {
+			x-= GRID_W_ICON0 + GRID_e;
+			if(k==GRID_NB_COLUMNS) {k=0; x = x1; y -= GRID_H_ICON0 + GRID_e;}
+		}
+	}
+	
+	x = GRID_X;
+	y = GRID_Y;
+	if(GRID_DIRECTION == HORIZONTAL) {
+		x+= GRID_NB_COLUMNS * (GRID_W_ICON0 + GRID_e);
+	} else
+	if(GRID_DIRECTION == VERTICAL) {
+		y+= GRID_NB_LINES * (GRID_H_ICON0 + GRID_e);
+	}
+	x1=x;
+	y1=y;
+	k=0;
+	for(i = GRID_LAST_ICON+1 ; i<=game_number ; i++) {
+		if(Show_it(i)==NO) continue;
+		k++;
+		
+		TranslateTo(&ITEM_moveX[i], x);
+		TranslateTo(&ITEM_moveY[i], y);
+		TranslateTo(&ITEM_moveZ[i], 100.0);
+			
+		if(GRID_DIRECTION == HORIZONTAL)  {
+			y+= GRID_H_ICON0 + GRID_e;
+			if(k==GRID_NB_LINES) {k=0; y = GRID_Y; x += GRID_W_ICON0 + GRID_e;}
+		} else
+		if(GRID_DIRECTION == VERTICAL)  {
+			x+= GRID_W_ICON0 + GRID_e;
+			if(k==GRID_NB_COLUMNS) {k=0; x = GRID_X; y += GRID_H_ICON0 + GRID_e;}
+		}
+	}
+	
+	MOVE_init=YES;
 }
 
 //*******************************************************
 //Main
 //*******************************************************
-		
+
 void input_MAIN()
 {
 	if(filter==YES) return;
@@ -22248,14 +27252,18 @@ void input_MAIN()
 					
 				read_game_setting(list_game_title[position]);
 				
-				if(payload==IRIS) iris_Mount(); else
-				if(payload==MM) mm_Mount(); else
-				if(cobra) cobra_Mount(); else
-				mamba_Mount();
+				if(PEEKnPOKE) {
+					if(payload==IRIS) iris_Mount(); else
+					if(payload==MM) mm_Mount(); else
+					if(cobra) cobra_Mount(); else 
+					mamba_Mount();
+					if(change_IDPS) poke_IDPS();	
+					if(clean_syscall) remove_cfw_syscalls();
+				} else {
+					if(cobra) cobra_Mount(); else 
+					if(mamba) mamba_Mount();
+				}
 				
-				if(change_IDPS) poke_IDPS();	
-				if(clean_syscall) remove_cfw_syscalls();	
-
 				if(direct_boot) {
 					end_loading();
 					sysModuleUnload(SYSMODULE_PNGDEC);
@@ -22274,10 +27282,14 @@ void input_MAIN()
 				if(list_game_platform[position] == _ISO_PS1) emul = EMU_PSX;
 				if(list_game_platform[position] == _ISO_PSP) emul = EMU_PSP;
 				
-				if(!cobra && !mamba) mamba = install_mamba();
+				if(PEEKnPOKE) {
+					if(!cobra && !mamba) mamba = install_mamba();
+				}
 				
-				if(emul == EMU_PS2_DVD) patch_PS2();
-				if(emul == EMU_PS2_DVD) use_CONFIG();
+				if(emul == EMU_PS2_DVD) { 
+					patch_PS2();
+					Force_MGZCONFIG();
+				}
 				
 				cobra_MountISO(emul);
 				cobra_MountISO(emul);
@@ -22362,8 +27374,8 @@ void input_MAIN()
 		}
 	} else
 	if(UI_position==GRID) {
-		if( ((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && direction==HORIZONTAL)  ||
-			((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && direction==VERTICAL  )  )
+		if( ((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && GRID_DIRECTION==HORIZONTAL)  ||
+			((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && GRID_DIRECTION==VERTICAL  )  )
 		{
 			j=-1;
 			for(i=position; i>=0;i--){
@@ -22373,8 +27385,8 @@ void input_MAIN()
 				if(j==1) break;
 			}
 		}
-		if( ((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && direction==HORIZONTAL)  ||
-			((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && direction==VERTICAL  )  )
+		if( ((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && GRID_DIRECTION==HORIZONTAL)  ||
+			((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && GRID_DIRECTION==VERTICAL  )  )
 		{
 			j=-1;
 			for(i=position; i<=game_number;i++){
@@ -22384,138 +27396,50 @@ void input_MAIN()
 				if(j==1) break;
 			}
 		}
-		if( ((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && direction==HORIZONTAL)  ||
-			((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && direction==VERTICAL  )  )
+		if( ((new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0)) && GRID_DIRECTION==HORIZONTAL)  ||
+			((new_pad & BUTTON_UP   || ((old_pad & BUTTON_UP)   && slow_it==0)) && GRID_DIRECTION==VERTICAL  )  )
 		{
 			j=-1;
 			for(i=position; i>=0;i--){
 				if(Show_it(i)==NO) continue;
 				j++;
 				position=i;
-				if(direction==VERTICAL   && j==grid_nb_columns) break;
-				if(direction==HORIZONTAL && j==grid_nb_lines) break;
+				if(GRID_DIRECTION==VERTICAL   && j==GRID_NB_COLUMNS) break;
+				if(GRID_DIRECTION==HORIZONTAL && j==GRID_NB_LINES) break;
 			}
 		}
-		if( ((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && direction==HORIZONTAL)  ||
-			((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && direction==VERTICAL  )  )
+		if( ((new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0)) && GRID_DIRECTION==HORIZONTAL)  ||
+			((new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) && GRID_DIRECTION==VERTICAL  )  )
 		{
 			j=-1;
 			for(i=position; i<=game_number;i++){
 				if(Show_it(i)==NO) continue;
 				j++;
 				position=i;
-				if(direction==VERTICAL   && j==grid_nb_columns) break;
-				if(direction==HORIZONTAL && j==grid_nb_lines) break;
-			}
-		}	
-		if( (new_pad & BUTTON_UP	|| ((old_pad & BUTTON_UP)	&& slow_it==0)) ||
-			(new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN)  && slow_it==0)) ||
-			(new_pad & BUTTON_LEFT  || ((old_pad & BUTTON_LEFT)  && slow_it==0)) ||
-			(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0))   )
-		{
-			if(grid_type == SCROLL) {
-				speed = 9;
-				if(position < first_icon) {
-					j=-1;
-					for(i=first_icon; i>=0; i--){
-						if(Show_it(i)==NO) continue;
-						j++;
-						first_icon=i;
-						if(j==grid_nb_lines) break;
-					}
-					if(direction==HORIZONTAL) {
-						if(animated == YES) Grid_move -= w_ICON0 + e_w ;
-						else Grid_curs_move_x += w_ICON0 + e_w ;
-					} else
-					if(direction==VERTICAL) {
-						if(animated == YES) Grid_move -= h_ICON0 + e_h ;
-						else Grid_curs_move_y += h_ICON0 + e_h ;
-					}
-				}
-				if(position > last_icon) {
-					j=-1;
-					for(i=last_icon; i<=game_number; i++){
-						if(Show_it(i)==NO) continue;
-						j++;
-						last_icon=i;
-						if(direction==VERTICAL   && j==grid_nb_columns) break;
-						if(direction==HORIZONTAL && j==grid_nb_lines) break;
-					}
-					j=-1;
-					for(i=first_icon; i<=game_number; i++){
-						if(Show_it(i)==NO) continue;
-						j++;
-						first_icon=i;
-						if(direction==VERTICAL   && j==grid_nb_columns) break;
-						if(direction==HORIZONTAL && j==grid_nb_lines) break;
-					}
-					if(direction==HORIZONTAL) {
-						if(animated == YES) Grid_move += w_ICON0 + e_w ;
-						else Grid_curs_move_x -= w_ICON0 + e_w ;
-					} else
-					if(direction==VERTICAL) {
-						if(animated == YES) Grid_move += h_ICON0 + e_h ;
-						else Grid_curs_move_y -= h_ICON0 + e_h ;
-					}
-				}
-			} else
-			if(grid_type == PAGE) {
-				speed = 18;
-				if(position < first_icon) {
-					j=-1;
-					for(i=first_icon; i>=0; i--){
-						if(Show_it(i)==NO) continue;
-						j++;
-						first_icon=i;
-						if(j==nb_icon) break;
-					}
-					if(direction==HORIZONTAL) {
-						if(animated == YES) Grid_move -= (w_ICON0 + e_w) * grid_nb_columns ;
-						else Grid_curs_move_x += (w_ICON0 + e_w) * grid_nb_columns;
-					} else
-					if(direction==VERTICAL) {
-						if(animated == YES) Grid_move -= (h_ICON0 + e_h) * grid_nb_lines ;
-						else Grid_curs_move_y += (h_ICON0 + e_h) * grid_nb_lines;
-					}
-				}
-				if(position > last_icon) {
-					j=-1;
-					for(i=last_icon; i<=game_number; i++){
-						if(Show_it(i)==NO) continue;
-						j++;
-						if(j==1) {first_icon=i;	break;}
-					}
-					if(direction==HORIZONTAL) {
-						if(animated == YES) Grid_move += (w_ICON0 + e_w) * grid_nb_columns;
-						else Grid_curs_move_x -= (w_ICON0 + e_w) * grid_nb_columns;
-					} else
-					if(direction==VERTICAL) {
-						if(animated == YES) Grid_move += (h_ICON0 + e_h) * grid_nb_lines;
-						else Grid_curs_move_y -= (h_ICON0 + e_h) * grid_nb_lines;
-					}
-				}
+				if(GRID_DIRECTION==VERTICAL   && j==GRID_NB_COLUMNS) break;
+				if(GRID_DIRECTION==HORIZONTAL && j==GRID_NB_LINES) break;
 			}
 		}
 	} else
 	if(UI_position==XMB) {
 		if(new_pad & BUTTON_LEFT || ((old_pad & BUTTON_LEFT) && slow_it==0) ) {
-			if(XMB_H_position > 0) XMB_H_position--;
-		}
+			if(XMB_H_position > 0) { XMB_H_position--; MOVE_init=NO; }
+		} else
 		if(new_pad & BUTTON_RIGHT || ((old_pad & BUTTON_RIGHT) && slow_it==0) ) {
-			if(XMB_H_position < 5) XMB_H_position++;
-		}
+			if(XMB_H_position < 5) { XMB_H_position++; MOVE_init=NO; }
+		} else
 		if(new_pad & BUTTON_UP || ((old_pad & BUTTON_UP) && slow_it==0) ) {
-			if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_lin[XMB_H_position] != 0) {
-				XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
-				XMB_curs_move_y[XMB_H_position] = (XMB_h - XMB_h*(XMB_V_position[XMB_H_position]-1)) - 200; 
+			if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_line != 0) {
+				XMB_V_position[XMB_H_position] = XMB_nb_line;
+				MOVE_init=NO;
 			} 
 			else if(XMB_V_position[XMB_H_position] > 0) XMB_V_position[XMB_H_position]--;
-		}
+		} else
 		if(new_pad & BUTTON_DOWN  || ((old_pad & BUTTON_DOWN) && slow_it==0) ) {
-			if(XMB_V_position[XMB_H_position] == XMB_nb_lin[XMB_H_position] && XMB_nb_lin[XMB_H_position] != 0) {
+			if(XMB_V_position[XMB_H_position] == XMB_nb_line && XMB_nb_line != 0) {
 				XMB_V_position[XMB_H_position] = 0;
-				XMB_curs_move_y[XMB_H_position] = 0; 
-			} else if(XMB_V_position[XMB_H_position] < XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position]++;
+				MOVE_init=NO;
+			} else if(XMB_V_position[XMB_H_position] < XMB_nb_line) XMB_V_position[XMB_H_position]++;
 		}
 	} else
 	if(UI_position==FLOW) {
@@ -22524,18 +27448,15 @@ void input_MAIN()
 		{
 			for(i=0; i<game_number;i++) {
 				position--;
-				
+				FLOW_ShowBack=NO;
 				if(position < 0) {
-					j=-1;
-					for(k=0; k<=game_number; k++) {
+					for(k=game_number; k>=0; k--) {
 						if(Show_it(k) == NO) continue;
-						j++;
 						position=k;
-						if(j==0) Flow_curs_move_x = 0;
-						else Flow_curs_move_x = - 2*FLOW_W - FLOW_W*(j-1);
+						MOVE_init=NO;
+						break;
 					}
 				}
-				
 				if(Show_it(position) == YES) break;
 			}
 		}
@@ -22544,17 +27465,27 @@ void input_MAIN()
 		{
 			for(i=0; i<game_number;i++) {
 				position++;
+				FLOW_ShowBack=NO;
 				if(position > game_number) {
 					for(k=0; k<=game_number; k++) {
 						if(Show_it(k) == NO) continue;
 						position=k;
-						Flow_curs_move_x = 0;
+						MOVE_init=NO;
 						break;
 					}
 				}
 				if(Show_it(position) == YES) break;
 			}
 		}
+		if( (new_pad & BUTTON_R3) &&  FLOW_3D) {
+			if(FLOW_ShowBack==YES) FLOW_ShowBack=NO;
+			else FLOW_ShowBack=YES;
+		}
+		if( (new_pad & BUTTON_L3) &&  FLOW_3D) {
+			if(FLOW_Zoom==YES) FLOW_Zoom=NO;
+			else FLOW_Zoom=YES;
+		}
+		
 	}
 }
 
@@ -22564,26 +27495,26 @@ void Draw_MAIN_input()
 	if(filter==YES) return;
 	
 	int x=25, y=485;
-	
+
 	FontColor(COLOR_1);
 	FontSize(15);
-	x=DrawButton(x, y, "Settings", BUTTON_START);
+	x=DrawButton(x, y, STR_SETTINGS, BUTTON_START);
 	if(Game_stuff==YES) {
-		x=DrawButton(x, y, "Game Menu", BUTTON_TRIANGLE);
-		x=DrawButton(x, y, "Mount game", BUTTON_CROSS);
+		x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
+		x=DrawButton(x, y, STR_MOUNTGAME, BUTTON_CROSS);
 	}
 	if(UI_position!=XMB) {
-		x=DrawButton(x, y, "Filter", BUTTON_SQUARE);
+		x=DrawButton(x, y, STR_FILTER, BUTTON_SQUARE);
 	}
-	x=DrawButton(x, y, "File Manager", BUTTON_SELECT);
+	x=DrawButton(x, y, STR_FILEMANAGER, BUTTON_SELECT);
 		
 	FontColor(COLOR_4);
-	x=DrawString( x+10, y, "Hold ");
+	x=DrawFormatString( x+10, y, "%s ", STR_HOLD);
 	FontColor(COLOR_1);
-	x=DrawButton(x, y, "Back to XMB", BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
 	if(hold_CIRCLE != 0) {
 		FontColor(COLOR_3);
-		x=DrawFormatString( x, y, "in %d", (100 - hold_CIRCLE)/30);
+		x=DrawFormatString( x, y, "%d", (100 - hold_CIRCLE)/30);
 		FontColor(COLOR_1);
 	}
 	
@@ -22624,12 +27555,12 @@ void Draw_MAIN()
 	
 	SetFontZ(10);
 	
-	int x, y, i, j, k;
+	int x, y, i;
 	
 	iso = is_iso(list_game_path[position]);
 	usb = is_usb(list_game_path[position]);	
 	
-	Game_stuff = YES;
+	Game_stuff = YES;	
 	
 	if(UI_position==LIST) {
 		
@@ -22671,300 +27602,43 @@ void Draw_MAIN()
 	}
 	else if (UI_position==GRID) {
 	
-		float x1, y1;
-		
-		x=20;
-		y=20;
-		
-		float grid_w = X_MAX - 40;
-		float grid_h = Y_MAX - 50;
-		
-		if(keep_prop == NO) {
-			w_ICON0 = (grid_w - (grid_nb_columns-1) * e_w) / grid_nb_columns;  
-			h_ICON0 = (grid_h - (grid_nb_lines-1) * e_h) / grid_nb_lines;
-		}
-		else {
-			w_ICON0 = (grid_w - (grid_nb_columns-1) * e_w)/grid_nb_columns ; 
-			h_ICON0 = w_ICON0/1.86;
-			grid_nb_lines = (grid_h+e_h) / (e_h+h_ICON0);
-		}
-		
-		nb_icon = grid_nb_lines * grid_nb_columns;
-		
-		j=0;
-		for(i=first_icon; i<=game_number; i++){
-			if(Show_it(i)==NO) continue;
-			j++;
-			last_icon=i;
-			if(j==nb_icon) break;
-		}
-		
-		y += (grid_h - (grid_nb_lines*(h_ICON0+e_h)-e_h))/2 ; // center
-
-		//if(position>game_number) position = game_number ;// ex : si je debranche et rebranche le hdd ext
-
-		y1=y; x1=x;
-		
-		if(direction == HORIZONTAL)  {
-			if(Grid_move != 0) {
-				if(Grid_move >= speed ) {Grid_curs_move_x -= speed; Grid_move -= speed;} else 
-				if(Grid_move <= -speed) {Grid_curs_move_x += speed; Grid_move += speed;} else 
-				{ Grid_curs_move_x -= Grid_move ; Grid_move = 0; }				
-			}
-				
-			x += Grid_curs_move_x ;
-		} else
-		if(direction == VERTICAL)  {
-			if(Grid_move != 0 ) {
-				if(Grid_move >= speed ) {Grid_curs_move_y -= speed; Grid_move -= speed;} else 
-				if(Grid_move <= -speed) {Grid_curs_move_y += speed; Grid_move += speed;} else 
-				{ Grid_curs_move_y -= Grid_move ; Grid_move = 0; }
-			}
-			y += Grid_curs_move_y;
-		}
-		
-		k=0;
-		for(i = 0 ; i<=game_number ; i++) {
-			if(Show_it(i)==NO) continue;
-			k++;
-			
-			if(i==position) {
-				Draw_ICON0(i, x, y, 100, w_ICON0, h_ICON0);
-				Draw_Box(x-5, y-5, 101, 0, w_ICON0+10, h_ICON0+10, 0xFFFFFFFF, NO);
-				Draw_Box(x, y, 101, 0, w_ICON0, h_ICON0, 0x000000FF, NO);
-			} else {
-				Draw_ICON0(i, x, y, 100, w_ICON0, h_ICON0);
-				Draw_Box(x, y, 99, 0, w_ICON0, h_ICON0, 0xFFFFFF80, NO); 
-			}
-			
-			if(direction == HORIZONTAL)  {
-				y+= h_ICON0 + e_h;
-				if(k==grid_nb_lines) {k=0; y = y1; x += w_ICON0 + e_w;}
-			} else
-			if(direction == VERTICAL)  {
-				x+= w_ICON0 + e_w;
-				if(k==grid_nb_columns) {k=0; x = x1; y += h_ICON0 + e_h;}
-			}
-		}
+		init_GRID();
+		update_GRID();
+		Draw_GRID();
+	
 	}
 	else if (UI_position==XMB) {
 		
-		if(XMB_H_position == COL_SET) Game_stuff = NO; else Game_stuff = YES;
+		if(XMB_H_position == XMB_COLUMN_SETTINGS) Game_stuff = NO; else Game_stuff = YES;
 		
-		FontSize(XMB_SizeFont);
+		init_XMB();
 		
-		x = 250;
-		y = 200;
+		Draw_XMB_LINES();
+		update_XMB_LINES();
 		
-		int position_x;
-		int position_y;
-		
-		position_x = x - 90 * XMB_H_position;
-		
-		int slide_speed;
-		
-		if(0 <= scroll_speed && scroll_speed < 3) slide_speed = 40; else
-		if(3 <= scroll_speed && scroll_speed < 6) slide_speed = 20; else
-		slide_speed = 10;
-		
-		x += XMB_curs_move_x;
-		
-		if(position_x > x) XMB_curs_move_x+=slide_speed; else
-		if(position_x < x) XMB_curs_move_x-=slide_speed;
-		
-		Draw_Col_header(x);
-		
-		if(XMB_V_position[XMB_H_position] == 0) {
-			position_y = y;
-		} else
-		if(XMB_V_position[XMB_H_position] > 0) {
-			position_y = XMB_h - XMB_h*(XMB_V_position[XMB_H_position]-1); 
-		}
-		
-		y += XMB_curs_move_y[XMB_H_position];
-		
-		if(position_y > y) {
-			if(y == 2*XMB_h) XMB_curs_move_y[XMB_H_position] += 120; else XMB_curs_move_y[XMB_H_position]+=slide_speed;
-		}
-		else if(position_y < y) {
-			if(y==200-XMB_h) XMB_curs_move_y[XMB_H_position] -= 120; else XMB_curs_move_y[XMB_H_position]-=slide_speed;
-		}
-		
-		SetFontZ(90);
-		if(XMB_H_position==COL_FAV) {
-			int real_FAV_game_number=-1;
-			for(j = 0 ; j <= game_number ; j++) {
-				if(is_favorite(list_game_path[j]) == NO) continue;
-				
-				real_FAV_game_number++;
-				
-				if(y>XMB_h && y<3*XMB_h) y=200-2*XMB_h+y ; else
-				if(3*XMB_h<y && y<=200-XMB_h) y=XMB_h;else
-				if(y==300-XMB_h) y=200;else
-				if(y==2*XMB_h) y=200;
-				
-				if(200-XMB_h < y && y < 200+XMB_h) {
-					position = j;
-					if(MENU==NO) {
-						Draw_ICON0(position, 250-XMB_w , y, 10, XMB_w*2, XMB_h*2);
-						DrawFormatString(250+XMB_w+20, y+XMB_h-10, "%s", list_game_title[position]);
-					} else {
-						DrawFormatString(250+XMB_w+XMB_w+20, 200+XMB_h-10, "%s", list_game_title[position]);
-					}
-					y+=2*XMB_h + XMB_h/2;
-					if(Show_COVER == YES) {
-						Draw_COVER(j, 30, 200, 10, 130, 0);
-					}
-				}
-				else {
-					Draw_ICON0(j, 250-XMB_w/2, y, 100, XMB_w, XMB_h);
-					y+=XMB_h;
-				}
-			}
-			
-			XMB_nb_lin[XMB_H_position] = real_FAV_game_number;
-			if(real_FAV_game_number<0) Game_stuff = NO;
-			if(XMB_V_position[XMB_H_position]>XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
-			
-			
-		}
-		else if(XMB_H_position==COL_PS3 || XMB_H_position==COL_PS2 || XMB_H_position==COL_PS1 || XMB_H_position==COL_PSP) {
-
-			XMB_nb_lin[XMB_H_position]=-1;
-			
-			for(j = 0 ; j <= game_number ; j++) {
-				if(XMB_H_position==COL_PS3 && (list_game_platform[j] !=_ISO_PS3 && list_game_platform[j] !=_JB_PS3)) continue;
-				if(XMB_H_position==COL_PS2 && (list_game_platform[j] !=_ISO_PS2 && list_game_platform[j] !=_JB_PS2)) continue;
-				if(XMB_H_position==COL_PS1 && (list_game_platform[j] !=_ISO_PS1 && list_game_platform[j] !=_JB_PS1)) continue;
-				if(XMB_H_position==COL_PSP && (list_game_platform[j] !=_ISO_PSP && list_game_platform[j] !=_JB_PSP)) continue;
-				
-				XMB_nb_lin[XMB_H_position]++;
-				
-				if(y>XMB_h && y<3*XMB_h) y=200-2*XMB_h+y ; else
-				if(3*XMB_h<y && y<=200-XMB_h) y=XMB_h;else
-				if(y==300-XMB_h) y=200;else
-				if(y==2*XMB_h) y=200;
-				
-				if(200-XMB_h < y && y < 200+XMB_h) {
-					position = j;
-					if(MENU==NO) {
-						Draw_ICON0(position, 250-XMB_w , y, 10, XMB_w*2, XMB_h*2);
-						DrawFormatString(250+XMB_w+20, y+XMB_h-10, "%s", list_game_title[position]);
-					} else {
-						DrawFormatString(250+XMB_w+XMB_w+20, 200+XMB_h-10, "%s", list_game_title[position]);
-					}
-					y=300;
-					if(Show_COVER == YES) {
-						Draw_COVER(position, 30, 200, 10, 130, 0);
-					}
-				}
-				else {
-					Draw_ICON0(j, 250-XMB_w/2, y, 100, XMB_w, XMB_h);
-					y+=XMB_h;
-				}
-			}
-			
-			if(XMB_V_position[XMB_H_position]>XMB_nb_lin[XMB_H_position]) XMB_V_position[XMB_H_position] = XMB_nb_lin[XMB_H_position];
-			
-			if(XMB_nb_lin[XMB_H_position]==-1) Game_stuff=NO;
-		}
-			
-		SetFontZ(10);
+		Draw_XMB_COLUMNS();
+		update_XMB_COLUMNS();
 		
 	}
 	else if (UI_position==FLOW) {
-		
-		FontSize(FLOW_SizeFont);
-		
-		x=848/2;
-		y=512/2;
-		
-		int FLOW_speed;
-		
-		int FLOW_position_x=x;
-		float FLOW_a;
-		int FLOW_slide_speed;
-		
-		if(0 <= scroll_speed && scroll_speed < 3) FLOW_slide_speed = 40; else
-		if(3 <= scroll_speed && scroll_speed < 6) FLOW_slide_speed = 20; else
-		FLOW_slide_speed = 10;
-		
-		j=-1;
-		for(i=0; i<=game_number; i++) {
-			if(Show_it(i) == NO) continue;
-			j++;
-			if(i==position) {
-				if(j==0) FLOW_position_x = x;
-				else FLOW_position_x = x - 2*FLOW_W - FLOW_W*(j-1);
-				break;
-			}
-		}
-		
-		x += Flow_curs_move_x;
-		
-		if(FLOW_position_x > x) {
-			if(264 <= x && x < 584) FLOW_speed=FLOW_slide_speed*2; else FLOW_speed=FLOW_slide_speed;
-		} else
-		if(FLOW_position_x < x) {
-			if(264 < x && x <= 584) FLOW_speed=-FLOW_slide_speed*2; else FLOW_speed=-FLOW_slide_speed;
-		} else FLOW_speed=0;
-		
-		Flow_curs_move_x+=FLOW_speed;
-		
+		DrawStringFromCenterX(424, 50, list_game_title[position]);
+		if(FLOW_3D) {
 			
-		for(j = 0 ; j <= game_number ; j++) {
-			if(Show_it(j) == NO) continue;
+			upadte_3DFLOW();
+		
+			tiny3d_Project3D();
 			
-			if(264 < x && x < 584) {
-				if(x<=424) {
-					FLOW_a= 1/(424-264)*x - (1/(424-264)*424) + 2 ;
-				}
-				else {
-					FLOW_a= 1/(424-584)*x - (1/(424-584)*424) + 2 ;
-				}
-			} else {
-				FLOW_a=1;
-			}
-			if(x==424) {
-				DrawStringFromCenterX(424, 100, list_game_title[j]);
-			}
+			Draw_FLOW_3D();
+
+			tiny3d_Project2D(); 
 			
-			if(j==position) {
-				if(Show_COVER == YES && COVER_offset[j] != 0) Draw_CoverFromCenter(j, x, y, 0, FLOW_W*FLOW_a, 0);
-				else Draw_ICON0(j, x-(FLOW_W*FLOW_a)/2, y-(FLOW_H*FLOW_a)/2, 0, FLOW_W*FLOW_a, FLOW_H*FLOW_a);
-			} else {
-				if(Show_COVER == YES && COVER_offset[j] != 0) Draw_CoverFromCenter(j, x, y, 100, FLOW_W*FLOW_a, 0);
-				else Draw_ICON0(j, x-(FLOW_W*FLOW_a)/2, y-(FLOW_H*FLOW_a)/2, 100, FLOW_W*FLOW_a, FLOW_H*FLOW_a);
-			}
+			tiny3d_SetMatrixModelView(NULL);
+		
+		} else {
+		
+			update_FLOW();
 			
-			if(x==424 || x==264) x+=2*FLOW_W; else  
-			if(264 < x && x < 424) {
-			   x+=FLOW_W*FLOW_a;
-			} else
-			if(424 < x && x < 584) {
-				x+=FLOW_W*(FLOW_a-1) + fabs(584-x)/2;
-			} else
-			if(184 < x && x < 424) {
-				if(speed<0){
-					x+=2*FLOW_W;
-				}
-				if(speed>0){
-					x+=FLOW_W;
-				}
-			} else x+=FLOW_W;
-			
-			if(speed!=20) {
-				if(speed<0){
-					if(264 < x && x < 424) {
-					x+=fabs(424-x)*speed/10;
-					}
-				}
-				if(speed>0){
-					if(264 < x && x < 424) {
-						x+=fabs(264-x)*speed/10;
-					}
-				}
-			}
+			Draw_FLOW();
 		}
 	}
 
@@ -22972,6 +27646,8 @@ void Draw_MAIN()
 
 u8 Show_it(int pos)
 {
+	if(pos<0 || game_number<pos) return NO;
+	
 	if( Show_PS3==NO && (list_game_platform[pos]==_ISO_PS3 || list_game_platform[pos]==_JB_PS3)) return NO;
 	if( Show_PS2==NO && (list_game_platform[pos]==_ISO_PS2 || list_game_platform[pos]==_JB_PS2)) return NO;
 	if(	Show_PS1==NO && (list_game_platform[pos]==_ISO_PS1 || list_game_platform[pos]==_JB_PS1)) return NO;
@@ -22989,80 +27665,67 @@ int main(void)
 	
 	NTFS_init_system_io();
 	
-	AutoM = is_AutoMount();
+	AutoM = is_AutoMount(); // ManaGunZ_id
 	
-	sysModuleLoad(SYSMODULE_PNGDEC); //init PNG
-	sysModuleLoad(SYSMODULE_JPGDEC); //init PNG
+	sysModuleLoad(SYSMODULE_PNGDEC);
+	sysModuleLoad(SYSMODULE_JPGDEC);
 	
 	Init_Graph();
+	//initAIO();
 	ioPadInit(7);
 	ioPadSetPressMode(0,1);
 	SetCurrentFont(-1);
 	
+#ifdef RPCS3
+#ifdef FILEMANAGER
+	strcpy(ManaGunZ_id, "FILEMANAG");
+#else
+	strcpy(ManaGunZ_id, "MANAGUNZ0");
+#endif
+	cobra = NO;
+	mamba = NO;
+	device_number++;
+	strcpy(list_device[device_number], "dev_hdd0");
+	device_number++;
+	strcpy(list_device[device_number], "dev_usb000");
+#endif // RPCS3
+	
+	init_lang();
+	load_lang();
+	
 	start_loading();
 	
-	if(lv2peek(0x8000000000003000ULL)==0xFFFFFFFF80010003ULL) {
-		end_loading();
-		while(1) {
-			cls();
-			ps3pad_read();
-			
-			Draw_BGS();
-			int x=50, y=40;
-			
-			FontSize(20);
-			FontColor(RED);
-			
-			DrawString(x, y, "Error : ManaGunZ need peek & poke.");
-			
-			FontColor(COLOR_1);
-			FontSize(15);
-			
-			x=25; y=485;
+#ifdef FILEMANAGER
 
-			x=DrawButton(x, y, "Back to XMB", BUTTON_CIRCLE);
-			x=DrawButton(x, y, "Reboot system", BUTTON_START);
-			
-			tiny3d_Flip();
-			
-			if(new_pad & BUTTON_START) {
-				Delete("/dev_hdd0/tmp/turnoff");
-				lv2syscall4(379,0x200,0,0,0);
-			}
-			
-			if(new_pad & BUTTON_CIRCLE) {
-				ioPadEnd();
-				return 0;
-			}
-		}
-	}
+	print_load("Load Common images");
+	Load_COMMON();
 	
+	end_loading();
+	
+	Draw_FileExplorer(NULL);
+	
+	ioPadEnd();
+	sysModuleUnload(SYSMODULE_PNGDEC);
+	sysModuleUnload(SYSMODULE_JPGDEC);
+	
+	return 0;
+#endif // FILEMANAGER
+
+	u64 test_peek = lv2peek(0x8000000000003000ULL);
+	if( test_peek == 0xFFFFFFFF80010003ULL || test_peek == 0 ) // rpcs3 return 0
+		PEEKnPOKE = NO;
+	else
+		PEEKnPOKE = YES;
+
 	print_load("Initialisation");
-	if(init_fw() == NOK) {
-		end_loading();
-		while(1) {
-			cls();
-			ps3pad_read();
-			
-			FontSize(20);
-			FontColor(RED);
-			DrawString(50, 100, "Error : This firmware isn't supported.");
-			
-			FontColor(COLOR_1);
-			FontSize(15);
-			
-			DrawButton(25, 485, "Back to XMB", BUTTON_CIRCLE);
-
-			
-			tiny3d_Flip();
-			
-			if(new_pad & BUTTON_CIRCLE) {
-				ioPadEnd();
-				return 0;
-			}
+	if(PEEKnPOKE) {
+		if(init_fw() == NOK) {
+			//This firmware isn't supported
+			PEEKnPOKE = NO;
 		}
 	}
 	
+#ifndef RPCS3
 	if(init_ManaGunZ() == FAILED) {
 		end_loading();
 		while(1) {
@@ -23076,25 +27739,25 @@ int main(void)
 			FontColor(COLOR_1);
 			FontSize(15);
 
-			DrawButton(25, 485, "Back to XMB", BUTTON_CIRCLE);
+			DrawButton(25, 485, STR_BACKTOXMB, BUTTON_CIRCLE);
 			
 			tiny3d_Flip();
 			
 			if(new_pad & BUTTON_CIRCLE) {
 				ioPadEnd();
+				sysModuleUnload(SYSMODULE_PNGDEC);
+				sysModuleUnload(SYSMODULE_JPGDEC);
 				return 0;
 			}
 		}
 	}
+#endif
 	
 	if(AutoM == YES) AutoMount();	
 
 	start_checking();
 	
-	print_load("Read setting");
-	read_setting();
-	
-	print_load("Adjust screen");
+	print_load(STR_ADJUST);
 	adjust_screen();
 	
 	print_load("Get list of themes");
@@ -23122,7 +27785,7 @@ int main(void)
 			FontColor(COLOR_1);
 			FontSize(15);
 			
-			DrawButton(25, 485, "Back to XMB", BUTTON_CIRCLE);
+			DrawButton(25, 485, STR_BACKTOXMB, BUTTON_CIRCLE);
 			
 			tiny3d_Flip();
 			
@@ -23140,8 +27803,9 @@ int main(void)
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
 			sprintf(scan_path, "/%s/%s", list_device[i], scan_dir[j]);
+			
 			print_load("Scanning : %s", scan_path);
-
+			
 			DIR *d;
 			struct dirent *dir;
 			
@@ -23153,18 +27817,19 @@ int main(void)
 
 				char temp[255];
 				sprintf(temp, "%s/%s" , scan_path, dir->d_name);
+				
 				u8 ext = get_ext(temp);
 				
 				if(ext != _ISO_PS3 && ext != _ISO_PS2 && ext != _ISO_PS1 && ext != _ISO_PSP)
 				if(ext != _JB_PS3 && ext != _JB_PS2 && ext != _JB_PS1 && ext != _JB_PSP) continue;
-
+				
 				game_number++;
 				sprintf(list_game_path[game_number], "%s/%s" , scan_path, dir->d_name);
 				
 				strcpy(list_game_title[game_number], list_game_path[game_number]);
 				strcpy(list_game_title[game_number], &strrchr(list_game_title[game_number], '/')[1]);
-				strtok(list_game_title[game_number], ".");
-				
+				RemoveExtention(list_game_title[game_number]);
+
 				list_game_platform[game_number] = ext;
 				
 				if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
@@ -23216,8 +27881,9 @@ int main(void)
 	end_loading();
 	
 	start_load_PIC1();
-	
+
 	while(1) {
+
 		while(game_number < 0) {
 			cls();
 			ps3pad_read();
@@ -23231,14 +27897,14 @@ int main(void)
 			
 			FontSize(20);
 			FontColor(RED);
-			DrawString(x, y, "Error: 0 game detected");
+			DrawString(x, y, STR_NOGAME);
 			
 			FontColor(COLOR_1);
 			FontSize(15);
 			
 			x=25;
-			x=DrawButton(x, 485, "Back to XMB" , BUTTON_CIRCLE);
-			x=DrawButton(x, 485, "File Manager", BUTTON_SELECT);
+			x=DrawButton(x, 485, STR_BACKTOXMB , BUTTON_CIRCLE);
+			x=DrawButton(x, 485, STR_FILEMANAGER, BUTTON_SELECT);
 			
 			tiny3d_Flip();	
 			
@@ -23252,12 +27918,13 @@ int main(void)
 				return 0;
 			}
 		}
-		
+
 		scene = SCENE_MAIN;
 		
 		cls();
 		
 		Draw_BG();
+
 		Draw_PIC1();
 		Draw_MAIN();
 		Draw_MAIN_input();
@@ -23289,7 +27956,7 @@ int main(void)
 		txt_viewer_input();
 		input_ICON0_creator();
 	}
-
+	
 	return 0;
 }
 
@@ -23301,7 +27968,11 @@ void Draw_scene()
 		Draw_window();
 		Draw_option();
 		Draw_properties();
+		Draw_picture_viewer();
+		Draw_txt_viewer();
+		Draw_SFO_viewer();
 		Draw_Notification();
+		Draw_cursor();
 	} else
 	if(scene == SCENE_MAIN) 
 	{

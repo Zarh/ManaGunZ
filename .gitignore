@@ -5,6 +5,7 @@
 *.d
 *.bin
 /build
+/pkgfiles2/USRDIR
 /MGZ/build
 OffsetFinder/*
 !OffsetFinder/main.c
