@@ -494,6 +494,33 @@
 		#define stage2_addr                              0x021f0000
 	#endif /* FIRMWARE */
 
+	#ifdef FIRMWARE_482
+		#define TOC                                      0x4EB8C0
+		#define DISC_SIZE_OFFSET                         0x25714
+		#define DISC_TYPE_OFFSET                         0x25310
+		#define cdvd_send_atapi_command_symbol           0x22138
+		#define ufs_open_symbol                          0x4E0A8
+		#define ufs_close_symbol                         0x4E834
+		#define ufs_read_symbol                          0x4DB78
+		#define ufs_write_symbol                         0x4DC6C
+		#define ufs_fstat_symbol                         0x4EB38
+		#define zeroalloc_symbol                         0xFDFEC
+		#define malloc_symbol                            0xFDF04
+		#define free_symbol                              0xFE044
+		#define memcpy_symbol                            0xDFAC
+		#define memset_symbol                            0xD488
+		#define strcpy_symbol                            0xED04
+		#define strcat_symbol                            0xEED0
+		#define strlen_symbol                            0xECD8
+		#define vuart_read_symbol                        0x1E42C
+		#define vuart_write_symbol                       0x1E37C
+		#define ps2_disc_auth_symbol                     0x206B0
+		#define ps2_disc_auth_caller_symbol              0x512F8
+		#define overwritten_symbol                       0x23D6C
+		#define stage1_addr                              overwritten_symbol
+		#define stage2_addr                              0x021f0000
+	#endif /* FIRMWARE */
+
 #endif /* PS2HWEMU */
 
 #ifdef PS2GXEMU
@@ -988,6 +1015,33 @@
 		#define stage2_addr                              0x2BBAB28
 	#endif /* FIRMWARE */
 
+	#ifdef FIRMWARE_482
+		#define TOC                                      0x678548
+		#define cdvd_read_symbol                         0x8E4AC
+		#define cdvd_send_atapi_command_symbol           0x8DA80
+		#define cdvd_send_device_command_symbol          0x8D994
+		#define ufs_open_symbol                          0x24EBB0
+		#define ufs_close_symbol                         0x24F358
+		#define ufs_read_symbol                          0x24E8C0
+		#define ufs_write_symbol                         0x24EA38
+		#define ufs_fstat_symbol                         0x24E700
+		#define zeroalloc_symbol                         0x1E48EC
+		#define malloc_symbol                            0x1E488C
+		#define free_symbol                              0x1E4938
+		#define memcpy_symbol                            0x514BC
+		#define memset_symbol                            0x51528
+		#define strcpy_symbol                            0x51600
+		#define strcat_symbol                            0x51634
+		#define strlen_symbol                            0x515C8
+		#define vuart_read_symbol                        0x49544
+		#define vuart_write_symbol                       0x494A4
+		#define ps2_disc_auth_symbol                     0x900FC
+		#define ps2_disc_auth_caller_symbol              0x24F95C
+		#define overwritten_symbol                       0x8CAD8
+		#define stage1_addr                              overwritten_symbol
+		#define stage2_addr                              0x2BBAB28
+	#endif /* FIRMWARE */
+
 #endif /* PS2GXEMU */
 
 #ifdef PS2NETEMU
@@ -1267,6 +1321,22 @@
 	#endif /* FIRMWARE */
 
 	#ifdef FIRMWARE_481
+		#define TOC                                      0x751280
+		#define cdvd_read_symbol                         0x1377C4
+		#define ufs_open_symbol                          0x1ECC5C
+		#define ufs_close_symbol                         0x1ECB10
+		#define ufs_read_symbol                          0x1ED5CC
+		#define ufs_write_symbol                         0x1ED458
+		#define ufs_fstat_symbol                         0x1EC760
+		#define memcpy_symbol                            0x118A90
+		#define memset_symbol                            0x118A3C
+		#define strcpy_symbol                            0x1188DC
+		#define strcat_symbol                            0x118914
+		#define strlen_symbol                            0x1188A4
+		#define decrypt_symbol                           cdvd_read_symbol
+	#endif /* FIRMWARE */
+
+	#ifdef FIRMWARE_482
 		#define TOC                                      0x751280
 		#define cdvd_read_symbol                         0x1377C4
 		#define ufs_open_symbol                          0x1ECC5C

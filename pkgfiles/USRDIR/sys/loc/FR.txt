@@ -15,7 +15,7 @@ STR_CANCEL					{Annuler}
 STR_TURNOFF_YES				{Éteindre = OUI}
 STR_TURNOFF_NO				{Éteindre = NON}
 STR_CANCELLED				{Annulé}
-STR_UNIT					{Octets}
+STR_UNIT					{octets}
 STR_TOTALSIZE				{Taille totale}
 STR_HIDELOGS				{Cacher le journal}
 STR_SHOWLOGS				{Montrer le journal}

@@ -118,7 +118,7 @@ STR_BDEMU_DESC				{Choose the type of emulation to mount you backup.}
 STR_PATCH_LIBFS				{Patch libfs}
 STR_PATCH_LIBFS_DESC		{Choose which patched libfs you want to use.}
 STR_MOUNT_APPHOME			{Mount /app_home}
-STR_MOUNT_APPHOME_DESC		{Redirect the patch /app_home to /dev_bdvd.}
+STR_MOUNT_APPHOME_DESC		{Redirect the path /app_home to /dev_bdvd.}
 STR_PATCH_EXP				{Patch explore_plugin}
 STR_PATCH_EXP_DESC			{The path /app_home is remplaced by /dev_bdvd inside the plugin explore_plugin.}
 STR_MAKE_SHTCUT_PKG			{Make Shortcut PKG}

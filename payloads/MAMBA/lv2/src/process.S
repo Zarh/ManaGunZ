@@ -19,7 +19,6 @@ loc_0:
 	beqlr	cr7
 	ld	%r3, 0x80(%r11)
 	blr
-	
-#ifdef process_kill_symbol
+
 LV2_FUNCTION(process_kill, process_kill_symbol)
-#endif
+

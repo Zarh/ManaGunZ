@@ -100,10 +100,10 @@ PS2EMU_HOOKED_FUNCTION_COND_POSTCALL_4(int, ufs_read_patched, (int fd, uint64_t 
 	return DO_POSTCALL;
 }*/
 
-uint64_t dump_ram(uint64_t addr)
+/*uint64_t dump_ram(uint64_t addr)
 {
  return *(uint64_t *)addr;
-}
+}*/
 
 PS2EMU_PATCHED_FUNCTION(int, open_iso, (int unk, char *path))
 {

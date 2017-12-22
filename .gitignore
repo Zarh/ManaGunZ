@@ -4,6 +4,7 @@
 *.o
 *.d
 *.bin
+*.map
 /build
 /pkgfiles2/USRDIR
 /MGZ/build
