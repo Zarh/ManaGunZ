@@ -19,15 +19,15 @@ STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Dimensione totale}
 STR_HIDELOGS				{Nascondi logs}
 STR_SHOWLOGS				{Visualizza logs}
-STR_BOOST					{Velocizza!}
+STR_BOOST					{Velocizza caricamento!}
 STR_GAMEMENU				{Menu di gioco}
 STR_SETTINGS				{Impostazioni}
 STR_MOUNTGAME				{Monta un Gioco}
 STR_FILTER					{Filtro}
 STR_FAVORITE				{Preferiti}
 STR_FILEMANAGER				{File Manager}
-STR_HOLD					{Hold}
-STR_BACKTOXMB				{Ritorna alla XMB}
+STR_HOLD					{Tieni premuto}
+STR_BACKTOXMB				{per ritornare alla XMB}
 STR_GAME_PROP				{Proprietà del Gioco}
 STR_GAME					{Gioco}
 STR_GAME_PATH				{Percorso del gioco}
@@ -120,12 +120,12 @@ STR_PATCH_LIBFS_DESC		{Scegli quale Patch libf desideri utilizzare.}
 STR_MOUNT_APPHOME			{Monta /app_home}
 STR_MOUNT_APPHOME_DESC		{Reindirizza la patch /app_home su /dev_bdvd.}
 STR_PATCH_EXP				{Patch explore_plugin}
-STR_PATCH_EXP_DESC			{Il percorso /app_home is remplaced by /dev_bdvd all'interno del plugin explore_plugin.}
+STR_PATCH_EXP_DESC			{Il percorso /app_home è sostituito da /dev_bdvd all'interno del plugin explore_plugin.}
 STR_MAKE_SHTCUT_PKG			{Crea il collegamento PKG}
 STR_MAKE_SHTCUT_PKG_DESC	{Crea un file package memorizzato su /dev_hdd0/packages. Una volta installata, sarà un 'collegamento' per montare il backup da XMB.}
 STR_PATCH_EBOOT				{Patch EBOOT}
 STR_PATCH_EBOOT_DESC		{Modifica la versione del firmware a 4.21 del file EBOOT per impedire l'errore 0x80010009.}
-STR_RESIGN					{Re-sign}
+STR_RESIGN					{Ri-firma}
 STR_RESIGN_DESC				{Ri-firma ogni eseguibile del backup con le chiavi 4.21.}
 STR_RESTORE					{Ripristina}
 STR_RESTORE_DESC			{Ripristina gli eseguibili originali del backup.}
