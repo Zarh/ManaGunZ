@@ -6,7 +6,11 @@
 *.bin
 *.map
 /build
-/pkgfiles2/USRDIR
+/pkgfiles2/USRDIR/sys/*
+/pkgfiles2/USRDIR/GUI/common/*
+/pkgfiles2/USRDIR/GUI/*.ini
+/pkgfiles2/USRDIR/*.self
+
 /MGZ/build
 OffsetFinder/*
 !OffsetFinder/main.c

@@ -329,52 +329,6 @@ void sha1( const unsigned char *input, int ilen, unsigned char output[20] )
 }
 
 /*
- * output = SHA-1( file contents )
- */
-int sha1_file( const char *path, unsigned char output[20] )
-{
-    FILE *f;
-    size_t n;
-    sha1_context ctx;
-    unsigned char buf[1024];
-	uint64_t read=0;
-	uint64_t file_size;
-	
-    if( ( f = fopen( path, "rb" ) ) == NULL )
-        return( 1 );
-
-    sha1_starts( &ctx );
-
-	prog_bar1_value=0;
-	
-	fseek (f , 0 , SEEK_END);
-	file_size = ftell (f);
-	fseek(f, 0, SEEK_SET);
-	
-    while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 ) {
-		read+=n;
-		prog_bar1_value=(read*100)/file_size;
-		
-		sha1_update( &ctx, buf, (int) n );
-		
-		if(cancel==YES) break;
-	}
-
-    sha1_finish( &ctx, output );
-
-    memset( &ctx, 0, sizeof( sha1_context ) );
-
-    if( ferror( f ) != 0 )
-    {
-        fclose( f );
-        return( 2 );
-    }
-
-    fclose( f );
-    return( 0 );
-}
-
-/*
  * SHA-1 HMAC context setup
  */
 void sha1_hmac_starts( sha1_context *ctx, const unsigned char *key, int keylen )

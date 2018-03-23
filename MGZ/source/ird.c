@@ -1,3 +1,33 @@
+// ****************
+// IRD SPEC
+// ****************
+//
+//	u32 Magic; // 0x33495244 = "3IRD"
+//	u8 GAME_ID_size;
+//	char GAME_ID[GAME_ID_size];
+//	u8 GAME_NAME_size;
+//	char GAME_NAME[GAME_NAME_size];
+//	char UPDATE[5];
+//	char GAME_VERS[6];
+//	char APP_VERS[6];
+//	u32 iso_header_compressed_size;
+//	u8 iso_header_compressed_data[iso_header_compressed_size];
+//  u32 iso_footer_compressed_size;
+//	u8 iso_footer_compressed_data[iso_footer_compressed_size];
+//  u8 unknown[0x30]; // 3 md5 ?
+//  u8 item_size;
+//  u32 file_number;
+//  item[file_number] 
+//  { 
+//    u64 sector;
+//    u8 md5[0x10];
+//  }
+//  u32 unknown;
+//  u32 unknown; //??offset??
+//  u32 unknown; //??value??
+//  u8 *unknown;
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,10 +48,14 @@
 #define SUCCESS		1
 #define FAILED 		0
 
-
 extern void print_load(char *format, ...);
 extern void Delete(char* path);
 extern u8 cancel;
+extern u8 md5_file(char *path, unsigned char output[16] );
+extern u8 md5_filefromISO(char *path, char *filename, u8 *output);
+extern char *LoadFile(char *path, int *file_size);
+extern u8 *LoadMEMfromISO(char *iso_file, u32 sector, u32 offset, u32 size);
+extern u8 is_iso(char *file_name);
 
 typedef struct {
     int parent;
@@ -54,7 +88,6 @@ typedef struct
 	char UPDATE[5];
 	char GAME_VERS[6];
 	char APP_VERS[6];
-	u32 MD5_table_off;
 } IRDU_header;
 
 typedef struct
@@ -85,7 +118,7 @@ u8 IRD_match(char *titleID, char *IRD_PATH)
 	strcpy(IRDU_PATH, IRD_PATH);
 	strcat(IRDU_PATH, "u");
 	
-	in = fopen(IRD_PATH, "r");
+	in = fopen(IRD_PATH, "rb");
 	
 	fread(&magic, 1, sizeof(u32), in);
 	if(magic != 0x1F8B0800) {
@@ -95,7 +128,7 @@ u8 IRD_match(char *titleID, char *IRD_PATH)
 	
 	fseek(in, 0, SEEK_SET);
 	
-	out = fopen(IRDU_PATH, "w");
+	out = fopen(IRDU_PATH, "wb");
 	
 	int ret = inf(in, out);
 	fclose(in);
@@ -105,7 +138,7 @@ u8 IRD_match(char *titleID, char *IRD_PATH)
 		return NO;
 	}
 	
-	in = fopen(IRDU_PATH, "r");
+	in = fopen(IRDU_PATH, "rb");
 	magic = 0;
 	fread(&magic, 1, sizeof(u32), in);
 	if(magic != 0x33495244) {
@@ -154,8 +187,8 @@ u8 Extract_IRD(char *IRD_PATH, IRDU_header *header)
 	strcpy(IRDMD5_PATH, IRD_PATH);
 	strcat(IRDMD5_PATH, "md5");
 	
-	in = fopen(IRD_PATH, "r");
-	out = fopen(IRDU_PATH, "w");
+	in = fopen(IRD_PATH, "rb");
+	out = fopen(IRDU_PATH, "wb");
 	
 	int ret = inf(in, out);
 	if(ret != Z_OK) {
@@ -168,7 +201,7 @@ u8 Extract_IRD(char *IRD_PATH, IRDU_header *header)
 	fclose(in);
 	fclose(out);
 	
-	in = fopen(IRDU_PATH, "r");
+	in = fopen(IRDU_PATH, "rb");
 	
 //	*************
 //	IRD HEADER **
@@ -197,7 +230,7 @@ u8 Extract_IRD(char *IRD_PATH, IRDU_header *header)
 	
 	u32 Zfoot_off = ftell(in) + Zhead_size;
 	
-	out = fopen(IRDH_PATH, "w");
+	out = fopen(IRDH_PATH, "wb");
 	inf(in, out);
 	fclose(out);
 	
@@ -205,25 +238,25 @@ u8 Extract_IRD(char *IRD_PATH, IRDU_header *header)
 	fread(&Zfoot_size, sizeof(u32), 1, in);
 	Zfoot_size = reverse32(Zfoot_size);
 
-	out = fopen(IRDF_PATH, "w");
+	out = fopen(IRDF_PATH, "wb");
 	inf(in, out);
 	fclose(out);
 
 //	**********************
 //	MD5 TABLE			**
 //	**********************
+	
+	u32 MD5_table_off = Zfoot_size + Zfoot_off + 4 + 0x35;
 
-	header->MD5_table_off = Zfoot_size + Zfoot_off + 4 + 0x35;
-
-	out = fopen(IRDMD5_PATH, "w");
+	out = fopen(IRDMD5_PATH, "wb");
 	
 	fseek(in, 0, SEEK_END);	
 	size_t size = ftell(in);
-	fseek(in, (u32) header->MD5_table_off, SEEK_SET);
+	fseek(in, MD5_table_off, SEEK_SET);
 	
 	u8 data;
 	int i;
-	for(i=0; i < (int) (size - (u32) header->MD5_table_off) ; i++) {
+	for(i=0; i < (int) (size - MD5_table_off) ; i++) {
 		fread(&data, 1, 1, in);
 		fwrite(&data, 1, 1, out);
 	}
@@ -231,6 +264,34 @@ u8 Extract_IRD(char *IRD_PATH, IRDU_header *header)
 	fclose(out);
 	
 	return SUCCESS;
+}
+
+u8 check_header(char *IRD_PATH, char *GAME_PATH)
+{
+	char IRDH_PATH[255];
+	sprintf(IRDH_PATH, "%sh", IRD_PATH);
+	
+	int size;
+	
+	char *ird_header = LoadFile(IRDH_PATH, &size);
+	if(ird_header==NULL) return NO;
+	
+	char *iso_header = (char *) LoadMEMfromISO(GAME_PATH, 0, 0, size);
+	if(iso_header==NULL) {free(ird_header); return NO;}
+	
+	int res = memcmp(ird_header, iso_header, size);
+	
+	free(ird_header);
+	free(iso_header);
+	
+	if(res==0) return YES;
+	else return NO;
+}
+
+u8 check_footer(char *IRD_PATH, char *GAME_PATH)
+{
+	//todo
+	return YES;
 }
 
 u8 Get_IRDMD5(char *IRD_PATH, IRDU_fileInfo *fileInfo)
@@ -245,7 +306,7 @@ u8 Get_IRDMD5(char *IRD_PATH, IRDU_fileInfo *fileInfo)
 	strcpy(IRDMD5_PATH, IRD_PATH);
 	strcat(IRDMD5_PATH, "md5");
 
-	in = fopen(IRDMD5_PATH, "r");
+	in = fopen(IRDMD5_PATH, "rb");
 	if(in==NULL) print_load("Error : failed to read irdmd5");
 	size = fseek(in, 0, SEEK_END);	
 	size = ftell(in);
@@ -429,7 +490,9 @@ int Check_IRDMD5(char *IRD_PATH, char *GAME_PATH, FILE *log)
     int n;
 	
 	char path1[0x420];
-
+	
+	u8 gameiso = is_iso(GAME_PATH);
+	
 	strcpy(path1, IRD_PATH);
 	strcat(path1, "h");
 	
@@ -746,12 +809,14 @@ int Check_IRDMD5(char *IRD_PATH, char *GAME_PATH, FILE *log)
 					strcat(GAMEFILE_PATH, fileInfo.FILE_PATH);
 					
 					memset(real_MD5, 0, sizeof(real_MD5));
-					md5_file(GAMEFILE_PATH, (u8 *) real_MD5) ;
+					
+					if(gameiso) md5_filefromISO(GAME_PATH, fileInfo.FILE_PATH, (u8 *) real_MD5);
+					else md5_file(GAMEFILE_PATH, (u8 *) real_MD5);
 					
 					if(cancel == YES) goto err;
 					
 					if(real_MD5[0] == 0) {
-						sprintf(msg, "| NOT FOUND	| %s\n", fileInfo.FILE_PATH);
+						sprintf(msg, "| NOT FOUND		| %s\n", fileInfo.FILE_PATH);
 					}
 					else
 					if(real_MD5[0] == fileInfo.MD5[0] && real_MD5[1] == fileInfo.MD5[1]) {
@@ -761,6 +826,7 @@ int Check_IRDMD5(char *IRD_PATH, char *GAME_PATH, FILE *log)
 						sprintf(msg, "| MODIFIED		| %s\n", fileInfo.FILE_PATH);
 					}
 					
+					//print_load("Error : real %X : ird %X", real_MD5[0],  fileInfo.MD5[0]);
 					print_load(msg);
 					
 					if(log!=NULL) fputs(msg, log);
@@ -824,16 +890,31 @@ void IRDMD5(char *IRD_PATH, char *GAME_PATH)
 	char msg[1024];
 	char LOG_PATH[255];
 	
-	sprintf(LOG_PATH, "%s/MD5_check.txt", GAME_PATH);
+	u8 gameiso = is_iso(GAME_PATH);
 	
-	log = fopen(LOG_PATH, "w");
+	if(gameiso) sprintf(LOG_PATH, "%s.MD5_check.txt", GAME_PATH);
+	else sprintf(LOG_PATH, "%s/MD5_check.txt", GAME_PATH);
+	
+	log = fopen(LOG_PATH, "wb");
 			
-	Extract_IRD(IRD_PATH, &ird_info);
+	if( Extract_IRD(IRD_PATH, &ird_info) == FAILED) {
+		print_load("Error : Extract IRD");
+		return;
+	}
+		
 	
 	if(log!=NULL) {
-		sprintf(msg, "Game Name : %s\nGame ID : %s\nSystem Version : %s\nGame Version : %s\n\n", ird_info.GAME_NAME, ird_info.GAME_ID, ird_info.UPDATE, ird_info.GAME_VERS);
+		sprintf(msg, "Game Name : %s\nGame ID : %s\nSystem Version : %s\nGame Version : %s\n", ird_info.GAME_NAME, ird_info.GAME_ID, ird_info.UPDATE, ird_info.GAME_VERS);
 		fputs(msg, log);
-		fputs("|				|\n", log);
+		if(gameiso) {
+			strcpy(msg, "Proper ISO : ");
+			if(check_header(IRD_PATH, GAME_PATH) == SUCCESS && check_footer(IRD_PATH, GAME_PATH) == SUCCESS) 
+				strcat(msg, "YES\n");
+			else 
+				strcat(msg, "NO\n");
+			fputs(msg, log);
+		}
+		fputs("\n|				|\n", log);
 		fputs("| INFO			| PATH\n", log);
 		fputs("|				|\n", log);
 	}

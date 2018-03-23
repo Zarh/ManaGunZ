@@ -28,14 +28,8 @@
  *  http://www.ietf.org/rfc/rfc1321.txt
  */
 
-#define YES			1
-#define NO 			0
-
 #include "md5.h"
 #include <stdio.h>
-
-extern int64_t prog_bar1_value;
-extern uint8_t cancel;
 
 /*
  * 32-bit integer manipulation macros (little endian)
@@ -289,50 +283,6 @@ void md5( const unsigned char *input, size_t ilen, unsigned char output[16] )
     md5_finish( &ctx, output );
 
     memset( &ctx, 0, sizeof( md5_context ) );
-}
-
-/*
- * output = MD5( file contents )
- */
-int md5_file( const char *path, unsigned char output[16] )
-{
-    FILE *f;
-    size_t n;
-    md5_context ctx;
-    unsigned char buf[1024];
-	uint64_t read=0;
-	uint64_t file_size;
-
-    if( ( f = fopen( path, "rb" ) ) == NULL ) return( POLARSSL_ERR_MD5_FILE_IO_ERROR );
-
-    md5_starts( &ctx );
-	
-	prog_bar1_value=0;
-	
-	fseek (f , 0 , SEEK_END);
-	file_size = ftell (f);
-	fseek(f, 0, SEEK_SET);
-	
-    while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 ) 
-	{
-		read+=n;
-		prog_bar1_value=(read*100)/file_size;
-		md5_update( &ctx, buf, n );
-		if(cancel==YES) break;
-	}
-
-    md5_finish( &ctx, output );
-
-    memset( &ctx, 0, sizeof( md5_context ) );
-
-    if( ferror( f ) != 0 )
-    {
-        fclose( f );
-        return( POLARSSL_ERR_MD5_FILE_IO_ERROR );
-    }
-
-    fclose( f );
-    return( 0 );
 }
 
 /*

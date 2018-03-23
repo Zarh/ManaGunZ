@@ -29,12 +29,13 @@ STR_FILEMANAGER				{File Manager}
 STR_HOLD					{Hold}
 STR_BACKTOXMB				{Back to XMB}
 STR_GAME_PROP				{Game Properties}
-STR_GAME					{Game}
-STR_GAME_PATH				{Game path}
-STR_GAME_FORMAT				{Game format}
-STR_GAME_SIZE				{Game size}
-STR_SYSVERS					{System version}
-STR_GAMEID					{Game ID}
+STR_GAME_TITLE				{Title}
+STR_GAME_PATH				{Path}
+STR_GAME_FORMAT				{Format}
+STR_GAME_SIZE				{Size}
+STR_GAME_PLATFORM			{Platform}
+STR_SYSVERS					{Firmware}
+STR_GAMEID					{Identifier}
 STR_ELFCRC					{ELF CRC}
 STR_ELFCRCO					{ELF CRC (Original)}
 STR_BACK					{Back}
@@ -42,7 +43,7 @@ STR_ENTER					{Enter}
 STR_UPDATE_FOUND			{Update found}
 STR_UPDATE					{Update}
 STR_SIZE					{Size}
-SYSTEM						{System}
+STR_SYSTEM					{System}
 STR_DL						{Download}
 STR_DL_ALL					{Download ALL}
 STR_UNPLUG					{Unplug the following device(s)}
@@ -51,7 +52,7 @@ STR_TYPE					{Type}
 STR_FOLDER					{Folder}
 STR_DIR						{Directory}
 STR_MULT					{Multiple}
-STR_THM_SETTINGS			{Themes settings}
+STR_THM_SETTINGS			{Theme settings}
 STR_THM						{Theme}
 STR_THM_DESC				{Load the theme you want. You can install them from /dev_usbXXX/Themes.}
 STR_CREATE					{Create}
@@ -91,8 +92,9 @@ STR_FMVSKIP_DESC			{Allow you to skip the full motion videos.}
 STR_DISABLE_NETEMU			{Disable NetEMU}
 STR_ENABLE_NETEMU			{Enable NetEMU}
 STR_NETEMU_DESC				{Force the use of ps2 netemu.}
-STR_CREATE_CONFIG			{Create CONFIG}
-STR_CREATE_CONFIG_DESC		{[Experimental] Create your own CONFIG file to 'fix' your ps2 backup.}
+STR_SAVE_CONFIG				{Save CONFIG}
+STR_CONFIG					{Configuration}
+STR_CONFIG_DESC				{[Experimental] Create your own CONFIG file to 'fix' your ps2 backup.}
 STR_NONE					{None}
 STR_CHECK_MD5				{Check MD5}
 STR_PROPS					{Properties}
@@ -201,7 +203,7 @@ STR_ADJUST					{Adjust screen}
 STR_ADJUST_DESC				{Calibrate your display.}
 STR_DL_COVER				{Download covers}
 STR_DL_COVER_DESC			{Download every missing game covers to USRDIR/covers/[gameID].jpg}
-STR_PLUGIN_MANAGER			{Plugins Manager}
+STR_PLUGIN_MANAGER			{Plugin Manager}
 STR_PLUGIN_MANAGER_DESC		{Manage your plugins stored in /dev_hdd0/plugins.}
 STR_UPD_MGZ					{Update ManaGunZ}
 STR_UPD_MGZ_DESC			{Download and install the latest version of ManaGunZ.}
@@ -246,7 +248,7 @@ STR_NB_COL_DESC				{Choose the number of columns of the grid.}
 STR_NB_LINE					{Number of lines}
 STR_NB_LINE_DESC			{Choose the number of lines of the grid.}
 STR_INVERSE					{Inverse button}
-STR_INVERSE_DESC			{Inverse the buttons right and left.​}
+STR_INVERSE_DESC			{Inverse the buttons right and left.}
 STR_3D						{3D}
 STR_3D_DESC					{Display the menu with 3D models of gamecases.}
 STR_ADD						{Add}
@@ -273,3 +275,40 @@ STR_ASK_PLUGINS				{To use the plugin manager, the plugins must be in '/dev_hdd0
 STR_CHANGE_VALUE			{Change value}
 STR_LOAD_IDPS_LV2			{Load IDPS from lv2}
 STR_LOAD_IDPS_EID5			{Load IDPS from EID5}
+STR_NAME					{Name}
+STR_DOCK_RIGHT				{Dock to right}
+STR_DOCK_LEFT				{Dock to left}
+STR_DOCK_FULL				{Dock to full}
+STR_PLUGIN_MONITOR			{Plugin Monitor}
+STR_UNUSED					{Unused}
+STR_UNLOAD					{Unload}
+STR_BOOT_FILE				{Boot file}
+STR_CURRENT					{Current}
+STR_NET						{Net}
+STR_SOFT					{Soft}
+STR_GX						{GX}
+STR_CUSTOM					{Custom}
+STR_NEW_CMD					{New command}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{WideScreen}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{FMV skip}
+STR_SIMPLE					{Simple}
+STR_ADVANCED				{Advanced}
+STR_INSTALL_MGZ				{Do you want to install ManaGunZ ?} 
+STR_UP2DATE					{It's up to date}
+STR_SHOW_WAVES				{Show waves}
+STR_SHOW_WAVES_DESC			{Display waves in background.}
+STR_WAVES_COLOR				{Waves color}
+STR_WAVES_COLOR_DESC		{Change the color of the waves.}
+STR_USE_CONFIG				{You are not using a PS2 configuration file '*.CONFIG'.}
+STR_COLORSET				{ColorSet}
+STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
+STR_GRID_SCROLL				{Scroll}
+STR_ADD_LIMG				{Add LIMG}
+STR_REMOVE_LIMG				{Remove LIMG}
+STR_LIMG_DESC				{It may fix few games.}
+STR_FONT					{Font}
+STR_FONT_DESC				{Change the font.}
+STR_MOVE					{Move}

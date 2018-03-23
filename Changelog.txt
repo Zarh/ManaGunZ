@@ -1,23 +1,80 @@
 TODO
-_ ftp
 _ NETISO
 _ group PKG
 _ Add : PFD extractor
 _ Add : Speed Start / Speed Scan
 _ UI XMB : Use setting column
-_ Add filemanager : mount iso
-_ IRD iso
 _ debug EBOOT
-_ add : choose font
 _ shortcut pkg : keep only usefull files in pkg.
 _ TXT edit
 _ Hexa edit
 _ Audio
 _ system info
-_ 666 files
 _ create backup from disk
-_ Fan control plugin standdalone : todo vshmenu
+_ Fan control plugin standalone?
 _ game list supports / shows installed PKG games (PS3, PS2, PS1, PSP)
+_ PS2 guitar hero EUR not in real xmb : e51e79bf3ca4b49be51656e0fdc912e1
+_ font sizes
+_ setting : install  mamba autoloader
+_ toggle
+_ timestamps and permissions : Inside the window, at right of the "size" can be added a new column for timestamps and another for permissions
+_ Controller setting
+_ global setting tabs
+_ copy/convert/extract : ETA/timer
+_ update_mgz
+_ double click
+_ load only displayed pic
+
+
+v1.32
+Fix : Reduced memory usage to avoid 'random' freeze.
+Fix FileManager : No more deep scan on ISO.
+Fix Filemanager : Scroll bar.
+Fix : MD5/SHA1 of +4GB files
+Fix : Scetool keys file.
+Fix : Issue with cmdID 0x4A.
+Fix : FLOW3D full covers.
+Fix : Shortcut pkg.
+Add : It ask you to load a PS2 CONFIG if it doesn't exist.
+Add : Increased loading speed of PS2 game menu.
+Add FileManager : New buttons map.
+Add FileManager : Click on backup ISO to mount it then it go back to XMB.
+Add FileManager : Dock to left/right/full screen. See note (1).
+Add FileManager : hold X to move the slider.
+Add FileManager : Use R2 to increase move speed of cursor and windows.
+Add : Join or split big files. See note (2).
+Add : Default UI set to XMB.
+Add : Background waves.
+Add : Set alpha of colors.
+Add : (R2+L2) Screenshots saved at '/dev_hdd0/photo/ManaGunZ_XXX.bmp'.
+Add : Check md5 files from ISO with IRD.
+Add : Add/Remove LIMG sector in PS2 iso.
+Add : Choose Font. It search recursivly ttf font in the directories '/dev_flash/data/font' and '/USRDIR/GUI'. See note (3).
+Add : Choose colorset. See note (3).
+Fix FileManager : Convert iso.
+Add FileManager : LEFT/RIGHT D-pad to scroll up/down a page.
+Add FileManager : L1+LEFT/RIGHT D-pad to go to the parent/child folder.
+
+Note :
+(1) There is 2 way to do it :
+The first one is to open the option menu while the cursor is on the header of the window.
+The second is to use the following combo:
+- Dock to LEFT : Hold R1 + LEFT D-PAD.
+- Dock to RIGHT : Hold R1 + RIGHT D-PAD.
+- Dock to FULL : Hold R1 + UP D-PAD.
+- Restore : Hold R1 + DOWN D-PAD.
+(2) Use the copy function in game menu. If the destination is FAT32, the big file will be splitted, if it's not it will be joined.
+In file manager to join files, select ONLY the first file with the extension '66600' then paste it.
+(3) To reduce memory use, it won't load 4 themes anymore. Only the theme of the current UI is loaded.
+For each theme in each UI, it search for the following files.
+-BG.PNG : Main background
+-BGS.PNG : Settting background
+-SIDEBAR.PNG : Sidebar background
+-FONT.TTF : Font. 
+-colorset.ini : Set of color used in the homebrew .
+When u load the theme it will use this font and the first colorset defined in the file. But you'll be able to change them in theme setting menu.
+XMB UI use more files for the columns : SETTINGS.PNG, FAVORITES.PNG, PS3.PNG, PS2.PNG, PS1.PNG, PSP.PNG.
+Also, before loading files from 'common' directory, it will check if this file doesn't exist in the theme directory.
 
 v1.31
 Fix : Read&write file.

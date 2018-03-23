@@ -34,7 +34,7 @@ PKGFILES1	:=	$(CURDIR)/pkgfiles
 PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.31
+VERSION		:=  1.32
 
 ifeq ($(FILEMANAGER), 1)
 PKGFILES	:=	$(PKGFILES2)
@@ -147,10 +147,36 @@ $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 ifeq ($(FILEMANAGER), 1)
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/sys/data $(PKGFILES2)/USRDIR/sys/data
-	@cp -fr $(PKGFILES1)/USRDIR/sys/loc $(PKGFILES2)/USRDIR/sys/loc
-	@cp -fr $(PKGFILES1)/USRDIR/sys/RCO $(PKGFILES2)/USRDIR/sys/RCO
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/ALL.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/CIRCLE.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/CROSS.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/DOWN.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/FILES.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/FOLDER.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L1.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R1.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L2.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R2.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L3.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R3.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/LEFT.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/NOT.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/RIGHT.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/SELECT.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/SQUARE.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/START.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/TRIANGLE.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/TVTEST.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/UP.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/colorset.ini $(PKGFILES2)/USRDIR/GUI
+	@cp -fr $(PKGFILES1)/USRDIR/sys/data $(PKGFILES2)/USRDIR/sys
+	@cp -fr $(PKGFILES1)/USRDIR/sys/loc $(PKGFILES2)/USRDIR/sys
+	@cp -fr $(PKGFILES1)/USRDIR/sys/RCO $(PKGFILES2)/USRDIR/sys
+	@cp -fr $(PKGFILES1)/USRDIR/sys/Check.zip $(PKGFILES2)/USRDIR/sys
+	@cp -fr $(PKGFILES1)/USRDIR/sys/sprx_iso $(PKGFILES2)/USRDIR/sys
+	@cp -fr $(PKGFILES1)/USRDIR/sys/PSP_CRC.txt $(PKGFILES2)/USRDIR/sys
 endif
 	
 #---------------------------------------------------------------------------------

@@ -77,17 +77,6 @@ void sha1_finish( sha1_context *ctx, unsigned char output[20] );
 void sha1( const unsigned char *input, int ilen, unsigned char output[20] );
 
 /**
- * \brief          Output = SHA-1( file contents )
- *
- * \param path     input file name
- * \param output   SHA-1 checksum result
- *
- * \return         0 if successful, 1 if fopen failed,
- *                 or 2 if fread failed
- */
-int sha1_file( const char *path, unsigned char output[20] );
-
-/**
  * \brief          SHA-1 HMAC context setup
  *
  * \param ctx      HMAC context to be initialized

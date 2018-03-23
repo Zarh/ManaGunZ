@@ -1,0 +1,314 @@
+STR_LANGUAGE			{Nederlands}
+STR_LANGCODE			{\x05}
+
+STR_LANG					{Taal}
+STR_LANG_DESC				{Selecteer een taal.}
+STR_GATHERING				{Data ophalen...}
+STR_COPYING					{Kopieren...}
+STR_FROM					{Van}
+STR_TO						{Naar}
+STR_FILES					{Bestanden}
+STR_DIRS					{Mappen}
+STR_UNKNOWN					{Onbekend}
+STR_FILE					{Bestand}
+STR_CANCEL					{Annuleer}
+STR_TURNOFF_YES				{ZET UIT = JA}
+STR_TURNOFF_NO				{ZET UIT = NEE}
+STR_CANCELLED				{Geannuleerd}
+STR_UNIT					{Bytes}
+STR_TOTALSIZE				{Totale Grootte}
+STR_HIDELOGS				{Verberg Logboeken}
+STR_SHOWLOGS				{Toon Logboeken}
+STR_BOOST					{Sneller!}
+STR_GAMEMENU				{Spel Menu}
+STR_SETTINGS				{Instellingen}
+STR_MOUNTGAME				{Spel Klaarzetten}
+STR_FILTER					{Filter}
+STR_FAVORITE				{Favorieten}
+STR_FILEMANAGER				{Bestandsbeheer}
+STR_HOLD					{Houd Ingeduwd}
+STR_BACKTOXMB				{Terug naar de XMB}
+STR_GAME_PROP				{Spel Eigenschappen}
+STR_GAME_TITLE				{Titel}
+STR_GAME_PATH				{Locatie}
+STR_GAME_FORMAT				{Formaat}
+STR_GAME_SIZE				{Grootte}
+STR_GAME_PLATFORM			{Platform}
+STR_SYSVERS					{Firmware}
+STR_GAMEID					{Identifier}
+STR_ELFCRC					{ELF CRC}
+STR_ELFCRCO					{ELF CRC (Origineel)}
+STR_BACK					{Terug}
+STR_ENTER					{Vooruit}
+STR_UPDATE_FOUND			{Update gevonden}
+STR_UPDATE					{Bijwerken}
+STR_SIZE					{Grootte}
+STR_SYSTEM					{Systeem}
+STR_DL						{Download}
+STR_DL_ALL					{Download ALLES}
+STR_UNPLUG					{Ontkoppel dit apparaat(en)}
+STR_PATH					{Pad}
+STR_TYPE					{Soort}
+STR_FOLDER					{Map}
+STR_DIR						{Map}
+STR_MULT					{Meerdere}
+STR_THM_SETTINGS			{Thema Instellingen}
+STR_THM						{Thema}
+STR_THM_DESC				{Load the theme you want. You can install them from /dev_usbXXX/Themes.}
+STR_CREATE					{Creëren}
+STR_ZOOM_OUT				{Uitzoomen}
+STR_ZOOM_IN					{Inzoomen}
+STR_MOVE_FRAME				{Beweeg Beeld}
+STR_CHECK					{Selecteer}
+STR_UNCHECK					{Deselecteer}
+STR_GAME_OPTION				{Game Opties}
+STR_ADD_FAV					{Voeg toe aan favorieten}
+STR_REM_FAV					{Verwijder uit favorieten}
+STR_FAV_DESC				{Beheer lijst met favorieten}
+STR_RENAME					{Hernoemen}
+STR_RENAME_DESC				{Hernoem de back-up.}
+STR_DELETE					{Verwijder}
+STR_DELETE_DESC				{Verwijder je back-up.}
+STR_COPY					{Kopieer}
+STR_COPY_DESC				{Kopieer je back-up naar een andere locatie}
+STR_CREATE_ICON0			{Maak  ICON0}
+STR_CREATE_ICON0_DESC		{Maak een 'valse' ICON0 gebaseerd op de cover.}
+STR_REST_PNACH				{Herstel  PNACH}
+STR_REST_PNACH_DESC			{Verwijder de aanpassingen aangebracht dor het pnach bestand op de back-up.}
+STR_APPLY_PNACH				{Breng PNACH aan}
+STR_APPLY_PNACH_DESC		{Breng de pnach aanpassingen aan op de back-up.}
+STR_DISABLE_WS				{Zet WideScreen uit}
+STR_ENABLE_WS				{Zet WideScreen aan}
+STR_WS_DESC					{Geef game weer 16:9 in plaats van 4:3.}
+STR_DISABLE_480P			{Zet 480P uit}
+STR_ENABLE_480P				{Zet  480P aan}
+STR_480P_DESC				{Progressieve scan modus in 480P.}
+STR_DISABLE_YFIX			{Zet YFIX uit}
+STR_ENABLE_YFIX				{Zet YFIX aan}
+STR_YFIX_DESC				{Herstel de verticale positie.}
+STR_DISABLE_FMVSKIP			{Zet FMV skip uit}
+STR_ENABLE_FMVSKIP			{Zet FMV skip aan}
+STR_FMVSKIP_DESC			{Toestaan FMV video's over te slaan.}
+STR_DISABLE_NETEMU			{Zet NetEMU uit}
+STR_ENABLE_NETEMU			{Zet NetEMU aan}
+STR_NETEMU_DESC				{Forceer het gebruik van PS2 NetEMU.}
+STR_SAVE_CONFIG				{Bewaar CONFIG}
+STR_CONFIG					{Configuratie}
+STR_CONFIG_DESC				{[Experimenteel] maak je eigen CONFIG bestand om de PS2 Back-up te 'maken'.}
+STR_NONE					{Geen}
+STR_CHECK_MD5				{Kijk MD5 na}
+STR_PROPS					{Eigenschappen}
+STR_PROPS_DESC				{Geef eigenschappen van je back-up weer.}
+STR_ASK_DEL					{Zeker dat je wilt verwijderen}
+STR_GAME_SETTINGS			{Game Instellingen}
+STR_DIRECT_BOOT				{Direct Starten}
+STR_DIRECT_BOOT_DESC		{Start de game meteen zonder naar de XMB terug te keren.}
+STR_YES						{Ja}
+STR_NO						{Nee}
+STR_CLEAN_SYSCALL			{Schoon syscall op}
+STR_CLEAN_SYSCALL_DESC		{Zet peek & poke syscalls uit.}
+STR_CHANGE_IDPS				{Verander IDPS}
+STR_CHANGE_IDPS_DESC		{Verander je IDPS in lv2.}
+STR_EXT_GAME_DATA			{Ext. Spel Bestanden}
+STR_EXT_GAME_DATA_DESC		{Installeer game data op USB ipv. interne opslag.}
+STR_PAYLOAD					{Payload}
+STR_PAYLOAD_DESC			{Selecteer de payload om je backup te starten.}
+STR_PRIM_USB				{Stel Hoofd USB in}
+STR_PRIM_USB_DESC			{Stel het USB toestel in als het hoofd USB toestel.}
+STR_BDEMU					{BD emulatie}
+STR_BDEMU_DESC				{Kies het type emulatie dat je wilt gebruiken voor je back-ups.}
+STR_PATCH_LIBFS				{Lap libfs op}
+STR_PATCH_LIBFS_DESC		{Kies welke opgelapte/aangepaste libfs je wilt gebruiken.}
+STR_MOUNT_APPHOME			{Mount /app_home}
+STR_MOUNT_APPHOME_DESC		{Gebruik /app_home in plaats van /dev_bdvd.}
+STR_PATCH_EXP				{Lap de explore_plugin op}
+STR_PATCH_EXP_DESC			{/app_home is vervangen door /dev_bdvd in de explore_plugin.}
+STR_MAKE_SHTCUT_PKG			{Maak snelkoppeling PKG}
+STR_MAKE_SHTCUT_PKG_DESC	{Maak een package bestand opgeslagen in /dev_hdd0/packages. Eenmal geinstalleerd word het een snelkoppeling die je gebruikt via de XMB.}
+STR_PATCH_EBOOT				{Lap EBOOT op}
+STR_PATCH_EBOOT_DESC		{Verander systeemversie naar 4.21 in de the EBOOT om error 0x80010009 te voorkomen.}
+STR_RESIGN					{Herteken}
+STR_RESIGN_DESC				{Herteken elke uitvoerbare backup met 4.21 sleutels.}
+STR_RESTORE					{Herstel}
+STR_RESTORE_DESC			{Herstel de originele uitvoerbare backups.}
+STR_EXTRACT_ISO				{Verkrijg bestanden uit ISO}
+STR_EXTRACT_ISO_DESC		{Verkijg bestanden uit een ISO in en map.}
+STR_CONVERT_ISO				{Zet om naar ISO}
+STR_CONVERT_ISO_DESC		{Zet JB back-up om naar ISO.}
+STR_FIX_PERMS				{Lap permissies op}
+STR_FIX_PERMS_DESC			{Stel permissies in op 0777 in elke folder van je back-up.}
+STR_CHECK_IRD				{Kijk bestanden na (IRD)}
+STR_CHECK_DESC				{Kijk na of je bestanden niet zijn aangepast.}
+STR_DL_UPDATE				{Download Update}
+STR_DL_UPDATE_DESC			{Download je back-up's updates naar /dev_hdd0/packages.}
+STR_OPEN_WINDOW				{Open Nieuw Venster}
+STR_MOUNT_DEVBLIND			{Mount /dev_blind}
+STR_DUMP_LV1				{Dump lv1}
+STR_DUMP_LV2				{Dump lv2}
+STR_DUMP_FLASH				{Dump flash}
+STR_REFRESH					{Ververs}
+STR_NEWFOLDER				{Nieuwe map}
+STR_NEWFILE					{Nieuw bestand}
+STR_PASTE					{Plak}
+STR_CUT						{Knip}
+STR_UNSELECT_ALL			{Deselecteer alles}
+STR_ELECT_ALL				{Selecteer alles}
+STR_MAKE_PKG				{Maak PKG}
+STR_GETMD5					{Verkrijg MD5}
+STR_GETSHA1					{Verkrijg SHA1}
+STR_VIEW					{Bekijk}
+STR_VIEW_TXT				{Bekijk TXT}
+STR_VIEW_SFO				{Bekijk SFO}
+STR_READ_XREG				{Lees xReg}
+STR_EXTRACT_ELF				{Verkijg ELF}
+STR_RESIGN_SELF				{Herteken SELF}
+STR_LAUNCH_SELF				{Start SELF}
+STR_EXTRACT_EBOOT			{Verlrokg EBOOT}
+STR_RESIGN_EBOOT			{Herteken EBOOT}
+STR_LAUNCH_EBOOT			{Start EBOOT}
+STR_SIGN_ELF				{Teken ELF}
+STR_SIGN_EBOOT				{Teken EBOOT}
+STR_SIGN_PRX				{Teken PRX}
+STR_EXTRACT_PRX				{Verkrijg PRX}
+STR_RESIGN_SPRX				{Herteken SPRX}
+STR_REMOVE_PRXLOADER		{Verwijder uit PRX Loader}
+STR_ADD_PRXLOADER			{Voeg toe aan PRX Loader}
+STR_REMOVE_PRXLOADER2		{Verwijder uit PRXLoader}
+STR_ADD_PRXLOADER2			{Voeg toe aan PRXLoader}
+STR_REMOVE_MAMBA			{Verwijder uit Mamba lijst}
+STR_ADD_MAMBA				{Voeg toe aan Mamba lijst}
+STR_REMOVE_COBRA			{Verwijder uit Cobra lijst}
+STR_ADD_COBRA				{Voeg toe aan ­Cobra lijst}
+STR_EXTRACT_RCO				{Verkrijg RCO}
+STR_EXTRACT_PKG				{Verkrijg PKG}
+STR_PKG_INFO				{PKG informatie}
+STR_EXTRACT_TRP				{Verkrijg TRP}
+STR_COMPRESS_ISO			{Verklein ISO}
+STR_CHECK_CRC32				{Kijk CRC32 na}
+STR_DECOMPRESS_CSO			{Vergroot CSO}
+STR_EXTRACT_THM				{Verkrijg THM}
+STR_EXTRACT_P3T				{Verkrijg P3T}
+STR_EXTRACT_RAF				{Verkrijg RAF}
+STR_EXTRACT_QRC				{Verkrijg QRC}
+STR_EXTRACT_ZIP				{Verkrijg ZIP}
+STR_CONVERT_JSX_JS			{Converteer JSX naar JS}
+STR_CONVERT_VAG_WAV			{Converteer VAG naar WAV}
+STR_CONVERT_GTF_DDS			{Converteer GTF naar DDS}
+STR_CONVERT_DDS_PNG			{Converteer DDS naar PNG}
+STR_MAKE_APNG				{Maak APNG}
+STR_SET_PERMS				{Stel permission in}
+STR_NOGAME					{Geen spel gevonden}
+STR_GLOB_SETTINGS			{Globale instellingen}
+STR_ADJUST					{Pas scherm aan.}
+STR_ADJUST_DESC				{Kalibreer je scherm.}
+STR_DL_COVER				{Download covers}
+STR_DL_COVER_DESC			{Download elke ontbrekende spelcover naar USRDIR/covers/[gameID].jpg}
+STR_PLUGIN_MANAGER			{Plugins Beheerder}
+STR_PLUGIN_MANAGER_DESC		{Beheer je plugins opgeslagen in  /dev_hdd0/plugins.}
+STR_UPD_MGZ					{Werk ManaGunZ bij}
+STR_UPD_MGZ_DESC			{Download en installer de nieuwste versie van ManaGunZ.}
+STR_GAME_PATHS				{Spel back-up locaties}
+STR_GAME_PATHS_DESC			{Configureer waar ManaGunZ je back-up's zal vidnen.}
+STR_XMB_PRIO				{XMB Prioriteit}
+STR_XMB_PRIO_DESC			{Het icon van ManaGunZ zal bovenaan staan vanaf de volgende het systeem herstart.}
+STR_HELP					{Toon help}
+STR_HELP_DESC				{Geef de zinnen weer die je hier leest.}
+STR_COLOR_1					{Kleur 1}
+STR_COLOR_2					{Kleur 2}
+STR_COLOR_3					{Kleur 3}
+STR_COLOR_4					{Kleur 4}
+STR_COLOR_DESC				{Verander de kleuren gebruikt door ManaGunZ.}
+STR_UI_SETTINGS				{Gebruikers interface instellingen}
+STR_UI						{Gebruikers interface}
+STR_UI_DESC					{Verander de interface.}
+STR_SIDE_MENU				{Spel ZijMenu}
+STR_SIDE_MENU_DESC			{Geef het spel menu aan de rechterkant weer.}
+STR_SHOW_PIC1				{Goon PIC1}
+STR_SHOW_PIC1_DESC			{Toon de achtergrond foto van de huidge game 'PIC1'. Gebruik R1 met de UI MOKST en GRID om deze weer te geven.}
+STR_SHOW_COVER				{Toon Cover}
+STR_SHOW_COVER_DESC			{Toon spel cover.}
+STR_SHOW_GAMECASE			{Toon game doosje}
+STR_SHOW_GAMECASE_DESC		{Toon game doosje & cover.}
+STR_SHOW_ICON0				{Toon  ICON0}
+STR_SHOW_ICON0_DESC			{Toon de hoofd foto van het spel 'ICON0'.}
+STR_GRID_TYPE				{Grid type}
+STR_GRID_TYPE_DESC			{Kies hoe je de GRID wilt laten bewegen.}
+STR_SCROLL					{Scroll}
+STR_PAGE					{Pagina}
+STR_DIRECTION				{Richting}
+STR_DIRECTION_DESC			{Kies hoe je de GRID wilt laten bewegen.}
+STR_VERTICAL				{Verticaal}
+STR_HORIZONTAL				{Horizontaal}
+STR_ANIMATED				{Geanimeerd}
+STR_ANIMATED_DESC			{Maak het grid glijdent.}
+STR_KEEP_PROP				{Behoud proporties}
+STR_KEEP_PROP_DESC			{Behoud de beeldverhouding van ICON0.}
+STR_NB_COL					{Nummer van kolommen}
+STR_NB_COL_DESC				{Kies het nummer van kolommen in de grid.}
+STR_NB_LINE					{Nummer van lijnen}
+STR_NB_LINE_DESC			{Kies het nummer van lijnen in de grid}
+STR_INVERSE					{Keer richtings knoppen om­}
+STR_INVERSE_DESC			{Keer richtings knoppen om.}
+STR_3D						{3D}
+STR_3D_DESC					{Geef het menu weer 3D modellen van de game doosjes.}
+STR_ADD						{Add}
+STR_LOAD					{Laden}
+STR_CHANGE					{Veranderen}
+STR_COLOR					{Kleur}
+STR_RESET					{Reset}
+STR_FAILED					{Gefaald}
+STR_DONE					{Klaar}
+STR_OPEN					{Open}
+STR_CLOSE					{Sluit}
+STR_OPTION					{Opties}
+STR_SELECT					{Selecteer}
+STR_WINDOW					{Venster}
+STR_CLICK					{Klik}
+STR_CURSOR					{Aanwijzer}
+STR_NEXT					{Volgende}
+STR_PREVIOUS				{Vorige}
+STR_SET_COLOR				{Stel kleur in}
+STR_HIDETV					{Verberg TV scherm test}
+STR_SHOWTV					{Toon TV scherm test}
+STR_MOVE_TO_PLUGINS			{Verplaats naar /dev_hdd0/plugins}
+STR_ASK_PLUGINS				{Om de plugin beheerder te gebruiken moet deze zich in '/dev_hdd0/plugins' bevinden.\nGa je er mee akkoord deze map te gebruiken?}
+STR_CHANGE_VALUE			{Pas waarde aan}
+STR_LOAD_IDPS_LV2			{Laad IDPS uit lv2}
+STR_LOAD_IDPS_EID5			{Laad IDPS uit EID5}
+STR_NAME					{Nazwa}
+STR_DOCK_RIGHT				{Dokuj w prawo}
+STR_DOCK_LEFT				{Dokuj w lewo}
+STR_DOCK_FULL				{Dokuj do pelnego}
+STR_PLUGIN_MONITOR			{Monitor wtyczek}
+STR_UNUSED					{Nie uzywany}
+STR_UNLOAD					{Rozladowac}
+STR_BOOT_FILE				{Uruchom plik}
+STR_CURRENT					{Obecny}
+STR_NET						{NET}
+STR_SOFT					{SOFT}
+STR_GX						{GX}
+STR_CUSTOM					{Zwyczaj}
+STR_NEW_CMD					{Nowe polecenie}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{Szeroki ekran}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{FMV pominac}
+STR_SIMPLE					{Prosty}
+STR_ADVANCED				{Zaawansowane}
+STR_INSTALL_MGZ				{Czy chcesz zainstalowac ManaGunZ?}
+STR_UP2DATE					{To jest aktualne}
+STR_SHOW_WAVES				{Pokaz fale}
+STR_SHOW_WAVES_DESC			{Wyswietlaj fale w tle.}
+STR_WAVES_COLOR				{Kolor fal}
+STR_WAVES_COLOR_DESC		{Zmien kolor fal.}
+STR_USE_CONFIG				{Nie uzywasz pliku konfiguracyjnego PS2 "* .CONFIG".}
+STR_COLORSET				{ColorSet}
+STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
+STR_GRID_SCROLL				{Scroll}
+STR_ADD_LIMG				{Add LIMG}
+STR_REMOVE_LIMG				{Remove LIMG}
+STR_LIMG_DESC				{It may fix few games.}
+STR_FONT					{Font}
+STR_FONT_DESC				{Change the font.}
+STR_MOVE					{Move}

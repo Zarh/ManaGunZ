@@ -29,12 +29,13 @@ STR_FILEMANAGER				{File Manager}
 STR_HOLD					{Tieni premuto}
 STR_BACKTOXMB				{per ritornare alla XMB}
 STR_GAME_PROP				{Proprietà del Gioco}
-STR_GAME					{Gioco}
-STR_GAME_PATH				{Percorso del gioco}
-STR_GAME_FORMAT				{Formato del Gioco}
-STR_GAME_SIZE				{Dimensione del Gioco}
-STR_SYSVERS					{Versione del sistema}
-STR_GAMEID					{Game ID}
+STR_GAME_TITLE				{Titolo}
+STR_GAME_PATH				{Percorso}
+STR_GAME_FORMAT				{Formato}
+STR_GAME_SIZE				{Dimensione}
+STR_GAME_PLATFORM			{Platform}
+STR_SYSVERS					{Firmware}
+STR_GAMEID					{Identifier}
 STR_ELFCRC					{ELF CRC}
 STR_ELFCRCO					{ELF CRC (Originale)}
 STR_BACK					{Indietro}
@@ -42,7 +43,7 @@ STR_ENTER					{Enter}
 STR_UPDATE_FOUND			{Aggiornamento trovato}
 STR_UPDATE					{Aggiorna}
 STR_SIZE					{Dimensione}
-SYSTEM						{Sistema}
+STR_SYSTEM					{Sistema}
 STR_DL						{Scarica}
 STR_DL_ALL					{Scarica TUTTO}
 STR_UNPLUG					{Scollegare i seguenti dispositivi}
@@ -91,8 +92,9 @@ STR_FMVSKIP_DESC			{Permette di saltare i filmati.}
 STR_DISABLE_NETEMU			{Disattiva NetEMU}
 STR_ENABLE_NETEMU			{Attiva NetEMU}
 STR_NETEMU_DESC				{Forza l'utilizzo di ps2 netemu.}
-STR_CREATE_CONFIG			{Crea CONFIG}
-STR_CREATE_CONFIG_DESC		{[Sperimentale] Crea il proprio file CONFIG per 'fixare' i backup ps2 .}
+STR_SAVE_CONFIG				{Salva CONFIG}
+STR_CONFIG					{Configurazione}
+STR_CONFIG_DESC				{[Sperimentale] Crea il proprio file CONFIG per 'fixare' i backup ps2 .}
 STR_NONE					{Nessuno}
 STR_CHECK_MD5				{Verifica MD5}
 STR_PROPS					{Proprietà}
@@ -201,7 +203,7 @@ STR_ADJUST					{Regola lo schermo}
 STR_ADJUST_DESC				{Calibra il tuo display.}
 STR_DL_COVER				{Scarica covers}
 STR_DL_COVER_DESC			{Scarica ogni cover di gioco mancante in USRDIR/covers/[gameID].jpg}
-STR_PLUGIN_MANAGER			{Plugins Manager}
+STR_PLUGIN_MANAGER			{Plugins' Manager}
 STR_PLUGIN_MANAGER_DESC		{Gestisce i plugin memorizzati in /dev_hdd0/plugins.}
 STR_UPD_MGZ					{Aggiorna ManaGunZ}
 STR_UPD_MGZ_DESC			{Scarica e installa la versione più recente di ManaGunZ.}
@@ -246,7 +248,7 @@ STR_NB_COL_DESC				{Permette di scegliere il numero di colonne della griglia.}
 STR_NB_LINE					{Numero di linee}
 STR_NB_LINE_DESC			{Permette di scegliere il numero di righe della griglia.}
 STR_INVERSE					{Inverti pulsanti}
-STR_INVERSE_DESC			{Inverte i pulsanti a destra e a sinistra.​}
+STR_INVERSE_DESC			{Inverte i pulsanti a destra e a sinistra.}
 STR_3D						{3D}
 STR_3D_DESC					{Visualizza il menu con i modelli 3D delle custodie dei giochi .}
 STR_ADD						{Aggiungi}
@@ -273,3 +275,40 @@ STR_ASK_PLUGINS				{Per utilizzare il plugin manager, i plugin devono essere in 
 STR_CHANGE_VALUE			{Cambia valore}
 STR_LOAD_IDPS_LV2			{Carica IDPS dal lv2}
 STR_LOAD_IDPS_EID5			{Carica IDPS da EID5}
+STR_NAME					{Name}
+STR_DOCK_RIGHT				{Dock a destra}
+STR_DOCK_LEFT				{Dock a sinistra}
+STR_DOCK_FULL				{Dock per pieno}
+STR_PLUGIN_MONITOR			{Monitor dei plugin}
+STR_UNUSED					{Non usato}
+STR_UNLOAD					{Scaricare}
+STR_BOOT_FILE				{File di avvio}
+STR_CURRENT					{Attuale}
+STR_NET						{Net}
+STR_SOFT					{Soft}
+STR_GX						{GX}
+STR_CUSTOM					{Costume}
+STR_NEW_CMD					{Nuovo comando}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{WideScreen}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{Salta FMV}
+STR_SIMPLE					{Semplice}
+STR_ADVANCED				{Avanzate}
+STR_INSTALL_MGZ				{Vuoi installare ManaGunZ?} 
+STR_UP2DATE					{È aggiornato}
+STR_SHOW_WAVES				{Mostra le onde}
+STR_SHOW_WAVES_DESC			{Mostra le onde sullo sfondo.}
+STR_WAVES_COLOR				{Colore delle onde}
+STR_WAVES_COLOR_DESC		{Cambia il colore delle onde.}
+STR_USE_CONFIG				{Non stai utilizzando un file di configurazione PS2 '* .CONFIG'.}
+STR_COLORSET				{ColorSet}
+STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
+STR_GRID_SCROLL				{Scroll}
+STR_ADD_LIMG				{Add LIMG}
+STR_REMOVE_LIMG				{Remove LIMG}
+STR_LIMG_DESC				{It may fix few games.}
+STR_FONT					{Font}
+STR_FONT_DESC				{Change the font.}
+STR_MOVE					{Move}

@@ -90,16 +90,6 @@ void md5_finish( md5_context *ctx, unsigned char output[16] );
 void md5( const unsigned char *input, size_t ilen, unsigned char output[16] );
 
 /**
- * \brief          Output = MD5( file contents )
- *
- * \param path     input file name
- * \param output   MD5 checksum result
- *
- * \return         0 if successful, or POLARSSL_ERR_MD5_FILE_IO_ERROR
- */
-int md5_file( const char *path, unsigned char output[16] );
-
-/**
  * \brief          MD5 HMAC context setup
  *
  * \param ctx      HMAC context to be initialized

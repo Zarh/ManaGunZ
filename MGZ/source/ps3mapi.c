@@ -211,7 +211,7 @@ int ps3mapi_unload_vsh_plugin(char* name)
 int ps3mapi_get_vsh_plugin_info(unsigned int slot, char *name, char *filename)
 {
 	lv2syscall5(SC_COBRA_SYSCALL8, SYSCALL8_OPCODE_PS3MAPI, PS3MAPI_OPCODE_GET_VSH_PLUGIN_INFO, (u64) slot, (u64) name, (u64) filename);
-	//return_to_user_prog(int);
+	return_to_user_prog(int);
 }
 
 //-----------------------------------------------

@@ -29,12 +29,13 @@ STR_FILEMANAGER				{Explorateur de fichier}
 STR_HOLD					{Maintenir}
 STR_BACKTOXMB				{Retour au XMB}
 STR_GAME_PROP				{Propriétés du jeu}
-STR_GAME					{Jeu}
-STR_GAME_PATH				{Emplacement du jeu}
-STR_GAME_FORMAT				{Format du jeu}
-STR_GAME_SIZE				{Taille du jeu}
-STR_SYSVERS					{Version du système}
-STR_GAMEID					{ID du jeu}
+STR_GAME_TITLE				{Titre}
+STR_GAME_PATH				{Emplacement}
+STR_GAME_FORMAT				{Format}
+STR_GAME_SIZE				{Taille}
+STR_GAME_PLATFORM			{Platform}
+STR_SYSVERS					{Firmware}
+STR_GAMEID					{Identifiant}
 STR_ELFCRC					{ELF CRC}
 STR_ELFCRCO					{ELF CRC (Original)}
 STR_BACK					{Retour}
@@ -42,7 +43,7 @@ STR_ENTER					{Entrée}
 STR_UPDATE_FOUND			{Mise à jours trouvée}
 STR_UPDATE					{Mise à jours}
 STR_SIZE					{Taille}
-SYSTEM						{Système}
+STR_SYSTEM					{Système}
 STR_DL						{Télécharger}
 STR_DL_ALL					{Tout télécharger}
 STR_UNPLUG					{Débrancher le(s) périphérique(s) suivant(s)}
@@ -91,8 +92,9 @@ STR_FMVSKIP_DESC			{Permet de passer les vidéos du jeux.}
 STR_DISABLE_NETEMU			{Désactiver NetEMU}
 STR_ENABLE_NETEMU			{Activer NetEMU}
 STR_NETEMU_DESC				{Force l'utilisation du ps2_netemu.}
-STR_CREATE_CONFIG			{Créer un CONFIG}
-STR_CREATE_CONFIG_DESC		{[Expérimentale] Créer votre propre fichier CONFIG pour corriger votre jeu.}
+STR_SAVE_CONFIG				{Sauvegarder la CONFIG}
+STR_CONFIG					{Configuration}
+STR_CONFIG_DESC				{[Expérimentale] Créer votre propre fichier CONFIG pour corriger votre jeu.}
 STR_NONE					{Aucun}
 STR_CHECK_MD5				{Vérifier le MD5}
 STR_PROPS					{Propriétés}
@@ -246,7 +248,7 @@ STR_NB_COL_DESC				{Choisir le nombre de colonnes de la grille.}
 STR_NB_LINE					{Nombre de lignes}
 STR_NB_LINE_DESC			{Choisir le nombre de lignes de la grille.}
 STR_INVERSE					{Inverser boutons}
-STR_INVERSE_DESC			{Inverser les boutons droite et gauche.​}
+STR_INVERSE_DESC			{Inverser les boutons droite et gauche.}
 STR_3D						{3D}
 STR_3D_DESC					{Afficher les jeux en 3D.}
 STR_ADD						{Ajouter}
@@ -273,3 +275,40 @@ STR_ASK_PLUGINS				{Pour pouvoir utiliser le gestionnaire de module, les modules
 STR_CHANGE_VALUE			{Changer la valeur}
 STR_LOAD_IDPS_LV2			{Charger l'IDPS du lv2}
 STR_LOAD_IDPS_EID5			{Charger l'IDPS de l'EID5}
+STR_NAME					{Nom}
+STR_DOCK_RIGHT				{Ancrer à droite}
+STR_DOCK_LEFT				{Ancrer à gauche}
+STR_DOCK_FULL				{Agrandir}
+STR_PLUGIN_MONITOR			{Moniteur de modules}
+STR_UNUSED					{Inutilisé}
+STR_UNLOAD					{Decharger}
+STR_BOOT_FILE				{Fichier de lancement}
+STR_CURRENT					{Actuel}
+STR_NET						{Net}
+STR_SOFT					{Soft}
+STR_GX						{GX}
+STR_CUSTOM					{Custom}
+STR_NEW_CMD					{Nouvelle commande}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{16/9}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{Saut des FMV}
+STR_SIMPLE					{Simple}
+STR_ADVANCED				{Avancée}
+STR_INSTALL_MGZ				{Voulez-vous installer ManaGunZ ?} 
+STR_UP2DATE					{C'est à jour}
+STR_SHOW_WAVES				{Montrer les vagues}
+STR_SHOW_WAVES_DESC			{Afficher les vagues dans le fonds d'ecran.}
+STR_WAVES_COLOR				{Couleur des vagues}
+STR_WAVES_COLOR_DESC		{Changer la couleur des vagues.}
+STR_USE_CONFIG				{Vous n'utilisez pas de fichier de configuration PS2 '*.CONFIG'.}
+STR_COLORSET				{Jeu de couleurs}
+STR_COLORSET_DESC 			{Choissir le jeu de couleurs prédéfinie.}
+STR_GRID_SCROLL				{Derouler}
+STR_ADD_LIMG				{Ajouter LIMG}
+STR_REMOVE_LIMG				{Enlever LIMG}
+STR_LIMG_DESC				{Cela peux faire fonctionner certains jeux.}
+STR_FONT					{Police}
+STR_FONT_DESC				{Changer la police.}
+STR_MOVE					{Deplacer}

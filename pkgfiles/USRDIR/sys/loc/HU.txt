@@ -29,12 +29,13 @@ STR_FILEMANAGER				{Fájl Kezelő}
 STR_HOLD					{Lenyomva tart}
 STR_BACKTOXMB				{Vissza az XMB-be}
 STR_GAME_PROP				{Játék Tulajdonságai}
-STR_GAME					{Játék}
-STR_GAME_PATH				{Játékútvonal}
-STR_GAME_FORMAT				{Játék formátum}
-STR_GAME_SIZE				{Játék méret}
-STR_SYSVERS					{Rendszerverzió}
-STR_GAMEID					{Játék ID}
+STR_GAME_TITLE				{Cím}
+STR_GAME_PATH				{Útvonal}
+STR_GAME_FORMAT				{Formátum}
+STR_GAME_SIZE				{Méret}
+STR_GAME_PLATFORM			{Platform}
+STR_SYSVERS					{Firmware}
+STR_GAMEID					{Azonosító}
 STR_ELFCRC					{ELF CRC}
 STR_ELFCRCO					{ELF CRC (Eredeti)}
 STR_BACK					{Vissza}
@@ -42,7 +43,7 @@ STR_ENTER					{Belép}
 STR_UPDATE_FOUND			{Frissítés található}
 STR_UPDATE					{Frissítés}
 STR_SIZE					{Méret}
-SYSTEM						{Rendszer}
+STR_SYSTEM					{Rendszer}
 STR_DL						{Letöltés}
 STR_DL_ALL					{ÖSSZES Letöltése}
 STR_UNPLUG					{Húzd ki a következő eszközt}
@@ -91,8 +92,9 @@ STR_FMVSKIP_DESC			{Engedélyezi, hogy kihagyhasd a játékbeli videókat.}
 STR_DISABLE_NETEMU			{NetEMU Kikapcsolása}
 STR_ENABLE_NETEMU			{NetEMU Bekapcsolása}
 STR_NETEMU_DESC				{A ps2 netemu használatának kényszerítése.}
-STR_CREATE_CONFIG			{CONFIG Készítés}
-STR_CREATE_CONFIG_DESC		{[Próba] Hozz létre saját CONFIG fájlt, javítást a játékodhoz.}
+STR_SAVE_CONFIG				{Mentés CONFIG}
+STR_CONFIG					{Configuration}
+STR_CONFIG_DESC				{[Próba] Hozz létre saját CONFIG fájlt, javítást a játékodhoz.}
 STR_NONE					{Semmi}
 STR_CHECK_MD5				{MD5 Ellenőrzés}
 STR_PROPS					{Tulajdonságok}
@@ -272,4 +274,41 @@ STR_MOVE_TO_PLUGINS			{Mozgatás a(z) /dev_hdd0/plugins-ba}
 STR_ASK_PLUGINS				{A pluginkezelő használatához a plugineknek a(z) '/dev_hdd0/plugins'-ban kell lenniük.\nElfogadod ezt a mappát?}
 STR_CHANGE_VALUE			{Érték megváltoztatása}
 STR_LOAD_IDPS_LV2			{IDPS betöltése lv2-ből}
-STR_LOAD_IDPS_EID5 {IDPS betöltése EID5-ből}
+STR_LOAD_IDPS_EID5			{IDPS betöltése EID5-ből}
+STR_NAME					{Név}
+STR_DOCK_RIGHT				{Dock jobbra}
+STR_DOCK_LEFT				{Dock balra}
+STR_DOCK_FULL				{A dokkoló tele}
+STR_PLUGIN_MONITOR			{Plugins monitor}
+STR_UNUSED					{Felhasználatlan}
+STR_UNLOAD					{kirakodik}
+STR_BOOT_FILE				{Boot fájl}
+STR_CURRENT					{Jelenlegi}
+STR_NET						{Net}
+STR_SOFT					{Soft}
+STR_GX						{GX}
+STR_CUSTOM					{Szokás}
+STR_NEW_CMD					{Új parancs}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{Szélesvásznú}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{FMV kihagyja}
+STR_SIMPLE					{Egyszerű}
+STR_ADVANCED				{Fejlett}
+STR_INSTALL_MGZ				{Szeretné telepíteni a ManaGunZ-t?}
+STR_UP2DATE					{Naprakész}
+STR_SHOW_WAVES				{Hullámok megjelenítése}
+STR_SHOW_WAVES_DESC			{Hullámok megjelenítése a háttérben.}
+STR_WAVES_COLOR				{Hullám színe}
+STR_WAVES_COLOR_DESC		{Módosítsa a hullámok színét.}
+STR_USE_CONFIG				{Nem használja a "* .CONFIG" PS2 konfigurációs fájlt.}
+STR_COLORSET				{ColorSet}
+STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
+STR_GRID_SCROLL				{Scroll}
+STR_ADD_LIMG				{Add LIMG}
+STR_REMOVE_LIMG				{Remove LIMG}
+STR_LIMG_DESC				{It may fix few games.}
+STR_FONT					{Font}
+STR_FONT_DESC				{Change the font.}
+STR_MOVE					{Move}
