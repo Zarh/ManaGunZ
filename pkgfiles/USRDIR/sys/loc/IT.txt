@@ -33,7 +33,7 @@ STR_GAME_TITLE				{Titolo}
 STR_GAME_PATH				{Percorso}
 STR_GAME_FORMAT				{Formato}
 STR_GAME_SIZE				{Dimensione}
-STR_GAME_PLATFORM			{Platform}
+STR_GAME_PLATFORM			{Piattaforma}
 STR_SYSVERS					{Firmware}
 STR_GAMEID					{Identifier}
 STR_ELFCRC					{ELF CRC}
@@ -116,7 +116,7 @@ STR_PAYLOAD_DESC			{Permette di scegliere il payload per montare il tuo backup.}
 STR_PRIM_USB				{Imposta USB primario}
 STR_PRIM_USB_DESC			{Imposta il dispositivo USB in cui il gioco viene memorizzato come dispositivo USB principale.}
 STR_BDEMU					{Emulazione BD}
-STR_BDEMU_DESC				{Permette di scegliere il tipo di emulazione per montare il ​​backup.}
+STR_BDEMU_DESC				{Permette di scegliere il tipo di emulazione per montare il backup.}
 STR_PATCH_LIBFS				{Patch libfs}
 STR_PATCH_LIBFS_DESC		{Scegli quale Patch libf desideri utilizzare.}
 STR_MOUNT_APPHOME			{Monta /app_home}
@@ -303,12 +303,12 @@ STR_SHOW_WAVES_DESC			{Mostra le onde sullo sfondo.}
 STR_WAVES_COLOR				{Colore delle onde}
 STR_WAVES_COLOR_DESC		{Cambia il colore delle onde.}
 STR_USE_CONFIG				{Non stai utilizzando un file di configurazione PS2 '* .CONFIG'.}
-STR_COLORSET				{ColorSet}
-STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
+STR_COLORSET				{Set di Colori}
+STR_COLORSET_DESC 			{Scegli un set predefinito di colori da usare in ManaGunZ.}
 STR_GRID_SCROLL				{Scroll}
-STR_ADD_LIMG				{Add LIMG}
-STR_REMOVE_LIMG				{Remove LIMG}
-STR_LIMG_DESC				{It may fix few games.}
+STR_ADD_LIMG				{Aggiungi LIMG}
+STR_REMOVE_LIMG				{Rimuovi LIMG}
+STR_LIMG_DESC				{Potrebbe fixare alcuni giochi.}
 STR_FONT					{Font}
-STR_FONT_DESC				{Change the font.}
-STR_MOVE					{Move}
+STR_FONT_DESC				{Cambia il font.}
+STR_MOVE					{Muovi}
