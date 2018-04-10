@@ -23,8 +23,17 @@ _ global setting tabs
 _ copy/convert/extract : ETA/timer
 _ update_mgz
 _ double click
-_ load only displayed pic
+_ load only displayed pic ...
+_ rebuild DB
+_ goto recovery
+_ MAX_GAME = infinite
 
+
+v1.33
+Fix : reading issue with splitted iso.
+Add : 482D support
+Add : Game option "Join".
+Add FileManager : Option "Join" to join files to the current path.
 
 v1.32
 Fix : Reduced memory usage to avoid 'random' freeze.

@@ -230,3 +230,10 @@
 #define memcpy                  0x7E92C
 #define memset                  0x4D66C
 #endif
+
+#ifdef CFW_482D
+#define alloc                   0x681F4
+#define memory_patch_func       0x2B25F8
+#define memcpy                  0x82A08
+#define memset                  0x51014
+#endif

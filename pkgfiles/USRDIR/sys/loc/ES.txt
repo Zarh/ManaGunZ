@@ -365,3 +365,5 @@ STR_FONT_DESC				{Selecciona la fuente de texto.}
 STR_MOVE					{Mover}
 STR_GAME_PLATFORM			{Plataforma}
 STR_GAME_TITLE				{Título}
+STR_JOIN					{Join}
+STR_JOIN_DESC				{Merge .666XX files.}

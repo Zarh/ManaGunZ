@@ -1,4 +1,4 @@
-#include <malloc.h>
+//#include <malloc.h>
 #include <lv2/memory.h>
 
 void *malloc(size_t size)

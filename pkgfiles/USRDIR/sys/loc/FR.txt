@@ -312,3 +312,5 @@ STR_LIMG_DESC				{Cela peux faire fonctionner certains jeux.}
 STR_FONT					{Police}
 STR_FONT_DESC				{Changer la police.}
 STR_MOVE					{Deplacer}
+STR_JOIN					{Join}
+STR_JOIN_DESC				{Merge .666XX files.}

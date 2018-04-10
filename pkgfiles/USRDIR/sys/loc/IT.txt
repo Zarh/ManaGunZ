@@ -312,3 +312,5 @@ STR_LIMG_DESC				{It may fix few games.}
 STR_FONT					{Font}
 STR_FONT_DESC				{Change the font.}
 STR_MOVE					{Move}
+STR_JOIN					{Join}
+STR_JOIN_DESC				{Merge .666XX files.}
