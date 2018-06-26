@@ -56,8 +56,8 @@ STR_THM_SETTINGS			{Ustawienia motywów}
 STR_THM						{Motyw}
 STR_THM_DESC				{Załaduj żądany motyw. Możesz je zainstalować z /dev_usbXXX/Themes.}
 STR_CREATE					{Stwórz}
-STR_ZOOM_OUT				{Zoom NA ZEWNĄTRZ}
-STR_ZOOM_IN					{Zoom DO}
+STR_ZOOM_OUT				{Powiększ NA ZEWNĄTRZ}
+STR_ZOOM_IN					{Powiększ DO}
 STR_MOVE_FRAME				{Przenieś klatkę}
 STR_CHECK					{OK!}
 STR_UNCHECK					{Odznacz}
@@ -89,8 +89,8 @@ STR_YFIX_DESC				{Napraw pozycję pionową.}
 STR_DISABLE_FMVSKIP			{Wyłącz pominięcie FMV}
 STR_ENABLE_FMVSKIP			{Włącz pominięcie FMV}
 STR_FMVSKIP_DESC			{Umożliwia pominięcie pełnych filmów z ruchu.}
-STR_DISABLE_NETEMU			{Wyłącz NetEMU}
-STR_ENABLE_NETEMU			{Włącz NetEMU}
+STR_DISABLE_NETEMU			{Wyłącz Netemu}
+STR_ENABLE_NETEMU			{Włącz Netemu}
 STR_NETEMU_DESC				{Wymuś użycie netemu ps2.}
 STR_SAVE_CONFIG				{Zapisać CONFIG}
 STR_CONFIG					{Konfiguracyjnego}
@@ -108,7 +108,7 @@ STR_NO						{Nie}
 STR_CLEAN_SYSCALL			{Wyczyść syscall}
 STR_CLEAN_SYSCALL_DESC		{Wyłącz układy peek i poke.}
 STR_CHANGE_IDPS				{Zmień IDPS}
-STR_CHANGE_IDPS_DESC		{Zmień IDPS na lv2.}
+STR_CHANGE_IDPS_DESC		{Zmień IDPS na LV2.}
 STR_EXT_GAME_DATA			{Zewn. Dane gry}
 STR_EXT_GAME_DATA_DESC		{Zainstaluj gamedata w swoim urządzeniu USB zamiast w systemie.}
 STR_PAYLOAD					{Ładunek}
@@ -210,7 +210,7 @@ STR_UPD_MGZ_DESC			{Pobierz i zainstaluj najnowszą wersję ManaGunZ.}
 STR_GAME_PATHS				{Ścieżki kopii zapasowej gry}
 STR_GAME_PATHS_DESC			{Skonfiguruj nazwy katalogów, w których ManaGunZ znajdzie twoje kopie zapasowe.}
 STR_XMB_PRIO				{Priorytet XMB}
-STR_XMB_PRIO_DESC			{Ikona ManaGunZ w XMB zostanie wyświetlona na górze. Będzie skuteczny po następnym uruchomieniu systemu.}
+STR_XMB_PRIO_DESC			{Ikona ManaGunZ w XMB zostanie wyświetlona na górze. Będzie aktywne po następnym uruchomieniu systemu.}
 STR_HELP					{Pokaż pomoc}
 STR_HELP_DESC				{Wyświetl zdania, które czytasz tutaj.}
 STR_COLOR_1					{Kolor 1}
@@ -250,13 +250,13 @@ STR_NB_LINE_DESC			{Wybierz liczbę linii siatki.}
 STR_INVERSE					{Odwróć Przycisk}
 STR_INVERSE_DESC			{Odwróć przyciski w prawo i w lewo.}
 STR_3D						{3D}
-STR_3D_DESC					{Wyświetl menu z modelu 3D.}
+STR_3D_DESC					{Wyświetl menu z modelami 3D skrzynek do gier.}
 STR_ADD						{Dodaj}
 STR_LOAD					{Załaduj}
 STR_CHANGE					{Zmień}
 STR_COLOR					{Kolor}
-STR_RESET					{Przeładuj}
-STR_FAILED					{Nie powiodło się}
+STR_RESET					{Reset}
+STR_FAILED					{Niepowodzenie}
 STR_DONE					{Gotowe}
 STR_OPEN					{Otwórz}
 STR_CLOSE					{Zamknij}
@@ -287,7 +287,7 @@ STR_CURRENT					{obecny}
 STR_NET						{Net}
 STR_SOFT					{Soft}
 STR_GX						{GX}
-STR_CUSTOM					{Zwyczaj}
+STR_CUSTOM					{Niestandardowy}
 STR_NEW_CMD					{Nowe polecenie}
 STR_PNACH					{Pnach}
 STR_WIDESCREEN				{Szeroki ekran}
@@ -296,7 +296,7 @@ STR_YFIX					{YFIX}
 STR_FMV						{FMV pominąć}
 STR_SIMPLE					{Prosty}
 STR_ADVANCED				{Zaawansowane}
-STR_INSTALL_MGZ				{Czy chcesz zainstalować ManaGunZ ?} 
+STR_INSTALL_MGZ				{Czy chcesz zainstalować ManaGunZ?} 
 STR_UP2DATE					{To jest aktualne}
 STR_SHOW_WAVES				{Pokaż fale}
 STR_SHOW_WAVES_DESC			{Wyświetlaj fale w tle.}
@@ -312,5 +312,5 @@ STR_LIMG_DESC				{Może naprawić kilka gier.}
 STR_FONT					{Czcionka}
 STR_FONT_DESC				{Zmień czcionkę.}
 STR_MOVE					{Przenieś}
-STR_JOIN					{Join}
+STR_JOIN					{Dołącz}
 STR_JOIN_DESC				{Merge .666XX files.}
