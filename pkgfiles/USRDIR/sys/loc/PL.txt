@@ -2,10 +2,10 @@ STR_LANGUAGE			{Polski}
 STR_LANGCODE			{\x10}
 
 STR_LANG					{Język}
-STR_LANG_DESC				{Wybierz swój język.}
+STR_LANG_DESC				{Wybierz język.}
 STR_GATHERING				{Zbieranie danych...}
 STR_COPYING					{Kopiowanie...}
-STR_FROM					{od}
+STR_FROM					{z}
 STR_TO						{do}
 STR_FILES					{Pliki}
 STR_DIRS					{Katalogi}
@@ -199,17 +199,17 @@ STR_MAKE_APNG				{Stwórz APNG}
 STR_SET_PERMS				{Ustaw uprawnienia}
 STR_NOGAME					{Nie znaleziono gry}
 STR_GLOB_SETTINGS			{Ustawienia ogólne}
-STR_ADJUST					{Dostosuj ekran}
+STR_ADJUST					{Ustawienia wyświetlania}
 STR_ADJUST_DESC				{Skalibruj wyświetlacz.}
 STR_DL_COVER				{Pobierz okładki}
-STR_DL_COVER_DESC			{Pobierz wszystkie brakujące okładki gier do USRDIR/covers/[gameID].jpg}
+STR_DL_COVER_DESC			{Pobierz brakujące okładki gier do USRDIR/covers/[gameID].jpg}
 STR_PLUGIN_MANAGER			{Menedżer wtyczek}
-STR_PLUGIN_MANAGER_DESC		{Zarządzaj wtyczkami zapisanymi w /dev_hdd0/plugins.}
+STR_PLUGIN_MANAGER_DESC		{Zarządzaj wtyczkami zapisanymi w /dev_hdd0/plugins, lub /dev_hdd0/boot_plugins.txt.}
 STR_UPD_MGZ					{Zaktualizuj ManaGunZ}
 STR_UPD_MGZ_DESC			{Pobierz i zainstaluj najnowszą wersję ManaGunZ.}
-STR_GAME_PATHS				{Ścieżki kopii zapasowej gry}
+STR_GAME_PATHS				{Ścieżki kopii zapasowych gier}
 STR_GAME_PATHS_DESC			{Skonfiguruj nazwy katalogów, w których ManaGunZ znajdzie twoje kopie zapasowe.}
-STR_XMB_PRIO				{Priorytet XMB}
+STR_XMB_PRIO				{Priorytet ikony w XMB}
 STR_XMB_PRIO_DESC			{Ikona ManaGunZ w XMB zostanie wyświetlona na górze. Będzie aktywne po następnym uruchomieniu systemu.}
 STR_HELP					{Pokaż pomoc}
 STR_HELP_DESC				{Wyświetl zdania, które czytasz tutaj.}
@@ -220,17 +220,17 @@ STR_COLOR_4					{Kolor 4}
 STR_COLOR_DESC				{Zmień kolory używane przez ManaGunZ.}
 STR_UI_SETTINGS				{Ustawienia interfejsu użytkownika}
 STR_UI						{Interfejs użytkownika}
-STR_UI_DESC					{Zmień interfejs.}
-STR_SIDE_MENU				{Menu boczne gry}
-STR_SIDE_MENU_DESC			{Wyświetl menu gry po prawej stronie ekranu.}
+STR_UI_DESC					{Zmień rodzaj uzywanego menu głównego.}
+STR_SIDE_MENU				{Boczne menu gier}
+STR_SIDE_MENU_DESC			{Używaj menu gry wyświetlanego po prawej stronie ekranu.}
 STR_SHOW_PIC1				{Pokaż PIC1}
-STR_SHOW_PIC1_DESC			{Wyświetl obraz tła aktualnie wybranego PIC1 wybranych gier. Użyj R1 z LISTĄ UI i GRID, aby ją wyświetlić.}
+STR_SHOW_PIC1_DESC			{Wyświetl PIC1 wybranych gier. Użyj R1 z LISTĄ UI i GRID, aby ją wyświetlić.}
 STR_SHOW_COVER				{Pokaż okładkę}
 STR_SHOW_COVER_DESC			{Wyświetl okładkę gry.}
-STR_SHOW_GAMECASE			{Pokaż przykład gry}
-STR_SHOW_GAMECASE_DESC		{Wyświetl okładkę gry w przypadku gry.}
+STR_SHOW_GAMECASE			{Pokaż pudełko od gry}
+STR_SHOW_GAMECASE_DESC		{Wyświetl okładkę gry razem z pudełkiem}
 STR_SHOW_ICON0				{Pokaż ICON0}
-STR_SHOW_ICON0_DESC			{Wyświetl główne zdjęcie gry "ICON0".}
+STR_SHOW_ICON0_DESC			{Wyświetl "ICON0" zamiast okładki gry.}
 STR_GRID_TYPE				{Typ siatki}
 STR_GRID_TYPE_DESC			{Wybierz, rodzaj poruszania siatki.}
 STR_SCROLL					{Przewijany}
