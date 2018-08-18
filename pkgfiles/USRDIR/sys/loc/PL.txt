@@ -232,15 +232,15 @@ STR_SHOW_GAMECASE_DESC		{Wyświetl okładkę gry w przypadku gry.}
 STR_SHOW_ICON0				{Pokaż ICON0}
 STR_SHOW_ICON0_DESC			{Wyświetl główne zdjęcie gry "ICON0".}
 STR_GRID_TYPE				{Typ siatki}
-STR_GRID_TYPE_DESC			{Wybierz, jak zrobić ruch siatki.}
-STR_SCROLL					{Przewiń}
-STR_PAGE					{Strona}
+STR_GRID_TYPE_DESC			{Wybierz, rodzaj poruszania siatki.}
+STR_SCROLL					{Przewijany}
+STR_PAGE					{Strony}
 STR_DIRECTION				{Kierunek}
 STR_DIRECTION_DESC			{Wybierz, w którym kierunku ruszy siatka.}
 STR_VERTICAL				{Pionowy}
 STR_HORIZONTAL				{Poziomy}
-STR_ANIMATED				{Animowany}
-STR_ANIMATED_DESC			{Spraw, aby ruchy siatki przesuwały się.}
+STR_ANIMATED				{Animacja}
+STR_ANIMATED_DESC			{Włącz, animowane ruchy siatki.}
 STR_KEEP_PROP				{Zachowaj proporcje}
 STR_KEEP_PROP_DESC			{Zachowaj oryginalny współczynnik proporcji ICON0.}
 STR_NB_COL					{Liczba kolumn}
@@ -248,9 +248,9 @@ STR_NB_COL_DESC				{Wybierz liczbę kolumn siatki.}
 STR_NB_LINE					{Liczba linii}
 STR_NB_LINE_DESC			{Wybierz liczbę linii siatki.}
 STR_INVERSE					{Odwróć Przycisk}
-STR_INVERSE_DESC			{Odwróć przyciski w prawo i w lewo.}
+STR_INVERSE_DESC			{Odwróć działanie przycisków w prawo i w lewo.}
 STR_3D						{3D}
-STR_3D_DESC					{Wyświetl menu z modelami 3D skrzynek do gier.}
+STR_3D_DESC					{Wyświetl menu z modelami 3D opakowań do gier.}
 STR_ADD						{Dodaj}
 STR_LOAD					{Załaduj}
 STR_CHANGE					{Zmień}
@@ -260,44 +260,44 @@ STR_FAILED					{Niepowodzenie}
 STR_DONE					{Gotowe}
 STR_OPEN					{Otwórz}
 STR_CLOSE					{Zamknij}
-STR_OPTION					{Opcja}
-STR_SELECT					{Wybierz}
+STR_OPTION					{Opcje}
+STR_SELECT					{Wybierz/Zaznacz}
 STR_WINDOW					{Okno}
 STR_CLICK					{Kliknij}
 STR_CURSOR					{Kursor}
-STR_NEXT					{Kolejny}
+STR_NEXT					{Następny}
 STR_PREVIOUS				{Poprzedni}
 STR_SET_COLOR				{Ustaw kolor}
-STR_HIDETV					{Ukryj test ekranu telewizora}
-STR_SHOWTV					{Pokaż test ekranu telewizora}
+STR_HIDETV					{Wyłącz test ekranu telewizora}
+STR_SHOWTV					{Włącz test ekranu telewizora}
 STR_MOVE_TO_PLUGINS			{Przejdź do /dev_hdd0/plugins}
 STR_ASK_PLUGINS				{Aby użyć menedżera wtyczek, wtyczki muszą znajdować się w "/dev_hdd0/plugins". Dozwolone jest użycie tego folderu?}
-STR_CHANGE_VALUE			{Zmiana wartości}
-STR_LOAD_IDPS_LV2			{Załaduj IDPS z poziomu lv2}
+STR_CHANGE_VALUE			{Zmień wartość}
+STR_LOAD_IDPS_LV2			{Załaduj IDPS z LV2}
 STR_LOAD_IDPS_EID5			{Załaduj IDPS z EID5}
 STR_NAME					{Nazwa}
-STR_DOCK_RIGHT				{Dokuj w prawo}
-STR_DOCK_LEFT				{Dokuj w lewo}
-STR_DOCK_FULL				{Dokuj do pełnego}
+STR_DOCK_RIGHT				{Przypnij do prawej}
+STR_DOCK_LEFT				{Przypnij do lewej}
+STR_DOCK_FULL				{Pełny ekran}
 STR_PLUGIN_MONITOR			{Monitor wtyczek}
-STR_UNUSED					{Nie używany}
-STR_UNLOAD					{Rozładować}
-STR_BOOT_FILE				{Uruchom plik}
-STR_CURRENT					{obecny}
+STR_UNUSED					{Slot nie używany}
+STR_UNLOAD					{Nie ładuj}
+STR_BOOT_FILE				{Ścieżka boot-plugins}
+STR_CURRENT					{Obecny}
 STR_NET						{Net}
 STR_SOFT					{Soft}
 STR_GX						{GX}
 STR_CUSTOM					{Niestandardowy}
-STR_NEW_CMD					{Nowe polecenie}
+STR_NEW_CMD					{Nowa komenda}
 STR_PNACH					{Pnach}
-STR_WIDESCREEN				{Szeroki ekran}
+STR_WIDESCREEN				{16:9}
 STR_480P					{480P}
 STR_YFIX					{YFIX}
-STR_FMV						{FMV pominąć}
-STR_SIMPLE					{Prosty}
+STR_FMV						{pomijanie FMV}
+STR_SIMPLE					{Proste}
 STR_ADVANCED				{Zaawansowane}
 STR_INSTALL_MGZ				{Czy chcesz zainstalować ManaGunZ?} 
-STR_UP2DATE					{To jest aktualne}
+STR_UP2DATE					{Twoja wersja jest aktualna}
 STR_SHOW_WAVES				{Pokaż fale}
 STR_SHOW_WAVES_DESC			{Wyświetlaj fale w tle.}
 STR_WAVES_COLOR				{Kolor fal}
@@ -306,11 +306,11 @@ STR_USE_CONFIG				{Nie używasz pliku konfiguracyjnego PS2 "* .CONFIG".}
 STR_COLORSET				{Zestaw kolorów}
 STR_COLORSET_DESC 			{Wybierz predefiniowany zestaw kolorów do użycia w ManaGunZ.}
 STR_GRID_SCROLL				{Przewiń}
-STR_ADD_LIMG				{Dodaj LIMG}
-STR_REMOVE_LIMG				{Usuń LIMG}
+STR_ADD_LIMG				{Dodaj sektor LIMG}
+STR_REMOVE_LIMG				{Usuń sector LIMG}
 STR_LIMG_DESC				{Może naprawić kilka gier.}
 STR_FONT					{Czcionka}
 STR_FONT_DESC				{Zmień czcionkę.}
 STR_MOVE					{Przenieś}
-STR_JOIN					{Dołącz}
-STR_JOIN_DESC				{Merge .666XX files.}
+STR_JOIN					{Połącz}
+STR_JOIN_DESC				{Połącz pliki .666XX.}
