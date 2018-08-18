@@ -14,28 +14,28 @@ STR_FILE					{Plik}
 STR_CANCEL					{Anuluj}
 STR_TURNOFF_YES				{WYŁĄCZ = TAK}
 STR_TURNOFF_NO				{WYŁĄCZ = NIE}
-STR_CANCELLED				{Anulowany}
+STR_CANCELLED				{Anulowano}
 STR_UNIT					{Bajty}
 STR_TOTALSIZE				{Całkowity rozmiar}
-STR_HIDELOGS				{Ukryj dzienniki}
-STR_SHOWLOGS				{Pokaż dzienniki}
-STR_BOOST					{Doładuj!}
+STR_HIDELOGS				{Ukryj logi}
+STR_SHOWLOGS				{Pokaż logi}
+STR_BOOST					{Turbo!}
 STR_GAMEMENU				{Menu gry}
 STR_SETTINGS				{Ustawienia}
 STR_MOUNTGAME				{Zamontuj grę}
 STR_FILTER					{Filtr}
-STR_FAVORITE				{Ulubiony}
+STR_FAVORITE				{Ulubione}
 STR_FILEMANAGER				{Menedżer plików}
-STR_HOLD					{Utrzymać}
+STR_HOLD					{Trzymaj}
 STR_BACKTOXMB				{Powrót do XMB}
 STR_GAME_PROP				{Właściwości gry}
 STR_GAME_TITLE				{Tytuł}
 STR_GAME_PATH				{Ścieżka}
 STR_GAME_FORMAT				{Format}
 STR_GAME_SIZE				{Rozmiar}
-STR_GAME_PLATFORM			{Platform}
+STR_GAME_PLATFORM			{Platforma}
 STR_SYSVERS					{Firmware}
-STR_GAMEID					{Identyfikator}
+STR_GAMEID					{Identyfikator gry}
 STR_ELFCRC					{ELF CRC}
 STR_ELFCRCO					{ELF CRC (oryginalny)}
 STR_BACK					{Z powrotem}
@@ -43,62 +43,62 @@ STR_ENTER					{Wejdź}
 STR_UPDATE_FOUND			{Znaleziono aktualizację}
 STR_UPDATE					{Aktualizacja}
 STR_SIZE					{Rozmiar}
-STR_SYSTEM					{Firmware}
-STR_DL						{Ściągnij}
-STR_DL_ALL					{Ściągnij wszystko}
+STR_SYSTEM					{System}
+STR_DL						{Pobierz}
+STR_DL_ALL					{Pobierz wszystko}
 STR_UNPLUG					{Odłącz następujące urządzenia}
 STR_PATH					{Ścieżka}
 STR_TYPE					{Rodzaj}
 STR_FOLDER					{Folder}
-STR_DIR						{Informator}
+STR_DIR						{Katalog}
 STR_MULT					{Wielokrotny}
 STR_THM_SETTINGS			{Ustawienia motywów}
 STR_THM						{Motyw}
-STR_THM_DESC				{Załaduj żądany motyw. Możesz je zainstalować z /dev_usbXXX/Themes.}
+STR_THM_DESC				{Załaduj motyw. Możesz je zainstalować z /dev_usbXXX/Themes.}
 STR_CREATE					{Stwórz}
-STR_ZOOM_OUT				{Powiększ NA ZEWNĄTRZ}
-STR_ZOOM_IN					{Powiększ DO}
+STR_ZOOM_OUT				{Pomniejsz}
+STR_ZOOM_IN					{Powiększ}
 STR_MOVE_FRAME				{Przenieś klatkę}
-STR_CHECK					{OK!}
+STR_CHECK					{Zaznacz}
 STR_UNCHECK					{Odznacz}
 STR_GAME_OPTION				{Opcje gry}
 STR_ADD_FAV					{Dodaj do ulubionych}
 STR_REM_FAV					{Usuń z ulubionych}
 STR_FAV_DESC				{Zarządzaj listą swoich ulubionych gier.}
 STR_RENAME					{Zmienić nazwę}
-STR_RENAME_DESC				{Zmień nazwę tytułu kopii zapasowej.}
+STR_RENAME_DESC				{Zmień nazwę gry.}
 STR_DELETE					{Usuń}
-STR_DELETE_DESC				{Usuń kopię zapasową.}
+STR_DELETE_DESC				{Usuń gre.}
 STR_COPY					{Kopiuj}
-STR_COPY_DESC				{Skopiuj kopię zapasową do innej ścieżki.}
+STR_COPY_DESC				{Skopiuj grę do innej lokacji.}
 STR_CREATE_ICON0			{Utwórz ICON0}
-STR_CREATE_ICON0_DESC		{Utwórz "fałszywy" ICON0 z okładki.}
+STR_CREATE_ICON0_DESC		{Utwórz ICON0 z okładki gry.}
 STR_REST_PNACH				{Przywróć PNACH}
-STR_REST_PNACH_DESC			{Usuń poprawki zastosowane przez plik pnach do kopii zapasowej.}
+STR_REST_PNACH_DESC			{Usuń poprawki zastosowane przez plik pnach.}
 STR_APPLY_PNACH				{Zastosuj PNACH}
-STR_APPLY_PNACH_DESC		{Zastosuj poprawki z pliku pnach do kopii zapasowej.}
+STR_APPLY_PNACH_DESC		{Zastosuj poprawki z pliku pnach do gry.}
 STR_DISABLE_WS				{Wyłącz WideScreen}
 STR_ENABLE_WS				{Włącz WideScreen}
 STR_WS_DESC					{Wyświetl grę w formacie 16:9 zamiast 4:3.}
 STR_DISABLE_480P			{Wyłącz 480P}
 STR_ENABLE_480P				{Włącz 480P}
-STR_480P_DESC				{Tryb skanowania progresywnego w rozdzielczości 480P.}
+STR_480P_DESC				{Włącza tryb skanowania progresywnego. Rozdzielczość 480P.}
 STR_DISABLE_YFIX			{Wyłącz YFIX}
 STR_ENABLE_YFIX				{Włącz YFIX}
-STR_YFIX_DESC				{Napraw pozycję pionową.}
+STR_YFIX_DESC				{Poprawia pozycję pionową wyświetlania po konwersji między PAL, i NTSC.}
 STR_DISABLE_FMVSKIP			{Wyłącz pominięcie FMV}
 STR_ENABLE_FMVSKIP			{Włącz pominięcie FMV}
-STR_FMVSKIP_DESC			{Umożliwia pominięcie pełnych filmów z ruchu.}
+STR_FMVSKIP_DESC			{Umożliwia pominięcie FMV.}
 STR_DISABLE_NETEMU			{Wyłącz Netemu}
 STR_ENABLE_NETEMU			{Włącz Netemu}
-STR_NETEMU_DESC				{Wymuś użycie netemu ps2.}
-STR_SAVE_CONFIG				{Zapisać CONFIG}
-STR_CONFIG					{Konfiguracyjnego}
-STR_CONFIG_DESC				{[Eksperymentalne] Stwórz swój własny plik CONFIG, aby "naprawić" kopię zapasową ps2.}
+STR_NETEMU_DESC				{Wymuś użycie ps2_neemu.}
+STR_SAVE_CONFIG				{Zapisz CONFIG}
+STR_CONFIG					{Konfiguracja}
+STR_CONFIG_DESC				{[Eksperymentalne] Stwórz swój własny plik CONFIG, aby poprawić kompatybilnośc gry ps2.}
 STR_NONE					{Nic}
 STR_CHECK_MD5				{Sprawdź MD5}
 STR_PROPS					{Właściwości}
-STR_PROPS_DESC				{Pokaż właściwości kopii zapasowej.}
+STR_PROPS_DESC				{Pokaż właściwości gry.}
 STR_ASK_DEL					{Czy na pewno chcesz usunąć?}
 STR_GAME_SETTINGS			{Ustawienia gry}
 STR_DIRECT_BOOT				{Bezpośrednie uruchomienie}
@@ -108,7 +108,7 @@ STR_NO						{Nie}
 STR_CLEAN_SYSCALL			{Wyczyść syscalle}
 STR_CLEAN_SYSCALL_DESC		{Wyłącz syscalle peek i poke.}
 STR_CHANGE_IDPS				{Zmień IDPS}
-STR_CHANGE_IDPS_DESC		{Zmień IDPS w LV2.}
+STR_CHANGE_IDPS_DESC		{Zmień IDPS w pamięci LV2.}
 STR_EXT_GAME_DATA			{Zewn. Dane gry}
 STR_EXT_GAME_DATA_DESC		{Zainstaluj dane gry na urządzeniu USB zamiast w dev_hdd0.}
 STR_PAYLOAD					{Payload}
