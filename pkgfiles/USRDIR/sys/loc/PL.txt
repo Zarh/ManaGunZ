@@ -233,7 +233,7 @@ STR_SHOW_ICON0				{Pokaż ICON0}
 STR_SHOW_ICON0_DESC			{Wyświetl "ICON0" zamiast okładki gry.}
 STR_GRID_TYPE				{Typ siatki}
 STR_GRID_TYPE_DESC			{Wybierz, rodzaj poruszania siatki.}
-STR_SCROLL					{Przewijany}
+STR_SCROLL					{Przewiń}
 STR_PAGE					{Strony}
 STR_DIRECTION				{Kierunek}
 STR_DIRECTION_DESC			{Wybierz, w którym kierunku ruszy siatka.}
