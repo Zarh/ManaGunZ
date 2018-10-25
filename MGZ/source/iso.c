@@ -53,7 +53,6 @@
 
 extern void print_load(char *format, ...);
 extern void Delete(char *path);
-extern u8 AddGame(char *path);
 
 extern u8 cancel;
 extern u64 prog_bar1_value;
@@ -2689,11 +2688,6 @@ int makeps3iso(char *g_path, char *f_iso, int split)
     free(directory_iso); directory_iso = NULL;
     free(sectors);  sectors = NULL;
 	
-	if( AddGame(output_name2) == FAILED) {
-		strcat(output_name2, ".0");
-		AddGame(output_name2);
-	}
-	
     return SUCCESS;
 
 err:
@@ -3394,8 +3388,6 @@ int extractps3iso(char *f_iso, char *g_path, int split)
     if(directory_iso2) free(directory_iso2); directory_iso2 = NULL;
 
     free(split_file); split_file = NULL;
-
-	AddGame(path3);
 	
     return SUCCESS;
 

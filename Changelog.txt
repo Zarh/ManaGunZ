@@ -14,19 +14,34 @@ _ create backup from disk
 _ Fan control plugin standalone?
 _ game list supports / shows installed PKG games (PS3, PS2, PS1, PSP)
 _ PS2 guitar hero EUR not in real xmb : e51e79bf3ca4b49be51656e0fdc912e1
-_ font sizes
 _ setting : install  mamba autoloader
 _ toggle
 _ timestamps and permissions : Inside the window, at right of the "size" can be added a new column for timestamps and another for permissions
 _ Controller setting
 _ global setting tabs
 _ copy/convert/extract : ETA/timer
+_ verifier si il y a de la place avant de faire un copie de fichier
 _ update_mgz
 _ double click
 _ load only displayed pic ...
 _ rebuild DB
 _ goto recovery
 _ MAX_GAME = infinite
+_ whitelist.cfg & blacklist.cfg files in /dev_hdd0/tmp
+_ font sizes / Y / shadow ?
+_ text viewer = fix scroll
+_ GameList SCAN in Background thread
+_ New Filemanager Root interface
+_ real BDVD dump : lv1 ? read_storage ?
+
+
+v1.34
+Add : New loading icon.
+Add : Scan to /dev_sd, /dev_ms/ and /dev_cd.
+Fix : Apply pnatch (bug introduced in previous update)
+Add offsetfinder : IDPSet & ERK_dumper offsets.
+Add : Definitions files from RCOmageMOD
+Add : Game TAGS
 
 
 v1.33

@@ -5,6 +5,7 @@
 *.d
 *.bin
 *.map
+/NotForGithub
 /build
 /pkgfiles2/USRDIR/sys/*
 /pkgfiles2/USRDIR/GUI/common/*

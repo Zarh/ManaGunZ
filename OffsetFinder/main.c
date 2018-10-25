@@ -241,12 +241,14 @@ uint8_t compare(u8 ignore, char *mem, char *flag, u32 size)
 
 int main()
 {	
-
+	
 	char dump[255];
 	FILE *f;
 	FILE *common;
 	FILE *SKY;
 	FILE *symbols;
+	FILE *IDPSet;
+	FILE *ERK;
 	char temp[255];
 	char temp2[255];	
 	
@@ -256,6 +258,8 @@ int main()
 	SKY = fopen("firmware_symbols.h", "w");
 	common = fopen("common.h", "w");
 	symbols = fopen("symbols.h", "w");
+	IDPSet = fopen("firmware.h", "w");
+	ERK = fopen("erk_symbols.h", "w");
 	
 	fputs("#ifndef __COMMON_H__\n", common);
 	fputs("#define __COMMON_H__\n\n", common);
@@ -279,6 +283,13 @@ int main()
 	
 	fputs("#define umd_mutex_offset (0x64480+0x38C)\n\n", symbols);
 
+	fputs("#ifndef __FIRMWARE_H__\n", IDPSet);
+	fputs("#define __FIRMWARE_H__\n\n", IDPSet);
+	
+	fputs("#ifndef __SYMBOLS_H__\n", ERK);
+	fputs("#define __SYMBOLS_H__\n\n", ERK);
+	fputs("#define KERNEL_BASE 0x8000000000000000\n\n", ERK);
+	
 	printf("Searching offsets...\n");
 	
 	d = opendir("LV2");
@@ -340,7 +351,20 @@ int main()
 		u64 FW_DATE_1=0;
 		u64 FW_DATE_2=0;
 		
+		u64 HTAB_OFFSET=0;
+		u64 MMAP_OFFSET1=0;
+		u64 MMAP_OFFSET2=0;
+		u64 SPE_OFFSET=0;
 		
+		u64 LPAR=0;
+		
+		u8 flag_lpar[0x10]={0x00, 0x00, 0x50, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00};
+		
+		u8 flag_htab[0x8] = {0x41, 0xDA, 0x00, 0x54, 0xE9, 0x7F, 0x00, 0xA8};
+		u8 flag_mmap1[0x8] = {0x88, 0x1F, 0x00, 0x99, 0x54, 0x00, 0x06, 0x3E};
+		u8 flag_mmap2[0x8] = {0xE8, 0xFF, 0x00, 0xE0, 0x7C, 0x08, 0x03, 0x78};
+		u8 flag_spe[0x8] = {0x39, 0x20, 0x00, 0x09, 0xE9, 0x43, 0x00, 0x00 };
+
 		u8 flag_offset_fix[0x20] = {0x38, 0xDE, 0x00, 0x07, 0x88, 0x1E, 0x00, 0x07, 0x2F, 0x84, 0x00, 0x01, 0x98, 0x01, 0x00, 0x73, 0x88, 0x06, 0x00, 0x01, 0x88, 0xA6, 0x00, 0x08, 0x89, 0x26, 0x00, 0x02, 0x89, 0x66, 0x00, 0x03};
 		u8 flag_offset_2_fix[0x20] = {0xF9, 0x1F, 0x00, 0x20, 0xF8, 0xFF, 0x00, 0x28, 0xF8, 0xDF, 0x00, 0x30, 0xF8, 0xBF, 0x00, 0x38, 0xFB, 0xBF, 0x00, 0x40, 0x4B, 0xFA, 0x97, 0x45, 0x54, 0x63, 0x06, 0x3E, 0x2F, 0x83, 0x00, 0x00};
 		u8 flag_offset_fix_2B17[0x20] = {0x4E, 0x80, 0x00, 0x20, 0x3C, 0x80, 0x10, 0x50, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x71, 0x78, 0x84, 0x07, 0xC6, 0xFB, 0xE1, 0x00, 0x88, 0x64, 0x84, 0x03, 0x00, 0x7C, 0x7F, 0x1B, 0x78};
@@ -735,6 +759,10 @@ int main()
 				}
 			}
 			
+			if(compare(0xFF, (char *) &memLV2[n], (char *) flag_lpar, sizeof(flag_lpar))) {
+				LPAR = n;
+			}
+			
 			if(compare(0xFF, (char *) &memLV2[n], (char *) open_shared_kernel_object_symbol_flag, sizeof(open_shared_kernel_object_symbol_flag))) {
 				open_shared_kernel_object_symbol = n;
 			}
@@ -1076,20 +1104,39 @@ int main()
 			fread(memLV1,1,size, f);
 			
 			fclose(f);
-			
-			for(n=0x360000; n<size ; n++) {
+			      
+			for(n=0x280000; n<size ; n++) {
 
+				
+				if(compare(0xFF, (char *) &memLV1[n], (char *) flag_htab, sizeof(flag_htab))){
+					HTAB_OFFSET = n;
+				}
+				if(compare(0xFF, (char *) &memLV1[n], (char *) flag_mmap1, sizeof(flag_mmap1))){
+					MMAP_OFFSET1 = n+8;
+				}
+				if(compare(0xFF, (char *) &memLV1[n], (char *) flag_mmap2, sizeof(flag_mmap2))){
+					MMAP_OFFSET2 = n+8;
+				}
+				if(compare(0xFF, (char *) &memLV1[n], (char *) flag_spe, sizeof(flag_spe))){
+					SPE_OFFSET = n;
+				}
+								
 				if(compare(0xBB, (char *) &memLV1[n], (char *) flag_hv_start_offset, sizeof(flag_hv_start_offset))) {
 					HV_START_OFFSET = n+0xA8;
 				}
-							
 				if(compare(0xFF, (char *) &memLV1[n], (char *) vsh_pos_in_ram_FLAG, sizeof(vsh_pos_in_ram_FLAG))){
 					vsh_pos_in_ram = n - 0x200;
 				}
 				
+				if(HV_START_OFFSET && HTAB_OFFSET && MMAP_OFFSET1 && MMAP_OFFSET2 && SPE_OFFSET && n<0x360000)	n=0x360000;
+					
 				if(vsh_pos_in_ram)
 				if(HV_START_OFFSET)
-				break;
+				if(HTAB_OFFSET)
+				if(MMAP_OFFSET1)
+				if(MMAP_OFFSET2)
+				if(SPE_OFFSET)
+					break;
 			}
 			free(memLV1);
 			
@@ -1103,8 +1150,35 @@ int main()
 		if(FW_DATE_OFFSET != 0) FW_DATE_OFFSET = 0x8000000000000000ULL + FW_DATE_OFFSET;
 		if(OFFSET_1_IDPS != 0) OFFSET_1_IDPS = 0x8000000000000000ULL + OFFSET_1_IDPS;
 		if(OFFSET_2_IDPS != 0) OFFSET_2_IDPS = 0x8000000000000000ULL + OFFSET_2_IDPS;
+		if(LPAR != 0) LPAR = 0x8000000000000000ULL + LPAR;
+		
 		
 		char str[255];
+		
+		fputs("\n", IDPSet);
+		sprintf(str, "#define HTAB_OFFSET_%lld%c         0x%06llX\n", FIRMWARE, D, HTAB_OFFSET); fputs(str, IDPSet);
+		sprintf(str, "#define MMAP_OFFSET1_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET1); fputs(str, IDPSet);		
+		sprintf(str, "#define MMAP_OFFSET2_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, IDPSet);		
+		sprintf(str, "#define SPE_OFFSET_%lld%c          0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, IDPSet);
+		sprintf(str, "#define HV_START_OFFSET_%lld%c     0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, IDPSet);
+		sprintf(str, "#define TOC_OFFSET_%lld%c          0x%llXULL\n", FIRMWARE, D, 0x8000000000000000ULL + TOC); fputs(str, IDPSet);
+		sprintf(str, "#define SYSCALL_TABLE_%lld%c       0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, IDPSet);
+		sprintf(str, "#define FW_DATE_OFFSET_%lld%c      0x%llXULL\n", FIRMWARE, D, FW_DATE_OFFSET); fputs(str, IDPSet);
+		sprintf(str, "#define FW_DATE_1_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_1); fputs(str, IDPSet);
+		sprintf(str, "#define FW_DATE_2_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, IDPSet);
+		sprintf(str, "#define OFFSET_1_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, IDPSet);
+		sprintf(str, "#define OFFSET_2_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, IDPSet);	
+		
+		sprintf(str, "#ifdef FIRMWARE_%lld%c\n", FIRMWARE, D); fputs(str, ERK);
+		sprintf(str, "\t#define KERNEL_TOC			                 0x%06llX\n", TOC); fputs(str, ERK);
+		sprintf(str, "\t#define KERNEL_SYMBOL_EXTEND_KSTACK          0x%06llX\n", extend_kstack_symbol); fputs(str, ERK);
+		sprintf(str, "\t#define KERNEL_SYMBOL_COPY_TO_USER           0x%06llX\n", copy_to_user_symbol); fputs(str, ERK);
+		sprintf(str, "\t#define KERNEL_SYMBOL_MEMSET                 0x%06llX\n", memset_symbol); fputs(str, ERK);
+		sprintf(str, "\t#define KERNEL_SYMBOL_MEMCPY                 0x%06llX\n", memcpy_symbol); fputs(str, ERK);
+		sprintf(str, "\t#define GAMEOS_LPAR_BASE_PTR                 0x%llXULL\n", LPAR); fputs(str, ERK);
+		sprintf(str, "\t#define GAMEOS_LPAR_SIZE_PTR                 0x%llXULL\n", LPAR+8); fputs(str, ERK);
+		fputs("#endif\n\n", ERK);
+		
 		fputs("\n", common);
 		sprintf(str, "#define SYSCALL_TABLE_%lld%c         0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, common);
 		sprintf(str, "#define HV_START_OFFSET_%lld%c       0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, common);
@@ -2373,8 +2447,11 @@ int main()
 	}
 	
 	fputs("\n#endif /* __FIRMWARE_SYMBOLS_H_S__ */\n", symbols);
-	
 	fputs("\n#endif /* __COMMON_H__ */\n", common);	
+	fputs("\n#endif /* __FIRMWARE_H__ */\n", IDPSet);
+	fputs("\n#endif /* __SYMBOLS_H__ */\n", ERK);
+	
+	fclose(IDPSet);
 	fclose(common);
 	fclose(SKY);
 	fclose(symbols);

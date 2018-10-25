@@ -241,6 +241,11 @@
 #include "mamba_482D_lz_bin.h"
 #include "mamba_loader_482D_bin.h"
 
+#include "payload_sky_483C_bin.h"
+#include "umount_483C_bin.h"
+#include "mamba_483C_lz_bin.h"
+#include "mamba_loader_483C_bin.h"
+
 #include "ps2gxemu_stage1_421_bin.h"
 #include "ps2gxemu_stage1_430_bin.h"
 #include "ps2gxemu_stage1_440_bin.h"
@@ -422,6 +427,11 @@
 #define PI 3.14159265f
 #define DEG(x) PI/180*x
 
+#define INPUT_SIZE		16
+#define INPUT_X			10
+#define INPUT_Y			491-INPUT_SIZE/2
+
+
 u8 scene=SCENE_MAIN;
 
 typedef struct
@@ -432,7 +442,7 @@ typedef struct
 	uint32_t num_tracks;
 } __attribute__((packed)) rawseciso_args;
 
-SYS_PROCESS_PARAM(1200, 0x80000);
+SYS_PROCESS_PARAM(1200, 0x100000);
 
 //************ FIRMWARE	***************
 
@@ -517,12 +527,19 @@ static u8 load_PIC1=NO;
 
 //********** Backup LIST ******************
 
-#define MAX_GAME 		512
 
+#define MAX_GAME 		512
+/*
 static char list_game_path[MAX_GAME][128] = {{0}};
 static char list_game_title[MAX_GAME][128] = {{0}};
 static u8 list_game_platform[MAX_GAME] = {0};
 static int game_number = -1;
+*/
+
+static s64 game_number=-1;
+static char **list_game_path;
+static char **list_game_title;
+static u8 *list_game_platform;
 
 //********** Backup FAV ******************
 
@@ -749,25 +766,22 @@ char TMP_PIC_path[255];
 #define PS2_DISC		24
 #define PS3_DISC		25
 #define PSP_DISC		26
-#define PS1_STR			27
-#define PS2_STR			28
-#define PS3_STR			29
-#define PSP_STR			30
-#define PS1_CASE		31
-#define PS2_CASE		32
-#define PS3_CASE		33
-#define PSP_CASE		34
-#define FOLDER			35
-#define FILES			36
-#define BR_LOGO			37
-#define PS_LOGO			38
-#define NOTIF			39
-#define BOXHEAD			40
-#define	BOXBODY			41
-#define SIDEBAR			42
-#define BGS				43
+#define TAG				27
+#define PS1_CASE		28
+#define PS2_CASE		29
+#define PS3_CASE		30
+#define PSP_CASE		31
+#define FOLDER			32
+#define FILES			33
+#define BR_LOGO			34
+#define PS_LOGO			35
+#define NOTIF			36
+#define BOXHEAD			37
+#define	BOXBODY			38
+#define SIDEBAR			39
+#define BGS				40
 
-#define PICTURE_NUMBER	44
+#define PICTURE_NUMBER	41
 
 char *PICTURE_NAME[PICTURE_NUMBER] = {	"ALL" , 
 										"UP" , "LEFT" , "DOWN" , "RIGHT" , 
@@ -778,7 +792,7 @@ char *PICTURE_NAME[PICTURE_NUMBER] = {	"ALL" ,
 										"R1", "R2", "R3", "R",
 										"DEFAULT", "DEFAULT_ISO", "DEFAULT_JB",
 										"PS1_DISC", "PS2_DISC", "PS3_DISC", "PSP_DISC",
-										"PS1_STR", "PS2_STR", "PS3_STR", "PSP_STR",
+										"TAG",
 										"PS1_CASE", "PS2_CASE", "PS3_CASE", "PSP_CASE",
 										"FOLDER", "FILES",
 										"BR_LOGO", "PS_LOGO",
@@ -1803,6 +1817,7 @@ u8 SetFilePerms(char *path);
 void open_SETTINGS();
 void close_SETTINGS();
 void TranslateTo(float *value, float target);
+void remove_GAMELIST(s64 pos);
 
 void Draw_MENU();
 
@@ -1864,9 +1879,14 @@ FILE* FAKE_fopen(char *filepath, const char *mode)
 	oflags = m | o;
 	
 	int *f = malloc(sizeof(int *));
-	*f = ps3ntfs_open(filepath, oflags, 0666);
 	
-	if(*f<0) {free(f); return NULL;}
+	*f = ps3ntfs_open(filepath, oflags, 0777);
+	
+	if(*f<0) {
+		SetFilePerms(filepath);
+		*f = ps3ntfs_open(filepath, oflags, 0777);
+		if(*f<0) {free(f); return NULL;}
+	}
 	
 	return f;
 }
@@ -2295,7 +2315,8 @@ void Draw_Box(float x, float y, float z, float r, float w, float h, u32 rgba, u8
 	}
 	else {
 		int t;
-				tiny3d_SetPolygon(TINY3D_POLYGON);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
 		tiny3d_VertexColor(rgba);
 		x+=r;
 		y+=r;
@@ -7001,51 +7022,52 @@ void Draw_GAMEDISK(float x, float y, float z, float d, u8 platform)
 
 int Draw_USB(float x, float y, float font_size, u32 rgba ,int nb)
 {
-	
-	y+=font_size/2;
-	
 	float s=font_size/4;
 	
 	float e=font_size/24;
 	
+	Draw_Box(x, y, 0, 0, 5 + s*5 + 5, font_size, 0xA0A0A0A0, NO);
+	
+	y+=font_size/2;
+	
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(rgba);
-	tiny3d_VertexPos( x + 2*s - e, y - s, 10);
-	tiny3d_VertexPos( x + 2*s - e, y + 2*e - s, 10);
-	tiny3d_VertexPos( x + 3*s, y + 2*e - s, 10);
-	tiny3d_VertexPos( x + 3*s, y - s, 10);
+	tiny3d_VertexPos( x + 2*s - e, y - s, 0);
+	tiny3d_VertexPos( x + 2*s - e, y + 2*e - s, 0);
+	tiny3d_VertexPos( x + 3*s, y + 2*e - s, 0);
+	tiny3d_VertexPos( x + 3*s, y - s, 0);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(rgba);
-	tiny3d_VertexPos( x + 3*s - e, y + s, 10);
-	tiny3d_VertexPos( x + 3*s - e, y + s - 2*e, 10);
-	tiny3d_VertexPos( x + 4*s, y + s - 2*e, 10);
-	tiny3d_VertexPos( x + 4*s, y + s, 10);
+	tiny3d_VertexPos( x + 3*s - e, y + s, 0);
+	tiny3d_VertexPos( x + 3*s - e, y + s - 2*e, 0);
+	tiny3d_VertexPos( x + 4*s, y + s - 2*e, 0);
+	tiny3d_VertexPos( x + 4*s, y + s, 0);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(rgba);
-	tiny3d_VertexPos( x + s - e*1.5 , y  , 10);
-	tiny3d_VertexPos( x + s + e , y  , 10);
-	tiny3d_VertexPos( x + 2*s + e , y - s , 10);
-	tiny3d_VertexPos( x + 2*s - e , y - s , 10);
+	tiny3d_VertexPos( x + s - e*1.5 , y  , 0);
+	tiny3d_VertexPos( x + s + e , y  , 0);
+	tiny3d_VertexPos( x + 2*s + e , y - s , 0);
+	tiny3d_VertexPos( x + 2*s - e , y - s , 0);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(rgba);
-	tiny3d_VertexPos( x + 2*s - e*1.5, y  , 10);
-	tiny3d_VertexPos( x + 2*s + e, y  , 10);
-	tiny3d_VertexPos( x + 3*s + e, y + s , 10);
-	tiny3d_VertexPos( x + 3*s - e, y + s , 10);
+	tiny3d_VertexPos( x + 2*s - e*1.5, y  , 0);
+	tiny3d_VertexPos( x + 2*s + e, y  , 0);
+	tiny3d_VertexPos( x + 3*s + e, y + s , 0);
+	tiny3d_VertexPos( x + 3*s - e, y + s , 0);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_POLYGON);
 	tiny3d_VertexColor(rgba);
-	tiny3d_VertexPos( x , y - e, 10);
-	tiny3d_VertexPos( x , y + e, 10);
-	tiny3d_VertexPos( x + 5*s, y + e, 10);
-	tiny3d_VertexPos( x + 5*s , y - e, 10);
+	tiny3d_VertexPos( x , y - e, 0);
+	tiny3d_VertexPos( x , y + e, 0);
+	tiny3d_VertexPos( x + 5*s, y + e, 0);
+	tiny3d_VertexPos( x + 5*s , y - e, 0);
 	tiny3d_End();
 	
 	FontSize(font_size/2);
@@ -7053,7 +7075,7 @@ int Draw_USB(float x, float y, float font_size, u32 rgba ,int nb)
 	DrawFormatString(x+3.5*s, y-font_size/2, "%d", nb);
 	FontSize(font_size);
 	
-	return x + 5*s;
+	return x + 10 + 5*s;
 }
 
 void Draw_Button(float x, float y, float d)
@@ -7449,23 +7471,26 @@ float Draw_Pad(int button, float x, float y, float z,  float size) {
 
 float DrawButton(float x, float y, char *str, int button)
 {
-	if(button & BUTTON_CROSS) x=Draw_Button_Cross(x, y, 15); 
-	if(button & BUTTON_SQUARE) x=Draw_Button_Square(x, y, 15); 
-	if(button & BUTTON_TRIANGLE) x=Draw_Button_Triangle(x, y, 15);
-	if(button & BUTTON_CIRCLE) x=Draw_Button_Circle(x, y, 15); 
-	if(button & BUTTON_SELECT) x=Draw_Button_Select(x, y, 15); 
-	if(button & BUTTON_START) x=Draw_Button_Start(x, y, 15);
-	if(button & BUTTON_L1) x=Draw_Button_L1(x, y, 0, 15);
-	if(button & BUTTON_L2) x=Draw_Button_L2(x, y, 0, 15);
-	if(button & BUTTON_L3) x=Draw_Button_L3(x, y, 0, 15);
-	if(button & BUTTON_L ) x=Draw_Button_L (x, y, 0, 15);
-	if(button & BUTTON_R1) x=Draw_Button_R1(x, y, 0, 15);
-	if(button & BUTTON_R2) x=Draw_Button_R2(x, y, 0, 15);
-	if(button & BUTTON_R3) x=Draw_Button_R3(x, y, 0, 15);
-	if(button & BUTTON_R ) x=Draw_Button_R (x, y, 0, 15);
-	if((button & BUTTON_RIGHT) || (button & BUTTON_LEFT) || (button & BUTTON_DOWN) || (button & BUTTON_UP))	x=Draw_Pad(button, x, y, 0, 15);
+	float button_size = 16;
+	FontSize(button_size);
+
+	if(button & BUTTON_CROSS) x=Draw_Button_Cross(x, y, button_size); 
+	if(button & BUTTON_SQUARE) x=Draw_Button_Square(x, y, button_size); 
+	if(button & BUTTON_TRIANGLE) x=Draw_Button_Triangle(x, y, button_size);
+	if(button & BUTTON_CIRCLE) x=Draw_Button_Circle(x, y, button_size); 
+	if(button & BUTTON_SELECT) x=Draw_Button_Select(x, y, button_size); 
+	if(button & BUTTON_START) x=Draw_Button_Start(x, y, button_size);
+	if(button & BUTTON_L1) x=Draw_Button_L1(x, y, 0, button_size);
+	if(button & BUTTON_L2) x=Draw_Button_L2(x, y, 0, button_size);
+	if(button & BUTTON_L3) x=Draw_Button_L3(x, y, 0, button_size);
+	if(button & BUTTON_L ) x=Draw_Button_L (x, y, 0, button_size);
+	if(button & BUTTON_R1) x=Draw_Button_R1(x, y, 0, button_size);
+	if(button & BUTTON_R2) x=Draw_Button_R2(x, y, 0, button_size);
+	if(button & BUTTON_R3) x=Draw_Button_R3(x, y, 0, button_size);
+	if(button & BUTTON_R ) x=Draw_Button_R (x, y, 0, button_size);
+	if((button & BUTTON_RIGHT) || (button & BUTTON_LEFT) || (button & BUTTON_DOWN) || (button & BUTTON_UP))	x=Draw_Pad(button, x, y, 0, button_size);
 	
-	x=DrawString(x+5, y, str);
+	x=DrawString(x+5, y+1, str);
 	
 	return x+10;
 }
@@ -7753,13 +7778,23 @@ void DrawLoadingIcon()
 	float r2 = 5;
 	float x = X_MAX - 20;
 	float y = 20;
+	/*
+	float r1 = 50;
+	float r2 = 30;
+	float x = X_MAX/2;
+	float y = Y_MAX/2;
+	*/
 	u32 color = COLOR_1;
-
+	
+	color = color - GetALPHA(color);
+	
+	u8 alpha = 0;
 	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexColor(color);
-	for(t=LoadIconRot; t<=LoadIconRot+270 ; t+=10) {
+	for(t=LoadIconRot; t<=LoadIconRot+360 ; t+=10) {
+		tiny3d_VertexColor(color+alpha);
 		tiny3d_VertexPos( x - r1*sin(t*PI/180), y - r1*cos(t*PI/180), 0);
 		tiny3d_VertexPos( x - r2*sin(t*PI/180), y - r2*cos(t*PI/180), 0);
+		alpha=(t-LoadIconRot)/360*0xFF;
 	}
 	tiny3d_End();
 	
@@ -7795,9 +7830,7 @@ void Draw_Loading(void *unused)
 		
 		if(scene == SCENE_FILEMANAGER) {
 			Draw_scene();
-			if(show_log && have_log) {
-				Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
-			}
+			if(show_log && have_log) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
 		} else Draw_BGS();
 		
 		FontSize(20);
@@ -7974,10 +8007,10 @@ void Draw_Loading(void *unused)
 		}
 		
 		// *** DISPLAY BUTTONS ***
-		x=25; y=485;
-		
-		FontSize(15);
+		x=INPUT_X;
+		y=INPUT_Y;
 		FontColor(COLOR_1);
+		SetFontZ(0);
 
 		if(scene == SCENE_FILEMANAGER) {
 			if(LoadIconRot<180) {
@@ -9232,6 +9265,36 @@ int init_fw()
 		MAMBA_LOADER_SIZE = mamba_loader_482D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_482D_bin;
 
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_483C    )==FW_DATE_1_483C) &&
+	   ( lv2peek(FW_DATE_OFFSET_483C + 8)==FW_DATE_2_483C) )
+	{
+		firmware = 0x483C;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_483C;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_483C;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_483C;
+		OFFSET_FIX = OFFSET_FIX_483C;
+		HV_START_OFFSET = HV_START_OFFSET_483C;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_483C;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_483C;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_483C;
+		SYSCALL_TABLE = SYSCALL_TABLE_483C;
+		LV2MOUNTADDR = LV2MOUNTADDR_483C;
+		OPEN_HOOK = OPEN_HOOK_483C;
+		BASE_ADDR = BASE_ADDR_483C;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_483C;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_483C;
+
+		PAYLOAD_SKY = (u64) payload_sky_483C_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_483C_bin_size;
+		UMOUNT = (u64) umount_483C_bin;
+		UMOUNT_SIZE = umount_483C_bin_size;
+		MAMBA = (u64) mamba_483C_lz_bin;
+		MAMBA_SIZE = mamba_483C_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_483C_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_483C_bin;
+
 	} else {return NOK;}
 	
 	NEW_POKE_SYSCALL_ADDR = lv2peek( lv2peek(SYSCALL_TABLE + NEW_POKE_SYSCALL*8) ) + 0ULL;
@@ -9670,6 +9733,8 @@ void print_copy_log(char *str)
 	}
 	
 	strcpy(copy_log[0], str);
+	
+	if(strncmp(copy_log[0], "Error", 5) == 0)  sleep(4);
 }
 
 void get_hash(FILE* log, int hash_type, char *path)
@@ -9834,9 +9899,8 @@ void Delete(char* path)
 int Delete_Game(char *path, int position)
 {
 	int i;
-	
-	char temp[128];
-	char game_path[128];
+	char temp[512];
+	char game_path[512];
 	
 	if(path != NULL) {
 		strcpy(game_path, path);
@@ -9844,55 +9908,39 @@ int Delete_Game(char *path, int position)
 	
 	print_load("Deleting %s", game_path);
 
-	if(iso) {
 	
-		RemoveExtention(game_path);
-		
-		sprintf(temp , "%s.PNG" , game_path);
-		Delete(temp);
-		sprintf(temp, "%s.png" , game_path);
-		Delete(temp);
-		sprintf(temp , "%s.SFO" , game_path);
-		Delete(temp);
-		sprintf(temp, "%s.sfo" , game_path);
-		Delete(temp);
-	
-		for(i=0; i<30; i++) {
-			sprintf(temp , "%s.iso.%d" , game_path, i);
-			Delete(temp);
-			sprintf(temp, "%s.ISO.%d" , game_path, i);
+	u8 split666 = is_66600(game_path);
+	if( is_splitted_iso(game_path) || split666) {
+			
+		int l= strlen(game_path);
+		game_path[l-1]=0;
+		if(split666) game_path[l-2]=0;
+
+		for(i=0; i<100; i++) {
+			if(split666) sprintf(temp , "%s%02d" , game_path, i);
+			else sprintf(temp , "%s%d" , game_path, i);
 			Delete(temp);
 		}
-		sprintf(temp , "%s.iso" , game_path);
-		Delete(temp);
-		sprintf(temp , "%s.ISO" , game_path);
-		Delete(temp);
-	} else {
+	} 
+	else {
 		Delete(game_path);
 	}
-	
+		
 	if(path != NULL) {
 		if(path_info(path) != _NOT_EXIST) return FAILED; else
 		return SUCCESS;
 	} else
 	if(path_info(list_game_path[position]) != _NOT_EXIST ) return FAILED;
 
+	
 	print_load("Removing game from list");
 	char setPath[128];
 	if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_title[position]);
 	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin" , ManaGunZ_id, list_game_title[position]);
 	Delete(setPath);
 	
-	for(i=position; i <= game_number; i++) {
-		strcpy(list_game_path[i] , list_game_path[i+1]);
-		strcpy(list_game_title[i], list_game_title[i+1]);
-		list_game_platform[i]=list_game_platform[i+1];
-	}
-	strcpy(list_game_path[game_number] , "");
-	strcpy(list_game_title[game_number], "");
-	list_game_platform[game_number]=0;
-	game_number--;
-
+	remove_GAMELIST(position);
+		
 	print_load("Update Favorite");
 	read_fav();
 
@@ -9973,6 +10021,8 @@ char *get_unit(u64 nb)
 	
 }
 
+u8 reading = 0;
+u8 writing = 0;
 
 static sys_ppu_thread_t Copy_id;
 
@@ -10047,6 +10097,7 @@ void Draw_Copy_screen(void *unused)
 		DrawString(x, y, size_current);
 		if(size_current) free(size_current);
 		
+		
 		if(gathering_cancel==YES) DrawString(x+400-GetWidth(STR_UNKNOWN), y, STR_UNKNOWN); 
 		else {
 			
@@ -10065,6 +10116,7 @@ void Draw_Copy_screen(void *unused)
 			start_timer(4);
 		}
 		
+		
 		DrawStringFromCenterX(x+200, y, speed_STR);
 		
 		y+=new_line(1);
@@ -10082,8 +10134,9 @@ void Draw_Copy_screen(void *unused)
 		
 		DrawFormatString(x, y, "%s : %s", STR_FILE, copy_file);
 		
+		
 		y+=new_line(2);
-	
+		
 		FontSize(17);
 		
 		for(i=0; i<10; i++) {
@@ -10091,11 +10144,10 @@ void Draw_Copy_screen(void *unused)
 			y+=new_line(1);
 		}
 
-		y=485;
-		x=25;
-		
+		x=INPUT_X;
+		y=INPUT_Y;
 		FontColor(COLOR_1);
-		FontSize(15);
+		SetFontZ(0);
 
 		x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		
@@ -10183,172 +10235,226 @@ void initAIO()
 
 }
 
-static sysFSAio t_read;  // used for async read
-static sysFSAio t_write; // used for async write
+#define BUFFNUMBER 4
+#define AIONUMBER  2
+// FAILED 0
+#define READY 1
+#define BUSY  2
+#define DATA_EMPTY 0
+#define DATA_FULL  1
 
-typedef struct {
-    s64 read;
-    s64 writed;
-} t_async;
+u64 BUFFSIZE=0x200000ULL;
 
-t_async async_data;
+static sysFSAio aio_read[AIONUMBER];
+static sysFSAio aio_write[AIONUMBER];
 
-static void fast_func_read(sysFSAio *xaio, s32 error, s32 xid, u64 size)
+u8 reading_statut[AIONUMBER];
+u8 writing_statut[AIONUMBER];
+	
+u8 buffer_statut[BUFFNUMBER] = {DATA_EMPTY};
+u8 buffer_to_write;
+u8 buffer_to_read;
+u64 reading_pos;
+u64 writing_pos;
+u64 writed;
+
+static void reading_callback(sysFSAio *xaio, s32 error, s32 xid, u64 size)
 {
-    t_async* fi = (t_async *) xaio->usrdata;
+	int i = xaio->usrdata;
 
-    if(error != 0 || size != xaio->size)
-    {
-        fi->read = -1; return;
-    }
-    else fi->read += (s64) size;
+	char tmp[128];
+    if(error != 0) {
+		reading_statut[i] = FAILED;
+		sprintf(tmp, "Error : reading error %X", (unsigned int) error); print_copy_log(tmp);
+	} else 
+	if(size != xaio->size) {
+		reading_statut[i] = FAILED;
+		sprintf(tmp, "Error : reading size %X / %X", (unsigned int) size, (unsigned int) xaio->size); print_copy_log(tmp);
+	} else {
+		buffer_statut[buffer_to_read] = DATA_FULL;
+		buffer_to_read++;
+		if(buffer_to_read==BUFFNUMBER) buffer_to_read=0;
+		reading_statut[i] = READY;
+	}		
 }
 
-static void fast_func_write(sysFSAio *xaio, s32 error, s32 xid, u64 size)
+static void writing_callback(sysFSAio *xaio, s32 error, s32 xid, u64 size)
 {
-    t_async* fi = (t_async *) xaio->usrdata;
 
-    if(error != 0 || size != xaio->size)
-    {
-        fi->writed = -1; return;
-    }
-    else fi->writed += (s64) size;
+	int i = xaio->usrdata;
+	
+	char tmp[128];
+	if(error != 0) {
+		writing_statut[i] = FAILED;
+		sprintf(tmp, "Error : writing error %X", (unsigned int) error); print_copy_log(tmp);
+	} else 
+	if(size != xaio->size) {
+		writing_statut[i] = FAILED;
+		sprintf(tmp, "Error : writing size %X / %X", (unsigned int) size, (unsigned int) xaio->size); print_copy_log(tmp);
+	} else {
+		buffer_statut[buffer_to_write] = DATA_EMPTY;
+		buffer_to_write++;
+		if(buffer_to_write==BUFFNUMBER) buffer_to_write=0;
+		writing_statut[i] = READY;
+		copy_current_size+=size;
+		writed+=size;
+	}		
 }
-
-#define BUFFSIZE 0x20000ULL
 
 // Asynchronous Copy - include <lv2/sysfs.h>
 // sysFsAioInit - sysFsOpen - sysFsAioRead - sysFsAioWrite - sysFsAioFinish - sysFsAioCancel
 int CopyFile_async(char *src, char *dst)
 {
-    t_read.fd  = -1;
-    t_write.fd = -1;
+    
     int fdr, fdw;
-    static int id_r = -1, id_w = -1;
+    static int id_r[2] = {-1, -1};
+	static int id_w[2] = {-1, -1};
+	int i;
 	
-    u64 pos = 0ULL;
-    u64 pos2 = 0ULL;
-
 	struct stat s;
 	if(stat(src, &s) != 0) return FAILED; 
 	if(S_ISDIR(s.st_mode)) return FAILED;
 	u64 size = s.st_size;
-	
-    int alternate = 0;
-    char *mem = malloc(BUFFSIZE*2);
-    if(!mem) {
-		print_load("Error : failed to copy_async / malloc");
-		return FAILED;
-	}
-
-	if(sysFsAioInit(src)!= 0) {
-		free(mem);
+		
+/*	if(sysFsAioInit(src)!= 0) {
 		print_load("Error : failed to copy_async / sysFsAioInit(src)");
 		return FAILED;
 	}
-
+*/
 	if(sysFsOpen(src, SYS_O_RDONLY, &fdr, 0,0) != 0) {
-		free(mem);
-		sysFsAioFinish(src);
-		print_load("Error : failed to copy_async / sysFsOpen(src)");
+		//sysFsAioFinish(src);
+		print_copy_log("Error : failed to copy_async / sysFsOpen(src)");
 		return FAILED;
 	}
-
+/*
     if(sysFsAioInit(dst)!= 0)  {
-		free(mem);
 		sysFsAioFinish(src);
 		sysFsClose(fdr);
 		print_load("Error : failed to copy_async / sysFsAioInit(dst)");
 		return FAILED;
 	}
-
+*/
 	if(sysFsOpen(dst, SYS_O_CREAT | SYS_O_TRUNC | SYS_O_WRONLY, &fdw, 0, 0) != 0) {
-		free(mem);
-		sysFsAioFinish(src);
-		sysFsAioFinish(dst);
+		//sysFsAioFinish(src);
+		//sysFsAioFinish(dst);
 		sysFsClose(fdr);
-		print_load("Error : failed to copy_async / sysFsOpen(src)");
+		print_copy_log("Error : failed to copy_async / sysFsOpen(src)");
 		return FAILED;
 	}
 
-    async_data.read = -666;
-    async_data.writed = -666;
+	char *mem = (char *) malloc(BUFFNUMBER * BUFFSIZE);
+	if(mem == NULL) {
+		print_copy_log("Error : failed to copy_async / malloc");
+		return FAILED;
+	}
+	
+	for(i=0; i<BUFFNUMBER; i++)	buffer_statut[i] = DATA_EMPTY;
+	for(i=0; i<AIONUMBER; i++) {
+		aio_read[i].fd  = -1;
+		aio_write[i].fd = -1;
+		reading_statut[i]=READY;
+		writing_statut[i]=READY;
+	}
 
-    while(pos2 < size) {
-
+	reading_pos=0ULL;
+	writing_pos=0ULL;		
+	buffer_to_write=0;
+	buffer_to_read=0;
+	writed=0;
+	
+    while(writed<size) {
+		
         if(cancel) goto error;
+		
+		for(i=0; i<AIONUMBER; i++) {
+		
+			if(reading_statut[i] == READY) {
+				
+				if(buffer_statut[buffer_to_read] == DATA_EMPTY) {			
+				
+					if( reading_pos < size) {
+						aio_read[i].fd = fdr;
+						aio_read[i].offset = reading_pos;
+						aio_read[i].buffer_addr = (u32) (u64) &mem[buffer_to_read * BUFFSIZE];
+						aio_read[i].size = size - reading_pos;
+						if(aio_read[i].size > BUFFSIZE) aio_read[i].size = BUFFSIZE;
+						aio_read[i].usrdata = i;
+										
+						reading_statut[i] = BUSY;
+						
+						reading_pos+=aio_read[i].size;
+						
+						if(sysFsAioRead(&aio_read[i], &id_r[i], reading_callback) != 0) {
+							print_copy_log("Error : failed to copy_async / sysFsAioRead");
+							goto error;
+						}
+					}
+				}
+            }
         
-        if(async_data.read == -666) {
-            async_data.read = -555;
-            t_read.fd = fdr;
-            t_read.offset = pos;
-            t_read.buffer_addr = (u32) (u64) &mem[alternate*BUFFSIZE];
-            t_read.size = size - pos;
-			if(t_read.size > BUFFSIZE) t_read.size = BUFFSIZE;
-            t_read.usrdata = (u64 ) &async_data;
-			
-			if(sysFsAioRead(&t_read, &id_r, fast_func_read) != 0) {
-				print_load("Error : failed to copy_async / sysFsAioRead");
+		
+			if(reading_statut[i] == FAILED) {
+				print_copy_log("Error : failed to copy_async / reading_statut = FAILED !");
 				goto error;
 			}
-            
-        } if(async_data.read == -1) {
-			print_load("Error : failed to copy_async / async_data.read = -1");
-			goto error;
-        } else if(async_data.read >= 0 && async_data.writed == -666) {
-            async_data.writed = -555;
-            t_write.fd = fdw;
-            t_write.offset = t_read.offset;
-            t_write.buffer_addr = t_read.buffer_addr;
-            t_write.size = t_read.size;
-            t_write.usrdata = (u64 ) &async_data;
-            pos+= t_read.size;
-            alternate^=1;
-            async_data.read = -666;
+			
+			if(writing_statut[i] == READY) {
 
-            if(sysFsAioWrite(&t_write, &id_w, fast_func_write) != 0) {
-				print_load("Error : failed to copy_async / sysFsAioWrite");
+				if(buffer_statut[buffer_to_write] == DATA_FULL) {
+					if( writing_pos < size) {
+						aio_write[i].fd = fdw;
+						aio_write[i].offset = writing_pos;
+						aio_write[i].buffer_addr = (u32) (u64) &mem[buffer_to_write * BUFFSIZE];
+						aio_write[i].size = size - writing_pos;
+						if(aio_write[i].size > BUFFSIZE) aio_write[i].size = BUFFSIZE;
+						aio_write[i].usrdata = i;
+									
+						writing_statut[i] = BUSY;
+						
+						writing_pos += aio_write[i].size;
+						
+						if(sysFsAioWrite(&aio_write[i], &id_w[i], writing_callback) != 0) {
+							print_copy_log("Error : failed to copy_async / sysFsAioWrite");
+							goto error;
+						}
+					} 
+				}
+			}
+			
+			if(writing_statut[i] == FAILED) {
+				print_copy_log("Error : failed to copy_async / writing_statut = FAILED !");
 				goto error;
-            } 
-         
-        }
-        
-        if(async_data.writed == -1) {
-			print_load("Error : failed to copy_async / async_data.read = -1");
-			goto error;
-        } else if(async_data.writed >=0) {
-        
-            if(pos >= size) async_data.read = -555; else async_data.writed = -666;
-            pos2 = t_write.offset + t_write.size;
+			}
 			
-			file_copy_prog_bar=pos2*100/size;
+			file_copy_prog_bar=writed*100/size;
 			
-			copy_current_size+=t_write.size;
-        }
-
-        
-		//usleep(4000);
-
+		}
     }
-
-	sysFsClose(t_read.fd);
-    sysFsClose(t_write.fd);
-    sysFsAioFinish(src);
-	sysFsAioFinish(dst);
+	
+	for(i=0; i<AIONUMBER; i++) {
+		sysFsClose(aio_read[i].fd);
+		sysFsClose(aio_write[i].fd);
+	}
+//  sysFsAioFinish(src);
+//	sysFsAioFinish(dst);
     free(mem);
-   // usleep(10000);
-
+	SetFilePerms(dst);
+	
     return SUCCESS;
 
 error:
-  
-    sysFsAioCancel(id_r);
-    sysFsAioCancel(id_w);
-    //usleep(200000);
-    sysFsClose(t_read.fd);
-    sysFsClose(t_write.fd);
-    sysFsAioFinish(src);
-	sysFsAioFinish(dst);
+	for(i=0; i<AIONUMBER; i++) {
+		sysFsAioCancel(id_r[i]);
+		sysFsAioCancel(id_w[i]);
+	}
+	for(i=0; i<AIONUMBER; i++) {
+		sysFsClose(aio_read[i].fd);
+		sysFsClose(aio_write[i].fd);
+	}
+	
+	
+//  sysFsAioFinish(src);
+//	sysFsAioFinish(dst);
     free(mem);
    
     return FAILED;
@@ -10601,7 +10707,7 @@ skip:
 
 	file_copy_prog_bar=0;
 	
-	if(mem) free(mem);
+	if(mem) FREE(mem);
 	
 	if(f1>=0) {
 		ps3ntfs_close(f1);
@@ -10747,23 +10853,25 @@ void TestCopy(char *src, char *dst, int i)
 {
 	if(i==0) CopyFile_stdio(src, dst); else
 	if(i==1) CopyFile_fcntl(src, dst); else
-	if(i==2) CopyFile_ps3ntfs(src, dst); else
+	if(i==2) CopyFile_sysFs(src, dst); else
 	if(i==3) CopyFile_sysFsLv2(src, dst); else
-	if(i==4) CopyFile_sysFs(src, dst); else
+	if(i==4) CopyFile_ps3ntfs(src, dst); else
 	if(i==5) CopyFile_async(src, dst);
 }
 
 #define CopyFile CopyFile_ps3ntfs
+void end_checking();
 
 void SpeedTest()
 {
 
-	char *TestFile = "/dev_hdd0/SPEEDTEST.BIN";
+	char *TestFile = "/dev_hdd0/TEST.BIN";
 	
 	char dst[128];
 	char dst2[128];
 	char dst3[128];
 	char tmp[128];
+	time_t time_start;
 	
 	u64 previous_size=0;
 	
@@ -10780,27 +10888,49 @@ void SpeedTest()
 	gathering_cancel=YES;
 	
 	int i,j;
-	for(j=0; j<6; j++) {
+	copy_speed = get_unit(BUFFSIZE);
+	sprintf(tmp, "BUFFSIZE = %s\n", copy_speed); fputs(tmp,f); 
+	if(copy_speed) free(copy_speed);
+	
+	for(j=4; j<6; j++) {		
+		
 		if(j==0) {strcpy(tmp, "*** CopyFile_stdio ***\n"); fputs(tmp,f);} else
 		if(j==1) {strcpy(tmp, "\n*** CopyFile_fcntl ***\n"); fputs(tmp,f);} else
-		if(j==2) {strcpy(tmp, "\n*** CopyFile_ps3_ntfs ***\n"); fputs(tmp,f);} else
+		if(j==2) {strcpy(tmp, "\n*** CopyFile_sysFs ***\n"); fputs(tmp,f);} else
 		if(j==3) {strcpy(tmp, "\n*** CopyFile_sysFsLv2 ***\n"); fputs(tmp,f);} else
-		if(j==4) {strcpy(tmp, "\n*** CopyFile_sysFs ***\n"); fputs(tmp,f);} else
+		if(j==4) {strcpy(tmp, "\n*** CopyFile_ps3_ntfs ***\n"); fputs(tmp,f);} else
 		if(j==5) {strcpy(tmp, "\n*** CopyFile_async ***\n"); fputs(tmp,f);}		 
 
 		strcpy(tmp, "HDD0 to HDD0"); fputs(tmp,f); 
 		
-		strcpy(dst, "/dev_hdd0/DST.BIN");
+		strcpy(dst, "/dev_hdd0/tmp/DST.BIN");
 		
 		start_timer(3);
+		time_start = time(NULL);
 		TestCopy(TestFile, dst, j);
 		copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
 		sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+		sprintf(tmp, "temps : %ds\n", (int)(time(NULL)-time_start)); fputs(tmp,f); 
 		if(copy_speed) free(copy_speed);
 		previous_size=copy_current_size;
 		
 		Delete(dst);
-	
+		
+		strcpy(tmp, "HDD0 to HDD1"); fputs(tmp,f); 
+		
+		strcpy(dst, "/dev_hdd1/DST.BIN");
+		
+		start_timer(3);
+		time_start = time(NULL);
+		TestCopy(TestFile, dst, j);
+		copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
+		sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f);
+		sprintf(tmp, "temps : %ds\n", (int)(time(NULL)-time_start)); fputs(tmp,f); 
+		if(copy_speed) free(copy_speed);
+		previous_size=copy_current_size;
+		
+		Delete(dst);
+		
 		for(i=0; i<=device_number; i++) {
 			if(strstr(list_device[i], "dev_hdd0") != NULL) continue;
 			
@@ -10809,20 +10939,24 @@ void SpeedTest()
 			sprintf(dst, "/%s/DST.BIN", list_device[i]);
 			
 			start_timer(3);
+			time_start = time(NULL);
 			TestCopy(TestFile, dst, j);
 			copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
-			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f);
+			sprintf(tmp, "temps : %ds\n", (int)(time(NULL)-time_start)); fputs(tmp,f);
 			if(copy_speed) free(copy_speed);
 			previous_size=copy_current_size;
 			
 			sprintf(tmp, "%s to HDD0", list_device[i]); fputs(tmp,f); 
 			
-			strcpy(dst2, "/dev_hdd0/DST.BIN");
+			strcpy(dst2, "/dev_hdd0/tmp/DST.BIN");
 			
 			start_timer(3);
+			time_start = time(NULL);
 			TestCopy(dst, dst2, j);
 			copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
-			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f);
+			sprintf(tmp, "temps : %ds\n", (int)(time(NULL)-time_start)); fputs(tmp,f);
 			if(copy_speed) free(copy_speed);
 			previous_size=copy_current_size;
 			
@@ -10831,9 +10965,11 @@ void SpeedTest()
 			sprintf(dst3, "/%s/DST2.BIN", list_device[i]);
 			
 			start_timer(3);
+			time_start = time(NULL);
 			TestCopy(dst, dst3, j);
 			copy_speed = get_unit((copy_current_size-previous_size)*1000/get_time(3));
-			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f); 
+			sprintf(tmp, " = %s/s\n", copy_speed); fputs(tmp,f);
+			sprintf(tmp, "temps : %ds\n", (int)(time(NULL)-time_start)); fputs(tmp,f);
 			if(copy_speed) free(copy_speed);
 			previous_size=copy_current_size;
 			
@@ -10842,7 +10978,6 @@ void SpeedTest()
 			Delete(dst3);
 		}
 	}
-
 	if(f) {fclose(f); f=NULL;}
 }
 
@@ -10947,7 +11082,6 @@ u8 CopyJoin(char *src, char *dst)
 	
 }
 
-
 u8 Move(char *src, char *dst)
 {
 	char dev_src[30];
@@ -10971,10 +11105,29 @@ u8 Move(char *src, char *dst)
 	return SUCCESS;
 }
 
-u8 RefreshList()
+//*********************************************
+// GAME LIST TODOOOOO
+//*********************************************
+
+void free_GAMELIST()
 {
+	s64 i;
+	for(i=0; i<=game_number; i++) {
+		FREE(list_game_path[i]);
+		FREE(list_game_title[i]);
+	}
+	
+	FREE(list_game_path);
+	FREE(list_game_title);
+	FREE(list_game_platform);
+}
+
+void sort_GAMELIST()
+{
+	print_load("Sorting the game list");
+	
 	int min; 
-	char ta[128], tb[128];
+	char ta[512], tb[512];
 	u8 t;
 	int i, j;
 	for (i = 0; i<game_number; i++) { 
@@ -10984,52 +11137,110 @@ u8 RefreshList()
 			strcpy(tb, list_game_title[min]);
 			if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
 			if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
-			if (strcmp(ta, tb) < 0) { 
-				min = j; 
-			} 
+			
+			if (strcmp(ta, tb) < 0) min = j;
 		}
 		if(min==i) continue;
+		
 		strcpy(ta , list_game_title[min]);
-		strcpy(list_game_title[min], list_game_title[i]); 
-		strcpy(list_game_title[i], ta); 
+		
+		FREE(list_game_title[min]);
+		list_game_title[min] = strcpy_malloc(list_game_title[i]);
+		
+		FREE(list_game_title[i]);
+		list_game_title[i] = strcpy_malloc(ta); 
+		
 		strcpy(tb, list_game_path[min]);
-		strcpy(list_game_path[min], list_game_path[i]); 
-		strcpy(list_game_path[i], tb);
+		
+		FREE(list_game_path[min]);
+		list_game_path[min] = strcpy_malloc(list_game_path[i]);
+		
+		FREE(list_game_path[i]);
+		list_game_path[i] = strcpy_malloc(tb);
+		
 		t = list_game_platform[min];
 		list_game_platform[min] = list_game_platform[i];
 		list_game_platform[i] = t;
 	}
 	
-	//Extract_IconParam();
-	
-	read_fav();
-	start_Load_GamePIC();
-	
-	return SUCCESS;
 }
 
-u8 AddGame(char *path)
+void add_GAMELIST(char *path)
 {
-	if(path_info(path) == _NOT_EXIST) return FAILED;
+	u8 ext = get_ext(path);
+	
+	if(ext != _ISO_PS3 && ext != _JB_PS3
+	&& ext != _ISO_PSP && ext != _JB_PSP
+	&& ext != _ISO_PS2 && ext != _JB_PS2
+	&& ext != _ISO_PS1 && ext != _JB_PS1) return;
 	
 	game_number++;
-	strcpy(list_game_path[game_number], path);
-
-	strcpy(list_game_title[game_number], list_game_path[game_number]);
-	strcpy(list_game_title[game_number], &strrchr(list_game_title[game_number], '/')[1]);
-	RemoveExtention(list_game_title[game_number]);
+	list_game_path = (char **) realloc( list_game_path, (game_number+1) * sizeof(char *));
+	list_game_title = (char **) realloc(list_game_title, (game_number+1) * sizeof(char *));
+	list_game_platform = (u8 *) realloc(list_game_platform, (game_number+1) * sizeof(u8) );
 	
-	u8 ext = get_ext(list_game_path[game_number]);
-	
+	list_game_path[game_number] = strcpy_malloc(path);
 	list_game_platform[game_number] = ext;
 	
+	char title[512];
+	strcpy(title, &strrchr(path, '/')[1]);
+	RemoveExtention(title);
+	
 	if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
-		GetParamSFO("TITLE", list_game_title[game_number], game_number, NULL);
+		GetParamSFO("TITLE", title, game_number, NULL);
 	}
 	
-	RefreshList();
+	list_game_title[game_number] = strcpy_malloc(title);
 	
-	return SUCCESS;
+}
+
+void remove_GAMELIST(s64 pos)
+{
+	if(pos>game_number) return;
+	
+	s64 i;
+	for(i=pos; i<game_number; i++) {
+		FREE(list_game_path[i]);
+		list_game_path[i] = strcpy_malloc(list_game_path[i+1]);
+		
+		FREE(list_game_title[i]);
+		list_game_title[i] = strcpy_malloc(list_game_title[i+1]);
+		
+		list_game_platform[i] = list_game_platform[i+1];
+	}
+	
+	FREE(list_game_title[game_number]);
+	FREE(list_game_path[game_number]);
+	
+	game_number--;
+}
+
+void get_GAMELIST(char *scan_path)
+{
+	print_load("Scanning : %s", scan_path);
+	
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir(scan_path);
+	if(d==NULL) return;
+	
+	while ((dir = readdir(d))) {
+		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+
+		print_head("[%03d] %s", game_number+1, dir->d_name);
+				
+		if(game_number+2==MAX_GAME) {
+			print_load("Warning : too many games !");
+			break;
+		}
+		
+		char temp[512];
+		sprintf(temp, "%s/%s" , scan_path, dir->d_name);
+		
+		add_GAMELIST(temp);
+	}
+	closedir(d);
 }
 
 void Copy_Game(char *src, char *dst)
@@ -11099,7 +11310,14 @@ end:
 	
 	if( (total_size <= copy_current_size && copy_current_size != 0) ||	(gathering_cancel == YES && copy_cancel==NO && copy_current_size > 0) ) {
 	
-		AddGame(copy_dst);
+		//AddGame(copy_dst);
+		
+		add_GAMELIST(copy_dst);
+		
+		sort_GAMELIST();
+		
+		read_fav();
+		start_Load_GamePIC();
 		
 		show_msg(STR_DONE);
 	} else {
@@ -11133,7 +11351,8 @@ void Draw_GameProperties()
 		strcpy(Game_id, STR_UNKNOWN);
 	}
 	
-	while(1) {
+	u8 LoopBreak=1;
+	while(LoopBreak) {
 		
 		cls();
 		
@@ -11255,11 +11474,11 @@ void Draw_GameProperties()
 			
 		}
 		
-		y=485;
-		x1=25;
+		x1=INPUT_X;
+		y=INPUT_Y;
 		FontColor(COLOR_1);
-		FontSize(15);
-
+		SetFontZ(0);
+		
 		x1=DrawButton(x1, y, STR_BACK , BUTTON_CIRCLE);
 		
 		tiny3d_Flip();
@@ -11268,6 +11487,7 @@ void Draw_GameProperties()
 		ps3pad_read();
 		
 		if(new_pad & BUTTON_CIRCLE) {
+			LoopBreak = 0;
 			return;
 		}
 	}
@@ -12141,7 +12361,8 @@ screen:
 
 	end_loading();
 	
-	while(1)
+	u8 LoopBreak=1;
+	while(LoopBreak)
 	{
 		cls();
 		ps3pad_read();
@@ -12174,13 +12395,8 @@ screen:
 			y+=new_line(1);
 		}
 		
-		FontColor(COLOR_1);
-		FontSize(15);
-		x=25;
-		
-		x=25;
-		y=485;
-		FontSize(15);
+		x=INPUT_X;
+		y=INPUT_Y;
 		FontColor(COLOR_1);
 		SetFontZ(0);
 	
@@ -12213,7 +12429,8 @@ screen:
 			if(d_position<nPKG) d_position++;
 		}
 		if(new_pad & BUTTON_CIRCLE) {
-			break;
+			LoopBreak=0;
+			return;
 		}
 		if(new_pad & BUTTON_CROSS && nPKG!=-1) { 
 			sprintf(dst, "/dev_hdd0/packages%s", strrchr(data[d_position].url, '/'));
@@ -12327,7 +12544,14 @@ void getDevices()
 	d = opendir("/");		
 	while ((dir = readdir(d))) {
 		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
-		if(strstr(dir->d_name, "dev_usb") || strstr(dir->d_name, "dev_hdd0")) {
+		
+		if(	strstr(dir->d_name, "dev_usb")
+		||  strstr(dir->d_name, "dev_hdd0")
+		||  strstr(dir->d_name, "dev_sd")
+		||  strstr(dir->d_name, "dev_ms")
+		||  strstr(dir->d_name, "dev_cd")
+		  ) 
+		{
 			device_number++;
 			strcpy(list_device[device_number], dir->d_name);
 		}
@@ -12421,41 +12645,27 @@ void check_device()
 					sysFsAioFinish(mount_point);
 				} 
 				
-				char new_title_list[MAX_GAME][255]={{0}};
-				char new_path_list[MAX_GAME][255]={{0}};
-				char new_platform_list[MAX_GAME]={0};
+				s64 old_game_number = game_number;
 				
-				int new_PS3_game_number=-1;
-				for(i=0;i<=game_number; i++) {
+				for(i=0; i<=game_number; i++) {
+					
 					if(strstr(list_game_path[i], path_unplug) == NULL) {
-						new_PS3_game_number++;
-						strcpy(new_path_list[new_PS3_game_number], list_game_path[i]);
-						strcpy(new_title_list[new_PS3_game_number], list_game_title[i]);
-						new_platform_list[new_PS3_game_number] = list_game_platform[i];
+						remove_GAMELIST(i);
+						i--;
 					}
 				}
 				
-				if(game_number == new_PS3_game_number) {
+				if(game_number == old_game_number) {
 					device_plug = 0;
 					start_checking();
 					end_loading();
 					return;
 				}
-				
-				game_number = new_PS3_game_number;
-				memset(list_game_path, 0, sizeof(list_game_path));
-				memset(list_game_title, 0, sizeof(list_game_title));
-				memset(list_game_platform, 0, sizeof(list_game_platform));
-				for(i=0;i<=game_number; i++) {
-					strcpy(list_game_path[i], new_path_list[i]);
-					strcpy(list_game_title[i], new_title_list[i]);
-					list_game_platform[i] = new_platform_list[i];
-				}
 			}
 		} 
 		else if(device_number > device_number_OLD) { // *** plug device ***
 			for(k=0; k < device_number - device_number_OLD ; k++) {
-				int old_PS3_game_number = game_number;
+				
 				char path_plug[20];
 				for(i=0;i<=device_number; i++) {
 					for(j=0;j<=device_number_OLD;j++) {
@@ -12474,6 +12684,8 @@ void check_device()
 					
 				} 
 				
+				s64 old_game_number = game_number;
+							
 				print_load( "Get directories names from scan_dir.txt");
 				//get scan dir
 				if(read_scan_dir()==FAILED) {
@@ -12489,74 +12701,18 @@ void check_device()
 				//get game list
 				for(j=0; j<=scan_dir_number; j++) {
 					sprintf(scan_path, "/%s/%s", path_plug, scan_dir[j]);
-					print_load("Scanning : %s", scan_path);
-					
-					DIR *d;
-					struct dirent *dir;
-					
-					d = opendir(scan_path);
-					if(d==NULL) continue;
-					
-					while ((dir = readdir(d))) {
-						if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
-
-						char temp[255];
-						sprintf(temp, "%s/%s" , scan_path, dir->d_name);
-						u8 ext = get_ext(temp);
-						
-						if(ext != _ISO_PS3 && ext != _ISO_PS2 && ext != _ISO_PS1 && ext != _ISO_PSP)
-						if(ext != _JB_PS3 && ext != _JB_PS2 && ext != _JB_PS1 && ext != _JB_PSP) continue;
-
-						game_number++;
-						sprintf(list_game_path[game_number], "%s/%s" , scan_path, dir->d_name);
-						
-						strcpy(list_game_title[game_number], list_game_path[game_number]);
-						strcpy(list_game_title[game_number], &strrchr(list_game_title[game_number], '/')[1]);
-						RemoveExtention(list_game_title[game_number]);
-						
-						list_game_platform[game_number] = ext;
-						
-						if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
-							GetParamSFO("TITLE", list_game_title[game_number], game_number, NULL);
-						}
-						
-					}
-					closedir(d);
+										
+					get_GAMELIST(scan_path);
 				}
 				
-				if(game_number == old_PS3_game_number) {
+				if(game_number == old_game_number) {
 					device_plug = 0;
 					start_checking();
 					end_loading();
 					return;
 				}
 				
-				print_load("Sorting the list");
-				int min; 
-				char ta[128], tb[128];
-				u8 t;
-				for (i = 0; i<game_number; i++) { 
-					min = i;
-					for (j = i+1; j <= game_number; j++) { 
-						strcpy(ta , list_game_title[j]);
-						strcpy(tb, list_game_title[min]);
-						if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
-						if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
-						if (strcmp(ta, tb) < 0) { 
-							min = j; 
-						}
-					}
-					if(min==i) continue;
-					strcpy(ta , list_game_title[min]);
-					strcpy(list_game_title[min], list_game_title[i]); 
-					strcpy(list_game_title[i], ta); 
-					strcpy(tb, list_game_path[min]);
-					strcpy(list_game_path[min], list_game_path[i]); 
-					strcpy(list_game_path[i], tb);
-					t = list_game_platform[min];
-					list_game_platform[min] = list_game_platform[i];
-					list_game_platform[i] = t;
-				}
+				sort_GAMELIST();
 			}
 		}
 		
@@ -12564,8 +12720,8 @@ void check_device()
 
 		device_plug = 0;
 		
-		print_load("GetTheme...");
 		GetThemes();
+		
 		read_fav();
 		
 		start_Load_GamePIC();
@@ -13667,7 +13823,7 @@ void remove_cfw_syscalls()
 	lv2poke(SYSCALL_TABLE + (8*7), syscall_not_impl);
 	
 	if(lv2peek(0x8000000000003000ULL)==0xFFFFFFFF80010003ULL) {
-		lv2syscall3(392, 0x1004, 0xa, 0x1b6);
+		lv2syscall3(392, 0x1004, 0xa, 0x1b6); //buzzer
 		return;
 	}
 	
@@ -18213,7 +18369,8 @@ print_load("ASCII");
 	char ascii_name[60]={0};
 	int i;
 	int k=0;
-	for(i=0; i<=strlen(list_game_title[position]); i++) {		
+	int l=strlen(list_game_title[position]);
+	for(i=0; i<=l; i++) {		
 		if(list_game_title[position][i]==32 //	space	
 		|| (48<=list_game_title[position][i] && list_game_title[position][i]<=57) //number
 		|| (65<=list_game_title[position][i] && list_game_title[position][i]<=90) // A..Z
@@ -19937,7 +20094,10 @@ void Window(char *directory)
 	}
 #endif
 	
-	if(path_info("/dev_hdd1")==_NOT_EXIST) sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
+	if(path_info("/dev_hdd1")==_NOT_EXIST) {
+		sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
+		sysFsAioInit("/dev_hdd1");
+	}
 	
 	char temp[512];
 	
@@ -20387,9 +20547,8 @@ void Draw_txt_viewer_input()
 {
 	if(txt_viewer_activ == NO) return;	
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -20653,6 +20812,8 @@ void Option(char *item)
 		start_copy_loading();
 		SpeedTest();
 		end_copy_loading();
+		open_txt_viewer("/dev_hdd0/speed_test.txt");
+		
 	} else
 	if(strcmp(item, STR_PASTE) == 0) {
 		start_copy_loading();
@@ -21272,7 +21433,7 @@ void Open_option()
 			
 		}
 		add_option_item(STR_DUMP_FLASH);
-		//add_option_item("SpeedTest");
+		add_option_item("SpeedTest");
 	}
 	else {
 		u8 all_is_dir=YES;
@@ -22003,9 +22164,8 @@ u8 window_input()
 
 void Draw_input()
 {
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 
@@ -22067,7 +22227,9 @@ void Draw_FileExplorer()
 	init_FileExplorer();
 	Window(NULL);
 	end_loading();
-	while(1)
+	
+	u8 LoopBreak=1;
+	while(LoopBreak)
 	{		
 		cls();
 		
@@ -22100,7 +22262,10 @@ void Draw_FileExplorer()
 			input_MENU();
 		} else {
 			if(	option_input() == OFF)
-			if( window_input() == BREAK) break;
+			if( window_input() == BREAK) {
+				LoopBreak =0;
+				return;
+			}
 			cursor_input();
 			properties_input();
 		}
@@ -22801,9 +22966,8 @@ void Draw_ICON0_creator_input()
 {
 	if(ICON0_creator == NO) return;	
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -23408,7 +23572,8 @@ void CONFIG_check(char *IsoPath)
 			strcpy(CONFIG_STR[config_number], "CUSTOM");
 		}
 		
-		while(1)
+		u8 LoopBreak=1;
+		while(LoopBreak)
 		{
 			cls();
 			Draw_BGS();
@@ -23424,11 +23589,16 @@ void CONFIG_check(char *IsoPath)
 			DrawString(x, y, CONFIG_STR[config_position]);
 			
 			FontColor(COLOR_1);
-			x=25;y=485;
+			
+			x=INPUT_X;
+			y=INPUT_Y;
+			FontColor(COLOR_1);
+			SetFontZ(0);
+			
 			x = DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
 			x = DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 			
-			if(config_number>0) DrawButton(x, 485, STR_CHANGE, BUTTON_SQUARE);
+			if(config_number>0) DrawButton(x, y, STR_CHANGE, BUTTON_SQUARE);
 			
 			tiny3d_Flip();
 			ScreenShot();
@@ -23443,9 +23613,13 @@ void CONFIG_check(char *IsoPath)
 				char CONFIG_path[128];
 				sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/%s/%s.CONFIG", ManaGunZ_id, CONFIG_STR[config_number], PS2_ID);
 				CopyFile(CONFIG_path, CurrentCONFIG);
+				LoopBreak = 0;
 				break;
 			}
-			if(new_pad & BUTTON_CIRCLE) break;
+			if(new_pad & BUTTON_CIRCLE) {
+				LoopBreak=0;
+				break;
+			}
 		}
 		start_loading();
 	}
@@ -24019,9 +24193,14 @@ void load_PS2_CONFIG(char *CONFIG_path)
 	if(f==NULL) return;
 
 	print_load("Open %s", CONFIG_path);
-	while(1)
+	
+	u8 LoopBreak=1;
+	while(LoopBreak)
 	{
-		if( fread(&cmdID, sizeof(u32), 1, f) != 4) goto end;
+		if( fread(&cmdID, sizeof(u32), 1, f) != 4) {
+			LoopBreak=0;
+			goto end;
+		}
 
 		cmdID=reverse32(cmdID);
 		sprintf(str, "0x%02X", cmdID);
@@ -24074,13 +24253,19 @@ void load_PS2_CONFIG(char *CONFIG_path)
 				
 				char gameID[10];
 				
-				if( fread(&gameID, sizeof(char), 10, f) != 10) 	goto end;		
+				if( fread(&gameID, sizeof(char), 10, f) != 10) 	{
+					LoopBreak=0;
+					goto end;
+				}		
 				
 				sprintf(str, "Game ID : %s", gameID);
 				print_load(str);
 				add_item_value_MENU(str);
 				
-				goto end;				
+				LoopBreak=0;
+				goto end;
+				
+				break;
 			}
 			case 0x01 :
 			{
@@ -24644,9 +24829,9 @@ void input_PS2_CONFIG_EDITOR()
 
 void Draw_PS2_CONFIG_EDITOR_input()
 {
-	float x=25;
-	float y=485;
-	FontSize(15);
+	
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -25080,11 +25265,11 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 		fread(&filesz, 4, 1, fi);
 		
 		if(ProgType==1 && filesz!=0) {
-			fseek(fi, file_offset + 0x34+4+0x10+i*0x20, SEEK_SET);
+			fseek(fi, file_offset + 0x38+i*0x20, SEEK_SET);
 			break;
 		}
 	}
-	
+		
 	if(ProgType != 1 || filesz==0) {
 		print_load("Error : ProgOffset not found");
 		fclose(fi);
@@ -25095,7 +25280,6 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 	}
 	
 	fread(&ProgOffset, 4, 1, fi);
-
 	ProgOffset = reverse32(ProgOffset);
 	
 	while(fgets(line, 128, fp) != NULL) {
@@ -25126,7 +25310,7 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 			offset = offset - (offset >> 28)*0x10000000;
 			
 			if(offset > size) { 
-				print_load("Error : offset > Elf_size");
+				print_load("Error : offset %X > Elf_size %X", offset, size);
 				fclose(fr);
 				fclose(fi);
 				fclose(fp);
@@ -25419,19 +25603,21 @@ u8 PS2_GAME_MENU_CROSS()
 		end_loading();
 	} else
 	if(item_is(STR_RENAME)) {
-		char New_Name[255];
-		strcpy(New_Name, list_game_title[position]);
+		char NewName[255];
+		strcpy(NewName, list_game_title[position]);
 		char *extention = GetExtention(list_game_path[position]);
-		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
-			if(New_Name[0] != 0) {
+		if(Get_OSK_String(STR_RENAME, NewName, 255) == SUCCESS) {
+			if(NewName[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s%s", DirPath, New_Name, extention);
+				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extention);
 				if( rename(list_game_path[position], NewPath) == 0) {
-					strcpy(list_game_path[position], NewPath);
-					strcpy(list_game_title[position], New_Name);
+					FREE(list_game_path[position]);				
+					list_game_path[position] = strcpy_malloc(NewPath);
+					FREE(list_game_path[position])
+					list_game_title[position] = strcpy_malloc(NewName);
 				}
 			}
 		}
@@ -25616,9 +25802,8 @@ void Draw_PS2_GAME_MENU_input()
 	if(ICON0_creator == YES) return;
 	if(txt_viewer_activ == YES) return;
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -25754,19 +25939,21 @@ void close_PSP_GAME_MENU()
 u8 PSP_GAME_MENU_CROSS()
 {
 	if(item_is(STR_RENAME)) {
-		char New_Name[255];
-		strcpy(New_Name, list_game_title[position]);
+		char NewName[255];
+		strcpy(NewName, list_game_title[position]);
 		char *extention = GetExtention(list_game_path[position]);
-		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
-			if(New_Name[0] != 0) {
+		if(Get_OSK_String(STR_RENAME, NewName, 255) == SUCCESS) {
+			if(NewName[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s%s", DirPath, New_Name, extention);
+				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extention);
 				if( rename(list_game_path[position], NewPath) == 0) {
-					strcpy(list_game_path[position], NewPath);
-					strcpy(list_game_title[position], New_Name);
+					FREE(list_game_path[position]);				
+					list_game_path[position] = strcpy_malloc(NewPath);
+					FREE(list_game_path[position])
+					list_game_title[position] = strcpy_malloc(NewName);
 				}
 			}
 		}
@@ -25802,7 +25989,7 @@ u8 PSP_GAME_MENU_CROSS()
 	} else 
 	if(item_is(STR_DELETE)) {
 		char diag_msg[512];
-		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_DL_UPDATE, list_game_title[position], STR_DONE, list_game_path[position]);
+		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_ASK_DEL, list_game_title[position], STR_DONE, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
@@ -25838,9 +26025,8 @@ void Draw_PSP_GAME_MENU_input()
 	if(ICON0_creator == YES) return;
 	if(txt_viewer_activ == YES) return;
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -25963,19 +26149,21 @@ void close_PS1_GAME_MENU()
 u8 PS1_GAME_MENU_CROSS()
 {
 	if(item_is(STR_RENAME)) {
-		char New_Name[255];
-		strcpy(New_Name, list_game_title[position]);
+		char NewName[255];
+		strcpy(NewName, list_game_title[position]);
 		char *extention = GetExtention(list_game_path[position]);
-		if(Get_OSK_String(STR_RENAME, New_Name, 255) == SUCCESS) {
-			if(New_Name[0] != 0) {
+		if(Get_OSK_String(STR_RENAME, NewName, 255) == SUCCESS) {
+			if(NewName[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s%s", DirPath, New_Name, extention);
+				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extention);
 				if( rename(list_game_path[position], NewPath) == 0) {
-					strcpy(list_game_path[position], NewPath);
-					strcpy(list_game_title[position], New_Name);
+					FREE(list_game_path[position]);				
+					list_game_path[position] = strcpy_malloc(NewPath);
+					FREE(list_game_path[position])
+					list_game_title[position] = strcpy_malloc(NewName);
 				}
 			}
 		}
@@ -26014,7 +26202,7 @@ u8 PS1_GAME_MENU_CROSS()
 	} else 
 	if(item_is(STR_DELETE)) {
 		char diag_msg[512];
-		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_DL_UPDATE, list_game_title[position], STR_PATH, list_game_path[position]);
+		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_ASK_DEL, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
@@ -26050,9 +26238,8 @@ void Draw_PS1_GAME_MENU_input()
 	if(ICON0_creator == YES) return;
 	if(txt_viewer_activ == YES) return;
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -26506,9 +26693,8 @@ u8 input_CHOOSE_IDPS()
 
 void Draw_CHOOSE_IDPS_input()
 {
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -26520,7 +26706,8 @@ void Draw_CHOOSE_IDPS_input()
 
 void Draw_CHOOSE_IDPS()
 {
-	while(1)
+	u8 LoopBreak=1;
+	while(LoopBreak)
 	{
 		cls();
 		Draw_scene();
@@ -26533,7 +26720,10 @@ void Draw_CHOOSE_IDPS()
 		
 		ps3pad_read();
 				
-		if(input_CHOOSE_IDPS() == BREAK) return;
+		if(input_CHOOSE_IDPS() == BREAK) {
+			LoopBreak=0;
+			break;
+		}
 	}
 	old_pad = 0;
 	new_pad = 0;
@@ -26746,7 +26936,8 @@ u8 PS3_GAME_MENU_CROSS()
 		if(Get_OSK_String(STR_RENAME, tmpName, 128) == SUCCESS) {
 			if(tmpName[0]!=0) {
 				if(SetParamSFO("TITLE", tmpName, position, NULL)==SUCCESS) {
-					strcpy(list_game_title[position], tmpName);
+					FREE(list_game_title[position]);
+					list_game_title[position] = strcpy_malloc(tmpName);
 					show_msg(STR_DONE);
 				}
 			}
@@ -26833,9 +27024,27 @@ u8 PS3_GAME_MENU_CROSS()
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL); 
 		else 
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);	
-		if(ret==FAILED) show_msg(STR_FAILED);
-		else show_msg(STR_DONE);
+		if(ret==SUCCESS) {
+			char ExtGame[512];
+						
+			sprintf(ExtGame, "%s%s", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], strrchr(list_game_path[position], '/'));
+
+			int l= strlen(ExtGame);
+			if(!strcmp(&ExtGame[l - 2], ".0")) ExtGame[l - 6] = 0; else ExtGame[l - 4] = 0;
+			
+			add_GAMELIST(ExtGame);
+			
+			sort_GAMELIST();
 		
+			read_fav();
+			
+			start_Load_GamePIC();
+			
+			show_msg(STR_DONE);
+		} 
+		else 
+			show_msg(STR_FAILED);
+			
 		end_loading();
 	} else 
 	if(item_is(STR_CONVERT_ISO)) {
@@ -26848,8 +27057,30 @@ u8 PS3_GAME_MENU_CROSS()
 		else 
 			ret = makeps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);
 		
-		if(ret==FAILED) show_msg(STR_FAILED); 
-		else show_msg(STR_DONE);
+		if(ret==SUCCESS) {
+			char IsoGame[512];
+						
+			if(is_ntfs(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])==YES
+			|| strstr(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0")) {
+				sprintf(IsoGame, "%s%s.iso", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], strrchr(list_game_path[position], '/'));
+			} else {
+				sprintf(IsoGame, "%s%s.iso.0", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], strrchr(list_game_path[position], '/'));
+			
+			}
+			
+			add_GAMELIST(IsoGame);
+			
+			sort_GAMELIST();
+		
+			read_fav();
+			
+			start_Load_GamePIC();
+			
+			show_msg(STR_DONE);
+		} 
+		else 
+			show_msg(STR_FAILED);
+			
 		end_loading();
 	} else 
 	if(item_is(STR_FIX_PERMS)) {
@@ -26978,9 +27209,8 @@ void Draw_PS3_GAME_MENU_input()
 	if(ICON0_creator == YES) return;
 	if(txt_viewer_activ == YES) return;
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -27288,9 +27518,8 @@ void Draw_PLUGINS_MANAGER_input()
 {
 	if(MENU==NO) return;
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -27365,18 +27594,23 @@ void Draw_AdjustScreen()
 
 	if(path_info(TVTEST) != _FILE) Show_TVTEST=-1;
 	
-	while(1){
-		int x=25;
+	u8 LoopBreak=1;
+	while(LoopBreak)
+	{
+			
+		float x=INPUT_X;
+		float y=INPUT_Y;
+		SetFontZ(0);
+		
 		adjust_screen();
 		
 		cls();
-			
+		
 		if(Show_TVTEST==YES)
 		{
 			Draw_TVTEST();
 			FontColor(WHITE);
-			FontSize(15);
-			x=DrawButton(x, 485, STR_HIDETV, BUTTON_CROSS);
+			x=DrawButton(x, y, STR_HIDETV, BUTTON_CROSS);
 		} else {
 			Draw_Box(0,0,10,   0,   X_MAX,Y_MAX,  0xFFFFFFFF, NO);
 			Draw_Box(30,30,9 , 0,   X_MAX-30*2,Y_MAX-30*2,  0x000000FF, NO);
@@ -27420,11 +27654,11 @@ void Draw_AdjustScreen()
 
 			FontColor(BLACK);
 			FontSize(15);
-			if(Show_TVTEST != -1 && Load_GamePIC==NO) x=DrawButton(x, 485, STR_SHOWTV, BUTTON_CROSS);
+			if(Show_TVTEST != -1 && Load_GamePIC==NO) x=DrawButton(x, INPUT_Y, STR_SHOWTV, BUTTON_CROSS);
 		} 
 		
-		x=DrawButton(x, 485, STR_RESET, BUTTON_SQUARE);
-		x=DrawButton(x, 485, STR_BACK, BUTTON_CIRCLE);
+		x=DrawButton(x, INPUT_Y, STR_RESET, BUTTON_SQUARE);
+		x=DrawButton(x, INPUT_Y, STR_BACK, BUTTON_CIRCLE);
 		
 		tiny3d_Flip();
 		ScreenShot();
@@ -27452,7 +27686,11 @@ void Draw_AdjustScreen()
 		if(new_pad & BUTTON_UP) {if(videoscale_y < 120) videoscale_y+=10;}
 		if(new_pad & BUTTON_RIGHT) {if(videoscale_x > -120) videoscale_x-=10;}
 		if(new_pad & BUTTON_LEFT) {if(videoscale_x < 120) videoscale_x+=10;}
-		if(new_pad & BUTTON_CIRCLE) {write_setting(); return;}
+		if(new_pad & BUTTON_CIRCLE) {
+			write_setting(); 
+			LoopBreak=0;
+			return;
+		}
 	}
 }
 
@@ -27584,9 +27822,8 @@ u8 input_COLOR(int n)
 
 void Draw_COLOR_input()
 {
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -27596,7 +27833,8 @@ void Draw_COLOR_input()
 
 void Draw_ChooseColor(u8 n)
 {
-	while(1)
+	u8 LoopBreak=1;
+	while(LoopBreak)
 	{
 		cls();
 		Draw_scene();
@@ -27609,7 +27847,10 @@ void Draw_ChooseColor(u8 n)
 		
 		ps3pad_read();
 				
-		if(input_COLOR(n) == BREAK) return;
+		if(input_COLOR(n) == BREAK) {
+			LoopBreak=0;
+			return;
+		}
 	}
 }
 
@@ -28180,9 +28421,8 @@ void input_SETTINGS()
 
 void Draw_SETTINGS_input()
 {
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -28321,10 +28561,12 @@ void AutoMount()
 	
 	if(Path_exist==NO) {	
 		end_loading();
-		while(1) {
+		u8 LoopBreak=1;
+		while(LoopBreak)
+		{
 			cls();
 			
-			int x=50, y=40;
+			float x=50, y=40;
 			
 			FontSize(20);
 			FontColor(RED);
@@ -28333,10 +28575,12 @@ void AutoMount()
 			y+=20;
 			DrawFormatString(x, y, "%s = %s", STR_PATH, list_game_path[0]);
 			
+			x=INPUT_X;
+			y=INPUT_Y;
 			FontColor(COLOR_1);
-			FontSize(15);
+			SetFontZ(0);			
 			
-			DrawButton(25, 485, STR_BACKTOXMB, BUTTON_CIRCLE);
+			DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
 		
 			tiny3d_Flip();
 			ScreenShot();
@@ -28345,6 +28589,7 @@ void AutoMount()
 			
 			if(new_pad & BUTTON_CIRCLE) {
 				ioPadEnd();
+				LoopBreak=0;
 				exit(0);
 			}
 		}
@@ -28452,9 +28697,8 @@ void Draw_filter_input()
 {
 	if(filter==NO) return;
 	
-	float x=25;
-	float y=485;
-	FontSize(15);
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
@@ -31774,15 +32018,42 @@ void input_MAIN()
 	}
 }
 
+float DrawTAG(float x, float y, float z, float min_width, float font_height, char *str)
+{	
+
+	float w = min_width;
+	
+	float w_str = GetWidth(str) + 8.0;
+	
+	while( w_str > w ) w += 4.0;
+	
+	float e = (w - (w_str-8.0))/2.0;
+	
+	if(PICTURE_offset[TAG] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[TAG], PICTURE[TAG].width, PICTURE[TAG].height, PICTURE[TAG].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z+1, 0, w, font_height, WHITE, YES);
+	} else	
+		Draw_Box(x, y, z+1, 0, w, font_height, 0xA0A0A0A0, NO);
+	
+	DrawFormatString(x + e + 1, y+1, str);
+	
+	return x+w+1;
+}
+
+#define INPUT_TAG_WIDTH_MIN 
+
 void Draw_MAIN_input()
 {
 	if(MENU==YES) return;
 	if(filter==YES) return;
 	
-	int x=25, y=485;
-
+	float tagbox_min_width = 50;
+	
+	float x=INPUT_X;
+	float y=INPUT_Y;
 	FontColor(COLOR_1);
-	FontSize(15);
+	SetFontZ(0);
+	
 	x=DrawButton(x, y, STR_SETTINGS, BUTTON_START);
 	if(Game_stuff==YES) {
 		x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
@@ -31797,45 +32068,100 @@ void Draw_MAIN_input()
 	//x=DrawFormatString( x+10, y, "%s", STR_HOLD);
 	FontColor(COLOR_1); 
 	if(hold_CIRCLE) {
-		DrawProgRing(x+12, y+7.5, 20, ((hold_CIRCLE%30)*100)/30, COLOR_3);
+		DrawProgRing(x+7, y+7.5, 20, ((hold_CIRCLE%30)*100)/30, COLOR_3);
 		FontColor(COLOR_3);
-		DrawFormatString(x+15, y-12, "%d", (90 - hold_CIRCLE)/30);
+		DrawFormatString(x+10, y-12, "%d", (90 - hold_CIRCLE)/30);
 		FontColor(COLOR_1);
 	}
-	x=DrawButton(x+5, y, STR_BACKTOXMB, BUTTON_CIRCLE);
+	x=DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
 	
-	x=740;
-	y=480;
+	x=X_MAX-10-4*tagbox_min_width;
+	y=INPUT_Y;
 	if(Game_stuff == YES) {
+		char tag_str[20];
+		int t;
+		
+		FontColor(COLOR_1);
+		
+		if(list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS3");
+		} else
+		if(list_game_platform[position] == _ISO_PS2 || list_game_platform[position] == _JB_PS2) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS2");
+		} else
+		if(list_game_platform[position] == _ISO_PS1 || list_game_platform[position] == _JB_PS1) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS1");
+		} else
+		if(list_game_platform[position] == _ISO_PSP || list_game_platform[position] == _JB_PSP) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PSP");
+		} else {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "UNK");
+		}
+		
+		float x1 = x;
+		
+		char *Ext = GetExtention(list_game_path[position]);
+	
+		if( (Ext[1] == 'I' || Ext[1] == 'i')
+		&& 	(Ext[2] == 'S' || Ext[2] == 's')
+		&&	(Ext[3] == 'O' || Ext[3] == 'o') )	{
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "ISO");
+		} else	
+		if( (Ext[1] == 'B' || Ext[1] == 'b')
+		&& 	(Ext[2] == 'I' || Ext[2] == 'i')
+		&&	(Ext[3] == 'N' || Ext[3] == 'n') )	{
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "BIN");
+		} else
+		if( (Ext[1] == 'M' || Ext[1] == 'm')
+		&& 	(Ext[2] == 'D' || Ext[2] == 'd')
+		&&	(Ext[3] == 'F' || Ext[3] == 'f') )	{
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "MDF");
+		} else
+		if( (Ext[1] == 'I' || Ext[1] == 'i')
+		&& 	(Ext[2] == 'M' || Ext[2] == 'm')
+		&&	(Ext[3] == 'G' || Ext[3] == 'g') )	{
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "IMG");
+		} else
+		if( (Ext[1] == 'C' || Ext[1] == 'c')
+		&& 	(Ext[2] == 'S' || Ext[2] == 's')
+		&&	(Ext[3] == 'O' || Ext[3] == 'o') )	{
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "CSO");
+		} else {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "JB");
+		}
+		
 		if(is_66600(list_game_path[position])) {
 			FontColor(COLOR_4);
-			x = DrawString(x, y, "666 ");
+			FontSize(INPUT_SIZE/2);
+			DrawTAG(x1, y-INPUT_SIZE/2, 0, 0, INPUT_SIZE/2, "666");
 			FontColor(COLOR_1);
-		}
+			FontSize(INPUT_SIZE);
+		}	
+				
 		if(usb) {
-			int t;
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "FAT32");
 			sscanf(list_game_path[position], "/dev_usb%d%*s" , &t);
-			x = Draw_USB(x , y, 20, COLOR_1, t);
-		}
+			sprintf(tag_str, "USB%d", t);
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
+
+		} else
 		if(is_ntfs(list_game_path[position]) == YES) {
-			int t;
+					
 			sscanf(list_game_path[position], "/ntfs%d%*s" , &t);
-			FontColor(COLOR_3);
-			x = DrawString(x, y, "NTFS ");
-			x = Draw_USB(x , y, 20, COLOR_3 , t);
+			sprintf(tag_str, "NTFS%d", t);
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
+			
+			char dev[10];
+			sprintf(dev, "ntfs%d", t);
+			sprintf(tag_str, "USB%d", NTFS_Test_Device(dev));
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
+
+		} else 
+		if( strstr(list_game_path[position], "/dev_hdd0") != NULL) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "UFS2");
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "HDD0");
 		}
-		if(list_game_platform[position] == _ISO_PS3) {
-			Draw_GAMEDISK( x + 5, y, 0, 20, _ISO_PS3);
-		} else
-		if(list_game_platform[position] == _ISO_PS2) {
-			Draw_GAMEDISK( x + 5, y, 0, 20, _ISO_PS2);
-		} else
-		if(list_game_platform[position] == _ISO_PS1) {
-			Draw_GAMEDISK( x + 5, y, 0, 20, _ISO_PS1);
-		} else
-		if(list_game_platform[position] == _ISO_PSP) {
-			Draw_GAMEDISK( x + 5, y, 0, 20, _ISO_PSP);
-		}
+		
 	}
 }
 
@@ -31955,6 +32281,7 @@ int main(void)
 {
 	int i, j;
 	char scan_path[128];
+	u8 LoopBreak=1;
 
 	NTFS_init_system_io();
 	AutoM = is_AutoMount(); // ManaGunZ_id
@@ -31963,7 +32290,7 @@ int main(void)
 	sysModuleLoad(SYSMODULE_JPGDEC);
 	
 	Init_Graph();
-	//initAIO();
+	initAIO();
 	ioPadInit(7);
 	ioPadSetPressMode(0,1);
 	SetCurrentFont(-1);
@@ -32033,7 +32360,8 @@ int main(void)
 #ifndef RPCS3
 	if(init_ManaGunZ() == FAILED) {
 		end_loading();
-		while(1) {
+		LoopBreak=1;
+		while(LoopBreak) {
 			cls();
 			ps3pad_read();
 			
@@ -32041,10 +32369,12 @@ int main(void)
 			FontColor(RED);
 			DrawString(50, 100, "Error : Cannot init ManaGunZ");
 			
+			float x=INPUT_X;
+			float y=INPUT_Y;
 			FontColor(COLOR_1);
-			FontSize(15);
+			SetFontZ(0);
 
-			DrawButton(25, 485, STR_BACKTOXMB, BUTTON_CIRCLE);
+			DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
 			
 			tiny3d_Flip();
 			ScreenShot();
@@ -32053,6 +32383,7 @@ int main(void)
 				ioPadEnd();
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
+				LoopBreak=0;
 				return 0;
 			}
 		}
@@ -32072,7 +32403,9 @@ int main(void)
 	print_load("Get directories names from scan_dir.txt");
 	if(read_scan_dir()==FAILED){
 		end_loading();
-		while(1) {
+		LoopBreak=1;
+		while(LoopBreak) 
+		{
 			cls();
 			ps3pad_read();
 			
@@ -32082,10 +32415,12 @@ int main(void)
 			FontColor(RED);
 			DrawString(50, 40, "Error : Can't read scan_dir.txt");
 			
+			float x=INPUT_X;
+			float y=INPUT_Y;
 			FontColor(COLOR_1);
-			FontSize(15);
+			SetFontZ(0);
 			
-			DrawButton(25, 485, STR_BACKTOXMB, BUTTON_CIRCLE);
+			DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
 			
 			tiny3d_Flip();
 			ScreenShot();
@@ -32095,6 +32430,7 @@ int main(void)
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
 				ioPadEnd();
+				LoopBreak=0;
 				return 0;
 			}
 		}
@@ -32105,79 +32441,14 @@ int main(void)
 		for(i=0; i<=device_number; i++) {
 			sprintf(scan_path, "/%s/%s", list_device[i], scan_dir[j]);
 			
-			print_load("Scanning : %s", scan_path);
-			
-			DIR *d;
-			struct dirent *dir;
-			
-			d = opendir(scan_path);
-			if(d==NULL) continue;
-			
-			while ((dir = readdir(d))) {
-				if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
-
-				char temp[255];
-				sprintf(temp, "%s/%s" , scan_path, dir->d_name);
-				
-				u8 ext = get_ext(temp);
-				
-				if(ext != _ISO_PS3 && ext != _ISO_PS2 && ext != _ISO_PS1 && ext != _ISO_PSP)
-				if(ext != _JB_PS3 && ext != _JB_PS2 && ext != _JB_PS1 && ext != _JB_PSP) continue;
-				
-				print_head("[%03d] %s", game_number+1, dir->d_name);
-				
-				if(game_number+2==MAX_GAME) {
-					print_load("Warning : too many games !");
-					break;
-				}
-				
-				game_number++;
-				sprintf(list_game_path[game_number], "%s/%s" , scan_path, dir->d_name);
-				
-				strcpy(list_game_title[game_number], list_game_path[game_number]);
-				strcpy(list_game_title[game_number], &strrchr(list_game_title[game_number], '/')[1]);
-				RemoveExtention(list_game_title[game_number]);
-
-				list_game_platform[game_number] = ext;
-				
-				if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
-					GetParamSFO("TITLE", list_game_title[game_number], game_number, NULL);
-				}
-				
-			}
-			closedir(d);
+			get_GAMELIST(scan_path);
 		}
 	}
-
-	print_load( "Sorting the games' list");
-	int min;
-	char ta[255], tb[255];
-	u8 t;
-	for(i = 0; i<game_number; i++) { 
-		min = i;
-		for (j = i+1; j <= game_number; j++) { 
-			strcpy(ta , list_game_title[j]);
-			strcpy(tb, list_game_title[min]);
-			if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
-			if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
-			if (strcmp(ta, tb) < 0) { 
-				min = j; 
-			} 
-		}
-		if(min==i) continue;
-		strcpy(ta , list_game_title[min]);
-		strcpy(list_game_title[min], list_game_title[i]); 
-		strcpy(list_game_title[i], ta); 
-		strcpy(tb, list_game_path[min]);
-		strcpy(list_game_path[min], list_game_path[i]); 
-		strcpy(list_game_path[i], tb);
-		t = list_game_platform[min];
-		list_game_platform[min] = list_game_platform[i];
-		list_game_platform[i] = t;
-	}
-
+	
+	sort_GAMELIST();
+	
 	start_Load_GamePIC();
-
+	
 	print_load("Get Favorite game list");
 	read_fav();
 
@@ -32190,7 +32461,8 @@ int main(void)
 
 	start_load_PIC1();
 	
-	while(1) {
+	LoopBreak=1;
+	while(LoopBreak) {
 
 		while(game_number < 0) {
 			cls();
@@ -32200,19 +32472,17 @@ int main(void)
 			
 			check_device();
 			
-			int x=50, y=40;
-			
-			
 			FontSize(20);
 			FontColor(RED);
-			DrawString(x, y, STR_NOGAME);
+			DrawString(50, 40, STR_NOGAME);
 			
+			float x=INPUT_X;
+			float y=INPUT_Y;
 			FontColor(COLOR_1);
-			FontSize(15);
+			SetFontZ(0);
 			
-			x=25;
-			x=DrawButton(x, 485, STR_BACKTOXMB , BUTTON_CIRCLE);
-			x=DrawButton(x, 485, STR_FILEMANAGER, BUTTON_SELECT);
+			x=DrawButton(x, y, STR_BACKTOXMB , BUTTON_CIRCLE);
+			x=DrawButton(x, y, STR_FILEMANAGER, BUTTON_SELECT);
 			
 			tiny3d_Flip();	
 			ScreenShot();
@@ -32292,4 +32562,3 @@ void Draw_scene()
 		Draw_MENU();
 	}
 }
-
