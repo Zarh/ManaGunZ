@@ -18,7 +18,7 @@ STR_CANCELLED            {Отменено}
 STR_UNIT                 {Байт}
 STR_TOTALSIZE            {Общий размер}
 STR_HIDELOGS             {Скрыть отчет}
-STR_SHOWLOGS             {Показать отчеты}
+STR_SHOWLOGS             {Показать отчет}
 STR_BOOST                {Ускорение!}
 STR_GAMEMENU             {Меню игры}
 STR_SETTINGS             {Настройки}
