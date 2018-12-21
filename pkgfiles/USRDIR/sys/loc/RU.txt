@@ -1,0 +1,316 @@
+STR_LANGUAGE             {Русский}
+STR_LANGCODE             {\x08}
+
+STR_LANG                 {Язык}
+STR_LANG_DESC            {Выберите ваш язык.}
+STR_GATHERING            {Получение информации...}
+STR_COPYING              {Копирование...}
+STR_FROM                 {из}
+STR_TO                   {в}
+STR_FILES                {Файлы}
+STR_DIRS                 {Каталоги}
+STR_UNKNOWN              {Неизвестно}
+STR_FILE                 {Файл}
+STR_CANCEL               {Отмена}
+STR_TURNOFF_YES          {Выключить = ДА}
+STR_TURNOFF_NO           {Выключить = НЕТ}
+STR_CANCELLED            {Отменено}
+STR_UNIT                 {Байт}
+STR_TOTALSIZE            {Общий размер}
+STR_HIDELOGS             {Скрыть отчет}
+STR_SHOWLOGS             {Показать отчет}
+STR_BOOST                {Ускорение!}
+STR_GAMEMENU             {Меню игры}
+STR_SETTINGS             {Настройки}
+STR_MOUNTGAME            {Смонтировать игру}
+STR_FILTER               {Фильтр}
+STR_FAVORITE             {Избранное}
+STR_FILEMANAGER          {Файловый менеджер}
+STR_HOLD                 {Удерживайте}
+STR_BACKTOXMB            {Вернуться в XMB}
+STR_GAME_PROP            {Свойства игры}
+STR_GAME_TITLE           {Заголовок}
+STR_GAME_PATH            {Путь}
+STR_GAME_FORMAT          {Формат}
+STR_GAME_SIZE            {Размер}
+STR_GAME_PLATFORM        {Платформа}
+STR_SYSVERS              {Прошивка}
+STR_GAMEID               {Идентификатор}
+STR_ELFCRC               {Контрольная сумма ELF файла}
+STR_ELFCRCO              {Контрольная сумма (CRC) ELF (Оригинала)}
+STR_BACK                 {Назад}
+STR_ENTER                {Ввод}
+STR_UPDATE_FOUND         {Найдено обновление}
+STR_UPDATE               {Обновление}
+STR_SIZE                 {Размер}
+STR_SYSTEM               {Система}
+STR_DL                   {Скачать}
+STR_DL_ALL               {Скачать ВСЕ}
+STR_UNPLUG               {Отключите следующее устройство(а)}
+STR_PATH                 {Путь}
+STR_TYPE                 {Тип}
+STR_FOLDER               {Папка}
+STR_DIR                  {Каталог}
+STR_MULT                 {Несколько}
+STR_THM_SETTINGS         {Настройки темы}
+STR_THM                  {Тема}
+STR_THM_DESC             {Загрузить свою тему. Вы можете установить её из /dev_usbXXX/}
+STR_CREATE               {Создать}
+STR_ZOOM_OUT             {Отдалить}
+STR_ZOOM_IN              {Приблизить}
+STR_MOVE_FRAME           {Переместить рамку}
+STR_CHECK                {Отметить}
+STR_UNCHECK              {Снять отметку}
+STR_GAME_OPTION          {Параметры игры}
+STR_ADD_FAV              {Добавить в избранное}
+STR_REM_FAV              {Удалить из избранного}
+STR_FAV_DESC             {Управление списком избранных игр.}
+STR_RENAME               {Переименовать}
+STR_RENAME_DESC          {Переименовать название вашей игры.}
+STR_DELETE               {Удалить}
+STR_DELETE_DESC          {Удалить игру.}
+STR_COPY                 {Копировать}
+STR_COPY_DESC            {Скопировать игру в другое место.}
+STR_CREATE_ICON0         {Создать ICON0}
+STR_CREATE_ICON0_DESC 	 {Создать 'поддельный' ICON0 из обложки.}
+STR_REST_PNACH           {Восстановить PNACH}
+STR_REST_PNACH_DESC 	 {Удалить исправления, примененные файлом pnach, к игре.}
+STR_APPLY_PNACH          {Применить PNACH}
+STR_APPLY_PNACH_DESC     {Применить исправления из файла pnach к игре.}
+STR_DISABLE_WS           {Отключить широкоэкранный режим}
+STR_ENABLE_WS            {Включить широкоэкранный режим}
+STR_WS_DESC              {Отображать игру в формате 16: 9 вместо 4: 3.}
+STR_DISABLE_480P         {Отключить 480P}
+STR_ENABLE_480P          {Включить 480P}
+STR_480P_DESC            {Режим прогрессивной развертки в 480P.}
+STR_DISABLE_YFIX         {Отключить YFIX}
+STR_ENABLE_YFIX          {Включить YFIX}
+STR_YFIX_DESC            {Исправить вертикальное положение.}
+STR_DISABLE_FMVSKIP      {Отключить пропуск FMV}
+STR_ENABLE_FMVSKIP       {Включить пропуск FMV}
+STR_FMVSKIP_DESC         {Позволяет пропустить полные видеоролики.}
+STR_DISABLE_NETEMU       {Отключить NetEMU}
+STR_ENABLE_NETEMU        {Включить NetEMU}
+STR_NETEMU_DESC          {Принудительное использование ps2 netemu.}
+STR_SAVE_CONFIG          {Сохранить CONFIG}
+STR_CONFIG               {Конфигурация}
+STR_CONFIG_DESC          {[Экспериментально] Создайте свой собственный файл CONFIG, чтобы 'исправить' вашу копию игры PS2.}
+STR_NONE                 {Нет}
+STR_CHECK_MD5            {Проверить MD5}
+STR_PROPS                {Свойства}
+STR_PROPS_DESC           {Показать свойства вашей копии игры.}
+STR_ASK_DEL              {Вы действительно хотите удалить}
+STR_GAME_SETTINGS        {Настройки игры}
+STR_DIRECT_BOOT          {Прямой запуск}
+STR_DIRECT_BOOT_DESC     {Запустить игру напрямую, не возвращаясь в XMB.}
+STR_YES                  {Да}
+STR_NO                   {Нет}
+STR_CLEAN_SYSCALL        {Очистить системные вызовы}
+STR_CLEAN_SYSCALL_DESC   {Отключить системные вызовы CFW - peek & poke, после монтирования игры.}
+STR_CHANGE_IDPS          {Изменить IDPS}
+STR_CHANGE_IDPS_DESC     {Измените IDPS в lv2.}
+STR_EXT_GAME_DATA        {Внешние игровые данные}
+STR_EXT_GAME_DATA_DESC   {Установить игровые данные на USB-устройство устройство, вместо системного HDD.}
+STR_PAYLOAD              {Загрузчик}
+STR_PAYLOAD_DESC         {Выберите загрузчик для монтирования игры.}
+STR_PRIM_USB             {Выбрать основной USB}
+STR_PRIM_USB_DESC        {Выберите USB-устройство, на котором будет расположена игра.}
+STR_BDEMU                {BD эмуляция}
+STR_BDEMU_DESC           {Выберите метод эмуляции для монтирования игры.}
+STR_PATCH_LIBFS          {Пропатчить libfs}
+STR_PATCH_LIBFS_DESC     {Выберите какие исправленные файлы libfs хотите использовать}
+STR_MOUNT_APPHOME        {Монтировать /app_home}
+STR_MOUNT_APPHOME_DESC   {Перенаправить путь /app_home в /dev_bdvd.}
+STR_PATCH_EXP            {Пропатчить explore_plugin}
+STR_PATCH_EXP_DESC       {Путь /app_home заменяется /dev_bdvd внутри плагина explore_plugin.}
+STR_MAKE_SHTCUT_PKG      {Создать ярлык PKG}
+STR_MAKE_SHTCUT_PKG_DESC {Создайте ярлык PKG-файла, находящегося в /dev_hdd0/packages. После установки это будет 'ярлык' для монтирования из XMB.}
+STR_PATCH_EBOOT          {Пропатчить EBOOT}
+STR_PATCH_EBOOT_DESC     {Изменить версию прошивки на 4.21 файла EBOOT, для предотвращения ошибки 0x80010009.}
+STR_RESIGN               {Переподписать}
+STR_RESIGN_DESC          {Повторно подписать все исполняемые файлы игры ключами под 4.21.}
+STR_RESTORE              {Восстановить}
+STR_RESTORE_DESC         {Восстановить оригиналы исполняемых файлов игры.}
+STR_EXTRACT_ISO          {Распаковать ISO}
+STR_EXTRACT_ISO_DESC     {Извлечь файлы из ISO в папку.}
+STR_CONVERT_ISO          {Преобразовать в ISO}
+STR_CONVERT_ISO_DESC     {Преобразовать JB-папку игры в ISO-образ.}
+STR_FIX_PERMS            {Исправить права доступа}
+STR_FIX_PERMS_DESC       {Установить права доступа - 0777, для всех файлов и папок игры.}
+STR_CHECK_IRD            {Проверить файлы (IRD)}
+STR_CHECK_DESC           {Проверить были ли модифицированы файлы игры.}
+STR_DL_UPDATE            {Скачать обновление}
+STR_DL_UPDATE_DESC       {Загрузите обновления игры в /dev_hdd0/packages.}
+STR_OPEN_WINDOW          {Открыть новое окно}
+STR_MOUNT_DEVBLIND       {Монтировать /dev_blind}
+STR_DUMP_LV1             {Дамп lv1}
+STR_DUMP_LV2             {Дамп lv2}
+STR_DUMP_FLASH           {Дамп flash}
+STR_REFRESH              {Обновить}
+STR_NEWFOLDER            {Новая папка}
+STR_NEWFILE              {Новый файл}
+STR_PASTE                {Вставить}
+STR_CUT                  {Вырезать}
+STR_UNSELECT_ALL         {Снять выделение}
+STR_SELECT_ALL           {Выбрать все}
+STR_MAKE_PKG             {Создать PKG}
+STR_GETMD5               {Получить MD5}
+STR_GETSHA1              {Получить SHA1}
+STR_VIEW                 {Просмотр}
+STR_VIEW_TXT             {Просмотр TXT}
+STR_VIEW_SFO             {Просмотр SFO}
+STR_READ_XREG            {Считать xReg}
+STR_EXTRACT_ELF          {Извлечь ELF}
+STR_RESIGN_SELF          {Переподписать SELF}
+STR_LAUNCH_SELF          {Запустить SELF}
+STR_EXTRACT_EBOOT        {Извлечь EBOOT}
+STR_RESIGN_EBOOT         {Переподписать EBOOT}
+STR_LAUNCH_EBOOT         {Запустить EBOOT}
+STR_SIGN_ELF             {Подписать ELF}
+STR_SIGN_EBOOT           {Подписать EBOOT}
+STR_SIGN_PRX             {Подписать PRX}
+STR_EXTRACT_PRX          {Извлечь PRX}
+STR_RESIGN_SPRX          {Переподписать SPRX}
+STR_REMOVE_PRXLOADER     {Убрать из загрузчика PRX}
+STR_ADD_PRXLOADER        {Добавить в загрузчик PRX}
+STR_REMOVE_PRXLOADER2    {Убрать из PRXLoader}
+STR_ADD_PRXLOADER2       {Добавить в PRXLoader}
+STR_REMOVE_MAMBA         {Удалить из списка Mamba}
+STR_ADD_MAMBA            {Добавить в список Mamba}
+STR_REMOVE_COBRA         {Удалить из списка Cobra}
+STR_ADD_COBRA            {Добавить в список Cobra}
+STR_EXTRACT_RCO          {Извлечь RCO}
+STR_EXTRACT_PKG          {Извлечь PKG}
+STR_PKG_INFO             {Информация об PKG}
+STR_EXTRACT_TRP          {Извлечь TRP}
+STR_COMPRESS_ISO         {Сжать ISO}
+STR_CHECK_CRC32          {Проверить CRC32}
+STR_DECOMPRESS_CSO       {Распаковать CSO}
+STR_EXTRACT_THM          {Извлечь THM}
+STR_EXTRACT_P3T          {Извлечь P3T}
+STR_EXTRACT_RAF          {Извлечь RAF}
+STR_EXTRACT_QRC          {Извлечь QRC}
+STR_EXTRACT_ZIP          {Извлечь ZIP}
+STR_CONVERT_JSX_JS       {Конвертировать JSX в JS}
+STR_CONVERT_VAG_WAV      {Конвертировать VAG в WAV}
+STR_CONVERT_GTF_DDS      {Конвертировать GTF в DDS}
+STR_CONVERT_DDS_PNG      {Конвертировать DDS в PNG}
+STR_MAKE_APNG            {Создать APNG}
+STR_SET_PERMS            {Установить права доступа}
+STR_NOGAME               {Игра не найдена}
+STR_GLOB_SETTINGS        {Глобальные настройки}
+STR_ADJUST               {Настроить экран}
+STR_ADJUST_DESC          {Калибровка вашего дисплея.}
+STR_DL_COVER             {Скачать обложки}
+STR_DL_COVER_DESC        {Загрузите все недостающие обложки игр в USRDIR/covers/[gameID].jpg}
+STR_PLUGIN_MANAGER       {Менеджер плагинов}
+STR_PLUGIN_MANAGER_DESC  {Управление плагинами, хранящимися в /dev_hdd0/plugins.}
+STR_UPD_MGZ              {Обновить ManaGunZ}
+STR_UPD_MGZ_DESC         {Загрузите и установите последнюю версию ManaGunZ.}
+STR_GAME_PATHS           {Пути к играм}
+STR_GAME_PATHS_DESC      {Укажите имена каталогов, где ManaGunZ будет искать игры.
+STR_XMB_PRIO             {Приоритет в XMB}
+STR_XMB_PRIO_DESC        {Иконка ManaGunZ в XMB будет отображаться вверху. Изменения вступят в силу после перезагрузки системы.}
+STR_HELP                 {Отображать подсказки}
+STR_HELP_DESC            {Отображать описания, которые Вы здесь читаете.}
+STR_COLOR_1              {Цвет 1}
+STR_COLOR_2              {Цвет 2}
+STR_COLOR_3              {Цвет 3}
+STR_COLOR_4              {Цвет 4}
+STR_COLOR_DESC           {Изменить цвета, используемые ManaGunZ.}
+STR_UI_SETTINGS          {Настройки интерфейса пользователя}
+STR_UI                   {Пользовательский интерфейс}
+STR_UI_DESC              {Изменить интерфейс.}
+STR_SIDE_MENU            {Боковое меню игры}
+STR_SIDE_MENU_DESC       {Показать игровое меню в правой части экрана.}
+STR_SHOW_PIC1            {Показать PIC1}
+STR_SHOW_PIC1_DESC       {Показать фоновое изображение текущей игры 'PIC1'. Используйте R1 в меню интерфейса 'СПИСОК' и 'СЕТКА' для его отображения.
+STR_SHOW_COVER           {Показать обложку}
+STR_SHOW_COVER_DESC      {Показать обложку игры.}
+STR_SHOW_GAMECASE        {Показать боксы игр}
+STR_SHOW_GAMECASE_DESC   {Показать обложку игры в коробке.}
+STR_SHOW_ICON0           {Показать ICON0}
+STR_SHOW_ICON0_DESC      {Показать главную картинку игры 'ICON0'.}
+STR_GRID_TYPE            {Тип сетки}
+STR_GRID_TYPE_DESC       {Выбрать движение сетки.}
+STR_SCROLL               {Прокрутка}
+STR_PAGE                 {Страница}
+STR_DIRECTION            {Направление}
+STR_DIRECTION_DESC       {Выберите, в каком направлении будет двигаться сетка.}
+STR_VERTICAL             {Вертикально}
+STR_HORIZONTAL           {Горизонтально}
+STR_ANIMATED             {Анимировано}
+STR_ANIMATED_DESC        {Делать движения сетки скользящими.}
+STR_KEEP_PROP            {Сохранить пропорцию}
+STR_KEEP_PROP_DESC       {Сохранить исходное соотношение сторон ICON0.}
+STR_NB_COL               {Количество столбцов}
+STR_NB_COL_DESC          {Выбрать количество столбцов сетки.}
+STR_NB_LINE              {Количество строк}
+STR_NB_LINE_DESC         {Выбрать количество линий сетки.}
+STR_INVERSE              {Инвертировать кнопки}
+STR_INVERSE_DESC         {Инвертировать кнопки вправо и влево.}
+STR_3D                   {3D}
+STR_3D_DESC              {Показать меню с 3D-моделями игровых боксов.}
+STR_ADD                  {Добавить}
+STR_LOAD                 {Загрузить}
+STR_CHANGE               {Изменить}
+STR_COLOR                {Цвет}
+STR_RESET                {Сброс}
+STR_FAILED               {Не удачно}
+STR_DONE                 {Готово}
+STR_OPEN                 {Открыть}
+STR_CLOSE                {Закрыть}
+STR_OPTION               {Опции}
+STR_SELECT               {Выбрать}
+STR_WINDOW               {Окно}
+STR_CLICK                {Клик}
+STR_CURSOR               {Курсор}
+STR_NEXT                 {Следующий}
+STR_PREVIOUS             {Предыдущий}
+STR_SET_COLOR            {Установить цвет}
+STR_HIDETV               {Скрыть тест экрана}
+STR_SHOWTV               {Показать тест экрана}
+STR_MOVE_TO_PLUGINS      {Перейти к /dev_hdd0/plugins}
+STR_ASK_PLUGINS          {Чтобы использовать менеджер плагинов, плагины должны быть в '/dev_hdd0/plugins'.\n. Вы согласны использовать эту папку?}
+STR_CHANGE_VALUE         {Изменить значение}
+STR_LOAD_IDPS_LV2        {Загрузить IDPS из lv2}
+STR_LOAD_IDPS_EID5       {Загрузить IDPS из EID5}
+STR_NAME                 {Имя}
+STR_DOCK_RIGHT           {Панель вправо}
+STR_DOCK_LEFT            {Панель влево}
+STR_DOCK_FULL            {Панель во весь}
+STR_PLUGIN_MONITOR       {Монитор плагинов}
+STR_UNUSED               {Не используется}
+STR_UNLOAD               {Выгрузить}
+STR_BOOT_FILE            {Загрузочный файл}
+STR_CURRENT              {Текущий}
+STR_NET                  {Net}
+STR_SOFT                 {Программно}
+STR_GX                   {GX}
+STR_CUSTOM               {Пользовательский}
+STR_NEW_CMD              {Новая команда}
+STR_PNACH                {Pnach}
+STR_WIDESCREEN           {Широкоэкранный}
+STR_480P                 {480P}
+STR_YFIX                 {YFIX}
+STR_FMV                  {Пропуск FMV}
+STR_SIMPLE               {Простой}
+STR_ADVANCED             {Продвинутый}
+STR_INSTALL_MGZ          {Вы хотите установить ManaGunZ?} 
+STR_UP2DATE              {Это актуально}
+STR_SHOW_WAVES           {Отображать волны}
+STR_SHOW_WAVES_DESC      {Отображать волны в фоне.}
+STR_WAVES_COLOR          {Цвет волн}
+STR_WAVES_COLOR_DESC     {Изменить цвет волн.}
+STR_USE_CONFIG           {Вы не используете файл конфигурации PS2 '*.CONFIG.}
+STR_COLORSET             {Набор цветов}
+STR_COLORSET_DESC        {Выберите предустановки цветов для использования в ManaGunZ.}
+STR_GRID_SCROLL          {Прокрутка}
+STR_ADD_LIMG             {Добавить LIMG}
+STR_REMOVE_LIMG          {Удалить LIMG}
+STR_LIMG_DESC            {Это может исправить несколько игр.}
+STR_FONT                 {Шрифт}
+STR_FONT_DESC            {Изменить шрифт.}
+STR_MOVE                 {Переместить}
+STR_JOIN                 {Соединить}
+STR_JOIN_DESC            {Объединить .666XX файлы.}
