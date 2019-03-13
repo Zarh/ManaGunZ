@@ -246,6 +246,16 @@
 #include "mamba_483C_lz_bin.h"
 #include "mamba_loader_483C_bin.h"
 
+#include "payload_sky_484C_bin.h"
+#include "umount_484C_bin.h"
+#include "mamba_484C_lz_bin.h"
+#include "mamba_loader_484C_bin.h"
+
+#include "payload_sky_484D_bin.h"
+#include "umount_484D_bin.h"
+#include "mamba_484D_lz_bin.h"
+#include "mamba_loader_484D_bin.h"
+
 #include "ps2gxemu_stage1_421_bin.h"
 #include "ps2gxemu_stage1_430_bin.h"
 #include "ps2gxemu_stage1_440_bin.h"
@@ -9294,6 +9304,66 @@ int init_fw()
 		MAMBA_SIZE = mamba_483C_lz_bin_size;
 		MAMBA_LOADER_SIZE = mamba_loader_483C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_483C_bin;
+
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_484C    )==FW_DATE_1_484C) &&
+	   ( lv2peek(FW_DATE_OFFSET_484C + 8)==FW_DATE_2_484C) )
+	{
+		firmware = 0x484C;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_484C;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_484C;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_484C;
+		OFFSET_FIX = OFFSET_FIX_484C;
+		HV_START_OFFSET = HV_START_OFFSET_484C;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_484C;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_484C;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_484C;
+		SYSCALL_TABLE = SYSCALL_TABLE_484C;
+		LV2MOUNTADDR = LV2MOUNTADDR_484C;
+		OPEN_HOOK = OPEN_HOOK_484C;
+		BASE_ADDR = BASE_ADDR_484C;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_484C;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_484C;
+
+		PAYLOAD_SKY = (u64) payload_sky_484C_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_484C_bin_size;
+		UMOUNT = (u64) umount_484C_bin;
+		UMOUNT_SIZE = umount_484C_bin_size;
+		MAMBA = (u64) mamba_484C_lz_bin;
+		MAMBA_SIZE = mamba_484C_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_484C_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_484C_bin;
+
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_484D    )==FW_DATE_1_484D) &&
+	   ( lv2peek(FW_DATE_OFFSET_484D + 8)==FW_DATE_2_484D) )
+	{
+		firmware = 0x484D;
+
+		OFFSET_2_FIX = OFFSET_2_FIX_484D;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_484D;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_484D;
+		OFFSET_FIX = OFFSET_FIX_484D;
+		HV_START_OFFSET = HV_START_OFFSET_484D;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_484D;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_484D;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_484D;
+		SYSCALL_TABLE = SYSCALL_TABLE_484D;
+		LV2MOUNTADDR = LV2MOUNTADDR_484D;
+		OPEN_HOOK = OPEN_HOOK_484D;
+		BASE_ADDR = BASE_ADDR_484D;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_484D;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_484D;
+
+		PAYLOAD_SKY = (u64) payload_sky_484D_bin;
+		PAYLOAD_SKY_SIZE = payload_sky_484D_bin_size;
+		UMOUNT = (u64) umount_484D_bin;
+		UMOUNT_SIZE = umount_484D_bin_size;
+		MAMBA = (u64) mamba_484D_lz_bin;
+		MAMBA_SIZE = mamba_484D_lz_bin_size;
+		MAMBA_LOADER_SIZE = mamba_loader_484D_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_484D_bin;
 
 	} else {return NOK;}
 	
