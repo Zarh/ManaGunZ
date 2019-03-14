@@ -7936,7 +7936,7 @@
 	#define LIBSYSUTIL_SAVEDATA_PSP_HASH                0x57BBC3B800003212
 
 	/* lv1 */
-	#define vsh_pos_in_ram                              0x510000
+	#define vsh_pos_in_ram                              0x910000
 
 	/* vsh */
 	#define ps2tonet_patch                              0xCA380
