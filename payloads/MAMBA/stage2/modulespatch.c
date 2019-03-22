@@ -391,8 +391,18 @@ PatchTableEntry patch_table_rebug[] =
 #ifdef DO_PATCH_PS2
 #ifdef EXPLORE_PLUGIN_REBUG_HASH
 	{ EXPLORE_PLUGIN_REBUG_HASH, rebug_explore_plugin_patches },
+#else
+	{ EXPLORE_PLUGIN_HASH, explore_plugin_patches },
+#endif
+#ifdef EXPLORE_CATEGORY_GAME_REBUG_HASH
 	{ EXPLORE_CATEGORY_GAME_REBUG_HASH, rebug_explore_category_game_patches },
+#else
+	{ EXPLORE_CATEGORY_GAME_HASH, explore_category_game_patches },
+#endif
+#ifdef GAME_EXT_PLUGIN_REBUG_HASH
 	{ GAME_EXT_PLUGIN_REBUG_HASH, rebug_game_ext_plugin_patches },
+#else
+	{ GAME_EXT_PLUGIN_HASH, game_ext_plugin_patches },
 #endif
 #endif
 };
