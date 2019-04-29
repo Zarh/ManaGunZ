@@ -542,6 +542,7 @@ static u8 load_PIC1=NO;
 /*
 static char list_game_path[MAX_GAME][128] = {{0}};
 static char list_game_title[MAX_GAME][128] = {{0}};
+static char list_game_id[MAX_GAME][128] = {{0}};
 static u8 list_game_platform[MAX_GAME] = {0};
 static int game_number = -1;
 */
@@ -549,6 +550,7 @@ static int game_number = -1;
 static s64 game_number=-1;
 static char **list_game_path;
 static char **list_game_title;
+static char **list_game_id;
 static u8 *list_game_platform;
 
 //********** Backup FAV ******************
@@ -10005,8 +10007,8 @@ int Delete_Game(char *path, int position)
 	
 	print_load("Removing game from list");
 	char setPath[128];
-	if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_title[position]);
-	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin" , ManaGunZ_id, list_game_title[position]);
+	if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_id[position]);
+	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin" , ManaGunZ_id, list_game_id[position]);
 	Delete(setPath);
 	
 	remove_GAMELIST(position);
@@ -11247,21 +11249,24 @@ void add_GAMELIST(char *path)
 	game_number++;
 	list_game_path = (char **) realloc( list_game_path, (game_number+1) * sizeof(char *));
 	list_game_title = (char **) realloc(list_game_title, (game_number+1) * sizeof(char *));
+	list_game_id = (char **) realloc(list_game_id, (game_number+1) * sizeof(char *));
 	list_game_platform = (u8 *) realloc(list_game_platform, (game_number+1) * sizeof(u8) );
 	
 	list_game_path[game_number] = strcpy_malloc(path);
 	list_game_platform[game_number] = ext;
 	
 	char title[512];
+	char gameID[512];
 	strcpy(title, &strrchr(path, '/')[1]);
 	RemoveExtention(title);
 	
 	if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
 		GetParamSFO("TITLE", title, game_number, NULL);
+		GetParamSFO("TITLE_ID", gameID, game_number, NULL);
 	}
 	
 	list_game_title[game_number] = strcpy_malloc(title);
-	
+	list_game_id[game_number] = strcpy_malloc(gameID);
 }
 
 void remove_GAMELIST(s64 pos)
@@ -11275,12 +11280,16 @@ void remove_GAMELIST(s64 pos)
 		
 		FREE(list_game_title[i]);
 		list_game_title[i] = strcpy_malloc(list_game_title[i+1]);
+
+		FREE(list_game_id[i]);
+		list_game_id[i] = strcpy_malloc(list_game_id[i+1]);
 		
 		list_game_platform[i] = list_game_platform[i+1];
 	}
 	
 	FREE(list_game_title[game_number]);
 	FREE(list_game_path[game_number]);
+	FREE(list_game_id[game_number]);
 	
 	game_number--;
 }
@@ -26801,7 +26810,7 @@ void Draw_CHOOSE_IDPS()
 
 void close_PS3_GAME_MENU()
 {
-	write_game_setting(list_game_title[position]);
+	write_game_setting(list_game_id[position]);
 	Draw_MENU_input = &EmptyFunc;
 	input_MENU = &EmptyFunc;
 	MENU=NO;
@@ -27302,7 +27311,7 @@ void open_PS3_GAME_MENU()
 {
 	start_loading();
 	new_MENU();
-	read_game_setting(list_game_title[position]);
+	read_game_setting(list_game_id[position]);
 	init_PS3_GAME_MENU();
 	MENU_SIDE=Use_SideMenu;
 	if(MENU_SIDE) MENU_ITEMS_X=X_MAX;
@@ -31886,7 +31895,7 @@ void input_MAIN()
 
 			start_loading();	
 			
-			read_game_setting(list_game_title[position]);
+			read_game_setting(list_game_id[position]);
 			
 			u8 mounted = MountGame(list_game_path[position]);
 			
