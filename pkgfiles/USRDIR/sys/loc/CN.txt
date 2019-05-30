@@ -1,0 +1,329 @@
+STR_LANGUAGE			{Chinese}
+STR_LANGCODE			{\x01}
+
+STR_LANG					{Language}
+STR_LANG_DESC				{选择你的语言.}
+STR_GATHERING				{正在收集数据…}
+STR_COPYING					{复制…}
+STR_FROM					{从}
+STR_TO						{to}
+STR_FILES					{文件夹}
+STR_DIRS					{目录}
+STR_UNKNOWN					{未知}
+STR_FILE					{文件}
+STR_CANCEL					{取消}
+STR_TURNOFF_YES				{旋转 OFF = YES}
+STR_TURNOFF_NO				{旋转 OFF = NO}
+STR_CANCELLED				{注销}
+STR_UNIT					{字节}
+STR_TOTALSIZE				{总 大小}
+STR_HIDELOGS				{隐藏 日志}
+STR_SHOWLOGS				{显示 日志}
+STR_BOOST					{Boost!}
+STR_GAMEMENU				{游戏 菜单}
+STR_SETTINGS				{设置}
+STR_MOUNTGAME				{挂载游戏}
+STR_FILTER					{滤波器}
+STR_FAVORITE				{最喜欢的}
+STR_FILEMANAGER				{文件管理器}
+STR_HOLD					{按住}
+STR_BACKTOXMB				{返回到 XMB}
+STR_GAME_PROP				{游戏 属性}
+STR_GAME_TITLE				{名称}
+STR_GAME_PATH				{路径}
+STR_GAME_FORMAT				{格式}
+STR_GAME_SIZE				{大小}
+STR_GAME_PLATFORM			{平台}
+STR_SYSVERS					{固件}
+STR_GAMEID					{标识符}
+STR_ELFCRC					{ELF CRC}
+STR_ELFCRCO					{ELF CRC (原始)}
+STR_BACK					{后退}
+STR_ENTER					{进入}
+STR_UPDATE_FOUND			{更新发现}
+STR_UPDATE					{更新}
+STR_SIZE					{大小}
+STR_SYSTEM					{系统}
+STR_DL						{下载}
+STR_DL_ALL					{下载全部}
+STR_UNPLUG					{弹出以下设备(s)}
+STR_PATH					{路径}
+STR_TYPE					{类型}
+STR_FOLDER					{文件夹}
+STR_DIR						{目录}
+STR_MULT					{倍数}
+STR_THM_SETTINGS			{主题设置}
+STR_THM						{主题}
+STR_THM_DESC				{加载所需主题.您可以从/dev_usbxxx/themes安装它们.}
+STR_CREATE					{创造}
+STR_ZOOM_OUT				{缩小}
+STR_ZOOM_IN					{放大}
+STR_MOVE_FRAME				{移动框架}
+STR_CHECK					{检查}
+STR_UNCHECK					{取消检查}
+STR_GAME_OPTION				{游戏设置}
+STR_ADD_FAV					{添加到收藏夹}
+STR_REM_FAV					{从收藏夹中删除}
+STR_FAV_DESC				{管理您最喜欢的游戏列表.}
+STR_RENAME					{重命名}
+STR_RENAME_DESC				{重命名备份的标题.}
+STR_DELETE					{删除}
+STR_DELETE_DESC				{删除备份.}
+STR_COPY					{复制}
+STR_COPY_DESC				{将备份复制到其他路径.}
+STR_CREATE_ICON0			{创建 ICON0}
+STR_CREATE_ICON0_DESC		{从封面创建“假”ICON0.}
+STR_REST_PNACH				{恢复 PNACH}
+STR_REST_PNACH_DESC			{删除pnach文件应用于备份的修补程序.}
+STR_APPLY_PNACH				{应用 PNACH}
+STR_APPLY_PNACH_DESC		{将pnach文件中的修补程序应用于备份.}
+STR_DISABLE_WS				{禁用宽屏}
+STR_ENABLE_WS				{启用宽屏}
+STR_WS_DESC					{以16:9而不是4:3显示游戏.}
+STR_DISABLE_480P			{禁用 480P}
+STR_ENABLE_480P				{启用 480P}
+STR_480P_DESC				{480p中的渐进扫描模式.}
+STR_DISABLE_YFIX			{禁用 YFIX}
+STR_ENABLE_YFIX				{启用 YFIX}
+STR_YFIX_DESC				{固定垂直位置.}
+STR_DISABLE_FMVSKIP			{禁用 FMV skip}
+STR_ENABLE_FMVSKIP			{启用 FMV skip}
+STR_FMVSKIP_DESC			{允许您跳过完整的运动视频.}
+STR_DISABLE_NETEMU			{禁用 NetEMU}
+STR_ENABLE_NETEMU			{启用 NetEMU}
+STR_NETEMU_DESC				{强制使用PS2 Netemu.}
+STR_SAVE_CONFIG				{保存 CONFIG}
+STR_CONFIG					{配置}
+STR_CONFIG_DESC				{[实验]创建自己的配置文件以“修复”PS2备份.}
+STR_NONE					{无}
+STR_CHECK_MD5				{检查 MD5}
+STR_PROPS					{性质}
+STR_PROPS_DESC				{显示备份的属性.}
+STR_ASK_DEL					{你真的想删除吗}
+STR_GAME_SETTINGS			{进入游戏设置}
+STR_DIRECT_BOOT				{直接引导}
+STR_DIRECT_BOOT_DESC		{直接启动游戏而不返回xmb.}
+STR_YES						{是}
+STR_NO						{否}
+STR_CLEAN_SYSCALL			{清洁系统}
+STR_CLEAN_SYSCALL_DESC		{禁用 Peek和Poke系统调用.}
+STR_CHANGE_IDPS				{改变 IDPS}
+STR_CHANGE_IDPS_DESC		{改变你的IDPS lv2.}
+STR_EXT_GAME_DATA			{外部游戏数据}
+STR_EXT_GAME_DATA_DESC		{在USB设备中安装GAMEDATA，而不是在系统中安装GAMEDATA.}
+STR_PAYLOAD					{有效载荷}
+STR_PAYLOAD_DESC			{选择挂载备份的有效负载.}
+STR_PRIM_USB				{设置主USB}
+STR_PRIM_USB_DESC			{设置存储游戏的USB设备作为主USB设备.}
+STR_BDEMU					{BD模拟}
+STR_BDEMU_DESC				{选择要挂载备份的模拟类型.}
+STR_PATCH_LIBFS				{补丁LIBFS}
+STR_PATCH_LIBFS_DESC		{选择要使用的修补的LiBF.}
+STR_MOUNT_APPHOME			{挂载 /app_home}
+STR_MOUNT_APPHOME_DESC		{将路径/ APP_HOME重定向到/ dev_bdvd.}
+STR_PATCH_EXP				{补丁 explore_plugin}
+STR_PATCH_EXP_DESC			{路径/ APP_HOME由/ dev_bdvd重新放置在插件explore_插件中.}
+STR_MAKE_SHTCUT_PKG			{制作快捷pkg}
+STR_MAKE_SHTCUT_PKG_DESC	{创建存储到/dev_hdd0/packages的包文件。一旦安装，它将是从xmb安装备份的“快捷方式”.}
+STR_PATCH_EBOOT				{补丁 EBOOT}
+STR_PATCH_EBOOT_DESC		{将eboot文件的固件版本更改为4.21，以防出现错误0x80010009.}
+STR_RESIGN					{重新签名}
+STR_RESIGN_DESC				{用4.21 key重新签署备份的每个可执行文件.}
+STR_RESTORE					{恢复}
+STR_RESTORE_DESC			{还原备份的原始可执行文件.}
+STR_EXTRACT_ISO				{提取 ISO}
+STR_EXTRACT_ISO_DESC		{将文件从ISO提取到文件夹.}
+STR_CONVERT_ISO				{转换为ISO}
+STR_CONVERT_ISO_DESC		{将文件夹备份转换为ISO.}
+STR_FIX_PERMS				{修复权限}
+STR_FIX_PERMS_DESC			{将备份的每个文件夹和文件的权限值设置为0777.}
+STR_CHECK_IRD				{检查文件（IRD）}
+STR_CHECK_DESC				{检查备份文件是否未被修改.}
+STR_DL_UPDATE				{下载更新}
+STR_DL_UPDATE_DESC			{将备份的更新下载到/dev_hdd0/packages.}
+STR_OPEN_WINDOW				{打开新窗口}
+STR_MOUNT_DEVBLIND			{挂载 /dev_blind}
+STR_DUMP_LV1				{Dump lv1}
+STR_DUMP_LV2				{Dump lv2}
+STR_DUMP_FLASH				{Dump flash}
+STR_REFRESH					{刷新}
+STR_NEWFOLDER				{新文件夹}
+STR_NEWFILE					{新文件}
+STR_PASTE					{粘贴}
+STR_CUT						{分割}
+STR_UNSELECT_ALL			{取消全部选择}
+STR_SELECT_ALL				{选择全部}
+STR_MAKE_PKG				{制作PKG}
+STR_GETMD5					{获得 MD5}
+STR_GETSHA1					{获得 SHA1}
+STR_VIEW					{查看}
+STR_VIEW_TXT				{查看 TXT}
+STR_VIEW_SFO				{查看 SFO}
+STR_READ_XREG				{Read xReg}
+STR_EXTRACT_ELF				{提取 ELF}
+STR_RESIGN_SELF				{重签 SELF}
+STR_LAUNCH_SELF				{Launch SELF}
+STR_EXTRACT_EBOOT			{提取 EBOOT}
+STR_RESIGN_EBOOT			{重签 EBOOT}
+STR_LAUNCH_EBOOT			{Launch EBOOT}
+STR_SIGN_ELF				{签名 ELF}
+STR_SIGN_EBOOT				{签名 EBOOT}
+STR_SIGN_PRX				{签名 PRX}
+STR_EXTRACT_PRX				{提取 PRX}
+STR_RESIGN_SPRX				{重签 SPRX}
+STR_REMOVE_PRXLOADER		{从PRX加载程序中删除}
+STR_ADD_PRXLOADER			{添加到prx加载程序}
+STR_REMOVE_PRXLOADER2		{从PRX加载程序中删除}
+STR_ADD_PRXLOADER2			{添加到prx加载程序}
+STR_REMOVE_MAMBA			{从mamba列表中删除}
+STR_ADD_MAMBA				{添加到mamba列表}
+STR_REMOVE_COBRA			{从COBRA列表中删除}
+STR_ADD_COBRA				{添加到COBRA列表}
+STR_EXTRACT_RCO				{提取 RCO}
+STR_EXTRACT_PKG				{提取 PKG}
+STR_PKG_INFO				{PKG 信息}
+STR_EXTRACT_TRP				{提取 TRP}
+STR_COMPRESS_ISO			{压缩 ISO}
+STR_CHECK_CRC32				{检查 CRC32}
+STR_DECOMPRESS_CSO			{解压 CSO}
+STR_EXTRACT_THM				{提取 THM}
+STR_EXTRACT_P3T				{提取 P3T}
+STR_EXTRACT_RAF				{提取 RAF}
+STR_EXTRACT_QRC				{提取 QRC}
+STR_EXTRACT_ZIP				{提取 ZIP}
+STR_CONVERT_JSX_JS			{转换 JSX 为 JS}
+STR_CONVERT_VAG_WAV			{转换 VAG 为 WAV}
+STR_CONVERT_GTF_DDS			{转换 GTF 为 DDS}
+STR_CONVERT_DDS_PNG			{转换 DDS 为 PNG}
+STR_MAKE_APNG				{制作 APNG}
+STR_SET_PERMS				{设置权限}
+STR_NOGAME					{没有发现游戏}
+STR_GLOB_SETTINGS			{全局设置}
+STR_ADJUST					{调整屏幕}
+STR_ADJUST_DESC				{校准显示器.}
+STR_DL_COVER				{下载封面}
+STR_DL_COVER_DESC			{将所有丢失的游戏封面下载到usrdir/covers/[游戏 ID].jpg}
+STR_PLUGIN_MANAGER			{插件管理器}
+STR_PLUGIN_MANAGER_DESC		{管理存储在/dev_hdd0/plugins中的插件.}
+STR_UPD_MGZ					{更新 ManaGunZ}
+STR_UPD_MGZ_DESC			{下载并安装最新版本的Managunz.}
+STR_GAME_PATHS				{游戏备份路径}
+STR_GAME_PATHS_DESC			{配置Managunz将在其中查找备份的目录的名称.}
+STR_XMB_PRIO				{XMB优先级}
+STR_XMB_PRIO_DESC			{XMB中的Managunz图标将显示在顶部。下次系统启动后有效.}
+STR_HELP					{显示帮助}
+STR_HELP_DESC				{在此处显示您正在阅读的句子.}
+STR_COLOR_1					{颜色 1}
+STR_COLOR_2					{颜色 2}
+STR_COLOR_3					{颜色 3}
+STR_COLOR_4					{颜色 4}
+STR_COLOR_DESC				{更改Managunz使用的颜色.}
+STR_UI_SETTINGS				{用户界面设置}
+STR_UI						{用户界面}
+STR_UI_DESC					{更改接口.}
+STR_SIDE_MENU				{游戏选单}
+STR_SIDE_MENU_DESC			{在屏幕右侧显示游戏菜单.}
+STR_SHOW_PIC1				{显示 PIC1}
+STR_SHOW_PIC1_DESC			{显示当前选定游戏“pic1”的背景图片。将R1与UI列表和网格一起使用以显示它.}
+STR_SHOW_COVER				{显示封面}
+STR_SHOW_COVER_DESC			{显示游戏封面.}
+STR_SHOW_GAMECASE			{展示游戏实例}
+STR_SHOW_GAMECASE_DESC		{用游戏盒显示游戏封面.}
+STR_SHOW_ICON0				{显示 ICON0}
+STR_SHOW_ICON0_DESC			{显示游戏“icon0”的主图片.}
+STR_GRID_TYPE				{方格类型}
+STR_GRID_TYPE_DESC			{选择如何移动网格.}
+STR_SCROLL					{卷轴}
+STR_PAGE					{页}
+STR_DIRECTION				{方向}
+STR_DIRECTION_DESC			{选择网格移动的方向.}
+STR_VERTICAL				{垂直}
+STR_HORIZONTAL				{水平}
+STR_ANIMATED				{动画}
+STR_ANIMATED_DESC			{使网格的移动滑动.}
+STR_KEEP_PROP				{保持比例}
+STR_KEEP_PROP_DESC			{保持ICON0的原始纵横比.}
+STR_NB_COL					{列数}
+STR_NB_COL_DESC				{选择网格的列数.}
+STR_NB_LINE					{行数}
+STR_NB_LINE_DESC			{选择网格的行数.}
+STR_INVERSE					{反向按钮}
+STR_INVERSE_DESC			{左右颠倒按钮.}
+STR_3D						{3D}
+STR_3D_DESC					{显示带有游戏案例3d模型的菜单.}
+STR_ADD						{添加}
+STR_LOAD					{负载}
+STR_CHANGE					{变化}
+STR_COLOR					{颜色}
+STR_RESET					{重置}
+STR_FAILED					{失败}
+STR_DONE					{已完成}
+STR_OPEN					{打开}
+STR_CLOSE					{关闭}
+STR_OPTION					{选项}
+STR_SELECT					{选择}
+STR_WINDOW					{窗口}
+STR_CLICK					{点击}
+STR_CURSOR					{光标}
+STR_NEXT					{下一个}
+STR_PREVIOUS				{以前的}
+STR_SET_COLOR				{设置颜色}
+STR_HIDETV					{隐藏电视屏幕测试}
+STR_SHOWTV					{显示电视屏幕测试}
+STR_MOVE_TO_PLUGINS			{移动到/dev_hdd0/plugins}
+STR_ASK_PLUGINS				{要使用插件管理器，插件必须位于“/dev_hdd0/plugins”中。\n是否接受使用此文件夹？}
+STR_CHANGE_VALUE			{变动值}
+STR_LOAD_IDPS_LV2			{从lv2加载IDPS}
+STR_LOAD_IDPS_EID5			{从EID5加载IDPS}
+STR_NAME					{名字}
+STR_DOCK_RIGHT				{靠右停靠}
+STR_DOCK_LEFT				{靠左停靠}
+STR_DOCK_FULL				{完全停靠}
+STR_PLUGIN_MONITOR			{插件监视器}
+STR_UNUSED					{未使用的}
+STR_UNLOAD					{卸载}
+STR_BOOT_FILE				{引导文件}
+STR_CURRENT					{电流}
+STR_NET						{Net}
+STR_SOFT					{软件}
+STR_GX						{GX}
+STR_CUSTOM					{习惯}
+STR_NEW_CMD					{新 命令}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{宽屏}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{跳频}
+STR_SIMPLE					{简单}
+STR_ADVANCED				{高级}
+STR_INSTALL_MGZ				{是否要安装Managunz？} 
+STR_UP2DATE					{这是最新的}
+STR_SHOW_WAVES				{显示波浪}
+STR_SHOW_WAVES_DESC			{在背景中显示波浪.}
+STR_WAVES_COLOR				{波浪颜色}
+STR_WAVES_COLOR_DESC		{更改波的颜色.}
+STR_USE_CONFIG				{您没有使用PS2配置文件“*.config”.}
+STR_COLORSET				{颜色设置}
+STR_COLORSET_DESC 			{选择要在Managunz中使用的预定义颜色设置.}
+STR_GRID_SCROLL				{卷轴}
+STR_ADD_LIMG				{添加 LIMG}
+STR_REMOVE_LIMG				{移除 LIMG}
+STR_LIMG_DESC				{它可以解决一些游戏.}
+STR_FONT					{字体}
+STR_FONT_DESC				{更改字体.}
+STR_MOVE					{移动}
+STR_JOIN					{加入}
+STR_JOIN_DESC				{合并.666xx文件.}
+			{引导文件}
+STR_CURRENT					{当前}
+STR_NET						{Net}
+STR_SOFT					{软件}
+STR_GX						{GX}
+STR_CUSTOM					{习惯}
+STR_NEW_CMD					{新 命令}
+STR_PNACH					{Pnach}
+STR_WIDESCREEN				{宽屏}
+STR_480P					{480P}
+STR_YFIX					{YFIX}
+STR_FMV						{跳帧}
+STR_SIM
