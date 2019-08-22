@@ -2,7 +2,7 @@
 #include <sysutil/sysutil.h>
 #include <sys/systime.h>
 
-unsigned temp_pad = 0, new_pad = 0, old_pad = 0;
+unsigned temp_pad=0, new_pad = 0, old_pad = 0;
 
 padInfo padinfo;
 padData paddata;
@@ -18,8 +18,6 @@ unsigned ps3pad_read()
 
     padActParam actparam;
 
-    unsigned butt = 0;
-
     pad_alive = 0;
 
     sysUtilCheckCallback();
@@ -32,27 +30,14 @@ unsigned ps3pad_read()
                     
             ioPadGetData(n, &paddata);
             pad_alive = 1;
-            butt = (paddata.button[2] << 8) | (paddata.button[3] & 0xff);
-
-            /* Analog stick management */
-            // if (paddata.button[6] < 0x10)
-                // butt |= BUTTON_LEFT;
-            // else if (paddata.button[6] > 0xe0)
-                // butt |= BUTTON_RIGHT;
-            // if (paddata.button[7] < 0x10)
-                // butt |= BUTTON_UP;
-            // else if (paddata.button[7] > 0xe0)
-                // butt |= BUTTON_DOWN;
-
-          //  if(butt) pad_last_time = sec;
-
-            break;
-        
+            old_pad = (paddata.button[2] << 8) | (paddata.button[3] & 0xff);
+            
+			break;        
         }
     }
 
 		
-    if(!pad_alive) butt = 0;
+    if(!pad_alive) old_pad = 0;
     else {
         actparam.small_motor = 0;
 		actparam.large_motor = 0;
@@ -80,11 +65,9 @@ unsigned ps3pad_read()
 
         ioPadSetActDirect(n, &actparam);
     }
-
-    temp_pad = butt;
-
-    new_pad = temp_pad & (~old_pad); old_pad = temp_pad;
-
-
-return butt;
+	
+	new_pad = old_pad & (~temp_pad);
+	temp_pad = old_pad;
+	
+	return old_pad;
 }

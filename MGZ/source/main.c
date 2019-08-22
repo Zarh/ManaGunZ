@@ -49,7 +49,8 @@
 #include "ps3mapi.h"
 
 #include "syscall8.h"
-#include "common.h"
+#include "fw.h"
+#include "ps2vers.h"
 #include "pad.h"
 #include "zlib.h"
 #include "ttf_render.h"
@@ -75,215 +76,6 @@
 #include "ps2gen.h"
 
 #include "xreg.h"
-
-#include "payload_sky_421C_bin.h"
-#include "umount_421C_bin.h"
-#include "mamba_421C_lz_bin.h"
-#include "mamba_loader_421C_bin.h"
-
-#include "payload_sky_421D_bin.h"
-#include "umount_421D_bin.h"
-#include "mamba_421D_lz_bin.h"
-#include "mamba_loader_421D_bin.h"
-
-#include "payload_sky_430C_bin.h"
-#include "umount_430C_bin.h"
-#include "mamba_430C_lz_bin.h"
-#include "mamba_loader_430C_bin.h"
-
-#include "payload_sky_430D_bin.h"
-#include "umount_430D_bin.h"
-#include "mamba_430D_lz_bin.h"
-#include "mamba_loader_430D_bin.h"
-
-#include "payload_sky_431C_bin.h"
-#include "umount_431C_bin.h"
-#include "mamba_431C_lz_bin.h"
-#include "mamba_loader_431C_bin.h"
-
-#include "payload_sky_440C_bin.h"
-#include "umount_440C_bin.h"
-#include "mamba_440C_lz_bin.h"
-#include "mamba_loader_440C_bin.h"
-
-#include "payload_sky_441C_bin.h"
-#include "umount_441C_bin.h"
-#include "mamba_441C_lz_bin.h"
-#include "mamba_loader_441C_bin.h"
-
-#include "payload_sky_441D_bin.h"
-#include "umount_441D_bin.h"
-#include "mamba_441D_lz_bin.h"
-#include "mamba_loader_441D_bin.h"
-
-#include "payload_sky_446C_bin.h"
-#include "umount_446C_bin.h"
-#include "mamba_446C_lz_bin.h"
-#include "mamba_loader_446C_bin.h"
-
-#include "payload_sky_446D_bin.h"
-#include "umount_446D_bin.h"
-#include "mamba_446D_lz_bin.h"
-#include "mamba_loader_446D_bin.h"
-
-#include "payload_sky_450C_bin.h"
-#include "umount_450C_bin.h"
-#include "mamba_450C_lz_bin.h"
-#include "mamba_loader_450C_bin.h"
-
-#include "payload_sky_450D_bin.h"
-#include "umount_450D_bin.h"
-#include "mamba_450D_lz_bin.h"
-#include "mamba_loader_450D_bin.h"
-
-#include "payload_sky_453C_bin.h"
-#include "umount_453C_bin.h"
-#include "mamba_453C_lz_bin.h"
-#include "mamba_loader_453C_bin.h"
-
-#include "payload_sky_453D_bin.h"
-#include "umount_453D_bin.h"
-#include "mamba_453D_lz_bin.h"
-#include "mamba_loader_453D_bin.h"
-
-#include "payload_sky_455C_bin.h"
-#include "umount_455C_bin.h"
-#include "mamba_455C_lz_bin.h"
-#include "mamba_loader_455C_bin.h"
-
-#include "payload_sky_455D_bin.h"
-#include "umount_455D_bin.h"
-#include "mamba_455D_lz_bin.h"
-#include "mamba_loader_455D_bin.h"
-
-#include "payload_sky_460C_bin.h"
-#include "umount_460C_bin.h"
-#include "mamba_460C_lz_bin.h"
-#include "mamba_loader_460C_bin.h"
-
-#include "payload_sky_465C_bin.h"
-#include "umount_465C_bin.h"
-#include "mamba_465C_lz_bin.h"
-#include "mamba_loader_465C_bin.h"
-
-#include "payload_sky_465D_bin.h"
-#include "umount_465D_bin.h"
-#include "mamba_465D_lz_bin.h"
-#include "mamba_loader_465D_bin.h"
-
-#include "payload_sky_470C_bin.h"
-#include "umount_470C_bin.h"
-#include "mamba_470C_lz_bin.h"
-#include "mamba_loader_470C_bin.h"
-
-#include "payload_sky_470D_bin.h"
-#include "umount_470D_bin.h"
-#include "mamba_470D_lz_bin.h"
-#include "mamba_loader_470D_bin.h"
-
-#include "payload_sky_475C_bin.h"
-#include "umount_475C_bin.h"
-#include "mamba_475C_lz_bin.h"
-#include "mamba_loader_475C_bin.h"
-
-#include "payload_sky_475D_bin.h"
-#include "umount_475D_bin.h"
-#include "mamba_475D_lz_bin.h"
-#include "mamba_loader_475D_bin.h"
-
-#include "payload_sky_476C_bin.h"
-#include "umount_476C_bin.h"
-#include "mamba_476C_lz_bin.h"
-#include "mamba_loader_476C_bin.h"
-
-#include "payload_sky_476D_bin.h"
-#include "umount_476D_bin.h"
-#include "mamba_476D_lz_bin.h"
-#include "mamba_loader_476D_bin.h"
-
-#include "payload_sky_478C_bin.h"
-#include "umount_478C_bin.h"
-#include "mamba_478C_lz_bin.h"
-#include "mamba_loader_478C_bin.h"
-
-#include "payload_sky_478D_bin.h"
-#include "umount_478D_bin.h"
-#include "mamba_478D_lz_bin.h"
-#include "mamba_loader_478D_bin.h"
-
-#include "payload_sky_480C_bin.h"
-#include "umount_480C_bin.h"
-#include "mamba_480C_lz_bin.h"
-#include "mamba_loader_480C_bin.h"
-
-#include "payload_sky_480D_bin.h"
-#include "umount_480D_bin.h"
-#include "mamba_480D_lz_bin.h"
-#include "mamba_loader_480D_bin.h"
-
-#include "payload_sky_481C_bin.h"
-#include "umount_481C_bin.h"
-#include "mamba_481C_lz_bin.h"
-#include "mamba_loader_481C_bin.h"
-
-#include "payload_sky_481D_bin.h"
-#include "umount_481D_bin.h"
-#include "mamba_481D_lz_bin.h"
-#include "mamba_loader_481D_bin.h"
-
-#include "payload_sky_482C_bin.h"
-#include "umount_482C_bin.h"
-#include "mamba_482C_lz_bin.h"
-#include "mamba_loader_482C_bin.h"
-
-#include "payload_sky_482D_bin.h"
-#include "umount_482D_bin.h"
-#include "mamba_482D_lz_bin.h"
-#include "mamba_loader_482D_bin.h"
-
-#include "payload_sky_483C_bin.h"
-#include "umount_483C_bin.h"
-#include "mamba_483C_lz_bin.h"
-#include "mamba_loader_483C_bin.h"
-
-#include "payload_sky_484C_bin.h"
-#include "umount_484C_bin.h"
-#include "mamba_484C_lz_bin.h"
-#include "mamba_loader_484C_bin.h"
-
-#include "payload_sky_484D_bin.h"
-#include "umount_484D_bin.h"
-#include "mamba_484D_lz_bin.h"
-#include "mamba_loader_484D_bin.h"
-
-#include "ps2gxemu_stage1_421_bin.h"
-#include "ps2gxemu_stage1_430_bin.h"
-#include "ps2gxemu_stage1_440_bin.h"
-#include "ps2gxemu_stage1_453_bin.h"
-
-#include "ps2gxemu_stage2_421_bin.h"
-#include "ps2gxemu_stage2_430_bin.h"
-#include "ps2gxemu_stage2_440_bin.h"
-#include "ps2gxemu_stage2_453_bin.h"
-
-#include "ps2hwemu_stage1_421_bin.h"
-#include "ps2hwemu_stage1_440_bin.h"
-#include "ps2hwemu_stage1_453_bin.h"
-
-#include "ps2hwemu_stage2_421_bin.h"
-#include "ps2hwemu_stage2_430_bin.h"
-#include "ps2hwemu_stage2_440_bin.h"
-#include "ps2hwemu_stage2_453_bin.h"
-
-#include "ps2netemu_stage2_421_bin.h"
-#include "ps2netemu_stage2_430_bin.h"
-#include "ps2netemu_stage2_440_bin.h"
-#include "ps2netemu_stage2_446_bin.h"
-#include "ps2netemu_stage2_450_bin.h"
-#include "ps2netemu_stage2_453_bin.h"
-#include "ps2netemu_stage2_455_bin.h"
-#include "ps2netemu_stage2_460_bin.h"
-#include "ps2netemu_stage2_478_bin.h"
 
 #define NO_UID		-1
 #define SYSTEM_UID	0
@@ -318,7 +110,7 @@
 #define REACTPSN	0
 #define SNAKE		0 // cobra else mamba
 #define IRIS		1
-#define MM			2  
+#define MM			2
 
 #define _EXIST		1
 #define _NOT_EXIST	0
@@ -381,6 +173,7 @@
 #define WHITE		0xFFFFFFFF
 #define ORANGE 		0xFFA000FF
 #define BLUE		0x0070FFFF
+#define DARKBLUE	0x0040A0FF
 #define GREEN		0x00A000FF
 #define RED			0xFF0000FF
 #define PURPLE		0x7D00FFFF
@@ -416,10 +209,6 @@
 #define FS_S_IFMT 0170000
 #define FS_S_IFDIR 0040000
 
-#define USB_MASS_STORAGE_1(n)	(0x10300000000000AULL+(n)) // For 0-5 
-#define USB_MASS_STORAGE_2(n)	(0x10300000000001FULL+((n)-6)) // For 6-127
-#define USB_MASS_STORAGE(n)	(((n) < 6) ? USB_MASS_STORAGE_1(n) : USB_MASS_STORAGE_2(n))
-
 #define MAX_SECTIONS	((0x10000-sizeof(rawseciso_args))/8)
 
 #define FREE(x) if(x!=NULL) {free(x);x=NULL;}
@@ -441,9 +230,40 @@
 #define INPUT_X			10
 #define INPUT_Y			491-INPUT_SIZE/2
 
+#define GAMEPIC_COVER_UNK		16
+#define GAMEPIC_ICON0_DEFAULT	8
+#define GAMEPIC_COVER3D			4
+#define GAMEPIC_COVER2D			2
+#define GAMEPIC_ICON0			1
+#define GAMEPIC_NONE			0
+
+// GAMEOS ID
+
+#define FLASH_NAND			0x100000000000001ULL
+#define FLAS_NAND_EXT		0x100000500000001ULL
+#define FLASH_NOR			0x100000000000004ULL
+#define FLASH_NOR_EXT		0x100000200000004ULL
+
+#define ATA_HDD					0x101000000000007ULL
+#define BDVD_DRIVE				0x101000000000006ULL
+#define PATA0_HDD_DRIVE			0x101000000000008ULL
+#define PATA0_BDVD_DRIVE		BDVD_DRIVE
+#define PATA1_HDD_DRIVE			ATA_HDD
+#define PATA1_BDVD_DRIVE		0x101000000000009ULL
+#define CARDCTRL				0x101000000000010ULL  // ?
+#define BUILTIN_FLASH			0x100000000000001ULL
+#define MEMORY_STICK			0x103000000000010ULL
+#define SD_CARD					0x103000100000010ULL
+#define COMPACT_FLASH			0x103000200000010ULL
+
+#define USB_MASS_STORAGE_1(n)	(0x10300000000000AULL+(n)) // For 0-5 
+#define USB_MASS_STORAGE_2(n)	(0x10300000000001FULL+((n)-6)) // For 6-127
+#define USB_MASS_STORAGE(n)		(((n) < 6) ? USB_MASS_STORAGE_1(n) : USB_MASS_STORAGE_2(n))
+
+#define	HDD_PARTITION(n)	(ATA_HDD | ((uint64_t)n<<32))
+#define FLASH_PARTITION(n)	(BUILTIN_FLASH | ((uint64_t)n<<32))
 
 u8 scene=SCENE_MAIN;
-
 typedef struct
 {
 	uint64_t device;
@@ -457,30 +277,30 @@ SYS_PROCESS_PARAM(1200, 0x100000);
 //************ FIRMWARE	***************
 
 int firmware = 0;
-static u64 SYSCALL_TABLE;
-static u64 HV_START_OFFSET;
-static u64 OFFSET_FIX;
-static u64 OFFSET_2_FIX;
-static u64 OFFSET_FIX_3C;
-static u64 OFFSET_FIX_2B17;
-static u64 OFFSET_FIX_LIC;
-static u64 OPEN_HOOK;
-static u64 BASE_ADDR;
-static u64 UMOUNT_SYSCALL_OFFSET;
-static u64 LV2MOUNTADDR;
-static u64 LV2MOUNTADDR_ESIZE;
-static u64 LV2MOUNTADDR_CSIZE;
-static u64 NEW_POKE_SYSCALL_ADDR;
-static u64 PAYLOAD_SKY;
-static size_t PAYLOAD_SKY_SIZE;
-static u64 UMOUNT;
-static size_t UMOUNT_SIZE;
-static u64 MAMBA;
-static size_t MAMBA_SIZE;
-static u64 *MAMBA_LOADER;
-static size_t MAMBA_LOADER_SIZE;
-static u64 OFFSET_1_IDPS;
-static u64 OFFSET_2_IDPS;
+u64 SYSCALL_TABLE;
+u64 HV_START_OFFSET;
+u64 OFFSET_FIX;
+u64 OFFSET_2_FIX;
+u64 OFFSET_FIX_3C;
+u64 OFFSET_FIX_2B17;
+u64 OFFSET_FIX_LIC;
+u64 OPEN_HOOK;
+u64 BASE_ADDR;
+u64 UMOUNT_SYSCALL_OFFSET;
+u64 LV2MOUNTADDR;
+u64 LV2MOUNTADDR_ESIZE;
+u64 LV2MOUNTADDR_CSIZE;
+u64 NEW_POKE_SYSCALL_ADDR;
+u64 PAYLOAD_SKY;
+size_t PAYLOAD_SKY_SIZE;
+u64 UMOUNT;
+size_t UMOUNT_SIZE;
+u64 MAMBA;
+size_t MAMBA_SIZE;
+u64 *MAMBA_LOADER;
+size_t MAMBA_LOADER_SIZE;
+u64 OFFSET_1_IDPS;
+u64 OFFSET_2_IDPS;
 
 //*********** IRIS ****************
 
@@ -507,7 +327,7 @@ static u8 max_mapped=0;
 
 //****** Thread Loading *************
 
-static u8 loading = 1;
+static u8 loading = NO;
 static char loading_log[20][255];
 static char head_title[128];
 int64_t prog_bar1_value=-1;
@@ -522,34 +342,32 @@ static u32 LoadIconRot=0;
 static u32 time_not = 0;
 static char not_msg[255];
 
-//****** Thread Check **************
+//****** Devices **************
 
-static char list_device[20][20]={{0}};
+static char list_device[32][32]={{0}};
 static int8_t device_number=-1;
-static int8_t device_plug=0;
-static u8 checking=YES;
 
-//****** Thread LoadPIC **************
+//****** Thread LoadGAMEPIC **************
 
-static int64_t Load_GamePIC_progbar = -1;
-static u8 Load_GamePIC=NO;
-static u8 load_PIC1=NO;
+//static int64_t Load_GAMEPIC_progbar = -1;
+static u8 Load_GAMEPIC_flag=NO;
+static u8 Load_GAMEPIC_busy=NO;
+static u8 Load_GAMEPIC_init=NO;
+
+//****** Thread LoadTMP ******************
+static u8 Load_CURPIC_flag=NO;
 
 //********** Backup LIST ******************
 
 
-#define MAX_GAME 		512
-/*
-static char list_game_path[MAX_GAME][128] = {{0}};
-static char list_game_title[MAX_GAME][128] = {{0}};
-static u8 list_game_platform[MAX_GAME] = {0};
-static int game_number = -1;
-*/
+#define MAX_GAME 		512*64
 
 static s64 game_number=-1;
-static char **list_game_path;
-static char **list_game_title;
-static u8 *list_game_platform;
+static char **list_game_path=NULL;
+static char **list_game_title=NULL;
+static char **list_game_ID=NULL;
+static u8 *list_game_platform=NULL;
+static u8 *list_game_havepic=NULL;
 
 //********** Backup FAV ******************
 
@@ -561,11 +379,12 @@ static int8_t FAV_game_number = -1;
 
 //*************** Current Informations *************
 
-static char GamPath[128];
+static char GamPath[512]={0};
 static u8 Game_stuff = YES;
 static u8 PEEKnPOKE;
 static u8 cobra = NO;
 static u8 iso = NO;
+static u8 HEN = NO;
 static u8 mamba = NO;
 static u8 usb = NO;
 static int position=0;
@@ -588,7 +407,7 @@ static int8_t Themes_number[4] = {-1,-1,-1,-1}; // ou {[0 ... 3] = -1}
 
 //********* FONT *******************
 
-static char Font[128]="/dev_flash/data/font/SCE-PS3-SR-R-LATIN2.TTF";
+static char Font[0x40]="/dev_flash/data/font/SCE-PS3-SR-R-LATIN2.TTF";
 static char **FontName=NULL;
 static char **FontPath=NULL;
 static s8 FontNumber=0;
@@ -606,7 +425,7 @@ static float ITEM_angleX[MAX_GAME] = {0.0};
 static float ITEM_angleY[MAX_GAME] = {0.0};
 static float ITEM_angleZ[MAX_GAME] = {0.0};
 
-static u8 MOVE_init=NO;
+static u8 MOVE_animated=NO;
 
 MATRIX matrix;
 
@@ -629,7 +448,7 @@ static u8 use_ex_plug = NO;
 static char *UI[4] = {"0", "0", "Win", "0"};
 #else
 static char *UI[4] = {"List", "Grid", "XMB", "Flow"};
-#endif
+#endif //FILEMANAGER
 
 static u8 UI_position = XMB;
 static u8 XMB_priority = NO;
@@ -647,16 +466,37 @@ static u32 COLOR_4 = RED;
 static u8 Display_PIC1 = NO;
 static u8 Show_Waves = YES;
 static u32 WAVES_COLOR = WHITE-0xFF+0x20;
-static float filter_x = 700;
-static float filter_y = 300;
+static float filter_x = 700.0;
+static float filter_y = 300.0;
+static u8 root_display = 1;
+
+#define STYLE_CUSTOM	0
+#define STYLE1			1
+#define STYLE2			2
+#define STYLE3			3	
+#define STYLE4			4
+#define STYLE5			5
+#define STYLE6			6
+
+#define MAX_STYLE 6
+
+#define SMALL	0
+#define BIG		1
+
+u8 fm_LineSize;
+u8 fm_RowNumber;
+u8 fm_FontRowSize[3];
+char fm_Format[6][0x80]={{0}};
+float fm_CapacityBarWidth;
+u8 fm_CustomIcons;
 
 //*************** LIST SETTINGS *******************
 
 #define LIST_SizeFont		20
-static u8 LIST_Show_ICON0 = NO;
+static u8 Show_ICON0 = NO;
 static int first_line=0;
 static int nb_line=0;
-static int last_line;
+static int last_line=0;
 
 //*************** GRID SETTINGS *******************
 
@@ -681,14 +521,15 @@ static u8 GRID_KEEP_PROP = YES;
 #define XMB_W 72.0f
 #define XMB_H 40.0f
 
-#define XMB_COLUMN_NUMBER 6
-
 #define XMB_COLUMN_SETTINGS		0
 #define XMB_COLUMN_FAVORITES	1
 #define XMB_COLUMN_PS3			2
 #define XMB_COLUMN_PS2			3
 #define XMB_COLUMN_PS1			4
 #define XMB_COLUMN_PSP			5
+
+#define XMB_COLUMN_NUMBER		6
+
 
 static u8 XMB_H_position = 2;
 static s16 XMB_nb_line = -1;
@@ -734,14 +575,8 @@ typedef struct
 	u32 height;
 } imgData; // pngData = jpgData = imgData
 
-imgData ICON0[MAX_GAME];
-static u32 ICON0_offset[MAX_GAME];
-
-imgData COVER[MAX_GAME];
-static u32 COVER_offset[MAX_GAME];
-
-imgData COVER3D[MAX_GAME];
-static u32 COVER3D_offset[MAX_GAME];
+imgData COVER;
+static u32 COVER_offset;
 
 imgData TMP_PIC;
 static u32 TMP_PIC_offset;
@@ -772,61 +607,217 @@ char TMP_PIC_path[255];
 #define DEFAULT			20
 #define DEFAULT_ISO		21
 #define DEFAULT_JB		22
-#define PS1_DISC		23
-#define PS2_DISC		24
-#define PS3_DISC		25
-#define PSP_DISC		26
-#define TAG				27
-#define PS1_CASE		28
-#define PS2_CASE		29
-#define PS3_CASE		30
-#define PSP_CASE		31
-#define FOLDER			32
-#define FILES			33
-#define BR_LOGO			34
-#define PS_LOGO			35
-#define NOTIF			36
-#define BOXHEAD			37
-#define	BOXBODY			38
-#define SIDEBAR			39
-#define BGS				40
+#define TAG				23
+#define PS1_CASE		24
+#define PS2_CASE		25
+#define PS3_CASE		26
+#define PSP_CASE		27
+#define FOLDER			28
+#define FILES			29
+#define GAME			30
+#define DISC			31
+#define DISC_PS1		32
+#define DISC_PS2		33
+#define DISC_PS3		34
+#define DISC_PSP		35
+#define DISC_VIDEO		36
+#define DISC_DATA		37
+#define CF				38
+#define FLASH			39
+#define HDD				40
+#define MS				41
+#define SD				42
+#define USB				43
+#define VIRTUAL			44
+#define LOCK			45
+#define BR_LOGO			46
+#define PS_LOGO			47
+#define TOGGLE_ON		48
+#define TOGGLE_OFF		49
+#define CHECKBOX_FALSE  50
+#define CHECKBOX_TRUE	51
+#define CLOSE			52
+#define MAXIMIZE		53
+#define MINIMIZE		54
+#define FRAME			55
+#define HEADER			56
+#define COLUMN_HEADER	57
+#define CONTENT			58
+#define CURSOR			59
+#define CURSOR_D1		60
+#define CURSOR_D2		61
+#define CURSOR_H		62
+#define CURSOR_V		63
+#define APP_HOME		64
+#define HOST_ROOT		65
 
-#define PICTURE_NUMBER	41
+// with color filter
+#define NOTIF			66
+#define BOXHEAD			67
+#define	BOXBODY			68
+#define SIDEBAR			69
+#define BGS				70
+#define BGF				71
 
-char *PICTURE_NAME[PICTURE_NUMBER] = {	"ALL" , 
-										"UP" , "LEFT" , "DOWN" , "RIGHT" , 
-										"SELECT" , "START" , 
-										"SQUARE" , "CROSS" , "CIRCLE" , "TRIANGLE", 
+#define PICTURE_NUMBER	72
+
+#define _BG_			100
+
+char *PICTURE_NAME[PICTURE_NUMBER] = { "ALL", 
+										"UP", "LEFT", "DOWN", "RIGHT",
+										"SELECT", "START",
+										"SQUARE", "CROSS", "CIRCLE", "TRIANGLE",
 										"NOT", 
-										"L1", "L2", "L3", "L", 
+										"L1", "L2", "L3", "L",
 										"R1", "R2", "R3", "R",
-										"DEFAULT", "DEFAULT_ISO", "DEFAULT_JB",
-										"PS1_DISC", "PS2_DISC", "PS3_DISC", "PSP_DISC",
-										"TAG",
+										"DEFAULT", "DEFAULT_ISO", "DEFAULT_JB", "TAG",
 										"PS1_CASE", "PS2_CASE", "PS3_CASE", "PSP_CASE",
-										"FOLDER", "FILES",
+										"FOLDER", "FILES", "GAME",
+										"DISC", "DISC_PS1", "DISC_PS2", "DISC_PS3", "DISC_PSP", "DISC_VIDEO", "DISC_DATA",
+										"CF", "FLASH", "HDD", "MS", "SD", "USB", "VIRTUAL", "LOCK",
 										"BR_LOGO", "PS_LOGO",
-										"NOTIF", "BOXHEAD", "BOXBODY", "SIDEBAR", "BGS"};
+										"TOGGLE_ON", "TOGGLE_OFF",
+										"CHECKBOX_FALSE", "CHECKBOX_TRUE",
+										"CLOSE", "MAXIMIZE", "MINIMIZE", "FRAME",
+										"HEADER", "COLUMN_HEADER", "CONTENT", 
+										"CURSOR", "CURSOR_D1", "CURSOR_D2", "CURSOR_H", "CURSOR_V",
+										"APP_HOME", "HOST_ROOT",
+										"NOTIF", "BOXHEAD", "BOXBODY", "SIDEBAR", "BGS", "BGF"};
+
 
 imgData PICTURE[PICTURE_NUMBER];
 static u32 PICTURE_offset[PICTURE_NUMBER];
 
-#define TEXTURE_FONT_SIZE			2  * 1024*1024
-#define TEXTURE_THEME_SIZE			16 * 1024*1024
-#define TEXTURE_GAMEPIC_SIZE		32 * 1024*1024
+#define _Go(x)						((size_t)(x) >> 30)	
+#define Go(x)						((size_t)(x) << 30)
+#define _Mo(x)						((size_t)(x) >> 20)	
+#define Mo(x)						((size_t)(x) << 20)
+#define _Ko(x)						((size_t)(x) >> 10)	
+#define Ko(x)						((size_t)(x) << 10)
 
+#define simple(t, x) 	if((t) > Go(1)) x = (float)_Go((t)); \
+						if((t) > Mo(1)) x = (float)_Mo((t)); \
+						if((t) > Ko(1)) x = (float)_Ko((t)); \
+						x = (float) (t);
+
+// ****************************************
+// Color Filters
+// ****************************************
+#define DISABLED	0
+#define ENABLED 	1
+
+u8 FILTER_NOTIF=DISABLED;
+u8 FILTER_BOXHEAD=DISABLED;
+u8 FILTER_BOXBODY=DISABLED;
+u8 FILTER_SIDEBAR=DISABLED;
+u8 FILTER_BGS=DISABLED;
+u8 FILTER_BG=DISABLED;
+
+#define COLOR_NOTIF_DEFAULT			0x555555FF
+#define COLOR_BOXHEAD_DEFAULT		0xC0C0C0FF
+#define COLOR_BOXBODY_DEFAULT		0x505050FF
+#define COLOR_SIDEBAR_DEFAULT		0xFFFFFF60
+#define COLOR_BGS_DEFAULT			0xAA40AAFF
+#define COLOR_BG_DEFAULT			0x306090FF
+
+u32 COLOR_NOTIF=COLOR_NOTIF_DEFAULT;
+u32 COLOR_BOXHEAD=COLOR_BOXHEAD_DEFAULT;
+u32 COLOR_BOXBODY=COLOR_BOXBODY_DEFAULT;
+u32 COLOR_SIDEBAR=COLOR_SIDEBAR_DEFAULT;
+u32 COLOR_BGS=COLOR_BGS_DEFAULT;
+u32 COLOR_BG=COLOR_BG_DEFAULT;
+
+
+// ****************************************
+//  RAM  232 Mo (256)					  *
+// ****************************************
+//
+// ****************************************
+//  VRAM   
+// ****************************************
+//  _____________________________________
+// | TexturePointer  -> TextureOffset    |
+// |   0 Mo          ->   ~13 Mo	     |   0xD523100
+// |   1 Mo          ->   ~17 Mo	     |
+// |   X Mo          ->   ~13 + (X*4) Mo |
+// |   55 Mo         ->   ~233 Mo        |
+// ****************************************
+//
+// Texture are stored in BMP, size = w*h*p
+// ICON0            320*176*4     = 0x37000
+// COVER PS1		250*250*4     = 0x3D090
+// COVER PS2		250*350*4     = 0x55730
+// COVER PS3		260*300*4     = 0x4C2C0
+// COVER PSP		200*340*4     = 0x42680
+//
+// COVER3D PS1      450*450*4 + 450*600*4  = 0x1CD6D0
+// COVER3D PS2		850*570*4              = 0x1D9250
+// COVER3D PS3      950*525*4              = 0x1E70F8
+// COVER3D PSP		800*640*4		       = 0x1F4000
+//
+// ****************************************
+// | TexturePointer   | TextureOffset    |
+//     2  Mo = 0->2   |  8 Mo = 13->21		    FONT
+//     16 Mo = 2->18  |  64 Mo = 21->85         THEME
+//	   30 Mo = 18->48 |  120 Mo = 85->205		GAMEPIC
+//     1 Mo = 48->49  |  4 Mo = 205->209        COVER
+//     6 Mo = 49->55  |  24 Mo = 209->233       TEMP	
+//
+
+#define TEXTURE_SIZE_MAX 				Mo(55)
+
+#define TEXTURE_FONT_SIZE_MAX			Mo(2)
+#define TEXTURE_THEME_SIZE_MAX			Mo(16)
+#define TEXTURE_GAMEPIC_SIZE_2D			Ko(512)
+#define TEXTURE_GAMEPIC_SIZE_3D			Mo(2)
+#define TEXTURE_GAMEPIC_TOT_SIZE_MAX	Mo(30)
+#define TEXTURE_COVER_SIZE_MAX			Mo(1)
+
+char GAMEPIC_LOG[128];
+int GAMEPIC_POSITION = 0;
+int GAMEPIC_SLOT_FIRST=0;
+int GAMEPIC_SLOT_LAST=0;
+
+#define GAMEPIC_NUMBER					TEXTURE_GAMEPIC_TOT_SIZE_MAX / TEXTURE_GAMEPIC_SIZE_2D
+imgData GAMEPIC[GAMEPIC_NUMBER];
+static u32 GAMEPIC_offset[GAMEPIC_NUMBER];
+int GAMEPIC_SLOT_POS[GAMEPIC_NUMBER] = { [0 ... GAMEPIC_NUMBER-1] = -1 };
+
+u32 TEXTURE_FONT_SIZE = 0;
+u32 TEXTURE_THEME_SIZE = 0;
+#define TEXTURE_GAMEPIC_SIZE(u)         (((GAMEPIC[u].pitch * GAMEPIC[u].height + 15) & ~15) / 4)
+#define TEXTURE_COVER_SIZE				(((COVER.pitch * COVER.height + 15) & ~15) / 4)
+#define TEXTURE_TMP_SIZE				(((TMP_PIC.pitch * TMP_PIC.height + 15) & ~15) / 4)
+
+imgData PS1BACK[GAMEPIC_NUMBER];
+u32 PS1BACK_offset[GAMEPIC_NUMBER];
+
+// FONT
 #define TEXTURE_POINTER_FONT		0
-#define TEXTURE_POINTER_THEME		TEXTURE_FONT_SIZE
-#define TEXTURE_POINTER_GAMEPIC		TEXTURE_FONT_SIZE+TEXTURE_THEME_SIZE
+
+// THEME
+#define TEXTURE_POINTER_THEME		(TEXTURE_POINTER_FONT + TEXTURE_FONT_SIZE_MAX)
+
+u64 TEXTURE_GAMEPIC_SIZE_MAX = 0;
+#define GAMEPIC_MAX						(TEXTURE_GAMEPIC_TOT_SIZE_MAX / TEXTURE_GAMEPIC_SIZE_MAX)
+#define TEXTURE_POINTER_GAMEPIC(x)		((TEXTURE_POINTER_THEME+TEXTURE_THEME_SIZE_MAX) + x * TEXTURE_GAMEPIC_SIZE_MAX)
+#define TEXTURE_POINTER_COVER			(TEXTURE_POINTER_GAMEPIC(0) + TEXTURE_GAMEPIC_TOT_SIZE_MAX)
+
+#ifdef FILAMANAGER
+#define TEXTURE_POINTER_TMP				(TEXTURE_POINTER_GAMEPIC(0))
+#else
+#define TEXTURE_POINTER_TMP				(TEXTURE_POINTER_COVER + TEXTURE_COVER_SIZE_MAX)
+#endif
+#define TEXTURE_TMP_SIZE_MAX			(TEXTURE_SIZE_MAX - (TEXTURE_FONT_SIZE_MAX + TEXTURE_THEME_SIZE_MAX + TEXTURE_GAMEPIC_TOT_SIZE_MAX + TEXTURE_COVER_SIZE_MAX))
+
+// Update Texture after tiny3d_Flip !
 
 static u32 *texture_pointer;
 static u32 *texture_mem;
-static u32 *texture_temp;
 
 #define MAX_FRAME		64
 static u32 BG_offset[MAX_FRAME];
 imgData BG[MAX_FRAME];
-
 
 // ***************** PICTURE : XMB ***************************
 
@@ -841,22 +832,49 @@ static u32 XMB_MMTHM_XMB2_offset;
 
 // ****************** FILE MANAGER ***************
 
+#define FM_FORMAT_INIT						0
+#define FM_FORMAT_EMPTY						1
+#define FM_FORMAT_LABEL						2
+#define FM_FORMAT_DEVICE					3
+#define FM_FORMAT_FILESYSTEM				4	
+#define FM_FORMAT_MEMORY					5
+#define FM_FORMAT_MOUNTPOINT				6
+#define FM_FORMAT_DEVICE_MOUNTPOINT			7
+#define FM_FORMAT_LABEL_MOUNTPOINT			8
+#define FM_FORMAT_LABEL_DEVICE_MOUNTPOINT	9
+#define FM_FORMAT_CAPACITY					10
+#define FM_FORMAT_CAPACITY_MEMINSIDE		11
+#define FM_FORMAT_CAPACITY_MEMOUTSIDE		12
+
+#define ROW(x)			x
+#define LEFTROW(x) 		x*2
+#define RIGHTROW(x) 	x*2+1
+
 #define ASC 0
 #define DSC 1
 
-#define TOP_H			40
-#define COL_H			20
-#define COL_W_MIN 		90
-#define BORDER			5
-#define SCROLL_W		10
-#define SCROLL_H_MIN	10
-#define WINDOW_MIN		COL_W_MIN*2 + BORDER*2
-#define CONTENT_FSIZE	15
-#define ICON			CONTENT_FSIZE
-#define WINDOW_MAX				5
-#define WINDOW_MAX_ITEMS		2048
-#define WINDOW_MAX_PATH_LENGTH 512
-#define WINDOW_MAX_NAME_LENGTH 128
+#define LINE_H1 					16.0
+float LINE_H=LINE_H1;
+#define COL_H1						20.0
+float COL_H=COL_H1;
+#define COL_W_MIN 					90
+#define BORDER						5
+#define TOP_H_FONT					LINE_H1
+#define TOP_H						(BORDER+TOP_H_FONT+TOP_H_FONT/4)
+#define SCROLL_W1					10
+float SCROLL_W=SCROLL_W1;
+#define SCROLL_H_MIN				10
+#define CLOSEBOX_W 					40.0
+#define CLOSEBOX_H 					TOP_H_FONT
+#define DOCKBOX_W					20.0
+#define DOCKBOX_H					TOP_H_FONT
+#define WINDOW_MIN					(COL_W_MIN*2+BORDER*2)
+#define WINDOW_MAX					4
+#define WINDOW_MAX_ITEMS			4096
+#define WINDOW_MAX_PATH_LENGTH		512
+#define WINDOW_MAX_NAME_LENGTH		128
+
+#define OVERLAY_COLOR				0xC0E0F0FF
 
 static float *window_x=NULL;
 static float *window_y=NULL;
@@ -911,6 +929,20 @@ static u8 window_resize_D1 = NO;
 static u8 window_resize_D2 = NO;
 static u8 window_move = NO;
 
+typedef struct
+{
+	char Label[32]; 
+	char MountPoint[32];
+	char FileSystem[32];
+	char Name[32];
+	u8 ReadOnly;
+	u64 TotalSpace;
+	u64 FreeSpace;
+} DeviceInfo_t;
+
+static DeviceInfo_t *DevicesInfo=NULL;
+static s8 DevicesInfo_N=-1;
+
 // ****************** FILE MANAGER : Properties ***************
 
 static u8 prop_activ;
@@ -950,16 +982,18 @@ u8 SFO_NB;
 
 // ****************** FILE MANAGER : TXT Viewer ***************
 
-#define TXT_W 708
-#define TXT_H 372
-#define TXT_X 70
-#define TXT_Y 70
+#define TXT_FONT 15
+#define TXT_LINE_MAX 24
+#define TXT_H 375
+#define TXT_W 711
+#define TXT_X 68.5
+#define TXT_Y 68.5
 
-u64 txt_linpos;
-u8 txt_scroll;
+u64 txt_line;
+int txt_scroll;
 static u8 txt_viewer_activ = NO;
 char *txt_viewer_content=NULL;
-int txt_viewer_content_size;
+char *txt_viewer_path=NULL;
 
 //************************ COPY ************************
 
@@ -982,12 +1016,26 @@ static u8 gathering_cancel=NO;
 
 //************************** PAD ************************
 
-static int slow_it;
-static u64 hold_it;
+#define n_s(x)		(x*1000000000ULL)
+#define n_ms(x)		(x*1000000ULL)
+#define n_us(x)		(x*1000ULL)
+
+#define MAX_HOLD		(u64)40
+#define MAX_HOLD_S		(u64)n_s(4)
+
+
+
+u64 hold_value[18]={0};
+u64 slow_value[18]={0};
 static int R2speed=6;
-static u16 hold_CIRCLE=0;
 static int x_L = 0;
 static int y_L = 0;
+static u64 hold_CIRCLE=0;
+
+// ************** filter ************************************
+
+u8 filter=NO;
+u8 filter_position=0;
 
 // ************** FILE MANAGER : Picture Viewer ***************
 
@@ -1003,6 +1051,7 @@ static u8 picture_viewer_activ = NO;
 #define ITEM_COLORBOX	2
 #define ITEM_COMMAND	3
 #define ITEM_TOGGLE		4
+#define ITEM_LOCKED		5
 
 static u8 MENU=NO;
 
@@ -1016,7 +1065,10 @@ static u8 *ITEMS_VALUE_POSITION=NULL;
 static u8 *ITEMS_VALUE_SHOW=NULL;
 static u8 *ITEMS_TYPE=NULL;
 
-static u8 IN_ITEMS_VALUE=NO;
+#define LVL_TITLE	2
+#define LVL_ITEMS	1
+#define LVL_VALUE	0
+static s8 MENU_LVL=LVL_ITEMS;
 
 static float MENU_ITEMS_X;
 static float MENU_ITEMS_VALUE_X;
@@ -1030,10 +1082,14 @@ static s8 MENU_TABLE_END;
 
 static char **TITLES=NULL;
 
+u8 USE_TITLE_MENU=NO;
+s32 TITLE_MENU_FIRST_ITEM=-1;
+s32 TITLE_MENU_LAST_ITEM=-1;
+
 static u8 MENU_SIDE;
 
-static float x_COLOR;
-static float y_COLOR;
+static float current_x;
+static float current_y;
 
 // ***************** PS2 GAME MENU *************************************
 
@@ -1041,8 +1097,8 @@ static float y_COLOR;
 static u8 has_LIMG=NO;
 static char *PS2ELF_mem = NULL;
 static int PS2ELF_mem_size = 0;
-static char PS2CRC_STR[8];
-static char PS2ORICRC_STR[8];
+static u32 PS2CRC=0;
+static u32 PS2ORICRC=0;
 static char PS2_ID[12];
 static char pnach[128];
 static char WS[128];
@@ -1133,7 +1189,7 @@ uint8_t lang_code = LANG_UNDEFINED;
 uint8_t lang_code_loaded = LANG_NONE;
 
 static char *STR_LANGUAGE[MAX_LANG]; // "English"
-static char *STR_LANGCODE[MAX_LANG];
+static u8 LANGCODE[MAX_LANG];
 static char *lang_path[MAX_LANG];
 
 static char *STR_LANG=NULL;
@@ -1188,8 +1244,8 @@ static char *STR_FILEMANAGER=NULL;
 #define STR_FILEMANAGER_DEFAULT				"File Manager"
 static char *STR_HOLD=NULL;
 #define STR_HOLD_DEFAULT					"Hold"
-static char *STR_BACKTOXMB=NULL;
-#define STR_BACKTOXMB_DEFAULT				"Back to XMB"
+static char *STR_EXIT=NULL;
+#define STR_EXIT_DEFAULT					"Exit"
 static char *STR_GAME_PROP=NULL;
 #define STR_GAME_PROP_DEFAULT				"Game Properties"
 static char *STR_GAME_TITLE=NULL;
@@ -1762,7 +1818,90 @@ static char *STR_JOIN=NULL;
 #define STR_JOIN_DEFAULT					"Join"
 static char *STR_JOIN_DESC=NULL;
 #define STR_JOIN_DESC_DEFAULT				"Merge .666XX files."
-
+static char *STR_COLOR_FILTER=NULL;
+#define STR_COLOR_FILTER_DEFAULT			"Color Filters"
+static char *STR_COLOR_NOTIF=NULL;
+#define STR_COLOR_NOTIF_DEFAULT				"Notification"
+static char *STR_COLOR_BOXHEAD=NULL;
+#define STR_COLOR_BOXHEAD_DEFAULT			"Filter box header"
+static char *STR_COLOR_BOXBODY=NULL;
+#define STR_COLOR_BOXBODY_DEFAULT			"Filter box body"
+static char *STR_COLOR_SIDEBAR=NULL;
+#define STR_COLOR_SIDEBAR_DEFAULT			"Sidebar"
+static char *STR_COLOR_BGS=NULL;
+#define STR_COLOR_BGS_DEFAULT				"Setting background"
+static char *STR_COLOR_BG=NULL;
+#define STR_COLOR_BG_DEFAULT				"Background"
+static char *STR_ROOT_DISPLAY=NULL;
+#define STR_ROOT_DISPLAY_DEFAULT			"Root display"
+static char *STR_ROOT_DISPLAY_DESC=NULL;
+#define STR_ROOT_DISPLAY_DESC_DEFAULT		"Change the display of the root in FileManager."
+static char *STR_STYLE=NULL;
+#define STR_STYLE_DEFAULT					"Style"
+static char *STR_STYLE_CUSTOM=NULL;
+#define STR_STYLE_CUSTOM_DEFAULT			"Custom style"
+static char *STR_STYLE1=NULL;
+#define STR_STYLE1_DEFAULT					"Style 1"
+static char *STR_STYLE2=NULL;
+#define STR_STYLE2_DEFAULT					"Style 2"
+static char *STR_STYLE3=NULL;
+#define STR_STYLE3_DEFAULT					"Style 3"
+static char *STR_STYLE4=NULL;
+#define STR_STYLE4_DEFAULT					"Style 4"
+static char *STR_STYLE5=NULL;
+#define STR_STYLE5_DEFAULT					"Style 5"
+static char *STR_STYLE6=NULL;
+#define STR_STYLE6_DEFAULT					"Style 6"
+static char *STR_FREEOF=NULL;
+#define STR_FREEOF_DEFAULT					"free of"
+static char *STR_ROOTLABEL=NULL;
+#define STR_ROOTLABEL_DEFAULT				"Root"
+static char *STR_FM_ICONSIZE=NULL;
+#define STR_FM_ICONSIZE_DEFAULT				"Icon size"
+static char *STR_FM_BIG=NULL;
+#define STR_FM_BIG_DEFAULT					"Big"
+static char *STR_FM_SMALL=NULL;
+#define STR_FM_SMALL_DEFAULT				"Small"
+static char *STR_FM_ROWNUMBER=NULL;
+#define STR_FM_ROWNUMBER_DEFAULT			"Text row number"
+static char *STR_FM_ROWSIZE=NULL;
+#define STR_FM_ROWSIZE_DEFAULT				"Row size"
+static char *STR_FM_LEFT_CONTENT=NULL;
+#define STR_FM_LEFT_CONTENT_DEFAULT			"Row content [LEFT]"
+static char *STR_FM_RIGHT_CONTENT=NULL;
+#define STR_FM_RIGHT_CONTENT_DEFAULT		"Row content [RIGHT]"
+static char *STR_FM_EMPTY=NULL;
+#define STR_FM_EMPTY_DEFAULT				"Empty"
+static char *STR_FM_MOUNTPOINT=NULL;
+#define STR_FM_MOUNTPOINT_DEFAULT			"Mount point"
+static char *STR_FM_DEVICE=NULL;
+#define STR_FM_DEVICE_DEFAULT				"Device"
+static char *STR_FM_LABEL=NULL;
+#define STR_FM_LABEL_DEFAULT				"Label"
+static char *STR_FM_CAPACITY=NULL;
+#define STR_FM_CAPACITY_DEFAULT				"Capacity bar"
+static char *STR_FM_MEMINSIDE=NULL;
+#define STR_FM_MEMINSIDE_DEFAULT			"Inside memory"
+static char *STR_FM_MEMOUTSIDE=NULL;
+#define STR_FM_MEMOUTSIDE_DEFAULT			"Outside memory"
+static char *STR_FM_FILESYSTEM=NULL;
+#define STR_FM_FILESYSTEM_DEFAULT			"Files system"
+static char *STR_FM_CB_WIDTH=NULL;
+#define STR_FM_CB_WIDTH_DEFAULT				"Capacity bar width"
+static char *STR_FM_MEMORY=NULL;
+#define STR_FM_MEMORY_DEFAULT				"Memory"
+static char *STR_FM_ICON=NULL;
+#define STR_FM_ICON_DEFAULT					"Icons"
+static char *STR_FM_FILEFOLDER=NULL;
+#define STR_FM_FILEFOLDER_DEFAULT			"File and Folder"
+static char *STR_FM_CUSTOM=NULL;
+#define STR_FM_CUSTOM_DEFAULT				"Custom icons"
+static char *STR_FM_CB_FILL=NULL;
+#define STR_FM_CB_FILL_DEFAULT				"Fill"
+static char *STR_EDIT_IDPS=NULL;
+#define STR_EDIT_IDPS_DEFAULT				"Edit IDPS"
+static char *STR_FILTER_NOGAME=NULL;
+#define STR_FILTER_NOGAME_DEFAULT			"No games found. Adjust your filter."
 
 //***********************************************************
 // Functions
@@ -1796,8 +1935,8 @@ u32 Get_Original_PS2CRC();
 void Draw_scene();
 void Draw_title(float x, float y, char *str);
 void peek_IDPS();
-void start_load_PIC1();
-void end_load_PIC1();
+void start_load_CURPIC();
+void end_load_CURPIC();
 int SaveFile(char *path, char *mem, int file_size);
 void read_setting();
 void write_setting();
@@ -1813,21 +1952,41 @@ void poke_IDPS();
 u8 WS_exist();
 u8 Pnach_exist();
 void CONFIG_check(char *IsoPath);
-void DrawTXTInBox(float x, float y, float z, float w, float h, char *txt, u32 bg_color, u32 font_color);
+float DrawTXTInBox(float x, float y, float z, float w, float h, char *txt, u32 bg_color, u32 font_color);
 char *get_unit(u64 nb);
 char *strcpy_malloc(char *STR_DEFAULT);
 void Draw_cursor();
 void ScreenShot();
 u8 GetALPHA(u32 rgba);
+u32 SetALPHA(u8 alpha, u32 rgba);
 char *get_str_regex(char *mem, char *format);
 void LoadFont();
-u8 LoadTexture(char *texture_path, u32 *texture_offset, imgData *texture_data);
+u8 LoadTexture(char *texture_path, u32 *texture_offset, imgData *texture_data, u32 *texture_size, u8 gray);
 int sys_fs_chown(char *path, s32 uid, s32 gid);
 u8 SetFilePerms(char *path);
 void open_SETTINGS();
 void close_SETTINGS();
 void TranslateTo(float *value, float target);
 void remove_GAMELIST(s64 pos);
+void Draw_MemMonitor();
+void DrawLoadingIcon();
+void Draw_filter();
+void ReloadTheme(u8 i);
+int NTFS_Test_Device(char *name);
+char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo);
+u8 FM_GetFormat(char *str);
+char *FM_SetFormat(u8 format_id);
+u8 OldPad(u32 button);
+u8 NewPad(u32 button);
+u8 R2pad(u32 button);
+u8 ComboNewPad(u32 button1, u32 button2);
+u8 GetRED(u32 rgba);
+u8 GetGREEN(u32 rgba);
+u8 GetBLUE(u32 rgba);
+u8 GetALPHA(u32 rgba);
+u8 is_float_window();
+int move_bdemubackup_to_origin(char *device_path);
+
 
 void Draw_MENU();
 
@@ -1838,6 +1997,14 @@ void EmptyFunc()
 }
 func Draw_MENU_input = &EmptyFunc;
 func input_MENU = &EmptyFunc;
+
+// TODO
+//
+// func MENU_TRIANGLE = &EmptyFunc;
+// func MENU_CROSS = &EmptyFunc;
+// func MENU_CIRCLE = &EmptyFunc;
+// func MENU_CROSS = &EmptyFunc;
+// func MENU_R1 = &EmptyFunc;
 
 //***********************************************************
 // Ugly SpeedFix : Original standard I/O function are slow
@@ -1920,8 +2087,9 @@ char *FAKE_fgets(char *str, int length, FILE* fp)
 {
 	char c;
 	int count=0;
-	memset(str, 0, sizeof(str));
 	if(length==0) return NULL;
+	
+	memset(str, 0, length);
 	while(ps3ntfs_read(*fp, &c, 1))
 	{	
 		str[count]=c;
@@ -1996,9 +2164,9 @@ void cls()
 
 void Init_Graph()
 {
-	tiny3d_Init(2*1024*1024);
+	tiny3d_Init( TINY3D_Z16 | Mo(2) );
 
-	texture_mem = tiny3d_AllocTexture(200*1024*1024);
+	texture_mem = tiny3d_AllocTexture(Mo(100));
 	if(!texture_mem) return;
 		
 	ResetFont();
@@ -2037,7 +2205,6 @@ void adjust_screen()
 //*******************************************************
 // FONT
 //*******************************************************
-
 
 void FreeFont()
 {
@@ -2226,17 +2393,13 @@ void LoadFont()
 	TTFLoadFont(3, "/dev_flash/data/font/SCE-PS3-YG-R-KOR.TTF", NULL, 0);
 	
 	texture_pointer = (u32 *) init_ttf_table((u16 *) texture_pointer);
+	//TEXTURE_FONT_SIZE = texture_pointer;
 }
 
 float new_line(float nb)
 {
 	//return GetFontY() + GetFontHeight()*nb;
 	return GetFontHeight()*nb;
-}
-
-float GetWidth(char *str)
-{
-	return DrawFormatString(0, -50, str);
 }
 
 void FontSize(float size)
@@ -2351,6 +2514,17 @@ void Draw_Box(float x, float y, float z, float r, float w, float h, u32 rgba, u8
 	
 }
 
+void Draw_BoxLine(float x, float y, float z, float w, float h, u32 color)
+{
+	tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+	tiny3d_VertexPos(x , y , z);
+	tiny3d_VertexColor(color);
+	tiny3d_VertexPos(x+w , y , z);
+	tiny3d_VertexPos(x+w , y+h , z);
+	tiny3d_VertexPos(x   , y+h , z);
+	tiny3d_End();
+}
+
 void Draw_LineBox(float x, float y, float z, float e, float w, float h, u32 color)
 {
 	Draw_Box(x-e, y-e, z, 0, e, h+2*e, color, NO);
@@ -2360,17 +2534,111 @@ void Draw_LineBox(float x, float y, float z, float e, float w, float h, u32 colo
 	Draw_Box(x, y+h, z, 0, w, e, color, NO);
 }
 
-float Draw_checkbox(u8 checked, float x, float y, char *str, u32 color)
+
+void DrawCapacityBar(float x, float y, float z, float w, float h, u64 TotalSpace, u64 FreeSpace)
 {
-	Draw_Box(x, y, 0, 0, 14, 14, color, NO);
-	Draw_Box(x+2, y+2, 0, 0, 10, 10, BLACK, NO);
+	if( TotalSpace == 0) return;
+	if(y<0) return;
 	
-	if(checked) Draw_Box(x+3, y+3, 0, 0, 8, 8, color, NO);
+	float t, u;
+	simple(TotalSpace, t);
+	simple(TotalSpace - FreeSpace, u);
+	float w2 = u * w / t ;
 	
-	FontColor(color);
+	Draw_BoxGradiant(VERTICAL, x, y, z, w, h, WHITE, 0xCCCCCCFF, NO);
+	Draw_BoxGradiant(VERTICAL, x, y, z, w2, h, 0xEAEAFFFF, 0x9C9CFFFF, NO);
+	Draw_BoxLine(x,	y, z, w, h, 0xA0A0A0FF);
+}
+
+u32 color_light(u32 color)
+{
+	return GetRED(color)/2 * 0x1000000 + GetGREEN(color)/2 * 0x10000 + GetBLUE(color)/2 * 0x100 + GetALPHA(color);
+}
+
+float Draw_toggle(float x, float y, float z, float h, u8 state, u8 active)
+{
+	
+	if( PICTURE_offset[TOGGLE_ON] && PICTURE_offset[TOGGLE_OFF] ) {
+		u32 color = WHITE;
+		if(!active) color = SetALPHA(GetALPHA(color)/2, color);
+		
+		u8 toggle = TOGGLE_OFF;
+		if(state) toggle = TOGGLE_ON;
+		
+		tiny3d_SetTexture(0, PICTURE_offset[toggle], PICTURE[toggle].width, PICTURE[toggle].height, PICTURE[toggle].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, 2*h, h, color, YES);
+	} else {
+		
+		u32 color = COLOR_2;	
+		if(!state) color = 0.299*GetRED(color) + 0.587*GetGREEN(color) + 0.114*GetBLUE(color);
+		u32 color2 = color_light(color);
+		
+		if(!active) {
+			color = SetALPHA(GetALPHA(color)/2, color);
+			color2 = SetALPHA(GetALPHA(color)/2, color2);
+		}
+		
+		float rb = (h/4);
+		float xb = x + (h/2) - rb;
+		float yb = y + (h/2) - rb;
+		float hb = 2*rb;
+		float wb = (h/2)*3;
+		
+		Draw_Box(xb, yb, z, rb, wb, hb, color2, NO);
+		
+		
+		float xc = xb + rb;
+		if( state ) xc = xb + wb - rb;
+		float yc = yb + rb;
+		float rc = (h/2);
+		
+		int t;
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(color);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( xc + rc*sin(t*PI/180), yc + rc*cos(t*PI/180), z);
+		}
+		tiny3d_End();
+	}
+	
+	return x + 2*h;
+}
+
+float Draw_checkbox(float x, float y, float z, char *str, u8 state, u8 active)
+{
+	if( PICTURE_offset[CHECKBOX_FALSE] && PICTURE_offset[CHECKBOX_TRUE]) {		
+		u32 color = WHITE;
+		if(!active) color = SetALPHA(3*GetALPHA(color)/4, color);
+		
+		u8 cb = CHECKBOX_FALSE;
+		if(state) cb = CHECKBOX_TRUE;
+		
+		tiny3d_SetTexture(0, PICTURE_offset[cb], PICTURE[cb].width, PICTURE[cb].height, PICTURE[cb].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, 14, 14, color, YES);
+	} else {
+		
+		u32 color = COLOR_1;
+		if(active) color = COLOR_2;
+		
+		Draw_Box(x, y, 0, 0, 14, 14, color, NO);
+		Draw_Box(x+2, y+2, 0, 0, 10, 10, BLACK, NO);
+		
+		if(state) Draw_Box(x+3, y+3, 0, 0, 8, 8, COLOR_2, NO);
+	}
+	
+	if(active) FontColor(COLOR_2);
+	else FontColor(COLOR_1);
+	
 	FontSize(15);
 	
 	return DrawString(x+20, y, str);
+}
+
+float Draw_itembox(float x, float y, float z, char *str, u8 state, u8 active, u8 error)
+{
+	if( error ) Draw_Box(x-1.5, y-1.5, 0, 0, 17, 17, RED, NO);
+	
+	return Draw_checkbox(x, y, z, str, state, active);
 }
 
 void Draw_title(float x, float y, char *str)
@@ -2388,7 +2656,10 @@ void Draw_title(float x, float y, char *str)
 
 u8 is_ntfs(char *path)
 {
-	if(strstr(path, "ntfs")) return YES;
+	u8 n=0;
+	if(path[0] == '/') n=1;
+	if( strncmp(&path[n], "ntfs", 4) == 0) return YES;
+	
 	return NO;
 }
 
@@ -2433,21 +2704,83 @@ void RemoveExtention(char *path)
     while(le>0) {path[lp-le]=0; le--;}
 }
 
-u8 imgLoadFromFile(char *imgPath, imgData *out)
+u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 {
 	int file_size = 0;
 	
 	out->bmp_out = NULL;
-	
-	if(path_info(imgPath) == _NOT_EXIST) return FAILED;
-
+		
 	char *buff = LoadFile((char *) imgPath, &file_size);
 	if(buff==NULL) return FAILED;
+	
+	if( gray ) {
+		imgData tp;
+		
+		if( get_ext(imgPath) == _PNG ) {
+			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) &tp) != 0)
+			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) &tp) != 0) {
+				free(buff);
+				return FAILED;
+			}
+		} else {
+			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) &tp) != 0) 
+			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) &tp) != 0)
+			{
+				free(buff);
+				return FAILED;
+			}
+		}
+					
+		u64 d;
 
-	if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) out) != 0)
-	if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) out) != 0) {
-		free(buff);
-		return FAILED;
+		// L8
+		// out->height = tp.height;
+		// out->width = tp.width;
+		// out->pitch = tp.pitch/4;
+		// out->bmp_out = (u8 *) malloc(tp.pitch*tp.height/4+1);
+
+		// for(d=0; d< tp.pitch*tp.height; d+=4) {
+			// u8 ARGB[4];
+			// memcpy(&ARGB, tp.bmp_out+d, 4);
+			// u8 Y = (0.299*ARGB[1] + 0.587*ARGB[2] + 0.114*ARGB[3])*((float) (ARGB[0]/0xFF));
+			// memcpy(out->bmp_out + d/4, &Y, 1);
+		// }
+		
+		out->height = tp.height;
+		out->width = tp.width;
+		out->pitch = tp.pitch;
+		out->bmp_out = (u8 *) malloc(tp.pitch*tp.height+1);
+
+		for(d=0; d< tp.pitch*tp.height; d+=4) {
+			u8 ARGB[4];
+			memcpy(&ARGB, tp.bmp_out+d, 4);
+			u8 Y = (0.299*ARGB[1] + 0.587*ARGB[2] + 0.114*ARGB[3]);
+			
+			u8 new_ARGB[4]={0};
+			new_ARGB[0] = ARGB[0];
+			new_ARGB[1] = Y;
+			new_ARGB[2] = Y;
+			new_ARGB[3] = Y;
+			
+			memcpy(out->bmp_out + d, new_ARGB, 4);
+		}
+		
+	} else {
+	
+		if( get_ext(imgPath) == _PNG ) {
+			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) out) != 0)
+			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) out) != 0) {
+				free(buff);
+				return FAILED;
+			}
+		} else {
+			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) out) != 0) 
+			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) out) != 0)
+			{
+				free(buff);
+				return FAILED;
+			}
+		}
 	}
 	
 	free(buff);
@@ -2455,58 +2788,8 @@ u8 imgLoadFromFile(char *imgPath, imgData *out)
 	return SUCCESS;
 }
 
-void Read_ICON0(int position)
-{
-	char temp[128];
-
-	if(list_game_platform[position] == _ISO_PS3) {
-		int size;
-		char *mem = LoadFileFromISO(NO, list_game_path[position], "/PS3_GAME/ICON0.PNG", &size);
-		if(mem==NULL) return;
-		pngLoadFromBuffer((const void *) mem, size, (pngData *) &ICON0[position]);
-		free(mem);
-	} else
-	if(list_game_platform[position] == _ISO_PSP) {
-		int size;
-		char *mem = LoadFileFromISO(NO, list_game_path[position], "/PSP_GAME/ICON0.PNG", &size);
-		if(mem==NULL) return;
-		pngLoadFromBuffer((const void *) mem, size, (pngData *) &ICON0[position]);
-		free(mem);
-	} else	
-	if(list_game_platform[position] == _JB_PS3) {
-		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[position]);
-		if(imgLoadFromFile(temp, &ICON0[position]) == SUCCESS) return;
-		else {
-			sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[position]);
-			if(imgLoadFromFile(temp, &ICON0[position]) == SUCCESS) return;
-		}
-	} else
-	if(list_game_platform[position] == _JB_PSP) {
-		sprintf(temp, "%s/PSP_GAME/PKGDIR/ICON0.PNG", list_game_path[position]);
-		if(imgLoadFromFile(temp, &ICON0[position]) == SUCCESS) return;
-		else {
-			sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[position]);
-			if(imgLoadFromFile(temp, &ICON0[position]) == SUCCESS) return;
-		}
-	} else
-	if(list_game_platform[position] == _ISO_PS2 || list_game_platform[position] == _ISO_PS1) {
-		strcpy(temp, list_game_path[position]);
-		temp[strlen(temp)-4]=0;
-		char temp2[255];
-		sprintf(temp2, "%s.jpg", temp);
-		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
-		sprintf(temp2, "%s.png", temp);
-		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
-		sprintf(temp2, "%s.JPG", temp);
-		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
-		sprintf(temp2, "%s.PNG", temp);
-		if(imgLoadFromFile(temp2, &ICON0[position]) == SUCCESS) return;
-	}
-	
-}
-
 //*******************************************************
-// SCREENSOT
+// SCREENSHOT
 //******************************************************
 
 typedef struct                       /**** BMP file header structure ****/
@@ -2535,7 +2818,7 @@ typedef struct                       /**** BMP file info structure ****/
 
 void es_bmp_file_header(bmp_file_header *w)
 {
-	w->bfSize = ENDIAN_SWAP_32(w->bfSize);; 
+	w->bfSize = ENDIAN_SWAP_32(w->bfSize);
 	w->bfReserved1 = ENDIAN_SWAP_16(w->bfReserved1);
 	w->bfReserved2 = ENDIAN_SWAP_16(w->bfReserved2);
 	w->bfOffBits = ENDIAN_SWAP_32(w->bfOffBits);  
@@ -2559,8 +2842,7 @@ void es_bmp_info_header(bmp_info_header *w)
 // https://en.wikipedia.org/wiki/BMP_file_format
 void ScreenShot()
 {
-	if( !((new_pad & BUTTON_L2) && (old_pad & BUTTON_R2))
-	&&  !((new_pad & BUTTON_R2) && (old_pad & BUTTON_L2)) ) return;
+	if( ComboNewPad(BUTTON_L2, BUTTON_R2) == NO ) return;
 
 	if(Video_currentBuffer==NO) return;
 	
@@ -2677,6 +2959,13 @@ print_head("Writing bitmap data...");
 // TEST ZONE
 //*******************************************************
 
+// http://www.psdevwiki.com/ps3/AIM_Manager#0x19003_-_Get_Device_ID
+u8 TEST_IDPS[0x10];
+void GetIDPS()
+{
+	lv2syscall2(867, 0x19003, (u64) TEST_IDPS);
+}
+
 //  https://www.imagemagick.org/api/magick-image.php
 
 void ConvertImage(char *file_in, char *file_out)
@@ -2782,7 +3071,7 @@ void ddsLoadFromFile(char *path, ddsData *data)
 
 void Load_FM()
 {
-	if(Load_GamePIC) return;
+	if(Load_GAMEPIC_busy) return;
 	
 	u8 loaded=NO;
 	
@@ -2791,11 +3080,7 @@ void Load_FM()
 		start_loading();
 	}
 
-#ifdef FILEMANAGER
-	texture_pointer = texture_mem + TEXTURE_POINTER_GAMEPIC;
-#else
-	texture_pointer = texture_temp;
-#endif
+	texture_pointer = texture_mem + TEXTURE_POINTER_TMP;
 
 	memset(&TMP_PIC, 0, sizeof(TMP_PIC));
 	TMP_PIC_offset = 0;
@@ -2806,210 +3091,599 @@ void Load_FM()
 		return;
 	}
 	
-	LoadTexture(TMP_PIC_path, &TMP_PIC_offset ,&TMP_PIC);
+	LoadTexture(TMP_PIC_path, &TMP_PIC_offset ,&TMP_PIC, NULL, NO);
 	
 	if(loaded == YES) end_loading();
 }
 
-void Read_COVER3D(int position)
+static void* jpg_malloc(u32 size,void *usrdata)
 {
-	char temp[128];
-	char title_id[20];
-	
-	if(Get_ID(list_game_path[position], list_game_platform[position], title_id) == FAILED) {
-		print_load("Error: Read_COVER3D : Get_ID %s", list_game_path[position]);
-		return;
-	}
-
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.JPG", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.jpg", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.PNG", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.png", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	
-	return;
-read:
-
-	if( imgLoadFromFile(temp, &COVER3D[position]) == 0) return;
-	
+	return malloc(size);
 }
 
-void Read_COVER(int position)
+static void jpg_free(void *ptr,void *usrdata)
 {
-	char temp[128];
-	char title_id[20];
-	
-	if(Get_ID(list_game_path[position], list_game_platform[position], title_id) == FAILED) {
-		print_load("Error: Read_COVER : Get_ID %s", list_game_path[position]);
-		return;
-	}
-	
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, title_id);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	
-	return;
-read:
-
-	if( imgLoadFromFile(temp, &COVER[position]) == 0) return;
-	
-	//Delete(temp);
+	free(ptr);
 }
 
-void Load_ICON0()
+u8 GetInfo_JPG(char *path, u32 *w, u32 *h) 
 {
-	int i;
+	jpgDecSource source;
 	
-	Load_GamePIC_progbar = 0;
+	memset(&source,0,sizeof(jpgDecSource));
 
-	for(i=0; i<=game_number; i++) {
-		Load_GamePIC_progbar = (i*100)/game_number;
-		
-		if(Load_GamePIC==NO) return;
-		
-		Read_ICON0(i);
-		
-		if(Load_GamePIC==NO) return;
-		
-		if(ICON0[i].bmp_out) {
-			memcpy(texture_pointer, ICON0[i].bmp_out, ICON0[i].pitch * ICON0[i].height);
-			free(ICON0[i].bmp_out);
-			ICON0_offset[i] = tiny3d_TextureOffset(texture_pointer);
-			texture_pointer += ((ICON0[i].pitch * ICON0[i].height + 15) & ~15) / 4;
-		} else ICON0_offset[i]=0;
-	}
+	source.stream = JPGDEC_FILE;
+	source.file_name = __get_addr32(path);
+	source.enable = JPGDEC_DISABLE;
 	
-	Load_GamePIC_progbar = -1;
-}
+	s32 mHandle,sHandle,ret;
+	u32 space_allocated;
+	jpgDecInfo DecInfo;
+	jpgDecThreadInParam InThdParam;
+	jpgDecThreadOutParam OutThdParam;
 
-u8 COVER_Loaded;
-void Load_COVER() 
-{	
-	int i;
-	
-	if(Load_GamePIC==NO) return;
-	
-	COVER_Loaded = NO;
-	
-	if(Show_COVER==YES || (UI_position==FLOW && FLOW_3D==YES) ) {
-		Load_GamePIC_progbar=0;
-		for(i=0; i<=game_number; i++) {
-			Load_GamePIC_progbar = (i*100)/game_number;
-			if(Load_GamePIC==NO) return;
-			Read_COVER(i);
-			if(Load_GamePIC==NO) return;
-			if(COVER[i].bmp_out) {
-				memcpy(texture_pointer, COVER[i].bmp_out, COVER[i].pitch * COVER[i].height);
-				free(COVER[i].bmp_out);
-				COVER_offset[i] = tiny3d_TextureOffset(texture_pointer);
-				texture_pointer += ((COVER[i].pitch * COVER[i].height + 15) & ~15) / 4;
-			} else COVER_offset[i] = 0;
-		}
-		if(UI_position==FLOW && FLOW_3D==YES) {
-			Load_GamePIC_progbar=0;
-			for(i=0; i<=game_number; i++) {
-				Load_GamePIC_progbar = (i*100)/game_number;
-				if(Load_GamePIC==NO) return;
-				Read_COVER3D(i);
-				if(Load_GamePIC==NO) return;
-				if(COVER3D[i].bmp_out) {
-					memcpy(texture_pointer, COVER3D[i].bmp_out, COVER3D[i].pitch * COVER3D[i].height);
-					free(COVER3D[i].bmp_out);
-					COVER3D_offset[i] = tiny3d_TextureOffset(texture_pointer);
-					texture_pointer += ((COVER3D[i].pitch * COVER3D[i].height + 15) & ~15) / 4;
-				} else COVER3D_offset[i] = 0;
+	InThdParam.enable = 0;
+	InThdParam.ppu_prio = 512;
+	InThdParam.spu_prio = 200;
+	InThdParam.malloc_func = __get_addr32(__get_opd32(jpg_malloc));
+	InThdParam.malloc_arg = 0; // no args
+	InThdParam.free_func = __get_addr32(__get_opd32(jpg_free));
+	InThdParam.free_arg = 0; // no args
+
+	ret = jpgDecCreate(&mHandle,&InThdParam,&OutThdParam);
+
+	if(ret==0) {
+		ret = jpgDecOpen(mHandle,&sHandle,&source,&space_allocated);
+		if(ret==0) {
+			ret = jpgDecReadHeader(mHandle,sHandle,&DecInfo);
+			if(ret==0) {
+				*w = DecInfo.width;
+				*h = DecInfo.height;
 			}
+			jpgDecClose(mHandle,sHandle);
 		}
-		COVER_Loaded = YES;
+		jpgDecDestroy(mHandle);
 	}
-	Load_GamePIC_progbar = -1;
+	
+	if( ret==0 ) return SUCCESS;
+	else return FAILED;
 }
 
-static sys_ppu_thread_t Load_GamePIC_id;
-
-void Load_GamePIC_thread(void *unused)
+u8 GetInfo_PNG(char * path, u32 *w, u32 *h)
 {
-	memset(ICON0_offset, 0, sizeof(ICON0_offset));
-	memset(ICON0, 0, sizeof(ICON0));
-	memset(COVER_offset, 0, sizeof(COVER_offset));
-	memset(COVER, 0, sizeof(COVER));
-	memset(COVER3D_offset, 0, sizeof(COVER3D_offset));
-	memset(COVER3D, 0, sizeof(COVER3D));
-	TMP_PIC_offset = 0;
+	FILE *f;
+	u32 magic;
 	
-	texture_pointer = texture_mem + TEXTURE_POINTER_GAMEPIC;
+	f=fopen(path, "rb");
+	if( f == NULL ) return FAILED;
 	
-	Load_ICON0();
-	Load_COVER();
+	fread(&magic, sizeof(32), 1, f);
 	
-	while(Load_GamePIC == YES) usleep(100);
+	if(magic != 0x89504E47) {
+		fclose(f); 
+		return FAILED;
+	}
 	
-	texture_temp = texture_pointer;
+	fseek(f, 0x10, SEEK_SET);
+	
+	u32 width, height;
+	fread(&width, sizeof(32), 1, f);
+	fread(&height, sizeof(32), 1, f);
+	
+	fclose(f);
+	
+	*w = width;
+	*h = height;
+	
+	return SUCCESS;
+}
+
+u8 Get_PICType(u32 w, u32 h)
+{
+	if( w <= h) return GAMEPIC_COVER2D;
+	
+	float ratio = (float) w / (float) h ;
+	float ratio_ICON0 = 320.0/176.0;
+	float e = fabs(ratio_ICON0 - ratio);
+	if( e < 0.1 ) return GAMEPIC_ICON0;
+
+	return GAMEPIC_COVER3D;
+}
+
+u8 Get_PIC(char *path)
+{
+	u32 width, height;
+	
+	if(GetInfo_PNG(path, &width, &height)==FAILED)
+	if(GetInfo_JPG(path, &width, &height)==FAILED) return GAMEPIC_COVER_UNK;
+	
+	return Get_PICType(width, height);
+}
+
+u8 Have_GAMEPIC(int game_pos)
+{
+	u8 ret = GAMEPIC_NONE;
+	
+	if(list_game_platform[game_pos] == _ISO_PS3 || list_game_platform[game_pos] == _JB_PS3
+	|| list_game_platform[game_pos] == _ISO_PSP || list_game_platform[game_pos] == _JB_PSP) ret += GAMEPIC_ICON0;
+	
+	char temp[512];
+	
+// 3D
+	u8 is_PS1 = (list_game_platform[game_pos] == _ISO_PS1 || list_game_platform[game_pos] == _JB_PS1);
+	
+	char t[10] = {0};
+	if(is_PS1) strcpy(t, "_FRONT");
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
+
+search_2D:
+			
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+				
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
+	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	
+	
+search_next:
+
+	strcpy(temp, list_game_path[game_pos]);
+	temp[strlen(temp)-4]=0;
+	char temp2[512];
+	sprintf(temp2, "%s.jpg", temp);
+	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
+	sprintf(temp2, "%s.png", temp);
+	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
+	sprintf(temp2, "%s.JPG", temp);
+	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
+	sprintf(temp2, "%s.PNG", temp);
+	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
+	
+end:
+
+	return ret;
+}
+
+u8 Read_PS1BACK(int game_pos, imgData *DataPic)
+{
+	u8 is_PS1 = (list_game_platform[game_pos] == _ISO_PS1 || list_game_platform[game_pos] == _JB_PS1);
+	
+	if(is_PS1==NO || UI_position!=FLOW || FLOW_3D == NO) return FAILED;
+		
+// TODO 
+// support 3 pictures = 2 sides + 1 back 
+// FULL   450 x 600
+// BACK   450 x 510
+// LEFT   450 x 45
+// RIGHT  450 x 45
+// merge them in 1 imgData ?
+	
+	char temp[128];
+	
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+
+	return FAILED;
+}
+
+u8 Read_GAMEPIC_COVER3D(int game_pos, imgData *DataPic)
+{
+	char temp[512];
+	u8 is_PS1 = (list_game_platform[game_pos] == _ISO_PS1 || list_game_platform[game_pos] == _JB_PS1);
+		
+	char t[10] = {0};
+	if(is_PS1==YES) strcpy(t, "_FRONT");
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	
+	return FAILED;
+}
+
+u8 Read_GAMEPIC_COVER2D(int game_pos, imgData *DataPic)
+{
+	char temp[512];
+	
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+			
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	
+	if( list_game_platform[game_pos] == _ISO_PS3 || list_game_platform[game_pos] == _JB_PS3) return FAILED;
+	
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
+	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	
+	return FAILED;
+}
+
+u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
+{
+	char temp[512];
+	
+	if(list_game_platform[game_pos] == _ISO_PS3) {
+		int size;
+		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], "/PS3_GAME/ICON0.PNG", &size);
+		if(mem==NULL) return FAILED;
+		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0)  {free(mem); return SUCCESS;}
+	} else
+	if(list_game_platform[game_pos] == _ISO_PSP) {
+		int size;
+		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], "/PSP_GAME/ICON0.PNG", &size);
+		if(mem==NULL) return FAILED;
+		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0) {free(mem); return SUCCESS;}
+	} else	
+	if(list_game_platform[game_pos] == _JB_PS3) {
+		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
+		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
+		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	} else
+	if(list_game_platform[game_pos] == _JB_PSP) {
+		sprintf(temp, "%s/PSP_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
+		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+		sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[game_pos]);
+		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	} else
+	if(list_game_platform[game_pos] == _ISO_PS2 || list_game_platform[game_pos] == _ISO_PS1) {
+		strcpy(temp, list_game_path[game_pos]);
+		temp[strlen(temp)-4]=0;
+		char temp2[255];
+		sprintf(temp2, "%s.jpg", temp);
+		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
+		sprintf(temp2, "%s.png", temp);
+		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
+		sprintf(temp2, "%s.JPG", temp);
+		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
+		sprintf(temp2, "%s.PNG", temp);
+		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
+	}
+	
+	return FAILED;
+}
+
+u8 Read_GAMEPIC(int game_pos, imgData *DataPic)
+{
+	
+	if(list_game_havepic[game_pos] == GAMEPIC_NONE) return FAILED;
+
+	if(UI_position==FLOW) {
+		
+		if(FLOW_3D) {
+			if( Read_GAMEPIC_COVER3D(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		} 
+			
+		if(FLOW_3D || Show_COVER) {
+			if( Read_GAMEPIC_COVER2D(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		}
+		
+		if( Read_GAMEPIC_ICON0(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		
+	} else
+	if(UI_position==LIST) {
+		if(Show_ICON0) {
+			if( Read_GAMEPIC_ICON0(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		}
+		if(Show_COVER) {
+			if( Read_GAMEPIC_COVER2D(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		}
+	} else {
+		if( Read_GAMEPIC_ICON0(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		
+		if(Show_COVER) {
+			if( Read_GAMEPIC_COVER2D(game_pos, DataPic) == SUCCESS) return SUCCESS;
+		}	
+	}
+	
+	return FAILED;
+}
+
+int VRAM_GetSlotUsed()
+{
+	int i;
+	int nb=0;
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		if( GAMEPIC_SLOT_POS[i] != -1 ) nb++;
+	}
+	
+	return nb;
+}
+
+int VRAM_GetSlot(int gamepos)
+{
+	int i;
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		if( GAMEPIC_SLOT_POS[i] == gamepos ) return i;
+	}
+	
+	return (-1);
+}
+
+int VRAM_NewSlot(int gamepos)
+{
+	int i;
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		if( GAMEPIC_SLOT_POS[i] == -1 ) return i;
+	}
+	return (-1);
+}
+
+void update_VRAM()
+{
+	int FirstGame = GAMEPIC_SLOT_POS[GAMEPIC_SLOT_FIRST];
+	int LastGame = GAMEPIC_SLOT_POS[GAMEPIC_SLOT_LAST];
+	int i;
+	
+	strcpy(GAMEPIC_LOG, "VRAM_update");
+	
+	for(i=0; i<GAMEPIC_MAX; i++)
+	{
+		if(	FirstGame < LastGame) {
+			if(FirstGame <= GAMEPIC_SLOT_POS[i] && GAMEPIC_SLOT_POS[i] <= LastGame) continue;
+		}
+		if( LastGame < FirstGame) {
+			if( GAMEPIC_SLOT_POS[i] <= LastGame ) continue;
+			if( FirstGame <=  GAMEPIC_SLOT_POS[i] ) continue;
+		}
+		GAMEPIC_SLOT_POS[i] = -1;
+		GAMEPIC_offset[i]=0;
+	}
+}
+
+void VRAM_init()
+{
+	int e = 0;
+	int texture_number = 0;
+	GAMEPIC_SLOT_LAST = 0;
+	GAMEPIC_SLOT_FIRST = 0;
+	GAMEPIC_POSITION = position;
+	
+	strcpy(GAMEPIC_LOG, "VRAM_init");
+	
+	int i;
+	for(i=0; i<=game_number; i++)
+	{
+		if(GAMEPIC_MAX<=texture_number) break;
+		if(game_number<texture_number) break;
+		
+		int gamepos = GAMEPIC_POSITION + e;
+		if(game_number<gamepos) gamepos = gamepos - game_number - 1;
+		if(gamepos<0) gamepos = game_number + gamepos + 1;
+
+		if( list_game_havepic[gamepos] == GAMEPIC_NONE ) goto next;
+		
+		texture_number++;
+		
+		int slot = VRAM_GetSlot(gamepos);
+		if(slot == -1) goto next;
+		
+		if(e>0) GAMEPIC_SLOT_LAST = slot;
+		if(e<0) GAMEPIC_SLOT_FIRST = slot;
+next:
+		e=-e; if(0<=e) e++;
+	}
+	
+	update_VRAM();
+}
+
+u8 VRAM_isFull()
+{
+	int i;
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		if( GAMEPIC_SLOT_POS[i] == -1 ) return NO;
+	}
+	
+	return YES;
+}
+
+void Load_GAMEPIC()
+{
+	Load_GAMEPIC_busy = YES;
+	
+	int e = 0;
+	int texture_loaded_number = 0;
+	int LOCAL_SLOT_LAST = 0;
+	int LOCAL_SLOT_FIRST = 0;
+	
+	VRAM_init();
+	
+	strcpy(GAMEPIC_LOG, "Load_GAMEPIC");
+	
+	int i;
+	for(i=0; i<=game_number; i++)
+	{
+		if(GAMEPIC_MAX<=texture_loaded_number) break;
+		if(game_number<texture_loaded_number) break;
+		
+		int gamepos = GAMEPIC_POSITION + e;
+		if(game_number<gamepos) gamepos = gamepos - game_number - 1;
+		if(gamepos<0) gamepos = game_number + gamepos + 1;
+		
+		int slot;
+		slot = VRAM_GetSlot(gamepos);
+		if(slot != -1) goto already_loaded;
+		
+		slot = VRAM_NewSlot(gamepos);
+		if( slot == -1)  break;
+		
+		if( Read_GAMEPIC(gamepos, &GAMEPIC[slot]) == FAILED ) goto next;
+		
+		GAMEPIC_SLOT_POS[slot] = gamepos;
+		texture_pointer = texture_mem + TEXTURE_POINTER_GAMEPIC(slot);	
+		memcpy(texture_pointer, GAMEPIC[slot].bmp_out, GAMEPIC[slot].pitch * GAMEPIC[slot].height);
+		free(GAMEPIC[slot].bmp_out);
+		GAMEPIC_offset[slot] = tiny3d_TextureOffset(texture_pointer);
+		
+		
+		PS1BACK_offset[slot] = 0;
+		if( Read_PS1BACK(gamepos, &PS1BACK[slot]) == FAILED) goto next;
+		texture_pointer = texture_mem + TEXTURE_POINTER_GAMEPIC(slot) + TEXTURE_GAMEPIC_SIZE(slot);
+		memcpy(texture_pointer, PS1BACK[slot].bmp_out, PS1BACK[slot].pitch * PS1BACK[slot].height);
+		free(PS1BACK[slot].bmp_out);
+		PS1BACK_offset[slot] = tiny3d_TextureOffset(texture_pointer);
+		
+already_loaded:
+
+		if(e>0) LOCAL_SLOT_LAST = slot;
+		if(e<0) LOCAL_SLOT_FIRST = slot;
+		
+		texture_loaded_number++;
+		
+next:
+		e=-e; if(e>=0) e++;
+	}
+	
+	GAMEPIC_SLOT_LAST = LOCAL_SLOT_FIRST;
+	GAMEPIC_SLOT_LAST = LOCAL_SLOT_LAST;
+	
+	Load_GAMEPIC_busy = NO;
+}
+
+void init_Load_GAMEPIC()
+{
+	if(UI_position==FLOW && FLOW_3D==YES) {
+		TEXTURE_GAMEPIC_SIZE_MAX = TEXTURE_GAMEPIC_SIZE_3D;
+	} else {
+		TEXTURE_GAMEPIC_SIZE_MAX = TEXTURE_GAMEPIC_SIZE_2D;
+	}
+	
+	memset(GAMEPIC_offset, 0, sizeof(GAMEPIC_offset));
+	memset(GAMEPIC, 0, sizeof(GAMEPIC));
+	
+	if(position < 0) GAMEPIC_POSITION = position;
+	
+	int i;
+	for(i=0; i<GAMEPIC_MAX; i++) GAMEPIC_SLOT_POS[i] = -1;
+	
+	Load_GAMEPIC_init = YES;
+}
+
+static sys_ppu_thread_t Load_GAMEPIC_id;
+
+void Load_GAMEPIC_thread(void *unused)
+{
+	init_Load_GAMEPIC();
+	
+	while(Load_GAMEPIC_flag == YES) {
+		Load_GAMEPIC_busy = NO;
+		if( Load_GAMEPIC_init ) {
+			Load_GAMEPIC_busy=YES;
+			int i;
+			for(i=0; i<=game_number; i++) list_game_havepic[i] = Have_GAMEPIC(i);
+			Load_GAMEPIC_init=NO;
+			Load_GAMEPIC();
+		} else
+		if(position < 0) {
+			sleep(1);
+		} else
+		if(GAMEPIC_MAX < game_number) 
+		{
+			if( GAMEPIC_POSITION != position ) Load_GAMEPIC();
+		}
+		usleep(100);
+	}
 	
 	sysThreadExit(0);
 }
 
-void end_Load_GamePIC()
+
+void end_Load_GAMEPIC()
 {
 	u64 ret;
-	Load_GamePIC = NO;
-	sysThreadJoin(Load_GamePIC_id, &ret);
+	if(Load_GAMEPIC_flag==YES) {
+		Load_GAMEPIC_flag = NO;
+		sysThreadJoin(Load_GAMEPIC_id, &ret);
+	}
 }
 
-void start_Load_GamePIC()
+void start_Load_GAMEPIC()
 {	
-	if(Load_GamePIC==YES) {
-		end_Load_GamePIC();
-	}
-	if(Load_GamePIC==NO) {
-		Load_GamePIC = YES;
-		sysThreadCreate(&Load_GamePIC_id, Load_GamePIC_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "Load_GamePIC");
+	if(Load_GAMEPIC_flag==NO) {
+		Load_GAMEPIC_flag = YES;
+		sysThreadCreate(&Load_GAMEPIC_id, Load_GAMEPIC_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "Load_GAMEPIC");
 	}
 }
 
-void Draw_Load_GamePIC()
+
+void Draw_Load_GAMEPIC()
 {
-	if(Load_GamePIC == NO) return;
-		
-	if(Load_GamePIC_progbar >= 0) Draw_Progress_Bar(50, 15, 1, Load_GamePIC_progbar, COLOR_2);
-	
-	if(Load_GamePIC_progbar == -1) end_Load_GamePIC();
-	
+	if(Load_GAMEPIC_busy) DrawLoadingIcon();
 }
 
 void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
@@ -3088,50 +3762,26 @@ void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
 	
 }
 
-void Draw_COVER(int pos, float x , float y, float z, float w, float h)
+void Draw_COVER(int pos, float x, float y, float z, float w, float h, u32 CoverOffset, imgData CoverIMG, u8 center, u32 color)
 {
 	if(pos < 0 || game_number < pos) return;
+	if(CoverOffset==0) return;
 	
-	if(COVER_offset[pos] != 0) {
-		float xi,yi,wi,hi;
-		
-		tiny3d_SetTexture(0, COVER_offset[pos], COVER[pos].width, COVER[pos].height, COVER[pos].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		
-		if(h==0 && w!=0) {
-			xi = x;
-			yi = y;
-			wi = w;
-			hi = COVER[pos].height * w / COVER[pos].width;
-		} else 
-		if(h!=0 && w==0) {
-			xi = x;
-			yi = y;
-			wi = COVER[pos].width * h / COVER[pos].height;
-			hi = h;
-		} else
-		if(h==0 && w==0) {
-			xi = x;
-			yi = y;
-			wi = COVER[pos].width;
-			hi = COVER[pos].height;
-		} else {
-			xi = x;
-			yi = y;
-			wi = w;
-			hi = h;
-		}
-		Draw_Box(xi, yi, z, 0, wi, hi, WHITE, YES);
-		
-		if(Show_GameCase==YES) Draw_CASE(pos, xi, yi, z, wi, hi);
-	}
-}
-
-void Draw_CoverCaseFromCenter(int pos, float x, float y, float z, float w, float h)
-{
 	float xi,yi,wi,hi;
 	float xj,yj,wj,hj;
 	float xl,yl,wl,hl;
+	
 	u8 plat;
+	
+	xj = x;
+	yj = y;
+	wj = w;
+	hj = h;
+	
+	if(center) {
+		xj -= wj/2;
+		yj -= hj/2;
+	}
 	
 	if(list_game_platform[pos] == _ISO_PS3 || list_game_platform[pos] == _JB_PS3) {
 		plat = PS3_CASE;
@@ -3162,89 +3812,60 @@ void Draw_CoverCaseFromCenter(int pos, float x, float y, float z, float w, float
 		hl = 340;
 	} else return;
 	
-	if(PICTURE_offset[plat] != 0 && COVER_offset[pos] != 0) {
+	float ph = hl;
+	float pw = wl;
+	if(PICTURE_offset[plat] && Show_GameCase) {
+		ph=PICTURE[plat].height;
+		pw=PICTURE[plat].width;
+	}
+	
+	if(h==0 && w!=0) {
+		xi = x;
+		yi = y;
+		wi = w;
+		hi = ph*w/pw;
+	} else
+	if(h!=0 && w==0) {
+		xi = x;
+		yi = y;
+		wi = pw*h/ph;
+		hi = h;
+	} else
+	if(h==0 && w==0) {
+		xi = x;
+		yi = y;
+		wi = pw;
+		hi = ph;
+	} else {
+		xi = x;
+		yi = y;
+		wi = w;
+		hi = h;
+	}
+	
+	if(center) {
+		xi -= wi/2;
+		yi -= hi/2;
+	}
+	
+	xj = xi;
+	yj = yi;
+	wj = wl * wi / pw;
+	hj = hl * hi / ph;
 		
-		if(h==0 && w!=0) {
-			xi = x-w/2;
-			yi = y-(PICTURE[plat].height*w/PICTURE[plat].width) / 2 ;
-			wi = w;
-			hi = PICTURE[plat].height*w/PICTURE[plat].width;
-		} else
-		if(h!=0 && w==0) {
-			xi = x-(PICTURE[plat].width*h/PICTURE[plat].height)/2;
-			yi = y-h/2;
-			wi = PICTURE[plat].width*h/PICTURE[plat].height;
-			hi = h;
-		} else
-		if(h==0 && w==0) {
-			xi = x-PICTURE[plat].width/2;
-			yi = y-PICTURE[plat].height/2;
-			wi = PICTURE[plat].width;
-			hi = PICTURE[plat].height;
-		} else {
-			xi = x-w/2;
-			yi = y-h/2;
-			wi = w;
-			hi = h;
-		}
-		
-		
-		xj = xi + xl * wi / PICTURE[plat].width;
-		yj = yi + yl * hi / PICTURE[plat].height;
-		
-		wj = wl * wi / PICTURE[plat].width;
-		hj = hl * hi / PICTURE[plat].height;
-		
-		tiny3d_SetTexture(0, COVER_offset[pos], COVER[pos].width, COVER[pos].height, COVER[pos].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(xj, yj, z+1, 0, wj, hj, WHITE, YES);
-		
+	if(PICTURE_offset[plat] && Show_GameCase) {
+		xj+= xl * wi / pw;
+		yj+= yl * hi / ph;
+	}
+	
+	tiny3d_SetTexture(0, CoverOffset, CoverIMG.width, CoverIMG.height, CoverIMG.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	Draw_Box(xj, yj, z, 0, wj, hj, color, YES);
+	
+	if(PICTURE_offset[plat] && Show_GameCase) {
 		tiny3d_SetTexture(0, PICTURE_offset[plat], PICTURE[plat].width, PICTURE[plat].height, PICTURE[plat].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(xi, yi, z, 0, wi, hi, WHITE, YES);
+		Draw_Box(xi, yi, z, 0, wi, hi, color, YES);
 	}
-}
 
-void Draw_CoverFromCenter(int pos, float x, float y, float z, float w, float h)
-{
-	if(pos < 0 || game_number < pos) return;
-	
-	if(Show_GameCase==YES) {
-		Draw_CoverCaseFromCenter(pos, x, y, z, w, h);
-		return;
-	}
-	
-	if(COVER_offset[pos] != 0) {
-		
-		float xi,yi,wi,hi;
-		
-		tiny3d_SetTexture(0, COVER_offset[pos], COVER[pos].width, COVER[pos].height, COVER[pos].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		
-		if(h==0 && w!=0) {
-			xi = x-w/2;
-			yi = y-(COVER[pos].height*w/COVER[pos].width) / 2 ;
-			wi = w;
-			hi = COVER[pos].height*w/COVER[pos].width;
-		}
-		else if(h!=0 && w==0) {
-			xi = x-(COVER[pos].width*h/COVER[pos].height)/2;
-			yi = y-h/2;
-			wi = COVER[pos].width * h / COVER[pos].height;
-			hi = h;
-		}
-		else if(h==0 && w==0) {
-			xi = x-COVER[pos].width/2;
-			yi = y-COVER[pos].height/2;
-			wi = COVER[pos].width;
-			hi = COVER[pos].height;
-		} else {
-			xi = x-w/2;
-			yi = y-h/2;
-			wi = w;
-			hi = h;
-		}
-		Draw_Box(xi, yi, z, 0, wi, hi, WHITE, YES);
-		
-		if(Show_GameCase==YES) Draw_CASE(pos, xi, yi, z, wi, hi);
-	}
 }
 
 u8 get_SectorSize(FILE*  fd, u32 *SectorSize, u32 *jmp)
@@ -3408,60 +4029,136 @@ void Extract_IconParam()
 	}
 }
 
-void Draw_DEFAULT(int pos, float x , float y, float z,  float w, float h)
+void Draw_DEFAULT(int pos, float x , float y, float z,  float w, float h, u8 center, u32 color)
 {
 	if(pos < 0 || game_number < pos) return;
 	
 	int type = list_game_platform[pos];
+	u8 plat = 222;
 	if(type == _JB_PS1 || type == _JB_PS2 || type == _JB_PS3 || type == _JB_PSP) {
 		if(PICTURE_offset[DEFAULT_JB] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[DEFAULT_JB], PICTURE[DEFAULT_JB].width, PICTURE[DEFAULT_JB].height, PICTURE[DEFAULT_JB].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			
-			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+			plat = DEFAULT_JB;
 		}
 	} else
 	if(type == _ISO_PS1 || type == _ISO_PS2 || type == _ISO_PS3 || type == _ISO_PSP) {
 		if(PICTURE_offset[DEFAULT_ISO] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[DEFAULT_ISO], PICTURE[DEFAULT_ISO].width, PICTURE[DEFAULT_ISO].height, PICTURE[DEFAULT_ISO].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			
-			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+			plat = DEFAULT_ISO;
 		}
 	} else {
 		if(PICTURE_offset[DEFAULT] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[DEFAULT], PICTURE[DEFAULT].width, PICTURE[DEFAULT].height, PICTURE[DEFAULT].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		
-			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+			plat = DEFAULT;
 		}		
 	}
 	
-	if(type == _JB_PS1 || type == _ISO_PS1) Draw_Box(x, y, z, 0, w, h, COLOR_PS1 - 0x90, NO);
-	if(type == _JB_PS2 || type == _ISO_PS2) Draw_Box(x, y, z, 0, w, h, COLOR_PS2 - 0x90, NO);
-	if(type == _JB_PS3 || type == _ISO_PS3) Draw_Box(x, y, z, 0, w, h, COLOR_PS3 - 0x90, NO);
-	if(type == _JB_PSP || type == _ISO_PSP) Draw_Box(x, y, z, 0, w, h, COLOR_PSP - 0x90, NO);
-	
-}
-
-void Draw_ICON0(int pos, float x, float y, float z,  float w, float h)
-{
-	if(pos < 0 || game_number < pos) return;
-	
-	if(ICON0_offset[pos] != 0) {
-		tiny3d_SetTexture(0, ICON0_offset[pos], ICON0[pos].width, ICON0[pos].height, ICON0[pos].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		
-		if(ICON0[pos].height >= ICON0[pos].width) {
-			float w1= ICON0[pos].width * h / ICON0[pos].height;
-			float x1 = x + (w-w1)/2;
-			Draw_Box(x1, y, z, 0, w1, h, WHITE, YES);
-		} else Draw_Box(x, y, z, 0, w, h, WHITE, YES);
-		
+	if(plat==222) {
+		Draw_Box(x, y, z, 0, w, h, color, NO);
+		return;
 	}
-	else Draw_DEFAULT(pos, x, y, z, w, h);
+	
+	float h1 = h;
+	float w1 = w;
+	if( h==0 && w==0 ) {
+		h1 = PICTURE[plat].height;
+		w1 = PICTURE[plat].width;
+	}
+	if( h==0 ) {
+		h1 = (PICTURE[plat].height * w) / PICTURE[plat].width;
+	}
+	if( w==0 ) {
+		w1 = (PICTURE[plat].width * h) / PICTURE[plat].height;
+	}
+	
+	float x1 = x;
+	float y1 = y;
+	if(center) {
+		x1-= w1/2;
+		y1-= h1/2;
+	}
+	
+	tiny3d_SetTexture(0, PICTURE_offset[plat], PICTURE[plat].width, PICTURE[plat].height, PICTURE[plat].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	
+	u32 col = color;
+	if(type == _JB_PS1 || type == _ISO_PS1) col = SetALPHA(GetALPHA(color), COLOR_PS1);
+	if(type == _JB_PS2 || type == _ISO_PS2) col = SetALPHA(GetALPHA(color), COLOR_PS2);
+	if(type == _JB_PS3 || type == _ISO_PS3) col = SetALPHA(GetALPHA(color), COLOR_PS3);
+	if(type == _JB_PSP || type == _ISO_PSP) col = SetALPHA(GetALPHA(color), COLOR_PSP);
+	Draw_Box(x1, y1, z, 0, w1, h1, col , YES);
 	
 }
 
-void DrawFromCenter_ICON0(int pos, float x, float y, float z,  float w, float h)
+u8 Get_GAMEPIC_TYPE(int pos, int *slot)
 {
-	Draw_ICON0(pos, x-w/2, y-h/2, z, w, h);
+	if(pos < 0 || game_number < pos) return GAMEPIC_NONE;
+	
+	int TextSlot = VRAM_GetSlot(pos);
+	
+	if(TextSlot < 0) return GAMEPIC_NONE;
+		
+	if(GAMEPIC_offset[TextSlot] == 0) return GAMEPIC_NONE;
+	
+	*slot = TextSlot;
+	
+	return Get_PICType(GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height);		
+}
+
+void Draw_GAMEPIC(int pos, u8 pic, float x, float y, float z,  float w, float h, u8 center, u32 color)
+{
+	int TextSlot=0;
+	
+	u8 PICType = Get_GAMEPIC_TYPE(pos, &TextSlot);
+	
+	if(pic & GAMEPIC_ICON0) {
+		if(PICType==GAMEPIC_ICON0) {
+			float h1 = h;
+			float w1 = w;
+			if( h==0 && w==0 ) {
+				h1 = GAMEPIC[TextSlot].height;
+				w1 = GAMEPIC[TextSlot].width;
+			} else
+			if( h==0 ) {
+				h1 = (GAMEPIC[TextSlot].height * w) / GAMEPIC[TextSlot].width;
+			} else
+			if( w==0 ) {
+				w1 = (GAMEPIC[TextSlot].width * h) / GAMEPIC[TextSlot].height;
+			}
+			
+			tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			float x1 = x;
+			float y1 = y;
+			if(center) {
+				x1-= w1/2; 
+				y1-= h1/2;
+			}
+			Draw_Box(x1, y1, z, 0, w1, h1, color, YES);
+			return;
+		}
+	}
+	
+	if(pic & GAMEPIC_COVER2D) {
+		if(PICType == GAMEPIC_COVER2D) {
+			if(UI_position==GRID) {
+				tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				float w1= (GAMEPIC[TextSlot].width * h) / GAMEPIC[TextSlot].height;
+				float h1=h;
+				float x1 = x + (w-w1)/2;
+				float y1 = y;
+				if(center) {
+					x1 -= w1/2;
+					y1 -= h1/2;
+				}
+				Draw_Box(x1, y1, z, 0, w1, h1, color, YES);
+				return;
+			} else {
+				Draw_COVER(pos, x, y, z, w, h, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot], center, color);
+				return;
+			}
+		}
+	}
+	
+	if(pic & GAMEPIC_ICON0_DEFAULT) {
+		Draw_DEFAULT(pos, x, y, z, w, h, center, color);
+		return;
+	}
 }
 
 void Draw_MMTHM_XMB(float x , float y, float z, float w, float h,  u8 n_icon)
@@ -3652,6 +4349,14 @@ u64 get_time(u8 i)
 	return (((1000000000*time_e[i] + time_n_e[i]) - (1000000000*time_s[i] + time_n_s[i]))/1000000.0);
 }
 
+u64 nTime()
+{
+	u64 time_s=0;
+	u64 time_n=0;
+	sysGetCurrentTime(&time_s, &time_n);
+	return 1000000000ULL*time_s + time_n;
+}
+
 void init_timer(u8 i)
 {
 	time_s[i]=0;
@@ -3709,7 +4414,6 @@ u8 is_apng(char *file)
 
 u8 Load_APNG(char* filename)
 {
-	FILE* f;
 	u64 magic;
 	u32 pos;
 	chunk_header ch;
@@ -3719,85 +4423,83 @@ u8 Load_APNG(char* filename)
 	u8 Frame_Header[0x29];
 	acTL_data ad;
 
-	texture_pointer = texture_temp;	
+	texture_pointer = texture_mem + TEXTURE_POINTER_TMP;	
 	
 	memset(APNG_data, 0, sizeof(APNG_data));
 	memset(APNG, 0, sizeof(APNG));
 	memset(APNG_offset, 0, sizeof(APNG_offset));
 	APNG_num_frames = 0;
 	
-	f = fopen(filename, "rb");
-
-	if(f==NULL) {
-		//print_load("Error :  failed to open file");
+	print_load("Loading %s", filename);
+	
+	int size;
+	u8 *data = (u8*) LoadFile(filename, &size);
+	if(data==NULL) {
+		print_load("Error :  failed to load file");
 		return NO;
 	}
 	
-	fread(&magic, 1, 8, f);
+	memcpy(&magic, data, 8);
 	
 	if(magic != MAGIC_PNG) { 
-		//print_load("Error :  bad magic"); 
-		fclose(f); return NO;
+		print_load("Error :  bad magic");
+		free(data);
+		return NO;
 	}
 	
-	fseek(f, 0, SEEK_SET);
-	fread(&Frame_Header, 1, 0x21, f);
+	memcpy(Frame_Header, data, 0x21);
 	
-	fread(&ch, 1, 8, f);
-		
+	memcpy(&ch, data+0x21, 0x8);
+	
+	pos=0x21+8;
+	
 	while (ch.type != acTL)  
 	{
-		pos = ftell(f) + ch.length + 4; // ignore CRC
-		fseek(f, pos, SEEK_SET);
-		fread(&ch, 1, 8, f);
+		pos += ch.length + 4; // ignore CRC
+		memcpy(&ch, data+pos, 8); pos+=8;
 		
 		if(ch.type == IDAT) {
-			//print_load("Error : no actl");
-			fclose(f);
+			print_load("Error : no actl");
 			return NO;
-		} // not GRID_ANIMATED
+		}
 	}
 	
-
-	fread(&ad, 1, ch.length, f);
+	memcpy(&ad, data+pos, ch.length); pos+=ch.length;
 	
 	APNG_num_frames = ad.num_frames;
 
-	pos = ftell(f) + 4; // ignore CRC
-	fseek(f, pos, SEEK_SET);
+	pos += 4; // ignore CRC
+	
 	u32 i;
 	
 	for(i=0; i<ad.num_frames; i++) {
-		fread(&ch, 1, 8, f);
+		
+		memcpy(&ch, data+pos, 8); pos+=8;
 		
 		while (ch.type != fcTL)
 		{
-			pos = ftell(f) + ch.length + 4; // ignore CRC
-			fseek(f, pos, SEEK_SET);
-			fread(&ch, 1, 8, f);
+			pos += ch.length + 4; // ignore CRC
+			memcpy(&ch, data+pos, 8); pos+=8;
 		}
-		fread(&APNG_data[i], 1, ch.length, f);
+		memcpy(&APNG_data[i], data+pos, ch.length); pos+=ch.length;
 		
 		*(u32 *) &Frame_Header[0x10] = APNG_data[i].width;
 		*(u32 *) &Frame_Header[0x14] = APNG_data[i].height;
 		*(u32 *) &Frame_Header[0x25] = IDAT;
 		
-		pos = ftell(f) + 4; // ignore CRC
-		fseek(f, pos, SEEK_SET);
-		
-		fread(&ch, 1, 8, f);
+		pos += 4; // ignore CRC
+		memcpy(&ch, data+pos, 8); pos+=8;
 		
 		while (ch.type != IDAT && ch.type != fdAT)
 		{	
-			pos = ftell(f) + ch.length + 4; // ignore CRC
-			fseek(f, pos, SEEK_SET);
-			fread(&ch, 1, 8, f);
+			pos += ch.length + 4; // ignore CRC
+			memcpy(&ch, data+pos, 8); pos+=8;
 		}
 		
 		u32 n_AT=0;
 		u32 tot_size=0;
 		u32 chunk_size[1024]={0};
-		u32 first_pos = ftell(f) - 8;
+		u32 first_pos = pos - 8;
 		
 	next:
 		if(ch.type == IDAT) {
@@ -3805,10 +4507,9 @@ u8 Load_APNG(char* filename)
 			chunk_size[n_AT]=ch.length;
 			n_AT++;
 			
-			pos = ftell(f) + ch.length + 4; // ignore CRC 
-			fseek(f, pos, SEEK_SET);
-			fread(&ch, 1, 8, f);
-			
+			pos += ch.length + 4; // ignore CRC 
+			memcpy(&ch, data+pos, 8); pos+=8;
+						
 			goto next;
 		} else 
 		if(ch.type == fdAT) {
@@ -3816,14 +4517,12 @@ u8 Load_APNG(char* filename)
 			chunk_size[n_AT]=ch.length - 4;
 			n_AT++;
 			
-			pos = ftell(f) + ch.length + 4; // ignore CRC
-			fseek(f, pos, SEEK_SET);
-			fread(&ch, 1, 8, f);
+			pos += ch.length + 4; // ignore CRC 
+			memcpy(&ch, data+pos, 8); pos+=8;
 			
 			goto next;
 		} else {
-			fseek(f, first_pos, SEEK_SET); 
-			fread(&ch, 1, 8, f);
+			memcpy(&ch, data+first_pos, 8); pos = first_pos + 8;
 		}
 		
 		*(u32 *) &Frame_Header[0x21] = tot_size;
@@ -3834,7 +4533,8 @@ u8 Load_APNG(char* filename)
 		
 		u8 *frame = (u8 *) malloc(0x29 + tot_size + 4 + 0xC);
 		if(frame==NULL) {
-			//print_load("Error : failed to malloc");
+			print_load("Error : failed to malloc");
+			free(data);
 			return NO;
 		}
 		
@@ -3843,24 +4543,17 @@ u8 Load_APNG(char* filename)
 		u32 j, cur_size=0;
 		for(j=0; j<n_AT; j++) {
 			if(ch.type == IDAT) {
-				fread(frame + 0x29 + cur_size, 1, chunk_size[j], f);
-				pos = ftell(f) + 4; // ignore CRC
-				fseek(f, pos, SEEK_SET);
-				fread(&ch, 1, 8, f);
+				memcpy(frame + 0x29 + cur_size, data+pos, chunk_size[j]); pos+=chunk_size[j]+4; // ignore CRC
+				memcpy(&ch, data+pos, 8); pos+=8;
 			} else
 			if(ch.type == fdAT) {
-				pos = ftell(f) + 4; // ignore sequence_number
-				fseek(f, pos, SEEK_SET);
-				fread(frame + 0x29 + cur_size, 1, chunk_size[j], f);
-				pos = ftell(f) + 4; // ignore CRC
-				fseek(f, pos, SEEK_SET);
-				fread(&ch, 1, 8, f);
+				pos += 4; // ignore sequence_number
+				memcpy(frame + 0x29 + cur_size, data+pos, chunk_size[j]); pos+=chunk_size[j]+4; // ignore CRC
+				memcpy(&ch, data+pos, 8); pos+=8;
 			}
 			cur_size+=chunk_size[j];
 		}
-		pos = ftell(f) - 8;
-		fseek(f, pos, SEEK_SET);
-		
+		pos -= 8;	
 		
 		u32 crc = crc32(0L, Z_NULL, 0);
 		crc = crc32(crc, (const unsigned char*)frame+0x25, 4 + tot_size);
@@ -3888,10 +4581,199 @@ u8 Load_APNG(char* filename)
 		}
 	}
 	
-	init_timer(0);
+	free(data);
 	
+	init_timer(0);
+
 	return YES;
 }
+
+
+// u8 Load_APNG(char* filename)
+// {
+	// FILE* f;
+	// u64 magic;
+	// u32 pos;
+	// chunk_header ch;
+	
+	// u8 IEND_[0xC] = {0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82};
+	
+	// u8 Frame_Header[0x29];
+	// acTL_data ad;
+
+	// texture_pointer = texture_mem + TEXTURE_POINTER_TMP;	
+	
+	// memset(APNG_data, 0, sizeof(APNG_data));
+	// memset(APNG, 0, sizeof(APNG));
+	// memset(APNG_offset, 0, sizeof(APNG_offset));
+	// APNG_num_frames = 0;
+	
+	// f = fopen(filename, "rb");
+
+	// if(f==NULL) {
+		// //print_load("Error :  failed to open file");
+		// return NO;
+	// }
+	
+	// fread(&magic, 1, 8, f);
+	
+	// if(magic != MAGIC_PNG) { 
+		// //print_load("Error :  bad magic"); 
+		// fclose(f); return NO;
+	// }
+	
+	// fseek(f, 0, SEEK_SET);
+	// fread(&Frame_Header, 1, 0x21, f);
+	
+	// fread(&ch, 1, 8, f);
+		
+	// while (ch.type != acTL)  
+	// {
+		// pos = ftell(f) + ch.length + 4; // ignore CRC
+		// fseek(f, pos, SEEK_SET);
+		// fread(&ch, 1, 8, f);
+		
+		// if(ch.type == IDAT) {
+			// //print_load("Error : no actl");
+			// fclose(f);
+			// return NO;
+		// } // not GRID_ANIMATED
+	// }
+	
+
+	// fread(&ad, 1, ch.length, f);
+	
+	// APNG_num_frames = ad.num_frames;
+
+	// pos = ftell(f) + 4; // ignore CRC
+	// fseek(f, pos, SEEK_SET);
+	// u32 i;
+	
+	// for(i=0; i<ad.num_frames; i++) {
+		// fread(&ch, 1, 8, f);
+		
+		// while (ch.type != fcTL)
+		// {
+			// pos = ftell(f) + ch.length + 4; // ignore CRC
+			// fseek(f, pos, SEEK_SET);
+			// fread(&ch, 1, 8, f);
+		// }
+		// fread(&APNG_data[i], 1, ch.length, f);
+		
+		// *(u32 *) &Frame_Header[0x10] = APNG_data[i].width;
+		// *(u32 *) &Frame_Header[0x14] = APNG_data[i].height;
+		// *(u32 *) &Frame_Header[0x25] = IDAT;
+		
+		// pos = ftell(f) + 4; // ignore CRC
+		// fseek(f, pos, SEEK_SET);
+		
+		// fread(&ch, 1, 8, f);
+		
+		// while (ch.type != IDAT && ch.type != fdAT)
+		// {	
+			// pos = ftell(f) + ch.length + 4; // ignore CRC
+			// fseek(f, pos, SEEK_SET);
+			// fread(&ch, 1, 8, f);
+		// }
+		
+		// u32 n_AT=0;
+		// u32 tot_size=0;
+		// u32 chunk_size[1024]={0};
+		// u32 first_pos = ftell(f) - 8;
+		
+	// next:
+		// if(ch.type == IDAT) {
+			// tot_size+=ch.length;
+			// chunk_size[n_AT]=ch.length;
+			// n_AT++;
+			
+			// pos = ftell(f) + ch.length + 4; // ignore CRC 
+			// fseek(f, pos, SEEK_SET);
+			// fread(&ch, 1, 8, f);
+			
+			// goto next;
+		// } else 
+		// if(ch.type == fdAT) {
+			// tot_size+=ch.length - 4; // ignore sequence
+			// chunk_size[n_AT]=ch.length - 4;
+			// n_AT++;
+			
+			// pos = ftell(f) + ch.length + 4; // ignore CRC
+			// fseek(f, pos, SEEK_SET);
+			// fread(&ch, 1, 8, f);
+			
+			// goto next;
+		// } else {
+			// fseek(f, first_pos, SEEK_SET); 
+			// fread(&ch, 1, 8, f);
+		// }
+		
+		// *(u32 *) &Frame_Header[0x21] = tot_size;
+		
+		// u32 ihdr_crc = crc32(0L, Z_NULL, 0);
+		// ihdr_crc = crc32(ihdr_crc, (const unsigned char*)Frame_Header+0xC, 0x11);
+		// memcpy(Frame_Header+0x1D, &ihdr_crc, 4);
+		
+		// u8 *frame = (u8 *) malloc(0x29 + tot_size + 4 + 0xC);
+		// if(frame==NULL) {
+			// //print_load("Error : failed to malloc");
+			// return NO;
+		// }
+		
+		// memcpy(frame, &Frame_Header, 0x29);
+		
+		// u32 j, cur_size=0;
+		// for(j=0; j<n_AT; j++) {
+			// if(ch.type == IDAT) {
+				// fread(frame + 0x29 + cur_size, 1, chunk_size[j], f);
+				// pos = ftell(f) + 4; // ignore CRC
+				// fseek(f, pos, SEEK_SET);
+				// fread(&ch, 1, 8, f);
+			// } else
+			// if(ch.type == fdAT) {
+				// pos = ftell(f) + 4; // ignore sequence_number
+				// fseek(f, pos, SEEK_SET);
+				// fread(frame + 0x29 + cur_size, 1, chunk_size[j], f);
+				// pos = ftell(f) + 4; // ignore CRC
+				// fseek(f, pos, SEEK_SET);
+				// fread(&ch, 1, 8, f);
+			// }
+			// cur_size+=chunk_size[j];
+		// }
+		// pos = ftell(f) - 8;
+		// fseek(f, pos, SEEK_SET);
+		
+		
+		// u32 crc = crc32(0L, Z_NULL, 0);
+		// crc = crc32(crc, (const unsigned char*)frame+0x25, 4 + tot_size);
+		// memcpy(frame+0x29+tot_size, &crc, 4);
+		
+		// memcpy(frame+0x29+tot_size+4, IEND_, 0xC);
+		
+		// //FILE* x;
+		// //char frame_path[128];
+		// //mkdir("/dev_hdd0/frames", 0777);
+		// //sprintf(frame_path, "/dev_hdd0/frames/frame_%d.png", i);
+		// //x = fopen(frame_path, "wb");
+		// //fwrite(frame, 1, 0x29 + tot_size + 4 + 0xC, x);
+		// //fclose(x);
+		
+		// pngLoadFromBuffer((const void *) frame, 0x29 + tot_size + 4 + 0xC, &APNG[i]);
+		
+		// free(frame);
+		
+		// if(APNG[i].bmp_out) {
+			// memcpy(texture_pointer, APNG[i].bmp_out, APNG[i].pitch * APNG[i].height);
+			// free(APNG[i].bmp_out);
+			// APNG_offset[i] = tiny3d_TextureOffset(texture_pointer);
+			// texture_pointer += ((APNG[i].pitch * APNG[i].height + 15) & ~15) / 4;
+		// }
+	// }
+	
+	// init_timer(0);
+	
+	// return YES;
+// }
 
 void Draw_APNG()
 {
@@ -4122,7 +5004,32 @@ void Load_ANIMATED_BG(char* filename)
 		//fwrite(frame, 1, 0x29 + tot_size + 4 + 0xC, x);
 		//fclose(x);
 		
-		pngLoadFromBuffer((const void *) frame, 0x29 + tot_size + 4 + 0xC, (pngData *) &BG[i]);
+		if( FILTER_BG==ENABLED) {
+			imgData tp;
+			
+			pngLoadFromBuffer((const void *) frame, 0x29 + tot_size + 4 + 0xC, (pngData *) &tp);
+						
+			BG[i].height = tp.height;
+			BG[i].width = tp.width;
+			BG[i].pitch = tp.pitch;
+			BG[i].bmp_out = (u8 *) malloc(tp.pitch*tp.height+1);
+			
+			u64 d;
+			for(d=0; d< tp.pitch*tp.height; d+=4) {
+				u8 ARGB[4];
+				memcpy(&ARGB, tp.bmp_out+d, 4);
+				u8 Y = 0.299*ARGB[1] + 0.587*ARGB[2] + 0.114*ARGB[3];
+				u8 new_ARGB[4]={0};
+				new_ARGB[0]=ARGB[0];
+				new_ARGB[1]=Y;
+				new_ARGB[2]=Y;
+				new_ARGB[3]=Y;
+				memcpy(BG[i].bmp_out + d, new_ARGB, 4);
+			}
+			
+		} else {
+			pngLoadFromBuffer((const void *) frame, 0x29 + tot_size + 4 + 0xC, (pngData *) &BG[i]);
+		}
 		
 		free(frame);
 		
@@ -4131,6 +5038,7 @@ void Load_ANIMATED_BG(char* filename)
 			free(BG[i].bmp_out);
 			BG_offset[i] = tiny3d_TextureOffset(texture_pointer);
 			texture_pointer += ((BG[i].pitch * BG[i].height + 15) & ~15) / 4;
+			TEXTURE_THEME_SIZE += ((BG[i].pitch * BG[i].height + 15) & ~15) / 4;
 		}
 	}
 	
@@ -4142,14 +5050,15 @@ void Load_ANIMATED_BG(char* filename)
 	return;
 }
 
-void Draw_ANIMATED_BG()
+void Draw_ABG(u32 color)
 {
 	if(time_s[1]==0) start_timer(1);	
 	
 	if(BG_frame >= BG_num_frames) BG_frame = 0;
 	
-	if(BG_offset[BG_frame] != 0) {
+	if(BG_offset[BG_frame] != 0) {		
 		tiny3d_SetTexture(0, BG_offset[BG_frame], BG[BG_frame].width, BG[BG_frame].height, BG[BG_frame].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(0, 0, 1000, 0, 848, 512, color, YES);
 	}
 	
 	if(BG_data[BG_frame].delay_den == 0) BG_data[BG_frame].delay_den=100;
@@ -4158,7 +5067,6 @@ void Draw_ANIMATED_BG()
 		start_timer(1);
 		BG_frame++;
 	}
-	
 }
 
 void float_to_fract(float f, uint16_t *num, uint16_t *den)
@@ -4522,17 +5430,30 @@ u8 make_ABG(char *dir_path, char *file_out)
 //	LANGUAGE
 //###################################################
 
+#define LANG(x, y, z) FREE(x); x = language(flang, y, z);
+
 char *strcpy_malloc(char *STR_DEFAULT)
 {
 	if(STR_DEFAULT==NULL) return NULL;
-	char *STR = malloc( strlen(STR_DEFAULT)+1);
+	u32 size = strlen(STR_DEFAULT)+1;
+	char *STR = malloc(size+1);
 	if(STR==NULL) return NULL;
+	memset(STR, 0, size+1);
 	strcpy(STR, STR_DEFAULT);
-	strcat(STR, "\0");
 	return STR;
 }
 
-static char buff3[512];
+char *strncpy_malloc(char *STR_DEFAULT, u32 size)
+{
+	if(STR_DEFAULT==NULL) return NULL;
+	char *STR = malloc(size+1);
+	if(STR==NULL) return NULL;
+	memset(STR, 0, size+1);
+	strncpy(STR, STR_DEFAULT, size);
+	return STR;
+}
+
+static char buff3[4096];
 char *sprintf_malloc(char *format, ...)
 {
 	char *str = (char *) buff3;
@@ -4545,92 +5466,28 @@ char *sprintf_malloc(char *format, ...)
 	return strcpy_malloc(str);
 }
 
-char *language(FILE* flang, const char *strName, char *str_default)
+// It may be faster than previous function I wrote...
+char *language(char *lang_mem, const char *strName, char *str_default)
 {
-	if(flang==NULL) return strcpy_malloc(str_default);
+	if(lang_mem==NULL) return strcpy_malloc(str_default);
 	
-	int c;
-	int i;
+	char t[255];
+	sprintf(t, "%s\t", strName);
 	
-	char str[512];
-	memset(str, 0, 512);
+	char *res = strstr(lang_mem, t);
+	if(res == NULL) {
+		sprintf(t, "%s ", strName);
+		res = strstr(lang_mem, t);
+		if(res == NULL) return strcpy_malloc(str_default);
+	}
 	
-	uint8_t do_retry = YES;
-		
-	int l = strlen(strName);
+	char *start=strchr(res, '{');
+	if(start == NULL) return strcpy_malloc(str_default);
 	
-retry:
-	do {
-		c = fgetc(flang);
-		for(i=0; i < l; i++)
-		{
-			if( c != strName[i]) break;
-			else if (i==l-1) 
-			{
-				c = fgetc(flang);
-				if(c != '\t' && c != ' ') break;
-				
-				while(c != '{') {
-					c = fgetc(flang);
-					if(c == FAKE_EOF) break;
-				}
-				
-				int str_len = 0;
-				
-				do {
-					
-					c = fgetc(flang);
-					
-					if (c == '}') {
-						str[str_len] = '\0';
-						
-						char *ret = (char *) malloc((size_t) str_len+1);
-						memcpy(ret, str, str_len+1);
-						return ret;
-					}
-					
-					if (c == 92) { 
-						c = fgetc(flang);
-						if (c == 'n') {
-							str[str_len] = '\n';
-							str_len++;
-						} 
-						else if (c == 'r') {
-							str[str_len] = '\r';
-							str_len++;
-						} 
-						else if (c == 'x') {
-							char Number[2];
-							Number[0] = fgetc(flang);
-							Number[1] = fgetc(flang);
-							short unsigned int val=0;
-							sscanf(Number, "%hX", &val);
-							str[str_len] = val;
-							str_len++;
-						}
-						else {
-							str[str_len] = 92;
-							str_len++;
-							str[str_len] = c;
-							str_len++;
-						}
-						
-					} else {
-						str[str_len] = c;
-						str_len++;
-					}
-					
-				} while (c != FAKE_EOF);
-				
-			} 
-			else c = fgetc(flang);
-		}
-		
-	} while (c != FAKE_EOF);
+	char *end=strchr(start, '}');
+	if(end == NULL) return strcpy_malloc(str_default);
 	
-	if(do_retry == YES) {do_retry=NO; fseek(flang, 0, SEEK_SET); goto retry;}
-
-	return strcpy_malloc(str_default);
+	return strncpy_malloc(&start[1], end-start-1);
 }
 
 void init_lang()
@@ -4641,10 +5498,9 @@ void init_lang()
 	
 	lang_N = 0;
 	STR_LANGUAGE[lang_N] = (char *)  malloc((size_t)18);
-	STR_LANGCODE[lang_N] = (char *)  malloc((size_t)2);
 	
 	strcpy(STR_LANGUAGE[lang_N], "English (default)");
-	STR_LANGCODE[lang_N][0] = LANG_DEFAULT;
+	LANGCODE[lang_N] = LANG_DEFAULT;
 
 	lang_N++;
 	
@@ -4661,21 +5517,28 @@ void init_lang()
 		
 		sprintf(TXTPath, "%s/%s", LOCPath, dir->d_name);
 		
-		FILE* flang = fopen(TXTPath, "rb");
+		int flang_size=0;
+		char* flang = LoadFile(TXTPath, &flang_size);
 		if(flang==NULL) continue;
 		
-		STR_LANGUAGE[lang_N] = language(flang, "STR_LANGUAGE", NULL);
+		LANG(STR_LANGUAGE[lang_N], "STR_LANGUAGE", NULL); 
 		
 		if(STR_LANGUAGE[lang_N] != NULL ) {
-			STR_LANGCODE[lang_N] = language(flang, "STR_LANGCODE", NULL);
-			FREE(lang_path[lang_N]);
-			lang_path[lang_N] = (char *) malloc(strlen(TXTPath)+1);
-			strcpy(lang_path[lang_N], TXTPath);
-			lang_N++;
-			
+			char *temp_str = language(flang, "STR_LANGCODE", NULL);
+			if(temp_str!=NULL) {
+				short unsigned int val=0;
+				sscanf(&temp_str[2], "%hX", &val);
+				LANGCODE[lang_N] = (u8) val;
+				FREE(temp_str);
+											
+				FREE(lang_path[lang_N]);
+				lang_path[lang_N] = strcpy_malloc(TXTPath);
+				
+				lang_N++;
+			}
 		}
 		
-		FCLOSE(flang);
+		FREE(flang);
 	}
 	closedir(d);
 	
@@ -4683,637 +5546,367 @@ void init_lang()
 
 void update_lang()
 {
-	FILE* flang=NULL;
-	if(lang>0) flang = fopen(lang_path[lang], "r");
-
-	FREE(STR_LANG);
-	STR_LANG = language(flang, "STR_LANG", STR_LANG_DEFAULT);
-	FREE(STR_LANG_DESC);
-	STR_LANG_DESC = language(flang, "STR_LANG_DESC", STR_LANG_DESC_DEFAULT);
-	FREE(STR_GATHERING);
-	STR_GATHERING = language(flang, "STR_GATHERING", STR_GATHERING_DEFAULT);
-	FREE(STR_COPYING);
-	STR_COPYING = language(flang, "STR_COPYING", STR_COPYING_DEFAULT);
-	FREE(STR_FROM);
-	STR_FROM = language(flang, "STR_FROM", STR_FROM_DEFAULT);
-	FREE(STR_TO);
-	STR_TO = language(flang, "STR_TO", STR_TO_DEFAULT);
-	FREE(STR_FILES);
-	STR_FILES = language(flang, "STR_FILES", STR_FILES_DEFAULT);
-	FREE(STR_DIRS);
-	STR_DIRS = language(flang, "STR_DIRS", STR_DIRS_DEFAULT);
-	FREE(STR_UNKNOWN);
-	STR_UNKNOWN = language(flang, "STR_UNKNOWN", STR_UNKNOWN_DEFAULT);
-	FREE(STR_FILE);
-	STR_FILE = language(flang, "STR_FILE", STR_FILE_DEFAULT);
-	FREE(STR_CANCEL);
-	STR_CANCEL = language(flang, "STR_CANCEL", STR_CANCEL_DEFAULT);
-	FREE(STR_TURNOFF_YES);
-	STR_TURNOFF_YES = language(flang, "STR_TURNOFF_YES", STR_TURNOFF_YES_DEFAULT);
-	FREE(STR_TURNOFF_NO);
-	STR_TURNOFF_NO = language(flang, "STR_TURNOFF_NO", STR_TURNOFF_NO_DEFAULT);
-	FREE(STR_CANCELLED);
-	STR_CANCELLED = language(flang, "STR_CANCELLED", STR_CANCELLED_DEFAULT);
-	FREE(STR_UNIT);
-	STR_UNIT = language(flang, "STR_UNIT", STR_UNIT_DEFAULT);
-	FREE(STR_TOTALSIZE);
-	STR_TOTALSIZE = language(flang, "STR_TOTALSIZE", STR_TOTALSIZE_DEFAULT);
-	FREE(STR_HIDELOGS);
-	STR_HIDELOGS = language(flang, "STR_HIDELOGS", STR_HIDELOGS_DEFAULT);
-	FREE(STR_SHOWLOGS);
-	STR_SHOWLOGS = language(flang, "STR_SHOWLOGS", STR_SHOWLOGS_DEFAULT);
-	FREE(STR_BOOST);
-	STR_BOOST = language(flang, "STR_BOOST", STR_BOOST_DEFAULT);
-	FREE(STR_GAMEMENU);
-	STR_GAMEMENU = language(flang, "STR_GAMEMENU", STR_GAMEMENU_DEFAULT);
-	FREE(STR_SETTINGS);
-	STR_SETTINGS = language(flang, "STR_SETTINGS", STR_SETTINGS_DEFAULT);
-	FREE(STR_MOUNTGAME);
-	STR_MOUNTGAME = language(flang, "STR_MOUNTGAME", STR_MOUNTGAME_DEFAULT);
-	FREE(STR_FILTER);
-	STR_FILTER = language(flang, "STR_FILTER", STR_FILTER_DEFAULT);
-	FREE(STR_FAVORITE);
-	STR_FAVORITE = language(flang, "STR_FAVORITE", STR_FAVORITE_DEFAULT);
-	FREE(STR_FILEMANAGER);
-	STR_FILEMANAGER = language(flang, "STR_FILEMANAGER", STR_FILEMANAGER_DEFAULT);
-	FREE(STR_HOLD);
-	STR_HOLD = language(flang, "STR_HOLD", STR_HOLD_DEFAULT);
-	FREE(STR_BACKTOXMB);
-	STR_BACKTOXMB = language(flang, "STR_BACKTOXMB", STR_BACKTOXMB_DEFAULT);
-	FREE(STR_GAME_PROP);
-	STR_GAME_PROP = language(flang, "STR_GAME_PROP", STR_GAME_PROP_DEFAULT);
-	FREE(STR_GAME_TITLE);
-	STR_GAME_TITLE = language(flang, "STR_GAME_TITLE", STR_GAME_TITLE_DEFAULT);
-	FREE(STR_GAME_PATH);
-	STR_GAME_PATH = language(flang, "STR_GAME_PATH", STR_GAME_PATH_DEFAULT);
-	FREE(STR_GAME_FORMAT);
-	STR_GAME_FORMAT = language(flang, "STR_GAME_FORMAT", STR_GAME_FORMAT_DEFAULT);
-	FREE(STR_GAME_SIZE);
-	STR_GAME_SIZE = language(flang, "STR_GAME_SIZE", STR_GAME_SIZE_DEFAULT);
-	FREE(STR_GAME_PLATFORM);
-	STR_GAME_PLATFORM = language(flang, "STR_GAME_PLATFORM", STR_GAME_PLATFORM_DEFAULT);
-	FREE(STR_SYSVERS);
-	STR_SYSVERS = language(flang, "STR_SYSVERS", STR_SYSVERS_DEFAULT);
-	FREE(STR_GAMEID);
-	STR_GAMEID = language(flang, "STR_GAMEID", STR_GAMEID_DEFAULT);
-	FREE(STR_ELFCRC);
-	STR_ELFCRC = language(flang, "STR_ELFCRC", STR_ELFCRC_DEFAULT);
-	FREE(STR_ELFCRCO);
-	STR_ELFCRCO = language(flang, "STR_ELFCRCO", STR_ELFCRCO_DEFAULT);
-	FREE(STR_BACK);
-	STR_BACK = language(flang, "STR_BACK", STR_BACK_DEFAULT);
-	FREE(STR_ENTER);
-	STR_ENTER = language(flang, "STR_ENTER", STR_ENTER_DEFAULT);
-	FREE(STR_UPDATE_FOUND);
-	STR_UPDATE_FOUND = language(flang, "STR_UPDATE_FOUND", STR_UPDATE_FOUND_DEFAULT);
-	FREE(STR_UPDATE);
-	STR_UPDATE = language(flang, "STR_UPDATE", STR_UPDATE_DEFAULT);
-	FREE(STR_SIZE);
-	STR_SIZE = language(flang, "STR_SIZE", STR_SIZE_DEFAULT);
-	FREE(STR_SYSTEM);
-	STR_SYSTEM = language(flang, "STR_SYSTEM", STR_SYSTEM_DEFAULT);
-	FREE(STR_DL);
-	STR_DL = language(flang, "STR_DL", STR_DL_DEFAULT);
-	FREE(STR_DL_ALL);
-	STR_DL_ALL = language(flang, "STR_DL_ALL", STR_DL_ALL_DEFAULT);
-	FREE(STR_UNPLUG);
-	STR_UNPLUG = language(flang, "STR_UNPLUG", STR_UNPLUG_DEFAULT);
-	FREE(STR_PATH);
-	STR_PATH = language(flang, "STR_PATH", STR_PATH_DEFAULT);
-	FREE(STR_TYPE);
-	STR_TYPE = language(flang, "STR_TYPE", STR_TYPE_DEFAULT);
-	FREE(STR_FOLDER);
-	STR_FOLDER = language(flang, "STR_FOLDER", STR_FOLDER_DEFAULT);
-	FREE(STR_DIR);
-	STR_DIR = language(flang, "STR_DIR", STR_DIR_DEFAULT);
-	FREE(STR_MULT);
-	STR_MULT = language(flang, "STR_MULT", STR_MULT_DEFAULT);
-	FREE(STR_THM_SETTINGS);
-	STR_THM_SETTINGS = language(flang, "STR_THM_SETTINGS", STR_THM_SETTINGS_DEFAULT);
-	FREE(STR_THM);
-	STR_THM = language(flang, "STR_THM", STR_THM_DEFAULT);
-	FREE(STR_THM_DESC);
-	STR_THM_DESC = language(flang, "STR_THM_DESC", STR_THM_DESC_DEFAULT);
-	FREE(STR_CREATE);
-	STR_CREATE = language(flang, "STR_CREATE", STR_CREATE_DEFAULT);
-	FREE(STR_ZOOM_OUT);
-	STR_ZOOM_OUT = language(flang, "STR_ZOOM_OUT", STR_ZOOM_OUT_DEFAULT);
-	FREE(STR_ZOOM_IN);
-	STR_ZOOM_IN = language(flang, "STR_ZOOM_IN", STR_ZOOM_IN_DEFAULT);
-	FREE(STR_MOVE_FRAME);
-	STR_MOVE_FRAME = language(flang, "STR_MOVE_FRAME", STR_MOVE_FRAME_DEFAULT);
-	FREE(STR_CHECK);
-	STR_CHECK = language(flang, "STR_CHECK", STR_CHECK_DEFAULT);
-	FREE(STR_UNCHECK);
-	STR_UNCHECK = language(flang, "STR_UNCHECK", STR_UNCHECK_DEFAULT);
-	FREE(STR_GAME_OPTION);
-	STR_GAME_OPTION = language(flang, "STR_GAME_OPTION", STR_GAME_OPTION_DEFAULT);
-	FREE(STR_ADD_FAV);
-	STR_ADD_FAV = language(flang, "STR_ADD_FAV", STR_ADD_FAV_DEFAULT);
-	FREE(STR_REM_FAV);
-	STR_REM_FAV = language(flang, "STR_REM_FAV", STR_REM_FAV_DEFAULT);
-	FREE(STR_FAV_DESC);
-	STR_FAV_DESC = language(flang, "STR_FAV_DESC", STR_FAV_DESC_DEFAULT);
-	FREE(STR_RENAME);
-	STR_RENAME = language(flang, "STR_RENAME", STR_RENAME_DEFAULT);
-	FREE(STR_RENAME_DESC);
-	STR_RENAME_DESC = language(flang, "STR_RENAME_DESC", STR_RENAME_DESC_DEFAULT);
-	FREE(STR_DELETE);
-	STR_DELETE = language(flang, "STR_DELETE", STR_DELETE_DEFAULT);
-	FREE(STR_DELETE_DESC);
-	STR_DELETE_DESC = language(flang, "STR_DELETE_DESC", STR_DELETE_DESC_DEFAULT);
-	FREE(STR_COPY);
-	STR_COPY = language(flang, "STR_COPY", STR_COPY_DEFAULT);
-	FREE(STR_COPY_DESC);
-	STR_COPY_DESC = language(flang, "STR_COPY_DESC", STR_COPY_DESC_DEFAULT);
-	FREE(STR_CREATE_ICON0);
-	STR_CREATE_ICON0 = language(flang, "STR_CREATE_ICON0", STR_CREATE_ICON0_DEFAULT);
-	FREE(STR_CREATE_ICON0_DESC);
-	STR_CREATE_ICON0_DESC = language(flang, "STR_CREATE_ICON0_DESC", STR_CREATE_ICON0_DESC_DEFAULT);
-	FREE(STR_REST_PNACH);
-	STR_REST_PNACH = language(flang, "STR_REST_PNACH", STR_REST_PNACH_DEFAULT);
-	FREE(STR_REST_PNACH_DESC);
-	STR_REST_PNACH_DESC = language(flang, "STR_REST_PNACH_DESC", STR_REST_PNACH_DESC_DEFAULT);
-	FREE(STR_APPLY_PNACH);
-	STR_APPLY_PNACH = language(flang, "STR_APPLY_PNACH", STR_APPLY_PNACH_DEFAULT);
-	FREE(STR_APPLY_PNACH_DESC);
-	STR_APPLY_PNACH_DESC = language(flang, "STR_APPLY_PNACH_DESC", STR_APPLY_PNACH_DESC_DEFAULT);
-	FREE(STR_DISABLE_WS);
-	STR_DISABLE_WS = language(flang, "STR_DISABLE_WS", STR_DISABLE_WS_DEFAULT);
-	FREE(STR_ENABLE_WS);
-	STR_ENABLE_WS = language(flang, "STR_ENABLE_WS", STR_ENABLE_WS_DEFAULT);
-	FREE(STR_WS_DESC);
-	STR_WS_DESC = language(flang, "STR_WS_DESC", STR_WS_DESC_DEFAULT);
-	FREE(STR_DISABLE_480P);
-	STR_DISABLE_480P = language(flang, "STR_DISABLE_480P", STR_DISABLE_480P_DEFAULT);
-	FREE(STR_ENABLE_480P);
-	STR_ENABLE_480P = language(flang, "STR_ENABLE_480P", STR_ENABLE_480P_DEFAULT);
-	FREE(STR_480P_DESC);
-	STR_480P_DESC = language(flang, "STR_480P_DESC", STR_480P_DESC_DEFAULT);
-	FREE(STR_DISABLE_YFIX);
-	STR_DISABLE_YFIX = language(flang, "STR_DISABLE_YFIX", STR_DISABLE_YFIX_DEFAULT);
-	FREE(STR_ENABLE_YFIX);
-	STR_ENABLE_YFIX = language(flang, "STR_ENABLE_YFIX", STR_ENABLE_YFIX_DEFAULT);
-	FREE(STR_YFIX_DESC);
-	STR_YFIX_DESC = language(flang, "STR_YFIX_DESC", STR_YFIX_DESC_DEFAULT);
-	FREE(STR_DISABLE_FMVSKIP);
-	STR_DISABLE_FMVSKIP = language(flang, "STR_DISABLE_FMVSKIP", STR_DISABLE_FMVSKIP_DEFAULT);
-	FREE(STR_ENABLE_FMVSKIP);
-	STR_ENABLE_FMVSKIP = language(flang, "STR_ENABLE_FMVSKIP", STR_ENABLE_FMVSKIP_DEFAULT);
-	FREE(STR_FMVSKIP_DESC);
-	STR_FMVSKIP_DESC = language(flang, "STR_FMVSKIP_DESC", STR_FMVSKIP_DESC_DEFAULT);
-	FREE(STR_DISABLE_NETEMU);
-	STR_DISABLE_NETEMU = language(flang, "STR_DISABLE_NETEMU", STR_DISABLE_NETEMU_DEFAULT);
-	FREE(STR_ENABLE_NETEMU);
-	STR_ENABLE_NETEMU = language(flang, "STR_ENABLE_NETEMU", STR_ENABLE_NETEMU_DEFAULT);
-	FREE(STR_NETEMU_DESC);
-	STR_NETEMU_DESC = language(flang, "STR_NETEMU_DESC", STR_NETEMU_DESC_DEFAULT);
-	FREE(STR_SAVE_CONFIG);
-	STR_SAVE_CONFIG = language(flang, "STR_SAVE_CONFIG", STR_SAVE_CONFIG_DEFAULT);
-	FREE(STR_CONFIG);
-	STR_CONFIG = language(flang, "STR_CONFIG", STR_CONFIG_DEFAULT);	
-	FREE(STR_CONFIG_DESC);
-	STR_CONFIG_DESC = language(flang, "STR_CONFIG_DESC", STR_CONFIG_DESC_DEFAULT);
-	FREE(STR_NONE);
-	STR_NONE = language(flang, "STR_NONE", STR_NONE_DEFAULT);
-	FREE(STR_CHECK_MD5);
-	STR_CHECK_MD5 = language(flang, "STR_CHECK_MD5", STR_CHECK_MD5_DEFAULT);
-	FREE(STR_PROPS);
-	STR_PROPS = language(flang, "STR_PROPS", STR_PROPS_DEFAULT);
-	FREE(STR_PROPS_DESC);
-	STR_PROPS_DESC = language(flang, "STR_PROPS_DESC", STR_PROPS_DESC_DEFAULT);
-	FREE(STR_ASK_DEL);
-	STR_ASK_DEL = language(flang, "STR_ASK_DEL", STR_ASK_DEL_DEFAULT);
-	FREE(STR_GAME_SETTINGS);
-	STR_GAME_SETTINGS = language(flang, "STR_GAME_SETTINGS", STR_GAME_SETTINGS_DEFAULT);
-	FREE(STR_DIRECT_BOOT);
-	STR_DIRECT_BOOT = language(flang, "STR_DIRECT_BOOT", STR_DIRECT_BOOT_DEFAULT);
-	FREE(STR_DIRECT_BOOT_DESC);
-	STR_DIRECT_BOOT_DESC = language(flang, "STR_DIRECT_BOOT_DESC", STR_DIRECT_BOOT_DESC_DEFAULT);
-	FREE(STR_YES);
-	STR_YES = language(flang, "STR_YES", STR_YES_DEFAULT);
-	FREE(STR_NO);
-	STR_NO = language(flang, "STR_NO", STR_NO_DEFAULT);
-	FREE(STR_CLEAN_SYSCALL);
-	STR_CLEAN_SYSCALL = language(flang, "STR_CLEAN_SYSCALL", STR_CLEAN_SYSCALL_DEFAULT);
-	FREE(STR_CLEAN_SYSCALL_DESC);
-	STR_CLEAN_SYSCALL_DESC = language(flang, "STR_CLEAN_SYSCALL_DESC", STR_CLEAN_SYSCALL_DESC_DEFAULT);
-	FREE(STR_CHANGE_IDPS);
-	STR_CHANGE_IDPS = language(flang, "STR_CHANGE_IDPS", STR_CHANGE_IDPS_DEFAULT);
-	FREE(STR_CHANGE_IDPS_DESC);
-	STR_CHANGE_IDPS_DESC = language(flang, "STR_CHANGE_IDPS_DESC", STR_CHANGE_IDPS_DESC_DEFAULT);
-	FREE(STR_EXT_GAME_DATA);
-	STR_EXT_GAME_DATA = language(flang, "STR_EXT_GAME_DATA", STR_EXT_GAME_DATA_DEFAULT);
-	FREE(STR_EXT_GAME_DATA_DESC);
-	STR_EXT_GAME_DATA_DESC = language(flang, "STR_EXT_GAME_DATA_DESC", STR_EXT_GAME_DATA_DESC_DEFAULT);
-	FREE(STR_PAYLOAD);
-	STR_PAYLOAD = language(flang, "STR_PAYLOAD", STR_PAYLOAD_DEFAULT);
-	FREE(STR_PAYLOAD_DESC);
-	STR_PAYLOAD_DESC = language(flang, "STR_PAYLOAD_DESC", STR_PAYLOAD_DESC_DEFAULT);
-	FREE(STR_PRIM_USB);
-	STR_PRIM_USB = language(flang, "STR_PRIM_USB", STR_PRIM_USB_DEFAULT);
-	FREE(STR_PRIM_USB_DESC);
-	STR_PRIM_USB_DESC = language(flang, "STR_PRIM_USB_DESC", STR_PRIM_USB_DESC_DEFAULT);
-	FREE(STR_BDEMU);
-	STR_BDEMU = language(flang, "STR_BDEMU", STR_BDEMU_DEFAULT);
-	FREE(STR_BDEMU_DESC);
-	STR_BDEMU_DESC = language(flang, "STR_BDEMU_DESC", STR_BDEMU_DESC_DEFAULT);
-	FREE(STR_PATCH_LIBFS);
-	STR_PATCH_LIBFS = language(flang, "STR_PATCH_LIBFS", STR_PATCH_LIBFS_DEFAULT);
-	FREE(STR_PATCH_LIBFS_DESC);
-	STR_PATCH_LIBFS_DESC = language(flang, "STR_PATCH_LIBFS_DESC", STR_PATCH_LIBFS_DESC_DEFAULT);
-	FREE(STR_MOUNT_APPHOME);
-	STR_MOUNT_APPHOME = language(flang, "STR_MOUNT_APPHOME", STR_MOUNT_APPHOME_DEFAULT);
-	FREE(STR_MOUNT_APPHOME_DESC);
-	STR_MOUNT_APPHOME_DESC = language(flang, "STR_MOUNT_APPHOME_DESC", STR_MOUNT_APPHOME_DESC_DEFAULT);
-	FREE(STR_PATCH_EXP);
-	STR_PATCH_EXP = language(flang, "STR_PATCH_EXP", STR_PATCH_EXP_DEFAULT);
-	FREE(STR_PATCH_EXP_DESC);
-	STR_PATCH_EXP_DESC = language(flang, "STR_PATCH_EXP_DESC", STR_PATCH_EXP_DESC_DEFAULT);
-	FREE(STR_MAKE_SHTCUT_PKG);
-	STR_MAKE_SHTCUT_PKG = language(flang, "STR_MAKE_SHTCUT_PKG", STR_MAKE_SHTCUT_PKG_DEFAULT);
-	FREE(STR_MAKE_SHTCUT_PKG_DESC);
-	STR_MAKE_SHTCUT_PKG_DESC = language(flang, "STR_MAKE_SHTCUT_PKG_DESC", STR_MAKE_SHTCUT_PKG_DESC_DEFAULT);
-	FREE(STR_PATCH_EBOOT);
-	STR_PATCH_EBOOT = language(flang, "STR_PATCH_EBOOT", STR_PATCH_EBOOT_DEFAULT);
-	FREE(STR_PATCH_EBOOT_DESC);
-	STR_PATCH_EBOOT_DESC = language(flang, "STR_PATCH_EBOOT_DESC", STR_PATCH_EBOOT_DESC_DEFAULT);
-	FREE(STR_RESIGN);
-	STR_RESIGN = language(flang, "STR_RESIGN", STR_RESIGN_DEFAULT);
-	FREE(STR_RESIGN_DESC);
-	STR_RESIGN_DESC = language(flang, "STR_RESIGN_DESC", STR_RESIGN_DESC_DEFAULT);
-	FREE(STR_RESTORE);
-	STR_RESTORE = language(flang, "STR_RESTORE", STR_RESTORE_DEFAULT);
-	FREE(STR_RESTORE_DESC);
-	STR_RESTORE_DESC = language(flang, "STR_RESTORE_DESC", STR_RESTORE_DESC_DEFAULT);
-	FREE(STR_EXTRACT_ISO);
-	STR_EXTRACT_ISO = language(flang, "STR_EXTRACT_ISO", STR_EXTRACT_ISO_DEFAULT);
-	FREE(STR_EXTRACT_ISO_DESC);
-	STR_EXTRACT_ISO_DESC = language(flang, "STR_EXTRACT_ISO_DESC", STR_EXTRACT_ISO_DESC_DEFAULT);
-	FREE(STR_CONVERT_ISO);
-	STR_CONVERT_ISO = language(flang, "STR_CONVERT_ISO", STR_CONVERT_ISO_DEFAULT);
-	FREE(STR_CONVERT_ISO_DESC);
-	STR_CONVERT_ISO_DESC = language(flang, "STR_CONVERT_ISO_DESC", STR_CONVERT_ISO_DESC_DEFAULT);
-	FREE(STR_FIX_PERMS);
-	STR_FIX_PERMS = language(flang, "STR_FIX_PERMS", STR_FIX_PERMS_DEFAULT);
-	FREE(STR_FIX_PERMS_DESC);
-	STR_FIX_PERMS_DESC = language(flang, "STR_FIX_PERMS_DESC", STR_FIX_PERMS_DESC_DEFAULT);
-	FREE(STR_CHECK_IRD);
-	STR_CHECK_IRD = language(flang, "STR_CHECK_IRD", STR_CHECK_IRD_DEFAULT);
-	FREE(STR_CHECK_DESC);
-	STR_CHECK_DESC = language(flang, "STR_CHECK_DESC", STR_CHECK_DESC_DEFAULT);
-	FREE(STR_DL_UPDATE);
-	STR_DL_UPDATE = language(flang, "STR_DL_UPDATE", STR_DL_UPDATE_DEFAULT);
-	FREE(STR_DL_UPDATE_DESC);
-	STR_DL_UPDATE_DESC = language(flang, "STR_DL_UPDATE_DESC", STR_DL_UPDATE_DESC_DEFAULT);
-	FREE(STR_OPEN_WINDOW);
-	STR_OPEN_WINDOW = language(flang, "STR_OPEN_WINDOW", STR_OPEN_WINDOW_DEFAULT);
-	FREE(STR_MOUNT_DEVBLIND);
-	STR_MOUNT_DEVBLIND = language(flang, "STR_MOUNT_DEVBLIND", STR_MOUNT_DEVBLIND_DEFAULT);
-	FREE(STR_DUMP_LV1);
-	STR_DUMP_LV1 = language(flang, "STR_DUMP_LV1", STR_DUMP_LV1_DEFAULT);
-	FREE(STR_DUMP_LV2);
-	STR_DUMP_LV2 = language(flang, "STR_DUMP_LV2", STR_DUMP_LV2_DEFAULT);
-	FREE(STR_DUMP_FLASH);
-	STR_DUMP_FLASH = language(flang, "STR_DUMP_FLASH", STR_DUMP_FLASH_DEFAULT);
-	FREE(STR_REFRESH);
-	STR_REFRESH = language(flang, "STR_REFRESH", STR_REFRESH_DEFAULT);
-	FREE(STR_NEWFOLDER);
-	STR_NEWFOLDER = language(flang, "STR_NEWFOLDER", STR_NEWFOLDER_DEFAULT);
-	FREE(STR_NEWFILE);
-	STR_NEWFILE = language(flang, "STR_NEWFILE", STR_NEWFILE_DEFAULT);
-	FREE(STR_PASTE);
-	STR_PASTE = language(flang, "STR_PASTE", STR_PASTE_DEFAULT);
-	FREE(STR_CUT);
-	STR_CUT = language(flang, "STR_CUT", STR_CUT_DEFAULT);
-	FREE(STR_UNSELECT_ALL);
-	STR_UNSELECT_ALL = language(flang, "STR_UNSELECT_ALL", STR_UNSELECT_ALL_DEFAULT);
-	FREE(STR_SELECT_ALL);
-	STR_SELECT_ALL = language(flang, "STR_SELECT_ALL", STR_SELECT_ALL_DEFAULT);
-	FREE(STR_MAKE_PKG);
-	STR_MAKE_PKG = language(flang, "STR_MAKE_PKG", STR_MAKE_PKG_DEFAULT);
-	FREE(STR_GETMD5);
-	STR_GETMD5 = language(flang, "STR_GETMD5", STR_GETMD5_DEFAULT);
-	FREE(STR_GETSHA1);
-	STR_GETSHA1 = language(flang, "STR_GETSHA1", STR_GETSHA1_DEFAULT);
-	FREE(STR_VIEW);
-	STR_VIEW = language(flang, "STR_VIEW", STR_VIEW_DEFAULT);
-	FREE(STR_VIEW_TXT);
-	STR_VIEW_TXT = language(flang, "STR_VIEW_TXT", STR_VIEW_TXT_DEFAULT);
-	FREE(STR_VIEW_SFO);
-	STR_VIEW_SFO = language(flang, "STR_VIEW_SFO", STR_VIEW_SFO_DEFAULT);
-	FREE(STR_READ_XREG);
-	STR_READ_XREG = language(flang, "STR_READ_XREG", STR_READ_XREG_DEFAULT);
-	FREE(STR_EXTRACT_ELF);
-	STR_EXTRACT_ELF = language(flang, "STR_EXTRACT_ELF", STR_EXTRACT_ELF_DEFAULT);
-	FREE(STR_RESIGN_SELF);
-	STR_RESIGN_SELF = language(flang, "STR_RESIGN_SELF", STR_RESIGN_SELF_DEFAULT);
-	FREE(STR_LAUNCH_SELF);
-	STR_LAUNCH_SELF = language(flang, "STR_LAUNCH_SELF", STR_LAUNCH_SELF_DEFAULT);
-	FREE(STR_EXTRACT_EBOOT);
-	STR_EXTRACT_EBOOT = language(flang, "STR_EXTRACT_EBOOT", STR_EXTRACT_EBOOT_DEFAULT);
-	FREE(STR_RESIGN_EBOOT);
-	STR_RESIGN_EBOOT = language(flang, "STR_RESIGN_EBOOT", STR_RESIGN_EBOOT_DEFAULT);
-	FREE(STR_LAUNCH_EBOOT);
-	STR_LAUNCH_EBOOT = language(flang, "STR_LAUNCH_EBOOT", STR_LAUNCH_EBOOT_DEFAULT);
-	FREE(STR_SIGN_ELF);
-	STR_SIGN_ELF = language(flang, "STR_SIGN_ELF", STR_SIGN_ELF_DEFAULT);
-	FREE(STR_SIGN_EBOOT);
-	STR_SIGN_EBOOT = language(flang, "STR_SIGN_EBOOT", STR_SIGN_EBOOT_DEFAULT);
-	FREE(STR_SIGN_PRX);
-	STR_SIGN_PRX = language(flang, "STR_SIGN_PRX", STR_SIGN_PRX_DEFAULT);
-	FREE(STR_EXTRACT_PRX);
-	STR_EXTRACT_PRX = language(flang, "STR_EXTRACT_PRX", STR_EXTRACT_PRX_DEFAULT);
-	FREE(STR_RESIGN_SPRX);
-	STR_RESIGN_SPRX = language(flang, "STR_RESIGN_SPRX", STR_RESIGN_SPRX_DEFAULT);
-	FREE(STR_REMOVE_PRXLOADER);
-	STR_REMOVE_PRXLOADER = language(flang, "STR_REMOVE_PRXLOADER", STR_REMOVE_PRXLOADER_DEFAULT);
-	FREE(STR_ADD_PRXLOADER);
-	STR_ADD_PRXLOADER = language(flang, "STR_ADD_PRXLOADER", STR_ADD_PRXLOADER_DEFAULT);
-	FREE(STR_REMOVE_PRXLOADER2);
-	STR_REMOVE_PRXLOADER2 = language(flang, "STR_REMOVE_PRXLOADER2", STR_REMOVE_PRXLOADER2_DEFAULT);
-	FREE(STR_ADD_PRXLOADER2);
-	STR_ADD_PRXLOADER2 = language(flang, "STR_ADD_PRXLOADER2", STR_ADD_PRXLOADER2_DEFAULT);
-	FREE(STR_REMOVE_MAMBA);
-	STR_REMOVE_MAMBA = language(flang, "STR_REMOVE_MAMBA", STR_REMOVE_MAMBA_DEFAULT);
-	FREE(STR_ADD_MAMBA);
-	STR_ADD_MAMBA = language(flang, "STR_ADD_MAMBA", STR_ADD_MAMBA_DEFAULT);
-	FREE(STR_REMOVE_COBRA);
-	STR_REMOVE_COBRA = language(flang, "STR_REMOVE_COBRA", STR_REMOVE_COBRA_DEFAULT);
-	FREE(STR_ADD_COBRA);
-	STR_ADD_COBRA = language(flang, "STR_ADD_COBRA", STR_ADD_COBRA_DEFAULT);
-	FREE(STR_EXTRACT_RCO);
-	STR_EXTRACT_RCO = language(flang, "STR_EXTRACT_RCO", STR_EXTRACT_RCO_DEFAULT);
-	FREE(STR_EXTRACT_PKG);
-	STR_EXTRACT_PKG = language(flang, "STR_EXTRACT_PKG", STR_EXTRACT_PKG_DEFAULT);
-	FREE(STR_PKG_INFO);
-	STR_PKG_INFO = language(flang, "STR_PKG_INFO", STR_PKG_INFO_DEFAULT);
-	FREE(STR_EXTRACT_TRP);
-	STR_EXTRACT_TRP = language(flang, "STR_EXTRACT_TRP", STR_EXTRACT_TRP_DEFAULT);
-	FREE(STR_COMPRESS_ISO);
-	STR_COMPRESS_ISO = language(flang, "STR_COMPRESS_ISO", STR_COMPRESS_ISO_DEFAULT);
-	FREE(STR_CHECK_CRC32);
-	STR_CHECK_CRC32 = language(flang, "STR_CHECK_CRC32", STR_CHECK_CRC32_DEFAULT);
-	FREE(STR_DECOMPRESS_CSO);
-	STR_DECOMPRESS_CSO = language(flang, "STR_DECOMPRESS_CSO", STR_DECOMPRESS_CSO_DEFAULT);
-	FREE(STR_EXTRACT_THM);
-	STR_EXTRACT_THM = language(flang, "STR_EXTRACT_THM", STR_EXTRACT_THM_DEFAULT);
-	FREE(STR_EXTRACT_P3T);
-	STR_EXTRACT_P3T = language(flang, "STR_EXTRACT_P3T", STR_EXTRACT_P3T_DEFAULT);
-	FREE(STR_EXTRACT_RAF);
-	STR_EXTRACT_RAF = language(flang, "STR_EXTRACT_RAF", STR_EXTRACT_RAF_DEFAULT);
-	FREE(STR_EXTRACT_QRC);
-	STR_EXTRACT_QRC = language(flang, "STR_EXTRACT_QRC", STR_EXTRACT_QRC_DEFAULT);
-	FREE(STR_EXTRACT_ZIP);
-	STR_EXTRACT_ZIP = language(flang, "STR_EXTRACT_ZIP", STR_EXTRACT_ZIP_DEFAULT);
-	FREE(STR_CONVERT_JSX_JS);
-	STR_CONVERT_JSX_JS = language(flang, "STR_CONVERT_JSX_JS", STR_CONVERT_JSX_JS_DEFAULT);
-	FREE(STR_CONVERT_VAG_WAV);
-	STR_CONVERT_VAG_WAV = language(flang, "STR_CONVERT_VAG_WAV", STR_CONVERT_VAG_WAV_DEFAULT);
-	FREE(STR_CONVERT_GTF_DDS);
-	STR_CONVERT_GTF_DDS = language(flang, "STR_CONVERT_GTF_DDS", STR_CONVERT_GTF_DDS_DEFAULT);
-	FREE(STR_CONVERT_DDS_PNG);
-	STR_CONVERT_DDS_PNG = language(flang, "STR_CONVERT_DDS_PNG", STR_CONVERT_DDS_PNG_DEFAULT);
-	FREE(STR_MAKE_APNG);
-	STR_MAKE_APNG = language(flang, "STR_MAKE_APNG", STR_MAKE_APNG_DEFAULT);
-	FREE(STR_SET_PERMS);
-	STR_SET_PERMS = language(flang, "STR_SET_PERMS", STR_SET_PERMS_DEFAULT);
-	FREE(STR_NOGAME);
-	STR_NOGAME = language(flang, "STR_NOGAME", STR_NOGAME_DEFAULT);
-	FREE(STR_GLOB_SETTINGS);
-	STR_GLOB_SETTINGS = language(flang, "STR_GLOB_SETTINGS", STR_GLOB_SETTINGS_DEFAULT);
-	FREE(STR_ADJUST);
-	STR_ADJUST = language(flang, "STR_ADJUST", STR_ADJUST_DEFAULT);
-	FREE(STR_ADJUST_DESC);
-	STR_ADJUST_DESC = language(flang, "STR_ADJUST_DESC", STR_ADJUST_DESC_DEFAULT);
-	FREE(STR_DL_COVER);
-	STR_DL_COVER = language(flang, "STR_DL_COVER", STR_DL_COVER_DEFAULT);
-	FREE(STR_DL_COVER_DESC);
-	STR_DL_COVER_DESC = language(flang, "STR_DL_COVER_DESC", STR_DL_COVER_DESC_DEFAULT);
-	FREE(STR_PLUGIN_MANAGER);
-	STR_PLUGIN_MANAGER = language(flang, "STR_PLUGIN_MANAGER", STR_PLUGIN_MANAGER_DEFAULT);
-	FREE(STR_PLUGIN_MANAGER_DESC);
-	STR_PLUGIN_MANAGER_DESC = language(flang, "STR_PLUGIN_MANAGER_DESC", STR_PLUGIN_MANAGER_DESC_DEFAULT);
-	FREE(STR_UPD_MGZ);
-	STR_UPD_MGZ = language(flang, "STR_UPD_MGZ", STR_UPD_MGZ_DEFAULT);
-	FREE(STR_UPD_MGZ_DESC);
-	STR_UPD_MGZ_DESC = language(flang, "STR_UPD_MGZ_DESC", STR_UPD_MGZ_DESC_DEFAULT);
-	FREE(STR_GAME_PATHS);
-	STR_GAME_PATHS = language(flang, "STR_GAME_PATHS", STR_GAME_PATHS_DEFAULT);
-	FREE(STR_GAME_PATHS_DESC);
-	STR_GAME_PATHS_DESC = language(flang, "STR_GAME_PATHS_DESC", STR_GAME_PATHS_DESC_DEFAULT);
-	FREE(STR_XMB_PRIO);
-	STR_XMB_PRIO = language(flang, "STR_XMB_PRIO", STR_XMB_PRIO_DEFAULT);
-	FREE(STR_XMB_PRIO_DESC);
-	STR_XMB_PRIO_DESC = language(flang, "STR_XMB_PRIO_DESC", STR_XMB_PRIO_DESC_DEFAULT);
-	FREE(STR_HELP);
-	STR_HELP = language(flang, "STR_HELP", STR_HELP_DEFAULT);
-	FREE(STR_HELP_DESC);
-	STR_HELP_DESC = language(flang, "STR_HELP_DESC", STR_HELP_DESC_DEFAULT);
-	FREE(STR_COLOR_1);
-	STR_COLOR_1 = language(flang, "STR_COLOR_1", STR_COLOR_1_DEFAULT);
-	FREE(STR_COLOR_2);
-	STR_COLOR_2 = language(flang, "STR_COLOR_2", STR_COLOR_2_DEFAULT);
-	FREE(STR_COLOR_3);
-	STR_COLOR_3 = language(flang, "STR_COLOR_3", STR_COLOR_3_DEFAULT);
-	FREE(STR_COLOR_4);
-	STR_COLOR_4 = language(flang, "STR_COLOR_4", STR_COLOR_4_DEFAULT);
-	FREE(STR_COLOR_DESC);
-	STR_COLOR_DESC = language(flang, "STR_COLOR_DESC", STR_COLOR_DESC_DEFAULT);
-	FREE(STR_UI_SETTINGS);
-	STR_UI_SETTINGS = language(flang, "STR_UI_SETTINGS", STR_UI_SETTINGS_DEFAULT);
-	FREE(STR_UI);
-	STR_UI = language(flang, "STR_UI", STR_UI_DEFAULT);
-	FREE(STR_UI_DESC);
-	STR_UI_DESC = language(flang, "STR_UI_DESC", STR_UI_DESC_DEFAULT);
-	FREE(STR_SIDE_MENU);
-	STR_SIDE_MENU = language(flang, "STR_SIDE_MENU", STR_SIDE_MENU_DEFAULT);
-	FREE(STR_SIDE_MENU_DESC);
-	STR_SIDE_MENU_DESC = language(flang, "STR_SIDE_MENU_DESC", STR_SIDE_MENU_DESC_DEFAULT);
-	FREE(STR_SHOW_PIC1);
-	STR_SHOW_PIC1 = language(flang, "STR_SHOW_PIC1", STR_SHOW_PIC1_DEFAULT);
-	FREE(STR_SHOW_PIC1_DESC);
-	STR_SHOW_PIC1_DESC = language(flang, "STR_SHOW_PIC1_DESC", STR_SHOW_PIC1_DESC_DEFAULT);
-	FREE(STR_SHOW_COVER);
-	STR_SHOW_COVER = language(flang, "STR_SHOW_COVER", STR_SHOW_COVER_DEFAULT);
-	FREE(STR_SHOW_COVER_DESC);
-	STR_SHOW_COVER_DESC = language(flang, "STR_SHOW_COVER_DESC", STR_SHOW_COVER_DESC_DEFAULT);
-	FREE(STR_SHOW_GAMECASE);
-	STR_SHOW_GAMECASE = language(flang, "STR_SHOW_GAMECASE", STR_SHOW_GAMECASE_DEFAULT);
-	FREE(STR_SHOW_GAMECASE_DESC);
-	STR_SHOW_GAMECASE_DESC = language(flang, "STR_SHOW_GAMECASE_DESC", STR_SHOW_GAMECASE_DESC_DEFAULT);
-	FREE(STR_SHOW_ICON0);
-	STR_SHOW_ICON0 = language(flang, "STR_SHOW_ICON0", STR_SHOW_ICON0_DEFAULT);
-	FREE(STR_SHOW_ICON0_DESC);
-	STR_SHOW_ICON0_DESC = language(flang, "STR_SHOW_ICON0_DESC", STR_SHOW_ICON0_DESC_DEFAULT);
-	FREE(STR_GRID_TYPE);
-	STR_GRID_TYPE = language(flang, "STR_GRID_TYPE", STR_GRID_TYPE_DEFAULT);
-	FREE(STR_GRID_TYPE_DESC);
-	STR_GRID_TYPE_DESC = language(flang, "STR_GRID_TYPE_DESC", STR_GRID_TYPE_DESC_DEFAULT);
-	FREE(STR_SCROLL);
-	STR_SCROLL = language(flang, "STR_SCROLL", STR_SCROLL_DEFAULT);
-	FREE(STR_PAGE);
-	STR_PAGE = language(flang, "STR_PAGE", STR_PAGE_DEFAULT);
-	FREE(STR_DIRECTION);
-	STR_DIRECTION = language(flang, "STR_DIRECTION", STR_DIRECTION_DEFAULT);
-	FREE(STR_DIRECTION_DESC);
-	STR_DIRECTION_DESC = language(flang, "STR_DIRECTION_DESC", STR_DIRECTION_DESC_DEFAULT);
-	FREE(STR_VERTICAL);
-	STR_VERTICAL = language(flang, "STR_VERTICAL", STR_VERTICAL_DEFAULT);
-	FREE(STR_HORIZONTAL);
-	STR_HORIZONTAL = language(flang, "STR_HORIZONTAL", STR_HORIZONTAL_DEFAULT);
-	FREE(STR_ANIMATED);
-	STR_ANIMATED = language(flang, "STR_ANIMATED", STR_ANIMATED_DEFAULT);
-	FREE(STR_ANIMATED_DESC);
-	STR_ANIMATED_DESC = language(flang, "STR_ANIMATED_DESC", STR_ANIMATED_DESC_DEFAULT);
-	FREE(STR_KEEP_PROP);
-	STR_KEEP_PROP = language(flang, "STR_KEEP_PROP", STR_KEEP_PROP_DEFAULT);
-	FREE(STR_KEEP_PROP_DESC);
-	STR_KEEP_PROP_DESC = language(flang, "STR_KEEP_PROP_DESC", STR_KEEP_PROP_DESC_DEFAULT);
-	FREE(STR_NB_COL);
-	STR_NB_COL = language(flang, "STR_NB_COL", STR_NB_COL_DEFAULT);
-	FREE(STR_NB_COL_DESC);
-	STR_NB_COL_DESC = language(flang, "STR_NB_COL_DESC", STR_NB_COL_DESC_DEFAULT);
-	FREE(STR_NB_LINE);
-	STR_NB_LINE = language(flang, "STR_NB_LINE", STR_NB_LINE_DEFAULT);
-	FREE(STR_NB_LINE_DESC);
-	STR_NB_LINE_DESC = language(flang, "STR_NB_LINE_DESC", STR_NB_LINE_DESC_DEFAULT);
-	FREE(STR_INVERSE);
-	STR_INVERSE = language(flang, "STR_INVERSE", STR_INVERSE_DEFAULT);
-	FREE(STR_INVERSE_DESC);
-	STR_INVERSE_DESC = language(flang, "STR_INVERSE_DESC", STR_INVERSE_DESC_DEFAULT);
-	FREE(STR_3D);
-	STR_3D = language(flang, "STR_3D", STR_3D_DEFAULT);
-	FREE(STR_3D_DESC);
-	STR_3D_DESC = language(flang, "STR_3D_DESC", STR_3D_DESC_DEFAULT);
-	FREE(STR_ADD);
-	STR_ADD = language(flang, "STR_ADD", STR_ADD_DEFAULT);
-	FREE(STR_LOAD);
-	STR_LOAD = language(flang, "STR_LOAD", STR_LOAD_DEFAULT);
-	FREE(STR_CHANGE);
-	STR_CHANGE = language(flang, "STR_CHANGE", STR_CHANGE_DEFAULT);
-	FREE(STR_COLOR);
-	STR_COLOR = language(flang, "STR_COLOR", STR_COLOR_DEFAULT);
-	FREE(STR_RESET);
-	STR_RESET = language(flang, "STR_RESET", STR_RESET_DEFAULT);
-	FREE(STR_FAILED);
-	STR_FAILED = language(flang, "STR_FAILED", STR_FAILED_DEFAULT);
-	FREE(STR_DONE);
-	STR_DONE = language(flang, "STR_DONE", STR_DONE_DEFAULT);
-	FREE(STR_OPEN);
-	STR_OPEN = language(flang, "STR_OPEN", STR_OPEN_DEFAULT);
-	FREE(STR_CLOSE);
-	STR_CLOSE = language(flang, "STR_CLOSE", STR_CLOSE_DEFAULT);
-	FREE(STR_OPTION);
-	STR_OPTION = language(flang, "STR_OPTION", STR_OPTION_DEFAULT);
-	FREE(STR_SELECT);
-	STR_SELECT = language(flang, "STR_SELECT", STR_SELECT_DEFAULT);
-	FREE(STR_WINDOW);
-	STR_WINDOW = language(flang, "STR_WINDOW", STR_WINDOW_DEFAULT);
-	FREE(STR_CLICK);
-	STR_CLICK = language(flang, "STR_CLICK", STR_CLICK_DEFAULT);
-	FREE(STR_CURSOR);
-	STR_CURSOR = language(flang, "STR_CURSOR", STR_CURSOR_DEFAULT);
-	FREE(STR_NEXT);
-	STR_NEXT = language(flang, "STR_NEXT", STR_NEXT_DEFAULT);
-	FREE(STR_PREVIOUS);
-	STR_PREVIOUS = language(flang, "STR_PREVIOUS", STR_PREVIOUS_DEFAULT);
-	FREE(STR_SET_COLOR);
-	STR_SET_COLOR = language(flang, "STR_SET_COLOR", STR_SET_COLOR_DEFAULT);
-	FREE(STR_HIDETV);
-	STR_HIDETV = language(flang, "STR_HIDETV", STR_HIDETV_DEFAULT);
-	FREE(STR_SHOWTV);
-	STR_SHOWTV = language(flang, "STR_SHOWTV", STR_SHOWTV_DEFAULT);
-	FREE(STR_MOVE_TO_PLUGINS);
-	STR_MOVE_TO_PLUGINS = language(flang, "STR_MOVE_TO_PLUGINS", STR_MOVE_TO_PLUGINS_DEFAULT);
-	FREE(STR_ASK_PLUGINS);
-	STR_ASK_PLUGINS = language(flang, "STR_ASK_PLUGINS", STR_ASK_PLUGINS_DEFAULT);
-	FREE(STR_CHANGE_VALUE);
-	STR_CHANGE_VALUE = language(flang, "STR_CHANGE_VALUE", STR_CHANGE_VALUE_DEFAULT);
-	FREE(STR_LOAD_IDPS_LV2);
-	STR_LOAD_IDPS_LV2 = language(flang, "STR_LOAD_IDPS_LV2", STR_LOAD_IDPS_LV2_DEFAULT);
-	FREE(STR_LOAD_IDPS_EID5);
-	STR_LOAD_IDPS_EID5 = language(flang, "STR_LOAD_IDPS_EID5", STR_LOAD_IDPS_EID5_DEFAULT);
-	FREE(STR_NAME);
-	STR_NAME = language(flang, "STR_NAME", STR_NAME_DEFAULT);
-	FREE(STR_DOCK_RIGHT);
-	STR_DOCK_RIGHT = language(flang, "STR_DOCK_RIGHT", STR_DOCK_RIGHT_DEFAULT);
-	FREE(STR_DOCK_LEFT);
-	STR_DOCK_LEFT = language(flang, "STR_DOCK_LEFT", STR_DOCK_LEFT_DEFAULT);
-	FREE(STR_DOCK_FULL);
-	STR_DOCK_FULL = language(flang, "STR_DOCK_FULL", STR_DOCK_FULL_DEFAULT);
-	FREE(STR_PLUGIN_MONITOR);
-	STR_PLUGIN_MONITOR = language(flang, "STR_PLUGIN_MONITOR", STR_PLUGIN_MONITOR_DEFAULT);
-	FREE(STR_UNUSED);
-	STR_UNUSED = language(flang, "STR_UNUSED", STR_UNUSED_DEFAULT);
-	FREE(STR_UNLOAD);
-	STR_UNLOAD = language(flang, "STR_UNLOAD", STR_UNLOAD_DEFAULT);
-	FREE(STR_BOOT_FILE);
-	STR_BOOT_FILE = language(flang, "STR_BOOT_FILE", STR_BOOT_FILE_DEFAULT);
-	FREE(STR_CURRENT);
-	STR_CURRENT = language(flang, "STR_CURRENT", STR_CURRENT_DEFAULT);	
-	FREE(STR_NET);
-	STR_NET = language(flang, "STR_NET", STR_NET_DEFAULT);
-	FREE(STR_SOFT);
-	STR_SOFT = language(flang, "STR_SOFT", STR_SOFT_DEFAULT);	
-	FREE(STR_GX);
-	STR_GX = language(flang, "STR_GX", STR_GX_DEFAULT);
-	FREE(STR_CUSTOM);
-	STR_CUSTOM = language(flang, "STR_CUSTOM", STR_CUSTOM_DEFAULT);
-	FREE(STR_NEW_CMD);
-	STR_NEW_CMD = language(flang, "STR_NEW_CMD", STR_NEW_CMD_DEFAULT);	
-	FREE(STR_PNACH);
-	STR_PNACH = language(flang, "STR_PNACH", STR_PNACH_DEFAULT);
-	FREE(STR_WIDESCREEN);
-	STR_WIDESCREEN = language(flang, "STR_WIDESCREEN", STR_WIDESCREEN_DEFAULT);
-	FREE(STR_480P);
-	STR_480P = language(flang, "STR_480P", STR_480P_DEFAULT);
-	FREE(STR_YFIX);
-	STR_YFIX = language(flang, "STR_YFIX", STR_YFIX_DEFAULT);	
-	FREE(STR_FMV);
-	STR_FMV = language(flang, "STR_FMV", STR_FMV_DEFAULT);
-	FREE(STR_SIMPLE);
-	STR_SIMPLE = language(flang, "STR_SIMPLE", STR_SIMPLE_DEFAULT);	
-	FREE(STR_ADVANCED);
-	STR_ADVANCED = language(flang, "STR_ADVANCED", STR_ADVANCED_DEFAULT);
-	FREE(STR_INSTALL_MGZ);
-	STR_INSTALL_MGZ = language(flang, "STR_INSTALL_MGZ", STR_INSTALL_MGZ_DEFAULT);
-	FREE(STR_UP2DATE);
-	STR_UP2DATE = language(flang, "STR_UP2DATE", STR_UP2DATE_DEFAULT);	
-	FREE(STR_SHOW_WAVES);
-	STR_SHOW_WAVES = language(flang, "STR_SHOW_WAVES", STR_SHOW_WAVES_DEFAULT);
-	FREE(STR_SHOW_WAVES_DESC);
-	STR_SHOW_WAVES_DESC = language(flang, "STR_SHOW_WAVES_DESC", STR_SHOW_WAVES_DESC_DEFAULT);
-	FREE(STR_WAVES_COLOR);
-	STR_WAVES_COLOR = language(flang, "STR_WAVES_COLOR", STR_WAVES_COLOR_DEFAULT);
-	FREE(STR_WAVES_COLOR_DESC);
-	STR_WAVES_COLOR_DESC = language(flang, "STR_WAVES_COLOR_DESC", STR_WAVES_COLOR_DESC_DEFAULT);
-	FREE(STR_USE_CONFIG);
-	STR_USE_CONFIG = language(flang, "STR_USE_CONFIG", STR_USE_CONFIG_DEFAULT);
-	FREE(STR_COLORSET);
-	STR_COLORSET = language(flang, "STR_COLORSET", STR_COLORSET_DEFAULT);
-	FREE(STR_COLORSET_DESC);
-	STR_COLORSET_DESC = language(flang, "STR_COLORSET_DESC", STR_COLORSET_DESC_DEFAULT);
-	FREE(STR_GRID_SCROLL);
-	STR_GRID_SCROLL = language(flang, "STR_GRID_SCROLL", STR_GRID_SCROLL_DEFAULT);
-	FREE(STR_ADD_LIMG);
-	STR_ADD_LIMG = language(flang, "STR_ADD_LIMG", STR_ADD_LIMG_DEFAULT);
-	FREE(STR_REMOVE_LIMG);
-	STR_REMOVE_LIMG = language(flang, "STR_REMOVE_LIMG", STR_REMOVE_LIMG_DEFAULT);
-	FREE(STR_LIMG_DESC);
-	STR_LIMG_DESC = language(flang, "STR_LIMG_DESC", STR_LIMG_DESC_DEFAULT);
-	FREE(STR_FONT);
-	STR_FONT = language(flang, "STR_FONT", STR_FONT_DEFAULT);
-	FREE(STR_FONT_DESC);
-	STR_FONT_DESC = language(flang, "STR_FONT_DESC", STR_FONT_DESC_DEFAULT);
-	FREE(STR_MOVE);
-	STR_MOVE = language(flang, "STR_MOVE", STR_MOVE_DEFAULT);
-	FREE(STR_JOIN);
-	STR_JOIN = language(flang, "STR_JOIN", STR_JOIN_DEFAULT);
-	FREE(STR_JOIN_DESC);
-	STR_JOIN_DESC = language(flang, "STR_JOIN_DESC", STR_JOIN_DESC_DEFAULT);
+	int flang_size=0;
+	char *flang=NULL;
+	if(lang>0) flang = LoadFile(lang_path[lang], &flang_size);
 	
-	FCLOSE(flang);
+	LANG(STR_LANG, "STR_LANG", STR_LANG_DEFAULT);
+	LANG(STR_LANG_DESC, "STR_LANG_DESC", STR_LANG_DESC_DEFAULT);
+	LANG(STR_GATHERING, "STR_GATHERING", STR_GATHERING_DEFAULT);
+	LANG(STR_COPYING, "STR_COPYING", STR_COPYING_DEFAULT);
+	LANG(STR_FROM, "STR_FROM", STR_FROM_DEFAULT);
+	LANG(STR_TO, "STR_TO", STR_TO_DEFAULT);
+	LANG(STR_FILES, "STR_FILES", STR_FILES_DEFAULT);
+	LANG(STR_DIRS, "STR_DIRS", STR_DIRS_DEFAULT);
+	LANG(STR_UNKNOWN, "STR_UNKNOWN", STR_UNKNOWN_DEFAULT);
+	LANG(STR_FILE, "STR_FILE", STR_FILE_DEFAULT);
+	LANG(STR_CANCEL, "STR_CANCEL", STR_CANCEL_DEFAULT);
+	LANG(STR_TURNOFF_YES, "STR_TURNOFF_YES", STR_TURNOFF_YES_DEFAULT);
+	LANG(STR_TURNOFF_NO, "STR_TURNOFF_NO", STR_TURNOFF_NO_DEFAULT);
+	LANG(STR_CANCELLED, "STR_CANCELLED", STR_CANCELLED_DEFAULT);
+	LANG(STR_UNIT, "STR_UNIT", STR_UNIT_DEFAULT);
+	LANG(STR_TOTALSIZE, "STR_TOTALSIZE", STR_TOTALSIZE_DEFAULT);
+	LANG(STR_HIDELOGS, "STR_HIDELOGS", STR_HIDELOGS_DEFAULT);
+	LANG(STR_SHOWLOGS, "STR_SHOWLOGS", STR_SHOWLOGS_DEFAULT);
+	LANG(STR_BOOST, "STR_BOOST", STR_BOOST_DEFAULT);
+	LANG(STR_GAMEMENU, "STR_GAMEMENU", STR_GAMEMENU_DEFAULT);
+	LANG(STR_SETTINGS, "STR_SETTINGS", STR_SETTINGS_DEFAULT);
+	LANG(STR_MOUNTGAME, "STR_MOUNTGAME", STR_MOUNTGAME_DEFAULT);
+	LANG(STR_FILTER, "STR_FILTER", STR_FILTER_DEFAULT);
+	LANG(STR_FAVORITE, "STR_FAVORITE", STR_FAVORITE_DEFAULT);
+	LANG(STR_FILEMANAGER, "STR_FILEMANAGER", STR_FILEMANAGER_DEFAULT);
+	LANG(STR_HOLD, "STR_HOLD", STR_HOLD_DEFAULT);
+	LANG(STR_EXIT, "STR_EXIT", STR_EXIT_DEFAULT);
+	LANG(STR_GAME_PROP, "STR_GAME_PROP", STR_GAME_PROP_DEFAULT);
+	LANG(STR_GAME_TITLE, "STR_GAME_TITLE", STR_GAME_TITLE_DEFAULT);
+	LANG(STR_GAME_PATH, "STR_GAME_PATH", STR_GAME_PATH_DEFAULT);
+	LANG(STR_GAME_FORMAT, "STR_GAME_FORMAT", STR_GAME_FORMAT_DEFAULT);
+	LANG(STR_GAME_SIZE, "STR_GAME_SIZE", STR_GAME_SIZE_DEFAULT);
+	LANG(STR_GAME_PLATFORM, "STR_GAME_PLATFORM", STR_GAME_PLATFORM_DEFAULT);
+	LANG(STR_SYSVERS, "STR_SYSVERS", STR_SYSVERS_DEFAULT);
+	LANG(STR_GAMEID, "STR_GAMEID", STR_GAMEID_DEFAULT);
+	LANG(STR_ELFCRC, "STR_ELFCRC", STR_ELFCRC_DEFAULT);
+	LANG(STR_ELFCRCO, "STR_ELFCRCO", STR_ELFCRCO_DEFAULT);
+	LANG(STR_BACK, "STR_BACK", STR_BACK_DEFAULT);
+	LANG(STR_ENTER, "STR_ENTER", STR_ENTER_DEFAULT);
+	LANG(STR_UPDATE_FOUND, "STR_UPDATE_FOUND", STR_UPDATE_FOUND_DEFAULT);
+	LANG(STR_UPDATE, "STR_UPDATE", STR_UPDATE_DEFAULT);
+	LANG(STR_SIZE, "STR_SIZE", STR_SIZE_DEFAULT);
+	LANG(STR_SYSTEM, "STR_SYSTEM", STR_SYSTEM_DEFAULT);
+	LANG(STR_DL, "STR_DL", STR_DL_DEFAULT);
+	LANG(STR_DL_ALL, "STR_DL_ALL", STR_DL_ALL_DEFAULT);
+	LANG(STR_UNPLUG, "STR_UNPLUG", STR_UNPLUG_DEFAULT);
+	LANG(STR_PATH, "STR_PATH", STR_PATH_DEFAULT);
+	LANG(STR_TYPE, "STR_TYPE", STR_TYPE_DEFAULT);
+	LANG(STR_FOLDER, "STR_FOLDER", STR_FOLDER_DEFAULT);
+	LANG(STR_DIR, "STR_DIR", STR_DIR_DEFAULT);
+	LANG(STR_MULT, "STR_MULT", STR_MULT_DEFAULT);
+	LANG(STR_THM_SETTINGS, "STR_THM_SETTINGS", STR_THM_SETTINGS_DEFAULT);
+	LANG(STR_THM, "STR_THM", STR_THM_DEFAULT);
+	LANG(STR_THM_DESC, "STR_THM_DESC", STR_THM_DESC_DEFAULT);
+	LANG(STR_CREATE, "STR_CREATE", STR_CREATE_DEFAULT);
+	LANG(STR_ZOOM_OUT, "STR_ZOOM_OUT", STR_ZOOM_OUT_DEFAULT);
+	LANG(STR_ZOOM_IN, "STR_ZOOM_IN", STR_ZOOM_IN_DEFAULT);
+	LANG(STR_MOVE_FRAME, "STR_MOVE_FRAME", STR_MOVE_FRAME_DEFAULT);
+	LANG(STR_CHECK, "STR_CHECK", STR_CHECK_DEFAULT);
+	LANG(STR_UNCHECK, "STR_UNCHECK", STR_UNCHECK_DEFAULT);
+	LANG(STR_GAME_OPTION, "STR_GAME_OPTION", STR_GAME_OPTION_DEFAULT);
+	LANG(STR_ADD_FAV, "STR_ADD_FAV", STR_ADD_FAV_DEFAULT);
+	LANG(STR_REM_FAV, "STR_REM_FAV", STR_REM_FAV_DEFAULT);
+	LANG(STR_FAV_DESC, "STR_FAV_DESC", STR_FAV_DESC_DEFAULT);
+	LANG(STR_RENAME, "STR_RENAME", STR_RENAME_DEFAULT);
+	LANG(STR_RENAME_DESC, "STR_RENAME_DESC", STR_RENAME_DESC_DEFAULT);
+	LANG(STR_DELETE, "STR_DELETE", STR_DELETE_DEFAULT);
+	LANG(STR_DELETE_DESC, "STR_DELETE_DESC", STR_DELETE_DESC_DEFAULT);
+	LANG(STR_COPY, "STR_COPY", STR_COPY_DEFAULT);
+	LANG(STR_COPY_DESC, "STR_COPY_DESC", STR_COPY_DESC_DEFAULT);
+	LANG(STR_CREATE_ICON0, "STR_CREATE_ICON0", STR_CREATE_ICON0_DEFAULT);
+	LANG(STR_CREATE_ICON0_DESC, "STR_CREATE_ICON0_DESC", STR_CREATE_ICON0_DESC_DEFAULT);
+	LANG(STR_REST_PNACH, "STR_REST_PNACH", STR_REST_PNACH_DEFAULT);
+	LANG(STR_REST_PNACH_DESC, "STR_REST_PNACH_DESC", STR_REST_PNACH_DESC_DEFAULT);
+	LANG(STR_APPLY_PNACH, "STR_APPLY_PNACH", STR_APPLY_PNACH_DEFAULT);
+	LANG(STR_APPLY_PNACH_DESC, "STR_APPLY_PNACH_DESC", STR_APPLY_PNACH_DESC_DEFAULT);
+	LANG(STR_DISABLE_WS, "STR_DISABLE_WS", STR_DISABLE_WS_DEFAULT);
+	LANG(STR_ENABLE_WS, "STR_ENABLE_WS", STR_ENABLE_WS_DEFAULT);
+	LANG(STR_WS_DESC, "STR_WS_DESC", STR_WS_DESC_DEFAULT);
+	LANG(STR_DISABLE_480P, "STR_DISABLE_480P", STR_DISABLE_480P_DEFAULT);
+	LANG(STR_ENABLE_480P, "STR_ENABLE_480P", STR_ENABLE_480P_DEFAULT);
+	LANG(STR_480P_DESC, "STR_480P_DESC", STR_480P_DESC_DEFAULT);
+	LANG(STR_DISABLE_YFIX, "STR_DISABLE_YFIX", STR_DISABLE_YFIX_DEFAULT);
+	LANG(STR_ENABLE_YFIX, "STR_ENABLE_YFIX", STR_ENABLE_YFIX_DEFAULT);
+	LANG(STR_YFIX_DESC, "STR_YFIX_DESC", STR_YFIX_DESC_DEFAULT);
+	LANG(STR_DISABLE_FMVSKIP, "STR_DISABLE_FMVSKIP", STR_DISABLE_FMVSKIP_DEFAULT);
+	LANG(STR_ENABLE_FMVSKIP, "STR_ENABLE_FMVSKIP", STR_ENABLE_FMVSKIP_DEFAULT);
+	LANG(STR_FMVSKIP_DESC, "STR_FMVSKIP_DESC", STR_FMVSKIP_DESC_DEFAULT);
+	LANG(STR_DISABLE_NETEMU, "STR_DISABLE_NETEMU", STR_DISABLE_NETEMU_DEFAULT);
+	LANG(STR_ENABLE_NETEMU, "STR_ENABLE_NETEMU", STR_ENABLE_NETEMU_DEFAULT);
+	LANG(STR_NETEMU_DESC, "STR_NETEMU_DESC", STR_NETEMU_DESC_DEFAULT);
+	LANG(STR_SAVE_CONFIG, "STR_SAVE_CONFIG", STR_SAVE_CONFIG_DEFAULT);
+	LANG(STR_CONFIG, "STR_CONFIG", STR_CONFIG_DEFAULT);	
+	LANG(STR_CONFIG_DESC, "STR_CONFIG_DESC", STR_CONFIG_DESC_DEFAULT);
+	LANG(STR_NONE, "STR_NONE", STR_NONE_DEFAULT);
+	LANG(STR_CHECK_MD5, "STR_CHECK_MD5", STR_CHECK_MD5_DEFAULT);
+	LANG(STR_PROPS, "STR_PROPS", STR_PROPS_DEFAULT);
+	LANG(STR_PROPS_DESC, "STR_PROPS_DESC", STR_PROPS_DESC_DEFAULT);
+	LANG(STR_ASK_DEL, "STR_ASK_DEL", STR_ASK_DEL_DEFAULT);
+	LANG(STR_GAME_SETTINGS, "STR_GAME_SETTINGS", STR_GAME_SETTINGS_DEFAULT);
+	LANG(STR_DIRECT_BOOT, "STR_DIRECT_BOOT", STR_DIRECT_BOOT_DEFAULT);
+	LANG(STR_DIRECT_BOOT_DESC, "STR_DIRECT_BOOT_DESC", STR_DIRECT_BOOT_DESC_DEFAULT);
+	LANG(STR_YES, "STR_YES", STR_YES_DEFAULT);
+	LANG(STR_NO, "STR_NO", STR_NO_DEFAULT);
+	LANG(STR_CLEAN_SYSCALL, "STR_CLEAN_SYSCALL", STR_CLEAN_SYSCALL_DEFAULT);
+	LANG(STR_CLEAN_SYSCALL_DESC, "STR_CLEAN_SYSCALL_DESC", STR_CLEAN_SYSCALL_DESC_DEFAULT);
+	LANG(STR_CHANGE_IDPS, "STR_CHANGE_IDPS", STR_CHANGE_IDPS_DEFAULT);
+	LANG(STR_CHANGE_IDPS_DESC, "STR_CHANGE_IDPS_DESC", STR_CHANGE_IDPS_DESC_DEFAULT);
+	LANG(STR_EXT_GAME_DATA, "STR_EXT_GAME_DATA", STR_EXT_GAME_DATA_DEFAULT);
+	LANG(STR_EXT_GAME_DATA_DESC, "STR_EXT_GAME_DATA_DESC", STR_EXT_GAME_DATA_DESC_DEFAULT);
+	LANG(STR_PAYLOAD, "STR_PAYLOAD", STR_PAYLOAD_DEFAULT);
+	LANG(STR_PAYLOAD_DESC, "STR_PAYLOAD_DESC", STR_PAYLOAD_DESC_DEFAULT);
+	LANG(STR_PRIM_USB, "STR_PRIM_USB", STR_PRIM_USB_DEFAULT);
+	LANG(STR_PRIM_USB_DESC, "STR_PRIM_USB_DESC", STR_PRIM_USB_DESC_DEFAULT);
+	LANG(STR_BDEMU, "STR_BDEMU", STR_BDEMU_DEFAULT);
+	LANG(STR_BDEMU_DESC, "STR_BDEMU_DESC", STR_BDEMU_DESC_DEFAULT);
+	LANG(STR_PATCH_LIBFS, "STR_PATCH_LIBFS", STR_PATCH_LIBFS_DEFAULT);
+	LANG(STR_PATCH_LIBFS_DESC, "STR_PATCH_LIBFS_DESC", STR_PATCH_LIBFS_DESC_DEFAULT);
+	LANG(STR_MOUNT_APPHOME, "STR_MOUNT_APPHOME", STR_MOUNT_APPHOME_DEFAULT);
+	LANG(STR_MOUNT_APPHOME_DESC, "STR_MOUNT_APPHOME_DESC", STR_MOUNT_APPHOME_DESC_DEFAULT);
+	LANG(STR_PATCH_EXP, "STR_PATCH_EXP", STR_PATCH_EXP_DEFAULT);
+	LANG(STR_PATCH_EXP_DESC, "STR_PATCH_EXP_DESC", STR_PATCH_EXP_DESC_DEFAULT);
+	LANG(STR_MAKE_SHTCUT_PKG, "STR_MAKE_SHTCUT_PKG", STR_MAKE_SHTCUT_PKG_DEFAULT);
+	LANG(STR_MAKE_SHTCUT_PKG_DESC, "STR_MAKE_SHTCUT_PKG_DESC", STR_MAKE_SHTCUT_PKG_DESC_DEFAULT);
+	LANG(STR_PATCH_EBOOT, "STR_PATCH_EBOOT", STR_PATCH_EBOOT_DEFAULT);
+	LANG(STR_PATCH_EBOOT_DESC, "STR_PATCH_EBOOT_DESC", STR_PATCH_EBOOT_DESC_DEFAULT);
+	LANG(STR_RESIGN, "STR_RESIGN", STR_RESIGN_DEFAULT);
+	LANG(STR_RESIGN_DESC, "STR_RESIGN_DESC", STR_RESIGN_DESC_DEFAULT);
+	LANG(STR_RESTORE, "STR_RESTORE", STR_RESTORE_DEFAULT);
+	LANG(STR_RESTORE_DESC, "STR_RESTORE_DESC", STR_RESTORE_DESC_DEFAULT);
+	LANG(STR_EXTRACT_ISO, "STR_EXTRACT_ISO", STR_EXTRACT_ISO_DEFAULT);
+	LANG(STR_EXTRACT_ISO_DESC, "STR_EXTRACT_ISO_DESC", STR_EXTRACT_ISO_DESC_DEFAULT);
+	LANG(STR_CONVERT_ISO, "STR_CONVERT_ISO", STR_CONVERT_ISO_DEFAULT);
+	LANG(STR_CONVERT_ISO_DESC, "STR_CONVERT_ISO_DESC", STR_CONVERT_ISO_DESC_DEFAULT);
+	LANG(STR_FIX_PERMS, "STR_FIX_PERMS", STR_FIX_PERMS_DEFAULT);
+	LANG(STR_FIX_PERMS_DESC, "STR_FIX_PERMS_DESC", STR_FIX_PERMS_DESC_DEFAULT);
+	LANG(STR_CHECK_IRD, "STR_CHECK_IRD", STR_CHECK_IRD_DEFAULT);
+	LANG(STR_CHECK_DESC, "STR_CHECK_DESC", STR_CHECK_DESC_DEFAULT);
+	LANG(STR_DL_UPDATE, "STR_DL_UPDATE", STR_DL_UPDATE_DEFAULT);
+	LANG(STR_DL_UPDATE_DESC, "STR_DL_UPDATE_DESC", STR_DL_UPDATE_DESC_DEFAULT);
+	LANG(STR_OPEN_WINDOW, "STR_OPEN_WINDOW", STR_OPEN_WINDOW_DEFAULT);
+	LANG(STR_MOUNT_DEVBLIND, "STR_MOUNT_DEVBLIND", STR_MOUNT_DEVBLIND_DEFAULT);
+	LANG(STR_DUMP_LV1, "STR_DUMP_LV1", STR_DUMP_LV1_DEFAULT);
+	LANG(STR_DUMP_LV2, "STR_DUMP_LV2", STR_DUMP_LV2_DEFAULT);
+	LANG(STR_DUMP_FLASH, "STR_DUMP_FLASH", STR_DUMP_FLASH_DEFAULT);
+	LANG(STR_REFRESH, "STR_REFRESH", STR_REFRESH_DEFAULT);
+	LANG(STR_NEWFOLDER, "STR_NEWFOLDER", STR_NEWFOLDER_DEFAULT);
+	LANG(STR_NEWFILE, "STR_NEWFILE", STR_NEWFILE_DEFAULT);
+	LANG(STR_PASTE, "STR_PASTE", STR_PASTE_DEFAULT);
+	LANG(STR_CUT, "STR_CUT", STR_CUT_DEFAULT);
+	LANG(STR_UNSELECT_ALL, "STR_UNSELECT_ALL", STR_UNSELECT_ALL_DEFAULT);
+	LANG(STR_SELECT_ALL, "STR_SELECT_ALL", STR_SELECT_ALL_DEFAULT);
+	LANG(STR_MAKE_PKG, "STR_MAKE_PKG", STR_MAKE_PKG_DEFAULT);
+	LANG(STR_GETMD5, "STR_GETMD5", STR_GETMD5_DEFAULT);
+	LANG(STR_GETSHA1, "STR_GETSHA1", STR_GETSHA1_DEFAULT);
+	LANG(STR_VIEW, "STR_VIEW", STR_VIEW_DEFAULT);
+	LANG(STR_VIEW_TXT, "STR_VIEW_TXT", STR_VIEW_TXT_DEFAULT);
+	LANG(STR_VIEW_SFO, "STR_VIEW_SFO", STR_VIEW_SFO_DEFAULT);
+	LANG(STR_READ_XREG, "STR_READ_XREG", STR_READ_XREG_DEFAULT);
+	LANG(STR_EXTRACT_ELF, "STR_EXTRACT_ELF", STR_EXTRACT_ELF_DEFAULT);
+	LANG(STR_RESIGN_SELF, "STR_RESIGN_SELF", STR_RESIGN_SELF_DEFAULT);
+	LANG(STR_LAUNCH_SELF, "STR_LAUNCH_SELF", STR_LAUNCH_SELF_DEFAULT);
+	LANG(STR_EXTRACT_EBOOT, "STR_EXTRACT_EBOOT", STR_EXTRACT_EBOOT_DEFAULT);
+	LANG(STR_RESIGN_EBOOT, "STR_RESIGN_EBOOT", STR_RESIGN_EBOOT_DEFAULT);
+	LANG(STR_LAUNCH_EBOOT, "STR_LAUNCH_EBOOT", STR_LAUNCH_EBOOT_DEFAULT);
+	LANG(STR_SIGN_ELF, "STR_SIGN_ELF", STR_SIGN_ELF_DEFAULT);
+	LANG(STR_SIGN_EBOOT, "STR_SIGN_EBOOT", STR_SIGN_EBOOT_DEFAULT);
+	LANG(STR_SIGN_PRX, "STR_SIGN_PRX", STR_SIGN_PRX_DEFAULT);
+	LANG(STR_EXTRACT_PRX, "STR_EXTRACT_PRX", STR_EXTRACT_PRX_DEFAULT);
+	LANG(STR_RESIGN_SPRX, "STR_RESIGN_SPRX", STR_RESIGN_SPRX_DEFAULT);
+	LANG(STR_REMOVE_PRXLOADER, "STR_REMOVE_PRXLOADER", STR_REMOVE_PRXLOADER_DEFAULT);
+	LANG(STR_ADD_PRXLOADER, "STR_ADD_PRXLOADER", STR_ADD_PRXLOADER_DEFAULT);
+	LANG(STR_REMOVE_PRXLOADER2, "STR_REMOVE_PRXLOADER2", STR_REMOVE_PRXLOADER2_DEFAULT);
+	LANG(STR_ADD_PRXLOADER2, "STR_ADD_PRXLOADER2", STR_ADD_PRXLOADER2_DEFAULT);
+	LANG(STR_REMOVE_MAMBA, "STR_REMOVE_MAMBA", STR_REMOVE_MAMBA_DEFAULT);
+	LANG(STR_ADD_MAMBA, "STR_ADD_MAMBA", STR_ADD_MAMBA_DEFAULT);
+	LANG(STR_REMOVE_COBRA, "STR_REMOVE_COBRA", STR_REMOVE_COBRA_DEFAULT);
+	LANG(STR_ADD_COBRA, "STR_ADD_COBRA", STR_ADD_COBRA_DEFAULT);
+	LANG(STR_EXTRACT_RCO, "STR_EXTRACT_RCO", STR_EXTRACT_RCO_DEFAULT);
+	LANG(STR_EXTRACT_PKG, "STR_EXTRACT_PKG", STR_EXTRACT_PKG_DEFAULT);
+	LANG(STR_PKG_INFO, "STR_PKG_INFO", STR_PKG_INFO_DEFAULT);
+	LANG(STR_EXTRACT_TRP, "STR_EXTRACT_TRP", STR_EXTRACT_TRP_DEFAULT);
+	LANG(STR_COMPRESS_ISO, "STR_COMPRESS_ISO", STR_COMPRESS_ISO_DEFAULT);
+	LANG(STR_CHECK_CRC32, "STR_CHECK_CRC32", STR_CHECK_CRC32_DEFAULT);
+	LANG(STR_DECOMPRESS_CSO, "STR_DECOMPRESS_CSO", STR_DECOMPRESS_CSO_DEFAULT);
+	LANG(STR_EXTRACT_THM, "STR_EXTRACT_THM", STR_EXTRACT_THM_DEFAULT);
+	LANG(STR_EXTRACT_P3T, "STR_EXTRACT_P3T", STR_EXTRACT_P3T_DEFAULT);
+	LANG(STR_EXTRACT_RAF, "STR_EXTRACT_RAF", STR_EXTRACT_RAF_DEFAULT);
+	LANG(STR_EXTRACT_QRC, "STR_EXTRACT_QRC", STR_EXTRACT_QRC_DEFAULT);
+	LANG(STR_EXTRACT_ZIP, "STR_EXTRACT_ZIP", STR_EXTRACT_ZIP_DEFAULT);
+	LANG(STR_CONVERT_JSX_JS, "STR_CONVERT_JSX_JS", STR_CONVERT_JSX_JS_DEFAULT);
+	LANG(STR_CONVERT_VAG_WAV, "STR_CONVERT_VAG_WAV", STR_CONVERT_VAG_WAV_DEFAULT);
+	LANG(STR_CONVERT_GTF_DDS, "STR_CONVERT_GTF_DDS", STR_CONVERT_GTF_DDS_DEFAULT);
+	LANG(STR_CONVERT_DDS_PNG, "STR_CONVERT_DDS_PNG", STR_CONVERT_DDS_PNG_DEFAULT);
+	LANG(STR_MAKE_APNG, "STR_MAKE_APNG", STR_MAKE_APNG_DEFAULT);
+	LANG(STR_SET_PERMS, "STR_SET_PERMS", STR_SET_PERMS_DEFAULT);
+	LANG(STR_NOGAME, "STR_NOGAME", STR_NOGAME_DEFAULT);
+	LANG(STR_GLOB_SETTINGS, "STR_GLOB_SETTINGS", STR_GLOB_SETTINGS_DEFAULT);
+	LANG(STR_ADJUST, "STR_ADJUST", STR_ADJUST_DEFAULT);
+	LANG(STR_ADJUST_DESC, "STR_ADJUST_DESC", STR_ADJUST_DESC_DEFAULT);
+	LANG(STR_DL_COVER, "STR_DL_COVER", STR_DL_COVER_DEFAULT);
+	LANG(STR_DL_COVER_DESC, "STR_DL_COVER_DESC", STR_DL_COVER_DESC_DEFAULT);
+	LANG(STR_PLUGIN_MANAGER, "STR_PLUGIN_MANAGER", STR_PLUGIN_MANAGER_DEFAULT);
+	LANG(STR_PLUGIN_MANAGER_DESC, "STR_PLUGIN_MANAGER_DESC", STR_PLUGIN_MANAGER_DESC_DEFAULT);
+	LANG(STR_UPD_MGZ, "STR_UPD_MGZ", STR_UPD_MGZ_DEFAULT);
+	LANG(STR_UPD_MGZ_DESC, "STR_UPD_MGZ_DESC", STR_UPD_MGZ_DESC_DEFAULT);
+	LANG(STR_GAME_PATHS, "STR_GAME_PATHS", STR_GAME_PATHS_DEFAULT);
+	LANG(STR_GAME_PATHS_DESC, "STR_GAME_PATHS_DESC", STR_GAME_PATHS_DESC_DEFAULT);
+	LANG(STR_XMB_PRIO, "STR_XMB_PRIO", STR_XMB_PRIO_DEFAULT);
+	LANG(STR_XMB_PRIO_DESC, "STR_XMB_PRIO_DESC", STR_XMB_PRIO_DESC_DEFAULT);
+	LANG(STR_HELP, "STR_HELP", STR_HELP_DEFAULT);
+	LANG(STR_HELP_DESC, "STR_HELP_DESC", STR_HELP_DESC_DEFAULT);
+	LANG(STR_COLOR_1, "STR_COLOR_1", STR_COLOR_1_DEFAULT);
+	LANG(STR_COLOR_2, "STR_COLOR_2", STR_COLOR_2_DEFAULT);
+	LANG(STR_COLOR_3, "STR_COLOR_3", STR_COLOR_3_DEFAULT);
+	LANG(STR_COLOR_4, "STR_COLOR_4", STR_COLOR_4_DEFAULT);
+	LANG(STR_COLOR_DESC, "STR_COLOR_DESC", STR_COLOR_DESC_DEFAULT);
+	LANG(STR_UI_SETTINGS, "STR_UI_SETTINGS", STR_UI_SETTINGS_DEFAULT);
+	LANG(STR_UI, "STR_UI", STR_UI_DEFAULT);
+	LANG(STR_UI_DESC, "STR_UI_DESC", STR_UI_DESC_DEFAULT);
+	LANG(STR_SIDE_MENU, "STR_SIDE_MENU", STR_SIDE_MENU_DEFAULT);
+	LANG(STR_SIDE_MENU_DESC, "STR_SIDE_MENU_DESC", STR_SIDE_MENU_DESC_DEFAULT);
+	LANG(STR_SHOW_PIC1, "STR_SHOW_PIC1", STR_SHOW_PIC1_DEFAULT);
+	LANG(STR_SHOW_PIC1_DESC, "STR_SHOW_PIC1_DESC", STR_SHOW_PIC1_DESC_DEFAULT);
+	LANG(STR_SHOW_COVER, "STR_SHOW_COVER", STR_SHOW_COVER_DEFAULT);
+	LANG(STR_SHOW_COVER_DESC, "STR_SHOW_COVER_DESC", STR_SHOW_COVER_DESC_DEFAULT);
+	LANG(STR_SHOW_GAMECASE, "STR_SHOW_GAMECASE", STR_SHOW_GAMECASE_DEFAULT);
+	LANG(STR_SHOW_GAMECASE_DESC, "STR_SHOW_GAMECASE_DESC", STR_SHOW_GAMECASE_DESC_DEFAULT);
+	LANG(STR_SHOW_ICON0, "STR_SHOW_ICON0", STR_SHOW_ICON0_DEFAULT);
+	LANG(STR_SHOW_ICON0_DESC, "STR_SHOW_ICON0_DESC", STR_SHOW_ICON0_DESC_DEFAULT);
+	LANG(STR_GRID_TYPE, "STR_GRID_TYPE", STR_GRID_TYPE_DEFAULT);
+	LANG(STR_GRID_TYPE_DESC, "STR_GRID_TYPE_DESC", STR_GRID_TYPE_DESC_DEFAULT);
+	LANG(STR_SCROLL, "STR_SCROLL", STR_SCROLL_DEFAULT);
+	LANG(STR_PAGE, "STR_PAGE", STR_PAGE_DEFAULT);
+	LANG(STR_DIRECTION, "STR_DIRECTION", STR_DIRECTION_DEFAULT);
+	LANG(STR_DIRECTION_DESC, "STR_DIRECTION_DESC", STR_DIRECTION_DESC_DEFAULT);
+	LANG(STR_VERTICAL, "STR_VERTICAL", STR_VERTICAL_DEFAULT);
+	LANG(STR_HORIZONTAL, "STR_HORIZONTAL", STR_HORIZONTAL_DEFAULT);
+	LANG(STR_ANIMATED, "STR_ANIMATED", STR_ANIMATED_DEFAULT);
+	LANG(STR_ANIMATED_DESC, "STR_ANIMATED_DESC", STR_ANIMATED_DESC_DEFAULT);
+	LANG(STR_KEEP_PROP, "STR_KEEP_PROP", STR_KEEP_PROP_DEFAULT);
+	LANG(STR_KEEP_PROP_DESC, "STR_KEEP_PROP_DESC", STR_KEEP_PROP_DESC_DEFAULT);
+	LANG(STR_NB_COL, "STR_NB_COL", STR_NB_COL_DEFAULT);
+	LANG(STR_NB_COL_DESC, "STR_NB_COL_DESC", STR_NB_COL_DESC_DEFAULT);
+	LANG(STR_NB_LINE, "STR_NB_LINE", STR_NB_LINE_DEFAULT);
+	LANG(STR_NB_LINE_DESC, "STR_NB_LINE_DESC", STR_NB_LINE_DESC_DEFAULT);
+	LANG(STR_INVERSE, "STR_INVERSE", STR_INVERSE_DEFAULT);
+	LANG(STR_INVERSE_DESC, "STR_INVERSE_DESC", STR_INVERSE_DESC_DEFAULT);
+	LANG(STR_3D, "STR_3D", STR_3D_DEFAULT);
+	LANG(STR_3D_DESC, "STR_3D_DESC", STR_3D_DESC_DEFAULT);
+	LANG(STR_ADD, "STR_ADD", STR_ADD_DEFAULT);
+	LANG(STR_LOAD, "STR_LOAD", STR_LOAD_DEFAULT);
+	LANG(STR_CHANGE, "STR_CHANGE", STR_CHANGE_DEFAULT);
+	LANG(STR_COLOR, "STR_COLOR", STR_COLOR_DEFAULT);
+	LANG(STR_RESET, "STR_RESET", STR_RESET_DEFAULT);
+	LANG(STR_FAILED, "STR_FAILED", STR_FAILED_DEFAULT);
+	LANG(STR_DONE, "STR_DONE", STR_DONE_DEFAULT);
+	LANG(STR_OPEN, "STR_OPEN", STR_OPEN_DEFAULT);
+	LANG(STR_CLOSE, "STR_CLOSE", STR_CLOSE_DEFAULT);
+	LANG(STR_OPTION, "STR_OPTION", STR_OPTION_DEFAULT);
+	LANG(STR_SELECT, "STR_SELECT", STR_SELECT_DEFAULT);
+	LANG(STR_WINDOW, "STR_WINDOW", STR_WINDOW_DEFAULT);
+	LANG(STR_CLICK, "STR_CLICK", STR_CLICK_DEFAULT);
+	LANG(STR_CURSOR, "STR_CURSOR", STR_CURSOR_DEFAULT);
+	LANG(STR_NEXT, "STR_NEXT", STR_NEXT_DEFAULT);
+	LANG(STR_PREVIOUS, "STR_PREVIOUS", STR_PREVIOUS_DEFAULT);
+	LANG(STR_SET_COLOR, "STR_SET_COLOR", STR_SET_COLOR_DEFAULT);
+	LANG(STR_HIDETV, "STR_HIDETV", STR_HIDETV_DEFAULT);
+	LANG(STR_SHOWTV, "STR_SHOWTV", STR_SHOWTV_DEFAULT);
+	LANG(STR_MOVE_TO_PLUGINS, "STR_MOVE_TO_PLUGINS", STR_MOVE_TO_PLUGINS_DEFAULT);
+	LANG(STR_ASK_PLUGINS, "STR_ASK_PLUGINS", STR_ASK_PLUGINS_DEFAULT);
+	LANG(STR_CHANGE_VALUE, "STR_CHANGE_VALUE", STR_CHANGE_VALUE_DEFAULT);
+	LANG(STR_LOAD_IDPS_LV2, "STR_LOAD_IDPS_LV2", STR_LOAD_IDPS_LV2_DEFAULT);
+	LANG(STR_LOAD_IDPS_EID5, "STR_LOAD_IDPS_EID5", STR_LOAD_IDPS_EID5_DEFAULT);
+	LANG(STR_NAME, "STR_NAME", STR_NAME_DEFAULT);
+	LANG(STR_DOCK_RIGHT, "STR_DOCK_RIGHT", STR_DOCK_RIGHT_DEFAULT);
+	LANG(STR_DOCK_LEFT, "STR_DOCK_LEFT", STR_DOCK_LEFT_DEFAULT);
+	LANG(STR_DOCK_FULL, "STR_DOCK_FULL", STR_DOCK_FULL_DEFAULT);
+	LANG(STR_PLUGIN_MONITOR, "STR_PLUGIN_MONITOR", STR_PLUGIN_MONITOR_DEFAULT);
+	LANG(STR_UNUSED, "STR_UNUSED", STR_UNUSED_DEFAULT);
+	LANG(STR_UNLOAD, "STR_UNLOAD", STR_UNLOAD_DEFAULT);
+	LANG(STR_BOOT_FILE, "STR_BOOT_FILE", STR_BOOT_FILE_DEFAULT);
+	LANG(STR_CURRENT, "STR_CURRENT", STR_CURRENT_DEFAULT);	
+	LANG(STR_NET, "STR_NET", STR_NET_DEFAULT);
+	LANG(STR_SOFT, "STR_SOFT", STR_SOFT_DEFAULT);	
+	LANG(STR_GX, "STR_GX", STR_GX_DEFAULT);
+	LANG(STR_CUSTOM, "STR_CUSTOM", STR_CUSTOM_DEFAULT);
+	LANG(STR_NEW_CMD, "STR_NEW_CMD", STR_NEW_CMD_DEFAULT);	
+	LANG(STR_PNACH, "STR_PNACH", STR_PNACH_DEFAULT);
+	LANG(STR_WIDESCREEN, "STR_WIDESCREEN", STR_WIDESCREEN_DEFAULT);
+	LANG(STR_480P, "STR_480P", STR_480P_DEFAULT);
+	LANG(STR_YFIX, "STR_YFIX", STR_YFIX_DEFAULT);	
+	LANG(STR_FMV, "STR_FMV", STR_FMV_DEFAULT);
+	LANG(STR_SIMPLE, "STR_SIMPLE", STR_SIMPLE_DEFAULT);	
+	LANG(STR_ADVANCED, "STR_ADVANCED", STR_ADVANCED_DEFAULT);
+	LANG(STR_INSTALL_MGZ, "STR_INSTALL_MGZ", STR_INSTALL_MGZ_DEFAULT);
+	LANG(STR_UP2DATE, "STR_UP2DATE", STR_UP2DATE_DEFAULT);	
+	LANG(STR_SHOW_WAVES, "STR_SHOW_WAVES", STR_SHOW_WAVES_DEFAULT);
+	LANG(STR_SHOW_WAVES_DESC, "STR_SHOW_WAVES_DESC", STR_SHOW_WAVES_DESC_DEFAULT);
+	LANG(STR_WAVES_COLOR, "STR_WAVES_COLOR", STR_WAVES_COLOR_DEFAULT);
+	LANG(STR_WAVES_COLOR_DESC, "STR_WAVES_COLOR_DESC", STR_WAVES_COLOR_DESC_DEFAULT);
+	LANG(STR_USE_CONFIG, "STR_USE_CONFIG", STR_USE_CONFIG_DEFAULT);
+	LANG(STR_COLORSET, "STR_COLORSET", STR_COLORSET_DEFAULT);
+	LANG(STR_COLORSET_DESC, "STR_COLORSET_DESC", STR_COLORSET_DESC_DEFAULT);
+	LANG(STR_GRID_SCROLL, "STR_GRID_SCROLL", STR_GRID_SCROLL_DEFAULT);
+	LANG(STR_ADD_LIMG, "STR_ADD_LIMG", STR_ADD_LIMG_DEFAULT);
+	LANG(STR_REMOVE_LIMG, "STR_REMOVE_LIMG", STR_REMOVE_LIMG_DEFAULT);
+	LANG(STR_LIMG_DESC, "STR_LIMG_DESC", STR_LIMG_DESC_DEFAULT);
+	LANG(STR_FONT, "STR_FONT", STR_FONT_DEFAULT);
+	LANG(STR_FONT_DESC, "STR_FONT_DESC", STR_FONT_DESC_DEFAULT);
+	LANG(STR_MOVE, "STR_MOVE", STR_MOVE_DEFAULT);
+	LANG(STR_JOIN, "STR_JOIN", STR_JOIN_DEFAULT);
+	LANG(STR_JOIN_DESC, "STR_JOIN_DESC", STR_JOIN_DESC_DEFAULT);
+	LANG(STR_COLOR_FILTER, "STR_COLOR_FILTER", STR_COLOR_FILTER_DEFAULT);
+	LANG(STR_COLOR_NOTIF, "STR_COLOR_NOTIF", STR_COLOR_NOTIF_DEFAULT);
+	LANG(STR_COLOR_BOXHEAD, "STR_COLOR_BOXHEAD", STR_COLOR_BOXHEAD_DEFAULT);
+	LANG(STR_COLOR_BOXBODY, "STR_COLOR_BOXBODY", STR_COLOR_BOXBODY_DEFAULT);
+	LANG(STR_COLOR_SIDEBAR, "STR_COLOR_SIDEBAR", STR_COLOR_SIDEBAR_DEFAULT);
+	LANG(STR_COLOR_BGS, "STR_COLOR_BGS", STR_COLOR_BGS_DEFAULT);
+	LANG(STR_COLOR_BG, "STR_COLOR_BG", STR_COLOR_BG_DEFAULT);
+	LANG(STR_ROOT_DISPLAY, "STR_ROOT_DISPLAY", STR_ROOT_DISPLAY_DEFAULT);
+	LANG(STR_ROOT_DISPLAY_DESC, "STR_ROOT_DISPLAY_DESC", STR_ROOT_DISPLAY_DEFAULT);
+	LANG(STR_STYLE, "STR_STYLE", STR_STYLE_DEFAULT);
+	LANG(STR_STYLE_CUSTOM, "STR_STYLE_CUSTOM", STR_STYLE_CUSTOM_DEFAULT);
+	LANG(STR_STYLE1, "STR_STYLE1", STR_STYLE1_DEFAULT);
+	LANG(STR_STYLE2, "STR_STYLE2", STR_STYLE2_DEFAULT);
+	LANG(STR_STYLE3, "STR_STYLE3", STR_STYLE3_DEFAULT);
+	LANG(STR_STYLE4, "STR_STYLE4", STR_STYLE4_DEFAULT);
+	LANG(STR_STYLE5, "STR_STYLE5", STR_STYLE5_DEFAULT);
+	LANG(STR_STYLE6, "STR_STYLE6", STR_STYLE6_DEFAULT);
+	LANG(STR_FREEOF, "STR_FREEOF", STR_FREEOF_DEFAULT);
+	LANG(STR_ROOTLABEL, "STR_ROOTLABEL", STR_ROOTLABEL_DEFAULT);
+	LANG(STR_FM_ICONSIZE, "STR_FM_ICONSIZE", STR_FM_ICONSIZE_DEFAULT);
+	LANG(STR_FM_BIG, "STR_FM_BIG", STR_FM_BIG_DEFAULT);
+	LANG(STR_FM_SMALL, "STR_FM_SMALL", STR_FM_SMALL_DEFAULT);
+	LANG(STR_FM_ROWNUMBER, "STR_FM_ROWNUMBER", STR_FM_ROWNUMBER_DEFAULT);
+	LANG(STR_FM_ROWSIZE, "STR_FM_ROWSIZE", STR_FM_ROWSIZE_DEFAULT);
+	LANG(STR_FM_LEFT_CONTENT, "STR_FM_LEFT_CONTENT", STR_FM_LEFT_CONTENT_DEFAULT);
+	LANG(STR_FM_RIGHT_CONTENT, "STR_FM_RIGHT_CONTENT", STR_FM_RIGHT_CONTENT_DEFAULT);
+	LANG(STR_FM_EMPTY, "STR_FM_EMPTY", STR_FM_EMPTY_DEFAULT);
+	LANG(STR_FM_MOUNTPOINT, "STR_FM_MOUNTPOINT", STR_FM_MOUNTPOINT_DEFAULT);
+	LANG(STR_FM_DEVICE, "STR_FM_DEVICE", STR_FM_DEVICE_DEFAULT);
+	LANG(STR_FM_LABEL, "STR_FM_LABEL", STR_FM_LABEL_DEFAULT);
+	LANG(STR_FM_CAPACITY, "STR_FM_CAPACITY", STR_FM_CAPACITY_DEFAULT);
+	LANG(STR_FM_MEMINSIDE, "STR_FM_MEMINSIDE", STR_FM_MEMINSIDE_DEFAULT);
+	LANG(STR_FM_MEMOUTSIDE, "STR_FM_MEMOUTSIDE", STR_FM_MEMOUTSIDE_DEFAULT);
+	LANG(STR_FM_FILESYSTEM, "STR_FM_FILESYSTEM", STR_FM_FILESYSTEM_DEFAULT);
+	LANG(STR_FM_CB_WIDTH, "STR_FM_CB_WIDTH", STR_FM_CB_WIDTH_DEFAULT);
+	LANG(STR_FM_MEMORY, "STR_FM_MEMORY", STR_FM_MEMORY_DEFAULT);
+	LANG(STR_FM_ICON, "STR_FM_ICON", STR_FM_ICON_DEFAULT);
+	LANG(STR_FM_FILEFOLDER, "STR_FM_FILEFOLDER", STR_FM_FILEFOLDER_DEFAULT);
+	LANG(STR_FM_CUSTOM, "STR_FM_CUSTOM", STR_FM_CUSTOM_DEFAULT);
+	LANG(STR_FM_CB_FILL, "STR_FM_CB_FILL", STR_FM_CB_FILL_DEFAULT);
+	LANG(STR_EDIT_IDPS, "STR_EDIT_IDPS", STR_EDIT_IDPS_DEFAULT);
+	LANG(STR_FILTER_NOGAME, "STR_FILTER_NOGAME", STR_FILTER_NOGAME_DEFAULT);
+	
+	FREE(flang);
 	lang_code_loaded = lang_code;
 }
 
@@ -5326,7 +5919,7 @@ void load_lang()
 #endif
 
 	for(i=0; i < lang_N ;i++) {
-		if((uint8_t) STR_LANGCODE[i][0] == lang_code) {
+		if(LANGCODE[i] == lang_code) {
 			lang = i;
 			write_setting();
 			return;
@@ -6115,6 +6708,10 @@ u8 InstallTheme()
 
 }
 
+// **********************
+// COLORS
+// **********************
+
 char *NextColorSetName(FILE *f)
 {
 	char line[255];
@@ -6129,7 +6726,21 @@ char *NextColorSetName(FILE *f)
 }
 
 void LoadColorSet(char *ColorSetName)
-{
+{		
+	u8 OLD_FILTER_NOTIF = FILTER_NOTIF;
+	u8 OLD_FILTER_SIDEBAR = FILTER_SIDEBAR;
+	u8 OLD_FILTER_BOXHEAD = FILTER_BOXHEAD;
+	u8 OLD_FILTER_BOXBODY = FILTER_BOXBODY;
+	u8 OLD_FILTER_BGS = FILTER_BGS;
+	u8 OLD_FILTER_BG = FILTER_BG;
+	
+	FILTER_NOTIF=DISABLED;
+	FILTER_SIDEBAR=DISABLED;
+	FILTER_BOXHEAD=DISABLED;
+	FILTER_BOXBODY=DISABLED;
+	FILTER_BGS=DISABLED;
+	FILTER_BG=DISABLED;
+	
 	FILE *f;
 	char SysColorSetPath[128];
 	sprintf(SysColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
@@ -6168,6 +6779,30 @@ void LoadColorSet(char *ColorSetName)
 			} else
 			if(strstr(line, "WAVES_COLOR")!=NULL) {
 				WAVES_COLOR = loc;
+			} else
+			if(strstr(line, "COLOR_NOTIF")!=NULL) {
+				COLOR_NOTIF = loc;
+				FILTER_NOTIF=ENABLED;
+			}  else
+			if(strstr(line, "COLOR_SIDEBAR")!=NULL) {
+				COLOR_SIDEBAR = loc;
+				FILTER_SIDEBAR=ENABLED;
+			} else
+			if(strstr(line, "COLOR_BOXHEAD")!=NULL) {
+				COLOR_BOXHEAD = loc;
+				FILTER_BOXHEAD=ENABLED;
+			} else
+			if(strstr(line, "COLOR_BOXBODY")!=NULL) {
+				COLOR_BOXBODY = loc;
+				FILTER_BOXBODY=ENABLED;
+			} else
+			if(strstr(line, "COLOR_BGS")!=NULL) {
+				COLOR_BGS = loc;
+				FILTER_BGS=ENABLED;
+			} else
+			if(strstr(line, "COLOR_BG")!=NULL) {
+				COLOR_BG = loc;
+				FILTER_BG=ENABLED;
 			}
 		}
 		
@@ -6175,6 +6810,13 @@ void LoadColorSet(char *ColorSetName)
 	}
 	fclose(f);
 	
+	if(OLD_FILTER_NOTIF != FILTER_NOTIF) ReloadTheme(NOTIF);
+	if(OLD_FILTER_SIDEBAR != FILTER_SIDEBAR) ReloadTheme(SIDEBAR);
+	if(OLD_FILTER_BOXHEAD != FILTER_BOXHEAD) ReloadTheme(BOXHEAD);
+	if(OLD_FILTER_BOXBODY != FILTER_BOXBODY) ReloadTheme(BOXBODY);
+	if(OLD_FILTER_BGS != FILTER_BGS) ReloadTheme(BGS);
+	if(OLD_FILTER_BG != FILTER_BG) ReloadTheme(_BG_);
+		
 	write_setting();
 }
 
@@ -6205,9 +6847,19 @@ void AddColorSet(char *ColorSetName)
 	sprintf(temp, "COLOR_2=%08X\n", COLOR_2); fputs(temp, f);
 	sprintf(temp, "COLOR_3=%08X\n", COLOR_3); fputs(temp, f);
 	sprintf(temp, "COLOR_4=%08X\n", COLOR_4); fputs(temp, f);
-	sprintf(temp, "WAVES_COLOR=%08X\n\n", WAVES_COLOR); fputs(temp, f);
+	
+	if(Show_COVER==YES) {sprintf(temp, "WAVES_COLOR=%08X\n", WAVES_COLOR); fputs(temp, f);}
+	if(FILTER_NOTIF == ENABLED) {sprintf(temp, "COLOR_NOTIF=%08X\n", COLOR_NOTIF); fputs(temp, f);}
+	if(FILTER_BOXHEAD == ENABLED) {sprintf(temp, "COLOR_BOXHEAD=%08X\n", COLOR_BOXHEAD); fputs(temp, f);}
+	if(FILTER_BOXBODY == ENABLED) {sprintf(temp, "COLOR_BOXBODY=%08X\n", COLOR_BOXBODY); fputs(temp, f);}
+	if(FILTER_SIDEBAR == ENABLED) {sprintf(temp, "COLOR_SIDEBAR=%08X\n", COLOR_SIDEBAR); fputs(temp, f);}
+	if(FILTER_BGS == ENABLED) {sprintf(temp, "COLOR_BGS=%08X\n", COLOR_BGS); fputs(temp, f);}
+	if(FILTER_BG == ENABLED) {sprintf(temp, "COLOR_BG=%08X\n", COLOR_BG); fputs(temp, f);}
+	
+	fputs("\n", f);
 	
 	fclose(f);
+	
 }
 
 void RemoveColorSet(char *ColorSetName)
@@ -6306,7 +6958,13 @@ void AddThemeColorSet()
 				&&  strstr(line, "COLOR_1") == NULL
 				&&  strstr(line, "COLOR_2") == NULL
 				&&  strstr(line, "COLOR_3") == NULL
-				&&  strstr(line, "COLOR_4") == NULL	) continue;
+				&&  strstr(line, "COLOR_4") == NULL	
+				&&  strstr(line, "COLOR_NOTIF") == NULL	
+				&&  strstr(line, "COLOR_BOXHEAD") == NULL	
+				&&  strstr(line, "COLOR_BOXBODY") == NULL	
+				&&  strstr(line, "COLOR_SIDEBAR") == NULL
+				&&  strstr(line, "COLOR_BGS") == NULL
+				&&  strstr(line, "COLOR_BG") == NULL) continue;
 				if( strstr(line, "=") == NULL ) continue;
 				
 				
@@ -6332,6 +6990,93 @@ void AddThemeColorSet()
 	fclose(f2);
 }
 
+char *GetCurrentColorSet()
+{
+	char *ret=NULL;
+	
+	FILE *f;
+	char SysColorSetPath[128];
+	sprintf(SysColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+
+	f = fopen(SysColorSetPath, "rb");
+	if(f==NULL) return strcpy_malloc(STR_NONE);
+	
+	char *SysColorSetName=NULL;
+	while((SysColorSetName=NextColorSetName(f)) != NULL) {
+		
+		int flag=NO;
+		
+		char line[255];
+		while(fgets(line, 255, f) != NULL) {
+			if(strstr(line, "[") != NULL ) break;
+			if(strstr(line, "=") == NULL ) continue;
+			
+			if(strlen(&strrchr(line, '=')[1]) == 0) continue;
+			
+			u32 loc=0;
+			sscanf(&strrchr(line, '=')[1], "%X", (unsigned int *) &loc);
+			
+			if(strstr(line, "COLOR_1")!=NULL) {
+				if( loc == COLOR_1) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_2")!=NULL) {
+				if( loc == COLOR_2) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_3")!=NULL) {
+				if( loc == COLOR_3) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_4")!=NULL) {
+				if( loc == COLOR_4) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "WAVES_COLOR")!=NULL) {
+				if( loc == WAVES_COLOR) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_NOTIF")!=NULL) {
+				if( loc == COLOR_NOTIF) flag=YES;  
+				else {flag=NO; break;}
+			}  else
+			if(strstr(line, "COLOR_SIDEBAR")!=NULL) {
+				if( loc == COLOR_SIDEBAR) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_BOXHEAD")!=NULL) {
+				if( loc == COLOR_BOXHEAD) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_BOXBODY")!=NULL) {
+				if( loc == COLOR_BOXBODY) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_BGS")!=NULL) {
+				if( loc == COLOR_BGS) flag=YES;  
+				else {flag=NO; break;}
+			} else
+			if(strstr(line, "COLOR_BG")!=NULL) {
+				if( loc == COLOR_BG) flag=YES;  
+				else {flag=NO; break;}
+			}	
+		}
+		
+		if(flag==YES) {
+			ret = strcpy_malloc(SysColorSetName);
+			FREE(SysColorSetName);
+			break;
+		}
+		
+		FREE(SysColorSetName);
+	}
+	fclose(f);
+	
+	if(ret == NULL) return strcpy_malloc(STR_NONE);
+
+	return ret;
+}
+
 void LoadThemeFont()
 {
 	char ThemeFontPath[128];
@@ -6347,6 +7092,20 @@ void LoadThemeFont()
 
 void LoadThemeColorSet()
 {
+	u8 OLD_FILTER_NOTIF = FILTER_NOTIF;
+	u8 OLD_FILTER_SIDEBAR = FILTER_SIDEBAR;
+	u8 OLD_FILTER_BOXHEAD = FILTER_BOXHEAD;
+	u8 OLD_FILTER_BOXBODY = FILTER_BOXBODY;
+	u8 OLD_FILTER_BGS = FILTER_BGS;
+	u8 OLD_FILTER_BG = FILTER_BG;
+	
+	FILTER_NOTIF=DISABLED;
+	FILTER_SIDEBAR=DISABLED;
+	FILTER_BOXHEAD=DISABLED;
+	FILTER_BOXBODY=DISABLED;
+	FILTER_BGS=DISABLED;
+	FILTER_BG=DISABLED;
+	
 	FILE *f;
 	char ThemeColorSetPath[128];
 	
@@ -6382,15 +7141,47 @@ void LoadThemeColorSet()
 		} else
 		if(strstr(line, "WAVES_COLOR")!=NULL) {
 			WAVES_COLOR = loc;
+		} else
+		if(strstr(line, "COLOR_NOTIF")!=NULL) {
+			COLOR_NOTIF = loc;
+			FILTER_NOTIF=ENABLED;
+		}  else
+		if(strstr(line, "COLOR_SIDEBAR")!=NULL) {
+			COLOR_SIDEBAR = loc;
+			FILTER_SIDEBAR=ENABLED;
+		} else
+		if(strstr(line, "COLOR_BOXHEAD")!=NULL) {
+			COLOR_BOXHEAD = loc;
+			FILTER_BOXHEAD=ENABLED;
+		} else
+		if(strstr(line, "COLOR_BOXBODY")!=NULL) {
+			COLOR_BOXBODY = loc;
+			FILTER_BOXBODY=ENABLED;
+		} else
+		if(strstr(line, "COLOR_BGS")!=NULL) {
+			COLOR_BGS = loc;
+			FILTER_BGS=ENABLED;
+		} else
+		if(strstr(line, "COLOR_BG")!=NULL) {
+			COLOR_BG = loc;
+			FILTER_BG=ENABLED;
 		}
 	}
 	
 	fclose(f);
+	
+	if(OLD_FILTER_NOTIF != FILTER_NOTIF) ReloadTheme(NOTIF);
+	if(OLD_FILTER_SIDEBAR != FILTER_SIDEBAR) ReloadTheme(SIDEBAR);
+	if(OLD_FILTER_BOXHEAD != FILTER_BOXHEAD) ReloadTheme(BOXHEAD);
+	if(OLD_FILTER_BOXBODY != FILTER_BOXBODY) ReloadTheme(BOXBODY);
+	if(OLD_FILTER_BGS != FILTER_BGS) ReloadTheme(BGS);
+	if(OLD_FILTER_BG != FILTER_BG) ReloadTheme(_BG_);
 }
 
-u8 LoadTexture(char *texture_path, u32 *texture_offset, imgData *texture_data)
+u8 LoadTexture(char *texture_path, u32 *texture_offset, imgData *texture_data, u32 *texture_size, u8 gray)
 {
-	if( imgLoadFromFile(texture_path, texture_data) == FAILED ) { 
+
+	if( imgLoadFromFile(texture_path, texture_data, gray) == FAILED ) { 
 		*texture_offset=0;
 		return FAILED;
 	}
@@ -6403,9 +7194,75 @@ u8 LoadTexture(char *texture_path, u32 *texture_offset, imgData *texture_data)
 	memcpy(texture_pointer, (*texture_data).bmp_out, (*texture_data).pitch * (*texture_data).height);
 	free((*texture_data).bmp_out);
 	*texture_offset = tiny3d_TextureOffset(texture_pointer);
-	texture_pointer += (((*texture_data).pitch * (*texture_data).height + 15) & ~15);
+	
+	texture_pointer += (((*texture_data).pitch * (*texture_data).height + 15) & ~15) / 4;
+	
+	if(texture_size != NULL) *texture_size += (((*texture_data).pitch * (*texture_data).height + 15) & ~15) / 4;
 	
 	return SUCCESS;
+}
+
+u32 texture_NOTIF = 0;
+u32 texture_BOXHEAD = 0;
+u32 texture_BOXBODY = 0;
+u32 texture_SIDEBAR = 0;
+u32 texture_BGS = 0;
+u32 texture_BG = 0;
+
+// to reload fast for COLORFILTER
+void ReloadTheme(u8 i)
+{
+	char temp[255];
+	char thmPath[255];
+	u32 SIZE=0;
+	u8 gray=NO;
+	
+	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+	if(path_info(thmPath) == _NOT_EXIST) {
+		strcpy(Themes[UI_position], STR_NONE);
+		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+	}
+	
+	if(i == NOTIF) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_NOTIF;
+	if(i == BOXHEAD) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_BOXHEAD;
+	if(i == BOXBODY) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_BOXBODY;
+	if(i == SIDEBAR) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_SIDEBAR;
+	if(i == BGS) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_BGS;
+	if(i == _BG_) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_BG;
+	
+	if( i==NOTIF && FILTER_NOTIF==ENABLED) gray = YES; else
+	if( i==BOXHEAD && FILTER_BOXHEAD==ENABLED) gray = YES; else
+	if( i==BOXBODY && FILTER_BOXBODY==ENABLED) gray = YES; else
+	if( i==SIDEBAR && FILTER_SIDEBAR==ENABLED) gray = YES; else
+	if( i==BGS && FILTER_BGS==ENABLED) gray = YES; else
+	gray = NO;
+	
+	if(i == _BG_) {
+		sprintf(temp, "%s/BG.PNG", thmPath);
+		if(is_apng(temp) == YES) {
+			Load_ANIMATED_BG(temp);
+		} else {
+			if( LoadTexture(temp, &BG_offset[0], &BG[0], &SIZE, FILTER_BG) == FAILED ) {
+				sprintf(temp, "%s/BG.JPG", thmPath);
+				LoadTexture(temp, &BG_offset[0], &BG[0], &SIZE, FILTER_BG);
+			}
+			
+		}
+		return;
+	}
+	
+	
+	sprintf(temp, "%s/%s.PNG", thmPath, PICTURE_NAME[i]);
+	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
+		
+	sprintf(temp, "%s/%s.JPG", thmPath, PICTURE_NAME[i]);
+	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
+	
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_id, PICTURE_NAME[i]);
+	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
+		
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.JPG", ManaGunZ_id, PICTURE_NAME[i]);
+	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
 }
 
 void Load_Theme()
@@ -6425,57 +7282,82 @@ void Load_Theme()
 	memset(XMB_Col_offset, 0, sizeof(XMB_Col_offset));
 	XMB_MMTHM_XMB2_offset = 0;
 	XMB_MMTHM_XMB_offset = 0;
+	TEXTURE_THEME_SIZE=0;
+	
+	texture_NOTIF = 0;
+	texture_BOXHEAD = 0;
+	texture_BOXBODY = 0;
+	texture_SIDEBAR = 0;
+	texture_BG = 0;
+	texture_BGS = 0;
 	
 	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
 	if(path_info(thmPath) == _NOT_EXIST) {
 		strcpy(Themes[UI_position], STR_NONE);
 		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
 	}
-	
+	u8 gray = NO;
 	for(i=0; i<PICTURE_NUMBER; i++) {
+		if( i==NOTIF && FILTER_NOTIF==ENABLED) gray = YES; else
+		if( i==BOXHEAD && FILTER_BOXHEAD==ENABLED) gray = YES; else
+		if( i==BOXBODY && FILTER_BOXBODY==ENABLED) gray = YES; else
+		if( i==SIDEBAR && FILTER_SIDEBAR==ENABLED) gray = YES; else
+		if( i==BGS && FILTER_BGS==ENABLED) gray = YES; else
+		gray = NO;
+		
+		if( i==NOTIF) texture_NOTIF = TEXTURE_THEME_SIZE; else
+		if( i==BOXHEAD)texture_BOXHEAD = TEXTURE_THEME_SIZE; else
+		if( i==BOXBODY) texture_BOXBODY = TEXTURE_THEME_SIZE; else
+		if( i==SIDEBAR) texture_SIDEBAR = TEXTURE_THEME_SIZE; else
+		if( i==BGS) texture_BGS = TEXTURE_THEME_SIZE;
+		
 		sprintf(temp, "%s/%s.PNG", thmPath, PICTURE_NAME[i]);
-		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i]) == SUCCESS ) continue;
+		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
 		
 		sprintf(temp, "%s/%s.JPG", thmPath, PICTURE_NAME[i]);
-		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i]) == SUCCESS ) continue;
+		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
 		
 		sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_id, PICTURE_NAME[i]);
-		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i]) == SUCCESS ) continue;
+		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
 		
-		sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_id, PICTURE_NAME[i]);
-		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i]) == SUCCESS ) continue;
+		sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.JPG", ManaGunZ_id, PICTURE_NAME[i]);
+		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
+		
 	}	
 
 	if(UI_position==XMB) {
 		int i;
 		for(i=0; i<6; i++) {
 			sprintf(temp, "%s/%s.PNG", thmPath, XMB_COLUMN_NAME[i]);
-			if( LoadTexture(temp, &XMB_Col_offset[i], &XMB_Col[i]) == FAILED ) {
+			if( LoadTexture(temp, &XMB_Col_offset[i], &XMB_Col[i], &TEXTURE_THEME_SIZE, NO) == FAILED ) {
 				sprintf(temp, "%s/%s.JPG", thmPath, XMB_COLUMN_NAME[i]);
-				LoadTexture(temp, &XMB_Col_offset[i], &XMB_Col[i]);
+				LoadTexture(temp, &XMB_Col_offset[i], &XMB_Col[i], &TEXTURE_THEME_SIZE, NO);
 			}
 		}
 		
 		sprintf(temp, "%s/MMTHM_XMB.PNG", thmPath);
-		if( LoadTexture(temp, &XMB_MMTHM_XMB_offset, &XMB_MMTHM_XMB) == FAILED ) {
+		if( LoadTexture(temp, &XMB_MMTHM_XMB_offset, &XMB_MMTHM_XMB, &TEXTURE_THEME_SIZE, NO) == FAILED ) {
 			sprintf(temp, "%s/MMTHM_XMB.JPG", thmPath);
-			LoadTexture(temp, &XMB_MMTHM_XMB_offset, &XMB_MMTHM_XMB);
+			LoadTexture(temp, &XMB_MMTHM_XMB_offset, &XMB_MMTHM_XMB, &TEXTURE_THEME_SIZE, NO);
 		}
 		
 		sprintf(temp, "%s/MMTHM_XMB2.PNG", thmPath);
-		if( LoadTexture(temp, &XMB_MMTHM_XMB2_offset, &XMB_MMTHM_XMB2) == FAILED ) {
+		if( LoadTexture(temp, &XMB_MMTHM_XMB2_offset, &XMB_MMTHM_XMB2, &TEXTURE_THEME_SIZE, NO) == FAILED ) {
 			sprintf(temp, "%s/MMTHM_XMB2.JPG", thmPath);
-			LoadTexture(temp, &XMB_MMTHM_XMB2_offset, &XMB_MMTHM_XMB2);
+			LoadTexture(temp, &XMB_MMTHM_XMB2_offset, &XMB_MMTHM_XMB2, &TEXTURE_THEME_SIZE, NO);
 		}
 	}
+	
+	
+	texture_BG = TEXTURE_THEME_SIZE;
 	
 	sprintf(temp, "%s/BG.PNG", thmPath);
 	if(is_apng(temp) == YES) {
 		Load_ANIMATED_BG(temp);
 	} else {
-		if( LoadTexture(temp, &BG_offset[0], &BG[0]) == FAILED ) {
+		if( LoadTexture(temp, &BG_offset[0], &BG[0], &TEXTURE_THEME_SIZE, FILTER_BG) == FAILED ) {
 			sprintf(temp, "%s/BG.JPG", thmPath);
-			LoadTexture(temp, &BG_offset[0], &BG[0]);
+			LoadTexture(temp, &BG_offset[0], &BG[0], &TEXTURE_THEME_SIZE, FILTER_BG);
 		}
 	}
 }
@@ -6557,28 +7439,29 @@ char *LoadFileFromISO(u8 prog, char *path, char *filename, int *size)
 	return mem;
 }
 
-int position_PIC1=-1;
+int position_CURPIC=-1;
 void LOAD_PIC1()
 {
+	if(Show_PIC1 == NO) return; 
+	if(position_CURPIC<0) return;
+	
 	char *mem = NULL;
 	int size=0;
 	
 	TMP_PIC_offset=0;
 	
-	if( Show_PIC1 == NO ) return; 
-	
-	if( list_game_platform[position_PIC1] != _ISO_PS3 && list_game_platform[position_PIC1] != _ISO_PSP &&
-		list_game_platform[position_PIC1] != _JB_PS3 ) return;
+	if( list_game_platform[position_CURPIC] != _ISO_PS3 && list_game_platform[position_CURPIC] != _ISO_PSP &&
+		list_game_platform[position_CURPIC] != _JB_PS3 ) return;
 		
-	if( list_game_platform[position_PIC1] == _ISO_PS3 ) {
-		mem = LoadFileFromISO(YES, list_game_path[position_PIC1], "/PS3_GAME/PIC1.PNG", &size);
+	if( list_game_platform[position_CURPIC] == _ISO_PS3 ) {
+		mem = LoadFileFromISO(YES, list_game_path[position_CURPIC], "/PS3_GAME/PIC1.PNG", &size);
 	} else
-	if( list_game_platform[position_PIC1] == _ISO_PSP ) {
-		mem = LoadFileFromISO(YES, list_game_path[position_PIC1], "/PSP_GAME/PIC1.PNG", &size);
+	if( list_game_platform[position_CURPIC] == _ISO_PSP ) {
+		mem = LoadFileFromISO(YES, list_game_path[position_CURPIC], "/PSP_GAME/PIC1.PNG", &size);
 	} else
-	if( list_game_platform[position_PIC1] == _JB_PS3 ) {
+	if( list_game_platform[position_CURPIC] == _JB_PS3 ) {
 		char temp[255];
-		sprintf(temp, "%s/PS3_GAME/PIC1.PNG", list_game_path[position_PIC1]);
+		sprintf(temp, "%s/PS3_GAME/PIC1.PNG", list_game_path[position_CURPIC]);
 		mem = LoadFileProg(temp, &size);
 		if(mem==NULL) return;
 	}
@@ -6587,7 +7470,7 @@ void LOAD_PIC1()
 	
 	free(mem);
 	
-	texture_pointer = texture_temp;
+	texture_pointer = texture_mem + TEXTURE_POINTER_TMP;
 	
 	if(TMP_PIC.bmp_out) {
 		memcpy(texture_pointer, TMP_PIC.bmp_out, TMP_PIC.pitch * TMP_PIC.height);
@@ -6596,21 +7479,78 @@ void LOAD_PIC1()
 		texture_pointer += ((TMP_PIC.pitch * TMP_PIC.height + 15) & ~15) / 4;
 		
 	}
-	
 }
 
-void Draw_PIC1()
+void LOAD_COVER() 
+{	
+	COVER_offset = 0;
+	
+	if(Show_COVER == NO) return;
+	if(position_CURPIC<0) return;
+
+	char temp[128];
+
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[position_CURPIC]);
+	if(path_info(temp) == _FILE) goto read;
+	
+	return;
+read:
+
+	if( imgLoadFromFile(temp, &COVER, NO) == FAILED) return;
+	
+	texture_pointer = texture_mem + TEXTURE_POINTER_COVER;
+	memcpy(texture_pointer, COVER.bmp_out, COVER.pitch*COVER.height);
+	free(COVER.bmp_out);
+	COVER_offset = tiny3d_TextureOffset(texture_pointer);
+}
+
+void Draw_CURPIC()
 {
+	if(position == -1) return;
 	
-	if(Show_PIC1==NO && load_PIC1 == YES) { end_load_PIC1(); return; }
+	if( Show_PIC1==YES || (Show_COVER==YES && (UI_position==LIST || UI_position==XMB)) ) 
+		start_load_CURPIC(); 
+	else {
+		end_load_CURPIC(); 
+		return;
+	}
 	
-	if(Show_PIC1==YES && load_PIC1 == NO) { start_load_PIC1(); return; }
+	if(MENU==YES && MENU_SIDE==NO) {return;}
 	
-	if(Show_PIC1==NO) return;
 	
-	if(MENU==YES && MENU_SIDE == NO) return;
-	
-	if((UI_position==LIST || UI_position==GRID) && Display_PIC1 == NO) return;
 	
 	if(TMP_PIC_offset != 0 ) {
 		if( UI_position==XMB || UI_position==FLOW)
@@ -6621,49 +7561,58 @@ void Draw_PIC1()
 			else 
 				Draw_Box(0, 0, 11, 0, 848, 512, WHITE, YES);
 		} else
-		if( UI_position==LIST || UI_position==GRID) 
+		if((UI_position==LIST || UI_position==GRID) && Display_PIC1 == YES)
 		{
 			tiny3d_SetTexture(0, TMP_PIC_offset, TMP_PIC.width, TMP_PIC.height, TMP_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			Draw_Box(50, 50, 0, 0, 848-100, 512-100, WHITE, YES);
 		}
-	} else {
-		if(0 <= prog_bar1_value && prog_bar1_value < 100) Draw_Progress_Bar(50, 15, 1, prog_bar1_value, COLOR_2);
 	}
-
+	
+	if(0 <= prog_bar1_value && prog_bar1_value < 100) Draw_Progress_Bar(50, 15, 1, prog_bar1_value, COLOR_2);
 }
 
-static sys_ppu_thread_t load_PIC1_id;
+static sys_ppu_thread_t load_CURPIC_id;
 
-void load_PIC1_thread(void *unused)
+void load_CURPIC_thread(void *unused)
 {
-	while(load_PIC1 == YES) {
-		if(position_PIC1 != position && Load_GamePIC == NO) {
+	while(Load_CURPIC_flag == YES) {
+		if(position == -1) {
+			sleep(1);
+		} else
+		if(position_CURPIC != position) {
+			COVER_offset=0;
 			TMP_PIC_offset = 0;
-			position_PIC1=position;
-			usleep(1000000);
-			if(position_PIC1 == position) LOAD_PIC1();
+			position_CURPIC=position;
+			usleep(100000);
+			if(position_CURPIC == position) {
+				LOAD_COVER();
+				LOAD_PIC1();
+			}
 		}
-		else usleep(100000);
-		if( Game_stuff == NO ) TMP_PIC_offset=0;
+		else usleep(10000);
+		if( Game_stuff == NO ) {
+			COVER_offset=0;
+			TMP_PIC_offset=0;
+		}
 	}
 
 	sysThreadExit(0);
 }
 
-void start_load_PIC1()
+void start_load_CURPIC()
 {
-	if(load_PIC1==NO) {
-		load_PIC1 = YES;
-		sysThreadCreate(&load_PIC1_id, load_PIC1_thread, NULL, 1500, 0x2000, THREAD_JOINABLE, "load_PIC1");
+	if(Load_CURPIC_flag==NO) {
+		Load_CURPIC_flag = YES;
+		sysThreadCreate(&load_CURPIC_id, load_CURPIC_thread, NULL, 1500, 0x2000, THREAD_JOINABLE, "Load_CURPIC_flag");
 	}
 }
 
-void end_load_PIC1()
+void end_load_CURPIC()
 {
-	u64 ret;
-	if(load_PIC1==YES) {
-		load_PIC1 = NO;
-		sysThreadJoin(load_PIC1_id, &ret);
+	if(Load_CURPIC_flag==YES) {
+		u64 ret;
+		Load_CURPIC_flag = NO;
+		sysThreadJoin(load_CURPIC_id, &ret);
 	}
 }
 
@@ -6890,12 +7839,21 @@ void Draw_BG()
 {
 	if(MENU==YES && MENU_SIDE == NO) return;
 	
+	u32 color = WHITE;
 	if(BG_offset[1] != 0 ) { // Animated
-		Draw_ANIMATED_BG();
-	} else
+		if(FILTER_BG==ENABLED) color = COLOR_BG;
+		
+		Draw_ABG(color);
+	} else 
 	if(BG_offset[0] != 0 ) {
+		if(FILTER_BG==ENABLED) color = COLOR_BG;
+		
 		tiny3d_SetTexture(0, BG_offset[0], BG[0].width, BG[0].height, BG[0].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(0, 0, 1000, 0, 848, 512, WHITE, YES);
+		Draw_Box(0, 0, 1000, 0, 848, 512, color, YES);
+	} else 
+	if(FILTER_BG==ENABLED) {
+		color = COLOR_BG;
+		Draw_Box(0, 0, 1000, 0, 848, 512, color, NO);
 	}
 	
 	if(UI_position == FLOW || UI_position == XMB) {
@@ -6905,128 +7863,130 @@ void Draw_BG()
 
 void Draw_BGS()
 {	
+	u32 color = WHITE;
 	if(PICTURE_offset[BGS] != 0 ) {
+		if(FILTER_BGS==ENABLED) color=COLOR_BGS;
+		
 		tiny3d_SetTexture(0, PICTURE_offset[BGS], PICTURE[BGS].width, PICTURE[BGS].height, PICTURE[BGS].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(0, 0, 1000, 0, 848, 512, WHITE, YES);
+		Draw_Box(0, 0, 1000, 0, 848, 512, color, YES);
+		
 	} else 
 	if(BG_offset[1] != 0 ) { // Animated
-		Draw_ANIMATED_BG();
+		if(FILTER_BGS==ENABLED) color=COLOR_BGS; else
+		if(FILTER_BG==ENABLED) color=COLOR_BG;
+		
+		Draw_ABG(color);
 	} else
 	if(BG_offset[0] != 0 ) {
+		if(FILTER_BGS==ENABLED) color=COLOR_BGS; else
+		if(FILTER_BG==ENABLED) color=COLOR_BG;
+		
 		tiny3d_SetTexture(0, BG_offset[0], BG[0].width, BG[0].height, BG[0].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(0, 0, 1000, 0, 848, 512, WHITE, YES);
+		Draw_Box(0, 0, 1000, 0, 848, 512, color, YES);
+	} else
+	if(FILTER_BGS==ENABLED) {
+		color=COLOR_BGS;
+		Draw_Box(0, 0, 1000, 0, 848, 512, color, NO);
 	}
+}
+
+void Draw_TriangleGradiant(float x1, float y1, float x2, float y2, float x3, float y3, float z, u32 color1, u32 color2, u32 color3)
+{
+	
+	tiny3d_SetPolygon(TINY3D_TRIANGLES);
+	tiny3d_VertexPos(x1 , y1 , z);
+	tiny3d_VertexColor(color1);
+	tiny3d_VertexPos(x2, y2 , z);
+	tiny3d_VertexColor(color2);
+	tiny3d_VertexPos(x3, y3, z);
+	tiny3d_VertexColor(color3);
+	tiny3d_End();
+}
+
+void Draw_Triangle(float x1, float y1, float x2, float y2, float x3, float y3, float z, u32 color)
+{
+	tiny3d_SetPolygon(TINY3D_TRIANGLES);
+	tiny3d_VertexPos(x1 , y1 , z);
+	tiny3d_VertexColor(color);
+	tiny3d_VertexPos(x2, y2 , z);
+	tiny3d_VertexPos(x3, y3, z);
+	tiny3d_End();
 }
 
 void DrawUp(float x, float y)  // equilateral abc, b vers le haut Xb=x, Ya=Yc=y
 {
-	tiny3d_SetPolygon(TINY3D_TRIANGLES);
-	tiny3d_VertexPos(x-5 , y , 0); //a
-	tiny3d_VertexColor(COLOR_4);
-	tiny3d_VertexPos(x, y-5 , 0); //b
-	tiny3d_VertexPos(x+5, y, 0); //c
-	tiny3d_End();
+	Draw_Triangle(x-5, y,
+				  x, y-5,
+				  x+5, y,
+				  0,  COLOR_4);
 }
 
 void DrawDown(float x, float y)  // equilateral abc, b vers le bas Xb=x, Ya=Yc=y
 {
-	tiny3d_SetPolygon(TINY3D_TRIANGLES);
-	tiny3d_VertexPos(x-5, y , 0); //a
-	tiny3d_VertexColor(COLOR_4);
-	tiny3d_VertexPos(x, y+5 , 0); //b
-	tiny3d_VertexPos(x+5, y, 0); //c
-	tiny3d_End();
+	Draw_Triangle(x-5, y,
+				  x, y+5,
+				  x+5, y,
+				  0,  COLOR_4);
 }
 
 void Draw_DISK(float x, float y, float z, float d, u32 color)
 {
-	x+=d/2;
-	y+=d/2;
-	int t;
+	if(PICTURE_offset[DISC] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[DISC], PICTURE[DISC].width, PICTURE[DISC].height, PICTURE[DISC].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x+d/8, y+d/8, z, 0, d*3/4, d*3/4, WHITE, YES);
+	} else {
+		x+=d/2;
+		y+=d/2;
+		int t;
 		
-	tiny3d_SetPolygon(TINY3D_POLYGON);
-	tiny3d_VertexColor(color);
-	for(t=0; t<=360 ; t+=10) {
-		tiny3d_VertexPos( x + d/2.5*sin(t*PI/180), y + d/2.5*cos(t*PI/180), z);
-	}
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_POLYGON);
-	tiny3d_VertexColor(WHITE);
-	for(t=120; t<=150 ; t+=10) {
-		tiny3d_VertexPos( x + d/3*sin(t*PI/180), y + d/3*cos(t*PI/180), z);
-	}
-	for(t=150; t>=120 ; t-=10) {
-		tiny3d_VertexPos( x + d/6*sin(t*PI/180), y + d/6*cos(t*PI/180), z);
-	}
-	tiny3d_End();
-	
-	/*
-	tiny3d_SetPolygon(TINY3D_POLYGON);
-	tiny3d_VertexColor(WHITE);
-	for(t=-60; t<=-30 ; t+=10) {
-		tiny3d_VertexPos( x + d/2.5*sin(t*PI/180), y + d/2.5*cos(t*PI/180), z);
-	}
-	for(t=-30; t>=-60 ; t-=10) {
-		tiny3d_VertexPos( x + d/6*sin(t*PI/180), y + d/6*cos(t*PI/180), z);
-	}
-	tiny3d_End();
-	*/
-	tiny3d_SetPolygon(TINY3D_POLYGON);
-	tiny3d_VertexColor(WHITE);
-	for(t=0; t<=360 ; t+=10) {
-		tiny3d_VertexPos( x + d/6*sin(t*PI/180), y + d/6*cos(t*PI/180), z);
-	}
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_POLYGON);
-	tiny3d_VertexColor(color);
-	for(t=0; t<=360 ; t+=10) {
-		tiny3d_VertexPos( x + d/8*sin(t*PI/180), y + d/8*cos(t*PI/180), z);
-	}
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_POLYGON);
-	tiny3d_VertexColor(WHITE);
-	for(t=0; t<=360 ; t+=10) {
-		tiny3d_VertexPos( x + d/12*sin(t*PI/180), y + d/12*cos(t*PI/180), z);
-	}
-	tiny3d_End();
-}
-
-void Draw_GAMEDISK(float x, float y, float z, float d, u8 platform)
-{
-	if(platform == _ISO_PS3) {
-		if(PICTURE_offset[PS3_DISC] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[PS3_DISC], PICTURE[PS3_DISC].width, PICTURE[PS3_DISC].height, PICTURE[PS3_DISC].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(x, y, z, 0, d, d, WHITE, YES);
-		} else {
-			Draw_DISK(x , y, z, 16, COLOR_PS3);
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(color);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( x + d/2.5*sin(t*PI/180), y + d/2.5*cos(t*PI/180), z);
 		}
-	} else
-	if(platform == _ISO_PS2) {
-		if(PICTURE_offset[PS2_DISC] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[PS2_DISC], PICTURE[PS2_DISC].width, PICTURE[PS2_DISC].height, PICTURE[PS2_DISC].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(x, y, z, 0, d, d, WHITE, YES);
-		} else {
-			Draw_DISK(x , y, z, 16, COLOR_PS2);
+		tiny3d_End();
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(WHITE);
+		for(t=120; t<=150 ; t+=10) {
+			tiny3d_VertexPos( x + d/3*sin(t*PI/180), y + d/3*cos(t*PI/180), z);
 		}
-	} else
-	if(platform == _ISO_PS1) {
-		if(PICTURE_offset[PS1_DISC] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[PS1_DISC], PICTURE[PS1_DISC].width, PICTURE[PS1_DISC].height, PICTURE[PS1_DISC].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(x, y, z, 0, d, d, WHITE, YES);
-		} else {
-			Draw_DISK(x , y, z, 16, COLOR_PS1);
+		for(t=150; t>=120 ; t-=10) {
+			tiny3d_VertexPos( x + d/6*sin(t*PI/180), y + d/6*cos(t*PI/180), z);
 		}
-	} else
-	if(platform == _ISO_PSP) {
-		if(PICTURE_offset[PSP_DISC] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[PSP_DISC], PICTURE[PSP_DISC].width, PICTURE[PSP_DISC].height, PICTURE[PSP_DISC].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(x, y, z, 0, d, d, WHITE, YES);
-		} else {
-			Draw_DISK(x , y, z, 16, COLOR_PS2);
+		tiny3d_End();
+		
+		/*
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(WHITE);
+		for(t=-60; t<=-30 ; t+=10) {
+			tiny3d_VertexPos( x + d/2.5*sin(t*PI/180), y + d/2.5*cos(t*PI/180), z);
 		}
+		for(t=-30; t>=-60 ; t-=10) {
+			tiny3d_VertexPos( x + d/6*sin(t*PI/180), y + d/6*cos(t*PI/180), z);
+		}
+		tiny3d_End();
+		*/
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(WHITE);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( x + d/6*sin(t*PI/180), y + d/6*cos(t*PI/180), z);
+		}
+		tiny3d_End();
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(color);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( x + d/8*sin(t*PI/180), y + d/8*cos(t*PI/180), z);
+		}
+		tiny3d_End();
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexColor(WHITE);
+		for(t=0; t<=360 ; t+=10) {
+			tiny3d_VertexPos( x + d/12*sin(t*PI/180), y + d/12*cos(t*PI/180), z);
+		}
+		tiny3d_End();
 	}
 }
 
@@ -7103,7 +8063,53 @@ void Draw_Button(float x, float y, float d)
 	
 }
 
-void DrawProgRing(float x, float y, float d, float value, u32 color)
+void Draw_Line(float x1, float y1, float x2, float y2, float z, u32 color)
+{
+	tiny3d_SetPolygon(TINY3D_LINES);
+	tiny3d_VertexPos(x1, y1, z);
+	tiny3d_VertexColor(color);
+	tiny3d_VertexPos(x2, y2, z);
+	tiny3d_End();
+}
+
+void DrawChildArrow2(float x, float y, float z, float w, float h, u32 color)
+{
+	tiny3d_SetPolygon(TINY3D_LINES);
+	tiny3d_VertexPos(x, y, z);
+	tiny3d_VertexColor(color);
+	tiny3d_VertexPos(x, y+h, z);
+	tiny3d_VertexPos(x+w, y+h, z);
+	tiny3d_VertexPos(x+w-w/2, y+h+h/4, z);
+	tiny3d_End();
+	
+	Draw_Line(x+w, y+h, x+w-w/2, y+h-h/4, z, color);
+}
+
+void DrawChildArrow(float x, float y, float z, float w, float h, u32 color)
+{
+	tiny3d_SetPolygon(TINY3D_TRIANGLE_STRIP);
+	tiny3d_VertexPos(x-1 , y , z);
+	tiny3d_VertexColor(color);
+	tiny3d_VertexPos(x+1 , y , 0);
+	tiny3d_VertexPos(x-1 , y+h+1 , 0);
+	tiny3d_VertexPos(x+1 , y+h+1 , 0);
+	tiny3d_VertexPos(x+w-5 , y+h+1 , 0);
+	tiny3d_VertexPos(x+1 , y+h-1 , 0);
+	tiny3d_VertexPos(x+w-5 , y+h-1 , 0);
+	tiny3d_End();
+
+	tiny3d_SetPolygon(TINY3D_TRIANGLES);
+	tiny3d_VertexPos(x+w-5 , y+h-1-2 , 0);
+	tiny3d_VertexColor(color);
+	tiny3d_VertexPos(x+w, y+h , 0);
+	tiny3d_VertexPos(x+w-5, y+h+1+2, 0);
+	tiny3d_End();
+}
+
+s8 spam_CIRCLE=-1;
+#define spam_CIRCLE_MAX 3
+
+void DrawProgRing(float x, float y, float d, float e, float value, u32 color)
 {
 	float t;
 	float v = value*3.6;
@@ -7111,7 +8117,10 @@ void DrawProgRing(float x, float y, float d, float value, u32 color)
 	
 	
 	float r1 = d / 2;
-	float r2 = (d-20*d/100) / 2;
+	float le = e;
+	if(r1<=le) le = d/10;
+	float r2 = r1-le;
+	
 	
 	if(v<10) {
 		tiny3d_SetPolygon(TINY3D_LINES);
@@ -7125,16 +8134,57 @@ void DrawProgRing(float x, float y, float d, float value, u32 color)
 	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
 	tiny3d_VertexColor(color);
 	for(t=0; t<=v ; t+=10) {
-		tiny3d_VertexPos( x - r1*sin(t*PI/180), y - r1*cos(t*PI/180), 0);
-		tiny3d_VertexPos( x - r2*sin(t*PI/180), y - r2*cos(t*PI/180), 0);
+		tiny3d_VertexPos( x + r1*sin(t*PI/180), y - r1*cos(t*PI/180), 0);
+		tiny3d_VertexPos( x + r2*sin(t*PI/180), y - r2*cos(t*PI/180), 0);
 	}
 	tiny3d_End();
 }
 
+float DrawSpam(float x, float y)
+{
+	// float c = 5;
+	// float e = 1;
+	
+	// if(spam_CIRCLE < 0 ) return x + c + 4;
+	
+	// u32 color;
+	// if(0 <= spam_CIRCLE) color=COLOR_2; 
+	// else color=BLACK;
+	// Draw_Box(x, y, 0, 0, c, c, color, NO);
+	// Draw_BoxLine(x,	y, 0, c, c, WHITE);
+	
+	// if(1 <= spam_CIRCLE) color=COLOR_2; 
+	// else color=BLACK;
+	// Draw_Box(x, y+c+e, 0, 0, c, c, color, NO);
+	// Draw_BoxLine(x,	y+c+e, 0, c, c, WHITE);
+	
+	// if(2 <= spam_CIRCLE) color=COLOR_2; 
+	// else color=BLACK;
+	// Draw_Box(x, y+c+e+c+e, 0, 0, c, c, color, NO);
+	// Draw_BoxLine(x,	y+c+e+c+e, 0, c, c, WHITE);
+	
+	// return x + c + 4;
+	
+	
+	if(spam_CIRCLE < 0 ) return x;
+	
+	float val = (spam_CIRCLE*100 + 100) / spam_CIRCLE_MAX;
+	
+	DrawProgRing(x+8, y+8, 22.5, 5, val, COLOR_1);
+	
+	if(hold_CIRCLE) DrawProgRing(x+8, y+8, 20.5, 2, (float) ((hold_CIRCLE * 100) / MAX_HOLD), COLOR_3);
+	
+	if(0<=spam_CIRCLE) Draw_Line(x+8, y+8, x+8 + 22.5/2*sin(0), y+8 - 22.5/2*cos(0), 0, BLACK);
+	if(1<=spam_CIRCLE) Draw_Line(x+8, y+8, x+8 + 22.5/2*sin(2*PI/3), y+8 - 22.5/2*cos(2*PI/3), 0, BLACK); 
+	if(2<=spam_CIRCLE) Draw_Line(x+8, y+8, x+8 + 22.5/2*sin(4*PI/3), y+8 - 22.5/2*cos(4*PI/3), 0, BLACK);
+	
+	return x;
+}
+
 int Draw_Button_Circle(float x, float y, float size)
 {
-	if(PICTURE_offset[9] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[9], PICTURE[9].width, PICTURE[9].height, PICTURE[9].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[CIRCLE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[CIRCLE], PICTURE[CIRCLE].width, PICTURE[CIRCLE].height, PICTURE[CIRCLE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		Draw_Box(x, y, 0, 0, size, size, WHITE, YES);
 
@@ -7167,8 +8217,8 @@ int Draw_Button_Circle(float x, float y, float size)
 
 int Draw_Button_Square(float x, float y, float size)
 {
-	if(PICTURE_offset[7] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[7], PICTURE[7].width, PICTURE[7].height, PICTURE[7].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[SQUARE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[SQUARE], PICTURE[SQUARE].width, PICTURE[SQUARE].height, PICTURE[SQUARE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		Draw_Box(x, y, 0, 0, size, size, WHITE, YES);
 		
@@ -7201,8 +8251,8 @@ int Draw_Button_Square(float x, float y, float size)
 
 int Draw_Button_Triangle(float x, float y, float size)
 {
-	if(PICTURE_offset[10] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[10], PICTURE[10].width, PICTURE[10].height, PICTURE[10].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[TRIANGLE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[TRIANGLE], PICTURE[TRIANGLE].width, PICTURE[TRIANGLE].height, PICTURE[TRIANGLE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		Draw_Box(x, y, 0, 0, size, size, WHITE, YES);
 		
@@ -7234,8 +8284,8 @@ int Draw_Button_Triangle(float x, float y, float size)
 int Draw_Button_Cross(float x, float y, float size)
 {
 
-	if(PICTURE_offset[8] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[8], PICTURE[8].width, PICTURE[8].height, PICTURE[8].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[CROSS] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[CROSS], PICTURE[CROSS].width, PICTURE[CROSS].height, PICTURE[CROSS].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		Draw_Box(x, y, 0, 0, size, size, WHITE, YES);
 		
@@ -7269,8 +8319,8 @@ int Draw_Button_Cross(float x, float y, float size)
 
 int Draw_Button_Start(float x, float y, float size)
 {	
-	if(PICTURE_offset[6] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[6], PICTURE[6].width, PICTURE[6].height, PICTURE[6].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[START] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[START], PICTURE[START].width, PICTURE[START].height, PICTURE[START].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		tiny3d_SetPolygon(TINY3D_QUADS);
 
@@ -7305,8 +8355,8 @@ int Draw_Button_Start(float x, float y, float size)
 
 int Draw_Button_Select(float x, float y,  float size) {
 
-	if(PICTURE_offset[5] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[5], PICTURE[5].width, PICTURE[5].height, PICTURE[5].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[SELECT] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[SELECT], PICTURE[SELECT].width, PICTURE[SELECT].height, PICTURE[SELECT].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		Draw_Box(x, y, 0, 0, size, size, WHITE, YES);
 		
@@ -7319,8 +8369,8 @@ int Draw_Button_Select(float x, float y,  float size) {
 
 float Draw_Button_L1(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[12] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[12], PICTURE[12].width, PICTURE[12].height, PICTURE[12].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[L1] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[L1], PICTURE[L1].width, PICTURE[L1].height, PICTURE[L1].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "L1");
@@ -7328,8 +8378,8 @@ float Draw_Button_L1(float x, float y, float z, float size)
 
 float Draw_Button_L2(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[13] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[13], PICTURE[13].width, PICTURE[13].height, PICTURE[13].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[L2] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[L2], PICTURE[L2].width, PICTURE[L2].height, PICTURE[L2].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "L2");
@@ -7337,8 +8387,8 @@ float Draw_Button_L2(float x, float y, float z, float size)
 
 float Draw_Button_L3(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[14] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[14], PICTURE[14].width, PICTURE[14].height, PICTURE[14].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[L3] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[L3], PICTURE[L3].width, PICTURE[L3].height, PICTURE[L3].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "L3");
@@ -7346,8 +8396,8 @@ float Draw_Button_L3(float x, float y, float z, float size)
 
 float Draw_Button_L(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[15] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[15], PICTURE[15].width, PICTURE[15].height, PICTURE[15].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[L] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[L], PICTURE[L].width, PICTURE[L].height, PICTURE[L].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "L");
@@ -7355,8 +8405,8 @@ float Draw_Button_L(float x, float y, float z, float size)
 
 float Draw_Button_R2(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[16] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[16], PICTURE[16].width, PICTURE[16].height, PICTURE[16].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[R2] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[R2], PICTURE[R2].width, PICTURE[R2].height, PICTURE[R2].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "R1");
@@ -7364,8 +8414,8 @@ float Draw_Button_R2(float x, float y, float z, float size)
 
 float Draw_Button_R1(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[17] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[17], PICTURE[17].width, PICTURE[17].height, PICTURE[17].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[R1] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[R1], PICTURE[R1].width, PICTURE[R1].height, PICTURE[R1].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "R2");
@@ -7373,8 +8423,8 @@ float Draw_Button_R1(float x, float y, float z, float size)
 
 float Draw_Button_R3(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[18] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[18], PICTURE[18].width, PICTURE[18].height, PICTURE[18].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[R3] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[R3], PICTURE[R3].width, PICTURE[R3].height, PICTURE[R3].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "R3");
@@ -7382,8 +8432,8 @@ float Draw_Button_R3(float x, float y, float z, float size)
 
 float Draw_Button_R(float x, float y, float z, float size)
 {
-	if(PICTURE_offset[19] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[19], PICTURE[19].width, PICTURE[19].height, PICTURE[19].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[R] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[R], PICTURE[R].width, PICTURE[R].height, PICTURE[R].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
 	} else	return DrawString(x, y, "R");
@@ -7391,8 +8441,8 @@ float Draw_Button_R(float x, float y, float z, float size)
 
 float Draw_Pad(int button, float x, float y, float z,  float size) {
 
-	if(PICTURE_offset[0] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[0], PICTURE[0].width, PICTURE[0].height, PICTURE[0].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(PICTURE_offset[ALL] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[ALL], PICTURE[ALL].width, PICTURE[ALL].height, PICTURE[ALL].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
 		tiny3d_SetPolygon(TINY3D_QUADS);
 		tiny3d_VertexPos(x, y, z);
@@ -7408,8 +8458,8 @@ float Draw_Pad(int button, float x, float y, float z,  float size) {
 	}
 	
 	if(button & BUTTON_UP) {
-		if(PICTURE_offset[1] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[1], PICTURE[1].width, PICTURE[1].height, PICTURE[1].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		if(PICTURE_offset[UP] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[UP], PICTURE[UP].width, PICTURE[UP].height, PICTURE[UP].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
 			tiny3d_SetPolygon(TINY3D_QUADS);
 			tiny3d_VertexPos(x, y, z);
@@ -7425,8 +8475,8 @@ float Draw_Pad(int button, float x, float y, float z,  float size) {
 		}
 	}
 	if(button & BUTTON_LEFT) {
-		if(PICTURE_offset[2] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[2], PICTURE[2].width, PICTURE[2].height, PICTURE[2].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		if(PICTURE_offset[LEFT] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[LEFT], PICTURE[LEFT].width, PICTURE[LEFT].height, PICTURE[LEFT].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
 			tiny3d_SetPolygon(TINY3D_QUADS);
 			tiny3d_VertexPos(x, y, z);
@@ -7442,8 +8492,8 @@ float Draw_Pad(int button, float x, float y, float z,  float size) {
 		}
 	}
 	if(button & BUTTON_DOWN) {
-		if(PICTURE_offset[3] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[3], PICTURE[3].width, PICTURE[3].height, PICTURE[3].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		if(PICTURE_offset[DOWN] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[3], PICTURE[DOWN].width, PICTURE[DOWN].height, PICTURE[DOWN].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
 			tiny3d_SetPolygon(TINY3D_QUADS);
 			tiny3d_VertexPos(x, y, z);
@@ -7459,8 +8509,8 @@ float Draw_Pad(int button, float x, float y, float z,  float size) {
 		}
 	}
 	if(button & BUTTON_RIGHT) {
-		if(PICTURE_offset[4] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[4], PICTURE[4].width, PICTURE[4].height, PICTURE[4].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		if(PICTURE_offset[RIGHT] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[RIGHT], PICTURE[RIGHT].width, PICTURE[RIGHT].height, PICTURE[RIGHT].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
 			tiny3d_SetPolygon(TINY3D_QUADS);
 			tiny3d_VertexPos(x, y, z);
@@ -7552,14 +8602,25 @@ void Draw_NOT(float x, float y, float z, float w, float h)
 
 void Draw_SIDEBAR(float x)
 {
-	Draw_Box(0, 0, 9, 0, 848, 512, 0x000000B0, NO);
+	if(UI_position!=XMB) Draw_Box(0, 0, 9, 0, 848, 512, 0x000000B0, NO);
+	
+	u32 color=COLOR_SIDEBAR_DEFAULT;
 	if(PICTURE_offset[SIDEBAR] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[SIDEBAR], PICTURE[SIDEBAR].width, PICTURE[SIDEBAR].height, PICTURE[SIDEBAR].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		if(FILTER_SIDEBAR==ENABLED) color=COLOR_SIDEBAR;
+		else color=WHITE;
 		
-		Draw_Box(x, 0, 9, 0, X_MAX-x, 512, 0xFFFFFFFF, YES);
+		tiny3d_SetTexture(0, PICTURE_offset[SIDEBAR], PICTURE[SIDEBAR].width, PICTURE[SIDEBAR].height, PICTURE[SIDEBAR].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, 0, 9, 0, X_MAX-x, 512, color, YES);
 	} else {
-		Draw_Box(x, 0, 9, 0, X_MAX-x, 512, 0xFFFFFF60, NO);
-		Draw_Box(x, 0, 9, 0, 1, 512, 0xFFFFFFFF, NO);
+		if(FILTER_SIDEBAR==ENABLED) {
+			color=COLOR_SIDEBAR;
+			Draw_Box(x, 0, 9, 0, X_MAX-x, 512, color, NO);
+			Draw_Box(x, 0, 9, 0, 1, 512, color, NO);
+		} else {
+			Draw_Box(x, 0, 9, 0, X_MAX-x, 512, COLOR_SIDEBAR_DEFAULT, NO);
+			Draw_Box(x, 0, 9, 0, 1, 512, WHITE, NO);
+		}
+		
 	}
 	
 }
@@ -7582,169 +8643,181 @@ int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color)
 
 void DrawNotBody(float x, float y, float z, float w, float h)
 {
-	tiny3d_SetTextureWrap(0, PICTURE_offset[NOTIF], PICTURE[NOTIF].width, PICTURE[NOTIF].height, PICTURE[NOTIF].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
+	u32 color = WHITE;
 	
-	float wn=PICTURE[NOTIF].width/4;
-	float hn=PICTURE[NOTIF].height/4;;
+	if(PICTURE_offset[NOTIF]!=0) {
+		
+		if(FILTER_NOTIF==ENABLED) color = COLOR_NOTIF;
+		else color = WHITE;
+		
+		tiny3d_SetTextureWrap(0, PICTURE_offset[NOTIF], PICTURE[NOTIF].width, PICTURE[NOTIF].height, PICTURE[NOTIF].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
+		
+		float wn=PICTURE[NOTIF].width/4;
+		float hn=PICTURE[NOTIF].height/4;
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x, y, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.0f, 0.0f);
 
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x, y, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.0f, 0.0f);
+		tiny3d_VertexPos(x+wn, y, z);
+		tiny3d_VertexTexture(0.25f, 0.0f);
 
-	tiny3d_VertexPos(x+wn, y, z);
-	tiny3d_VertexTexture(0.25f, 0.0f);
+		tiny3d_VertexPos(x+wn, y+hn, z);
+		tiny3d_VertexTexture(0.25f, 0.25f);
+		
+		tiny3d_VertexPos(x, y+hn, z);
+		tiny3d_VertexTexture(0.0f, 0.25f);
+		
+		tiny3d_End();
+		
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x+wn, y, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.25f, 0.0f);
 
-	tiny3d_VertexPos(x+wn, y+hn, z);
-	tiny3d_VertexTexture(0.25f, 0.25f);
-	
-	tiny3d_VertexPos(x, y+hn, z);
-	tiny3d_VertexTexture(0.0f, 0.25f);
-	
-	tiny3d_End();
-	
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x+wn, y, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.25f, 0.0f);
+		tiny3d_VertexPos(x+w-wn, y, z);
+		tiny3d_VertexTexture(0.75f, 0.0f);
 
-	tiny3d_VertexPos(x+w-wn, y, z);
-	tiny3d_VertexTexture(0.75f, 0.0f);
+		tiny3d_VertexPos(x+w-wn, y+hn, z);
+		tiny3d_VertexTexture(0.75f, 0.25f);
+		
+		tiny3d_VertexPos(x+wn, y+hn, z);
+		tiny3d_VertexTexture(0.25f, 0.25f);
+		
+		tiny3d_End();
+		
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x+w-wn, y, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.75f, 0.0f);
 
-	tiny3d_VertexPos(x+w-wn, y+hn, z);
-	tiny3d_VertexTexture(0.75f, 0.25f);
-	
-	tiny3d_VertexPos(x+wn, y+hn, z);
-	tiny3d_VertexTexture(0.25f, 0.25f);
-	
-	tiny3d_End();
-	
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x+w-wn, y, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.75f, 0.0f);
+		tiny3d_VertexPos(x+w, y, z);
+		tiny3d_VertexTexture(1.0f, 0.0f);
 
-	tiny3d_VertexPos(x+w, y, z);
-	tiny3d_VertexTexture(1.0f, 0.0f);
+		tiny3d_VertexPos(x+w, y+hn, z);
+		tiny3d_VertexTexture(1.0f, 0.25f);
+		
+		tiny3d_VertexPos(x+w-wn, y+hn, z);
+		tiny3d_VertexTexture(0.75f, 0.25f);
+		
+		tiny3d_End();
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x, y+hn, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.0f, 0.25f);
 
-	tiny3d_VertexPos(x+w, y+hn, z);
-	tiny3d_VertexTexture(1.0f, 0.25f);
-	
-	tiny3d_VertexPos(x+w-wn, y+hn, z);
-	tiny3d_VertexTexture(0.75f, 0.25f);
-	
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x, y+hn, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.0f, 0.25f);
+		tiny3d_VertexPos(x+wn, y+hn, z);
+		tiny3d_VertexTexture(0.25f, 0.25f);
 
-	tiny3d_VertexPos(x+wn, y+hn, z);
-	tiny3d_VertexTexture(0.25f, 0.25f);
+		tiny3d_VertexPos(x+wn, y+h-hn, z);
+		tiny3d_VertexTexture(0.25f, 0.75f);
+		
+		tiny3d_VertexPos(x, y+h-hn, z);
+		tiny3d_VertexTexture(0.0f, 0.75f);
+		
+		tiny3d_End();
+		
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x+wn, y+hn, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.25f, 0.25f);
 
-	tiny3d_VertexPos(x+wn, y+h-hn, z);
-	tiny3d_VertexTexture(0.25f, 0.75f);
-	
-	tiny3d_VertexPos(x, y+h-hn, z);
-	tiny3d_VertexTexture(0.0f, 0.75f);
-	
-	tiny3d_End();
-	
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x+wn, y+hn, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.25f, 0.25f);
+		tiny3d_VertexPos(x+w-wn, y+hn, z);
+		tiny3d_VertexTexture(0.75f, 0.25f);
 
-	tiny3d_VertexPos(x+w-wn, y+hn, z);
-	tiny3d_VertexTexture(0.75f, 0.25f);
+		tiny3d_VertexPos(x+w-wn, y+h-hn, z);
+		tiny3d_VertexTexture(0.75f, 0.75f);
+		
+		tiny3d_VertexPos(x+wn, y+h-hn, z);
+		tiny3d_VertexTexture(0.25f, 0.75f);
+		
+		tiny3d_End();
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x+w-wn, y+hn, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.75f, 0.25f);
 
-	tiny3d_VertexPos(x+w-wn, y+h-hn, z);
-	tiny3d_VertexTexture(0.75f, 0.75f);
-	
-	tiny3d_VertexPos(x+wn, y+h-hn, z);
-	tiny3d_VertexTexture(0.25f, 0.75f);
-	
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x+w-wn, y+hn, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.75f, 0.25f);
+		tiny3d_VertexPos(x+w, y+hn, z);
+		tiny3d_VertexTexture(1.0f, 0.25f);
 
-	tiny3d_VertexPos(x+w, y+hn, z);
-	tiny3d_VertexTexture(1.0f, 0.25f);
+		tiny3d_VertexPos(x+w, y+h-hn, z);
+		tiny3d_VertexTexture(1.0f, 0.75f);
+		
+		tiny3d_VertexPos(x+w-wn, y+h-hn, z);
+		tiny3d_VertexTexture(0.75f, 0.75f);
+		
+		tiny3d_End();
+		
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x, y+h-hn, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.0f, 0.75f);
 
-	tiny3d_VertexPos(x+w, y+h-hn, z);
-	tiny3d_VertexTexture(1.0f, 0.75f);
-	
-	tiny3d_VertexPos(x+w-wn, y+h-hn, z);
-	tiny3d_VertexTexture(0.75f, 0.75f);
-	
-	tiny3d_End();
-	
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x, y+h-hn, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.0f, 0.75f);
+		tiny3d_VertexPos(x+wn, y+h-hn, z);
+		tiny3d_VertexTexture(0.25f, 0.75f);
 
-	tiny3d_VertexPos(x+wn, y+h-hn, z);
-	tiny3d_VertexTexture(0.25f, 0.75f);
+		tiny3d_VertexPos(x+wn, y+h, z);
+		tiny3d_VertexTexture(0.25f, 1.0f);
+		
+		tiny3d_VertexPos(x, y+h, z);
+		tiny3d_VertexTexture(0.0f, 1.0f);
+		
+		tiny3d_End();
+		
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x+wn, y+h-hn, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.25f, 0.75f);
 
-	tiny3d_VertexPos(x+wn, y+h, z);
-	tiny3d_VertexTexture(0.25f, 1.0f);
-	
-	tiny3d_VertexPos(x, y+h, z);
-	tiny3d_VertexTexture(0.0f, 1.0f);
-	
-	tiny3d_End();
-	
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x+wn, y+h-hn, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.25f, 0.75f);
+		tiny3d_VertexPos(x+w-wn, y+h-hn, z);
+		tiny3d_VertexTexture(0.75f, 0.75f);
 
-	tiny3d_VertexPos(x+w-wn, y+h-hn, z);
-	tiny3d_VertexTexture(0.75f, 0.75f);
+		tiny3d_VertexPos(x+w-wn, y+h, z);
+		tiny3d_VertexTexture(0.75f, 1.0f);
+		
+		tiny3d_VertexPos(x+wn, y+h, z);
+		tiny3d_VertexTexture(0.25f, 1.0f);
+		
+		tiny3d_End();
+		
+		tiny3d_SetPolygon(TINY3D_QUADS);
+		
+		tiny3d_VertexPos(x+w-wn, y+h-hn, z);
+		tiny3d_VertexColor(color);
+		tiny3d_VertexTexture(0.75f, 0.75f);
 
-	tiny3d_VertexPos(x+w-wn, y+h, z);
-	tiny3d_VertexTexture(0.75f, 1.0f);
-	
-	tiny3d_VertexPos(x+wn, y+h, z);
-	tiny3d_VertexTexture(0.25f, 1.0f);
-	
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUADS);
-	
-	tiny3d_VertexPos(x+w-wn, y+h-hn, z);
-	tiny3d_VertexColor(0xFFFFFFFF);
-	tiny3d_VertexTexture(0.75f, 0.75f);
+		tiny3d_VertexPos(x+w, y+h-hn, z);
+		tiny3d_VertexTexture(1.0f, 0.75f);
 
-	tiny3d_VertexPos(x+w, y+h-hn, z);
-	tiny3d_VertexTexture(1.0f, 0.75f);
-
-	tiny3d_VertexPos(x+w, y+h, z);
-	tiny3d_VertexTexture(1.0f, 1.0f);
-	
-	tiny3d_VertexPos(x+w-wn, y+h, z);
-	tiny3d_VertexTexture(0.75f, 1.0f);
-	
-	tiny3d_End();
-	
+		tiny3d_VertexPos(x+w, y+h, z);
+		tiny3d_VertexTexture(1.0f, 1.0f);
+		
+		tiny3d_VertexPos(x+w-wn, y+h, z);
+		tiny3d_VertexTexture(0.75f, 1.0f);
+		
+		tiny3d_End();
+	} else {
+		if(FILTER_NOTIF==ENABLED) color = COLOR_NOTIF;
+		else color = COLOR_NOTIF_DEFAULT;
+		
+		Draw_Box(590, 40, 0, 3, 213, 50, color, NO);
+	}
 }
 
 void Draw_Notification()
@@ -7760,12 +8833,9 @@ void Draw_Notification()
 	SetFontZ(0);
 	FontColor(COLOR_1);
 	FontSize(14);
+			
+	DrawNotBody(590, 40, 0, 213, 50);
 	
-	if(PICTURE_offset[NOTIF]!=0) {
-		DrawNotBody(590, 40, 0, 213, 50);
-	} else {
-		Draw_Box(590, 40, 0, 3, 213, 50, 0x555555FF, NO);
-	}
 	Draw_NOT(600, 50, 0, 30, 30);
 
 	DrawString(635, 58, not_msg);
@@ -7776,6 +8846,7 @@ void Draw_Notification()
 
 void show_msg(char *str)
 {
+	time_not=0;
 	strcpy(not_msg, str);
 }
 
@@ -7811,12 +8882,13 @@ void DrawLoadingIcon()
 	LoadIconRot+=5;
 }
 
+u8 show_scene = NO;
 static sys_ppu_thread_t loading_id;	
 void Draw_Loading(void *unused)
 {
 	int i=0;
 	int show_log=YES;
-	int GRID_DIRECTION = 1;
+	int bullet_move = 1;
 	int h=20, v=70;
 	int speed = 3;
 	int boost=100;
@@ -7831,14 +8903,16 @@ void Draw_Loading(void *unused)
 		strcpy(loading_log[i], "\0");
 	}
 	
+	//if(scene == SCENE_FILEMANAGER) show_scene = YES;
+	
 	while(loading) {
 		cls();
-
+		
 		int x=50, y=40;
-				
+		
 		if(loading_log[0][0]!=0 || head_title[0] != 0 || gathering || prog_bar1_value >= 0) have_log=YES;
 		
-		if(scene == SCENE_FILEMANAGER) {
+		if(show_scene) {
 			Draw_scene();
 			if(show_log && have_log) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
 		} else Draw_BGS();
@@ -7886,9 +8960,10 @@ void Draw_Loading(void *unused)
 			}
 		}
 		
-		if(scene != SCENE_FILEMANAGER) {	
+		if(!show_scene) {	
 			int t;
-			switch(GRID_DIRECTION){
+			switch(bullet_move)
+			{
 				case 1: //droite
 				{
 					if(speed==9) {
@@ -7913,7 +8988,7 @@ void Draw_Loading(void *unused)
 					}
 					tiny3d_End();
 					
-					if(h>= 820) GRID_DIRECTION = 2; else h+=speed;
+					if(h>= 820) bullet_move = 2; else h+=speed;
 				}
 				break;
 				case 2: //gauche
@@ -7940,7 +9015,7 @@ void Draw_Loading(void *unused)
 					}
 					tiny3d_End();
 							
-					if(h < 20) GRID_DIRECTION = 1; else h-=speed;
+					if(h < 20) bullet_move = 1; else h-=speed;
 				}
 				break;
 				case 3: // haut
@@ -7968,7 +9043,7 @@ void Draw_Loading(void *unused)
 					}
 					tiny3d_End();
 				
-					if(v < 20) GRID_DIRECTION = 4; else v-=speed;
+					if(v < 20) bullet_move = 4; else v-=speed;
 				}
 				break;
 				case 4: // bas
@@ -7995,12 +9070,12 @@ void Draw_Loading(void *unused)
 					}
 					tiny3d_End();
 					
-					if(v > 490) GRID_DIRECTION = 3; else v+=speed;
+					if(v > 490) bullet_move = 3; else v+=speed;
 				}
 				break;
 				default: //droite
 				{
-					GRID_DIRECTION = 1;
+					bullet_move = 1;
 				}
 			}
 			
@@ -8019,10 +9094,11 @@ void Draw_Loading(void *unused)
 		// *** DISPLAY BUTTONS ***
 		x=INPUT_X;
 		y=INPUT_Y;
+		FontSize(15);
 		FontColor(COLOR_1);
 		SetFontZ(0);
 
-		if(scene == SCENE_FILEMANAGER) {
+		if(show_scene) {
 			if(LoadIconRot<180) {
 				Draw_input();
 				y=-50;
@@ -8034,10 +9110,10 @@ void Draw_Loading(void *unused)
 			else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
 		}
 			
-		if(scene != SCENE_FILEMANAGER) {
+		if(!show_scene) {
 			x=Draw_Button_Square(x, y, 15);
 			x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
-			x=DrawFormatString( x+5, y, "%s  ", STR_BOOST);
+			x=DrawFormatString( x+5, y, "%s ", STR_BOOST);
 		}
 		
 		if(AutoM == YES) {
@@ -8047,38 +9123,37 @@ void Draw_Loading(void *unused)
 			x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		}
 		
-		
+		Draw_MemMonitor();
 		DrawLoadingIcon();
 		tiny3d_Flip();
 		//ScreenShot();
-		
 		ps3pad_read();
 		
-		if(new_pad & BUTTON_RIGHT) {
-			GRID_DIRECTION = 1;
+		if(NewPad(BUTTON_RIGHT)) {
+			bullet_move = 1;
 		}
-		if(new_pad & BUTTON_LEFT) {
-			GRID_DIRECTION = 2;
+		if(NewPad(BUTTON_LEFT)) {
+			bullet_move = 2;
 		}
-		if(new_pad & BUTTON_UP) {
-			GRID_DIRECTION = 3;
+		if(NewPad(BUTTON_UP)) {
+			bullet_move = 3;
 		}
-		if(new_pad & BUTTON_DOWN) {
-			GRID_DIRECTION = 4;
+		if(NewPad(BUTTON_DOWN)) {
+			bullet_move = 4;
 		}
-		if(new_pad & BUTTON_CIRCLE && prog_bar1_value >= 0) {
+		if(NewPad(BUTTON_CIRCLE) && prog_bar1_value >= 0) {
 			cancel=YES;
 		}
-		if(new_pad & BUTTON_CIRCLE && gathering == YES) {
+		if(NewPad(BUTTON_CIRCLE) && gathering == YES) {
 			gathering_cancel=YES;
 		}
-		if((old_pad & BUTTON_TRIANGLE) && AutoM==YES) {
+		if((NewPad(BUTTON_TRIANGLE) || OldPad(BUTTON_TRIANGLE)) && AutoM==YES) {
 			gui_called=YES;
 		}
-		if(new_pad & BUTTON_SELECT) {
+		if(NewPad(BUTTON_SELECT)) {
 			if(show_log) show_log=NO; else show_log=YES;
 		}
-		if(old_pad & BUTTON_SQUARE) {
+		if(OldPad(BUTTON_SQUARE)) {
 			if(0 < boost && boost <= 30 && speed==9 ) {
 				speed=9;
 				boost--;
@@ -8104,6 +9179,7 @@ void Draw_Loading(void *unused)
 	gathering=NO;
 	
 	strcpy(head_title, "\0");
+	show_scene=NO;
 	
 	for(i=0; i<=20; i++){
 		strcpy(loading_log[i], "\0");
@@ -8162,25 +9238,180 @@ void print_head(char *format2, ...)
 
 void start_loading()
 {
-	loading=YES;
-	sysThreadCreate(&loading_id, Draw_Loading, NULL, 999, 0x2000, THREAD_JOINABLE, "loading");
+	if(loading==NO) {
+		loading=YES;
+		sysThreadCreate(&loading_id, Draw_Loading, NULL, 999, 0x2000, THREAD_JOINABLE, "loading");
+	}
 }
 
 void end_loading()
 {
-	u64 ret;
-	loading=NO;
-	sysThreadJoin(loading_id, &ret);
+	if(loading==YES) {
+		u64 ret;
+		loading=NO;
+		sysThreadJoin(loading_id, &ret);
+	}
 }
 
 float DrawStringFromCenterX(float x, float y, char *txt)
 {
-	return DrawString(x-GetWidth(txt)/2, y, txt);
+	return DrawString(x-WidthFromStr(txt)/2, y, txt);
 }
 
 //*******************************************************
 //lv2 syscalls
 //*******************************************************
+
+typedef struct
+{
+    char   Label[0x28];
+	u64    sector_count;
+    u32    sector_size;
+    u32    unknown;
+    u8     writable;
+    u8     unknowns[7];
+} __attribute__((packed)) device_info_t;
+
+/*
+struct storage_device_info {
+	uint8_t res1[32];
+	uint32_t vendor_id;
+	uint32_t device_id;
+	uint64_t capacity;
+	uint32_t sector_size;
+	uint32_t media_count;
+	uint8_t res2[8];
+};
+*/
+
+typedef struct
+{
+	char mount_point[0x20];
+	char filesystem[0x20];
+	char deviceName[0x40];
+	char Unk[0x10];
+	u32 ReadOnly;
+} __attribute__((packed)) sys_fs_mount_info;
+
+
+// https://en.wikipedia.org/wiki/Partition_type#List_of_partition_IDs
+// supported = 0xB (FAT32) / 0x7 (NTFS)
+// static char* PartitionType[] = {  /* 0x00 - 0x0f */ "Empty", "FAT12", "XENIX root", "XENIX usr", "FAT16", "Extended"," FAT16B", "IFS/HPFS/NTFS/exFAT/QNX", "", "", "", "FAT32", "FAT32", "FAT16", "Extended", "",
+								  // /* 0x10 - 0x1f */ "","","","","","","","","","","","","","","","", 
+								  // /* 0x20 - 0x2f */ "","","","","","","","","","","","","","","","", 
+								  // /* 0x30 - 0x3f */ "","","","","","","","","","","","","","","","", 
+							      // /* 0x40 - 0x4f */ "","","","","","","","","","","","","","","","", 
+							      // /* 0x50 - 0x5f */ "","","","","","","","","","","","","","","","",
+							      // /* 0x60 - 0x6f */ "","","","","","","","","","","","","","","","", 
+								  // /* 0x70 - 0x7f */ "","","","","","","","","","","","","","","","",
+								  // /* 0x80 - 0x8f */ "","","Linux Swap","Linux","","Linux Extended","","","","","","","","","Linux LVM","", 
+								  // /* 0x90 - 0x9f */ "","","","","","","","","","","","","","","","", 
+								  // /* 0xa0 - 0xaf */ "","","","","","","","","","","","","","","","HFS / HFS+", 
+								  // /* 0xb0 - 0xbf */ "","","","","","","","","","","","","","","","", 
+								  // /* 0xc0 - 0xcf */ "","","","","","","","","","","","","","","","", 
+								  // /* 0xd0 - 0xdf */ "","","","","","","","","","","","","","","","", 
+								  // /* 0xe0 - 0xef */ "","","","","","","","","","","","","","","GPT","EFI", 
+								  // /* 0xf0 - 0xff */ "","","","","","","","","","","","","","","",""  
+							    // };
+// typedef struct
+// {
+	// u16 byte_per_sec;
+	// u8 sector_per_cluster;
+	// u16 reserved_sector;
+	// u8 zero;
+	// u32 unused0;
+	// u8 media_descriptor;
+	// u16 unused1;
+	// u16 sector_per_track;
+	// u16 number_of_heads;
+	// u32 hidden_sectors;
+	// u32 unused2;
+	// u32 signature;
+	// u64 total_sectors;
+	// u64 MFT_cluster_number;
+	// u64 MFTMirr_cluster_number;
+	// u32 cluster_per_file;
+	// u32 cluster_per_index;
+	// u64 volume_serial;
+	// u32 checksum;
+// } __attribute__((packed)) NTFS_bios_parameter_t;
+
+// typedef struct
+// {
+	// u8 JMP_inst[3];
+	// char OEM_ID[8];
+	// NTFS_bios_parameter_t bios_parameter;
+	// u8 bootstrap[420];
+	// u16 signature;
+// } __attribute__((packed)) NTFS_boot_sector_t;
+
+		
+// N'OUBLIE PAS L'ENDIAN SWAP SI TU VEUX UTILISER CES DONNéES !
+typedef struct
+{
+	u16 byte_per_sec;
+	u8 sector_per_cluster;
+	u16 reserved_sector;
+	u8 number_of_FAT;
+	u16 unused0;
+	u16 unused00;
+	u8 media_descriptor;
+	u16 unused1;
+	u16 sector_per_track;
+	u16 number_of_heads;
+	u32 hidden_sectors;
+	u32 total_sectors;
+	u32 sector_per_FAT;
+	u16 extended_flag;
+	u16 version;
+	u32 root_cluster;
+	u16 system_information_sector;
+	u16 backup_boot_sector;
+	u8 reserved[0xC];
+} __attribute__((packed)) FAT32_bios_parameter_t;
+
+typedef struct
+{
+	u8 physical_drive;
+	u8 reserved;
+	u8 extended_signature;
+	u32 serial;
+	char volume_label[0xB];
+	char file_system[0x8];
+} __attribute__((packed)) FAT32_extended_bios_parameter_t;
+
+typedef struct
+{
+	u8 JMP_inst[3];
+	char OEM_ID[8];
+	FAT32_bios_parameter_t bios_parameter;
+	FAT32_extended_bios_parameter_t extended_bios_parameter;
+	u8 bootstrap[420];
+	u16 signature;
+} __attribute__((packed)) FAT32_boot_sector_t;
+
+typedef struct
+{
+	u8 active_flag;
+	u8 start_head;
+	u8 start_sector;
+	u8 start_cylinder;
+	u8 partition_type;
+	u8 end_head;
+	u8 end_sector;
+	u8 end_cylinder;
+	u32 first_sector;
+	u32 total_sector;
+} __attribute__((packed)) mbr_table_entry_t;
+
+typedef struct
+{
+	u8 bootstrap[0x1B8];
+	u32 serial;
+	u16 reserved;
+	mbr_table_entry_t mbr_table_entry[4];
+	u16 signature; // 0x55AA
+} __attribute__((packed)) mbr_t;
 
 u64 lv2peek(u64 addr)
 { 
@@ -8243,6 +9474,12 @@ int sys_fs_chown(char *path, s32 uid, s32 gid)
 	return_to_user_prog(int);
 }
 
+s64 sys_fs_disk_free(char *path, u64 *total_free, u64 *avail_free)
+{
+	lv2syscall3(835, (u64) path, (u64) total_free, (u64) avail_free);
+	return_to_user_prog(int);
+}
+
 u64 syscall_40(u64 cmd, u64 arg)
 {
 	lv2syscall2(40, cmd, arg);
@@ -8255,1122 +9492,582 @@ s32 sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 	return_to_user_prog(s32);
 }
 
-s32 open_device( u64 device_ID, u32* fd )
+s32 sys_storage_open(u64 device_ID, u32* fd)
 {
 	lv2syscall4( 600, device_ID, 0, (u64)fd, 0 );
 	return_to_user_prog(s32);
 }
 
-s32 close_device( u32 fd)
+s32 sys_storage_close( u32 fd)
 {
 	lv2syscall1( 601, fd );
 	return_to_user_prog(s32);
 }
 
-s32 read_device( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *number_byte_read, u64 flags )
+s32 sys_storage_read( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *number_byte_read, u64 flags )
 {
 	lv2syscall7( 602, fd, 0, start_sector, nb_sector, (u64)buffer, (u64)number_byte_read, flags );
 	return_to_user_prog(s32);
 }
 
-s32 write_device( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *number_byte_wrote, u64 flags )
+s32 sys_storage_write( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *number_byte_wrote, u64 flags )
 {
 	lv2syscall7( 603, fd, 0, start_sector, nb_sector, (u64)buffer, (u64)number_byte_wrote, flags );
 	return_to_user_prog(s32);
 }
 
-//*******************************************************
-// Init firmware
-//*******************************************************
-
-int init_fw()
+s32 sys_storage_get_device_info(u64 device_id, device_info_t *device_info)
 {
-	if(( lv2peek(FW_DATE_OFFSET_421C    )==FW_DATE_1_421C) &&
-	   ( lv2peek(FW_DATE_OFFSET_421C + 8)==FW_DATE_2_421C) )
-	{
-		
-		firmware = 0x421C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_421C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_421C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_421C;
-		OFFSET_FIX = OFFSET_FIX_421C;
-		HV_START_OFFSET = HV_START_OFFSET_421C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_421C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_421C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_421C;
-		SYSCALL_TABLE = SYSCALL_TABLE_421C;
-		LV2MOUNTADDR = LV2MOUNTADDR_421C;
-		OPEN_HOOK = OPEN_HOOK_421C;
-		BASE_ADDR = BASE_ADDR_421C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_421C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_421C;
-		
-		PAYLOAD_SKY_SIZE = payload_sky_421C_bin_size;
-		PAYLOAD_SKY = (u64) payload_sky_421C_bin;
-		UMOUNT_SIZE = umount_421C_bin_size;
-		UMOUNT = (u64) umount_421C_bin;
-		MAMBA_SIZE = mamba_421C_lz_bin_size;
-		MAMBA = (u64) mamba_421C_lz_bin;
-		MAMBA_LOADER_SIZE = mamba_loader_421C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_421C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_421D    )==FW_DATE_1_421D) &&
-	   ( lv2peek(FW_DATE_OFFSET_421D + 8)==FW_DATE_2_421D) )
-	{
-		firmware = 0x421D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_421D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_421D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_421D;
-		OFFSET_FIX = OFFSET_FIX_421D;
-		HV_START_OFFSET = HV_START_OFFSET_421D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_421D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_421D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_421D;
-		SYSCALL_TABLE = SYSCALL_TABLE_421D;
-		LV2MOUNTADDR = LV2MOUNTADDR_421D;
-		OPEN_HOOK = OPEN_HOOK_421D;
-		BASE_ADDR = BASE_ADDR_421D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_421D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_421D;
+	lv2syscall2( 609, device_id, (u64)device_info );
+	return_to_user_prog(s32);
+}
 
-		PAYLOAD_SKY = (u64) payload_sky_421D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_421D_bin_size;
-		UMOUNT = (u64) umount_421D_bin;
-		UMOUNT_SIZE = umount_421D_bin_size;
-		MAMBA = (u64) mamba_421D_lz_bin;
-		MAMBA_SIZE = mamba_421D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_421D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_421D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_430C    )==FW_DATE_1_430C) &&
-	   ( lv2peek(FW_DATE_OFFSET_430C + 8)==FW_DATE_2_430C) )
-	{
-		firmware = 0x430C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_430C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_430C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_430C;
-		OFFSET_FIX = OFFSET_FIX_430C;
-		HV_START_OFFSET = HV_START_OFFSET_430C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_430C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_430C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_430C;
-		SYSCALL_TABLE = SYSCALL_TABLE_430C;
-		LV2MOUNTADDR = LV2MOUNTADDR_430C;
-		OPEN_HOOK = OPEN_HOOK_430C;
-		BASE_ADDR = BASE_ADDR_430C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_430C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_430C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_430C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_430C_bin_size;
-		UMOUNT = (u64) umount_430C_bin;
-		UMOUNT_SIZE = umount_430C_bin_size;
-		MAMBA = (u64) mamba_430C_lz_bin;
-		MAMBA_SIZE = mamba_430C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_430C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_430C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_430D    )==FW_DATE_1_430D) &&
-	   ( lv2peek(FW_DATE_OFFSET_430D + 8)==FW_DATE_2_430D) )
-	{
-		firmware = 0x430D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_430D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_430D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_430D;
-		OFFSET_FIX = OFFSET_FIX_430D;
-		HV_START_OFFSET = HV_START_OFFSET_430D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_430D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_430D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_430D;
-		SYSCALL_TABLE = SYSCALL_TABLE_430D;
-		LV2MOUNTADDR = LV2MOUNTADDR_430D;
-		OPEN_HOOK = OPEN_HOOK_430D;
-		BASE_ADDR = BASE_ADDR_430D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_430D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_430D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_430D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_430D_bin_size;
-		UMOUNT = (u64) umount_430D_bin;
-		UMOUNT_SIZE = umount_430D_bin_size;
-		MAMBA = (u64) mamba_430D_lz_bin;
-		MAMBA_SIZE = mamba_430D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_430D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_430D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_431C    )==FW_DATE_1_431C) &&
-	   ( lv2peek(FW_DATE_OFFSET_431C + 8)==FW_DATE_2_431C) )
-	{
-		firmware = 0x431C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_431C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_431C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_431C;
-		OFFSET_FIX = OFFSET_FIX_431C;
-		HV_START_OFFSET = HV_START_OFFSET_431C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_431C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_431C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_431C;
-		SYSCALL_TABLE = SYSCALL_TABLE_431C;
-		LV2MOUNTADDR = LV2MOUNTADDR_431C;
-		OPEN_HOOK = OPEN_HOOK_431C;
-		BASE_ADDR = BASE_ADDR_431C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_431C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_431C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_431C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_431C_bin_size;
-		UMOUNT = (u64) umount_431C_bin;
-		UMOUNT_SIZE = umount_431C_bin_size;
-		MAMBA = (u64) mamba_431C_lz_bin;
-		MAMBA_SIZE = mamba_431C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_431C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_431C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_440C    )==FW_DATE_1_440C) &&
-	   ( lv2peek(FW_DATE_OFFSET_440C + 8)==FW_DATE_2_440C) )
-	{
-		firmware = 0x440C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_440C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_440C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_440C;
-		OFFSET_FIX = OFFSET_FIX_440C;
-		HV_START_OFFSET = HV_START_OFFSET_440C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_440C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_440C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_440C;
-		SYSCALL_TABLE = SYSCALL_TABLE_440C;
-		LV2MOUNTADDR = LV2MOUNTADDR_440C;
-		OPEN_HOOK = OPEN_HOOK_440C;
-		BASE_ADDR = BASE_ADDR_440C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_440C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_440C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_440C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_440C_bin_size;
-		UMOUNT = (u64) umount_440C_bin;
-		UMOUNT_SIZE = umount_440C_bin_size;
-		MAMBA = (u64) mamba_440C_lz_bin;
-		MAMBA_SIZE = mamba_440C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_440C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_440C_bin;
-		
-	}	else
-	if(( lv2peek(FW_DATE_OFFSET_441C    )==FW_DATE_1_441C) &&
-	   ( lv2peek(FW_DATE_OFFSET_441C + 8)==FW_DATE_2_441C) )
-	{
-		firmware = 0x441C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_441C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_441C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_441C;
-		OFFSET_FIX = OFFSET_FIX_441C;
-		HV_START_OFFSET = HV_START_OFFSET_441C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_441C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_441C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_441C;
-		SYSCALL_TABLE = SYSCALL_TABLE_441C;
-		LV2MOUNTADDR = LV2MOUNTADDR_441C;
-		OPEN_HOOK = OPEN_HOOK_441C;
-		BASE_ADDR = BASE_ADDR_441C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_441C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_441C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_441C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_441C_bin_size;
-		UMOUNT = (u64) umount_441C_bin;
-		UMOUNT_SIZE = umount_441C_bin_size;
-		MAMBA = (u64) mamba_441C_lz_bin;
-		MAMBA_SIZE = mamba_441C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_441C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_441C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_441D    )==FW_DATE_1_441D) &&
-	   ( lv2peek(FW_DATE_OFFSET_441D + 8)==FW_DATE_2_441D) )
-	{
-		firmware = 0x441D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_441D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_441D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_441D;
-		OFFSET_FIX = OFFSET_FIX_441D;
-		HV_START_OFFSET = HV_START_OFFSET_441D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_441D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_441D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_441D;
-		SYSCALL_TABLE = SYSCALL_TABLE_441D;
-		LV2MOUNTADDR = LV2MOUNTADDR_441D;
-		OPEN_HOOK = OPEN_HOOK_441D;
-		BASE_ADDR = BASE_ADDR_441D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_441D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_441D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_441D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_441D_bin_size;
-		UMOUNT = (u64) umount_441D_bin;
-		UMOUNT_SIZE = umount_441D_bin_size;
-		MAMBA = (u64) mamba_441D_lz_bin;
-		MAMBA_SIZE = mamba_441D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_441D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_441D_bin;
-		
-	}	else
-	if(( lv2peek(FW_DATE_OFFSET_446C    )==FW_DATE_1_446C) &&
-	   ( lv2peek(FW_DATE_OFFSET_446C + 8)==FW_DATE_2_446C) )
-	{
-		firmware = 0x446C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_446C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_446C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_446C;
-		OFFSET_FIX = OFFSET_FIX_446C;
-		HV_START_OFFSET = HV_START_OFFSET_446C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_446C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_446C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_446C;
-		SYSCALL_TABLE = SYSCALL_TABLE_446C;
-		LV2MOUNTADDR = LV2MOUNTADDR_446C;
-		OPEN_HOOK = OPEN_HOOK_446C;
-		BASE_ADDR = BASE_ADDR_446C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_446C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_446C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_446C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_446C_bin_size;
-		UMOUNT = (u64) umount_446C_bin;
-		UMOUNT_SIZE = umount_446C_bin_size;
-		MAMBA = (u64) mamba_446C_lz_bin;
-		MAMBA_SIZE = mamba_446C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_446C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_446C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_446D    )==FW_DATE_1_446D) &&
-	   ( lv2peek(FW_DATE_OFFSET_446D + 8)==FW_DATE_2_446D) )
-	{ 
-		firmware = 0x446D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_446D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_446D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_446D;
-		OFFSET_FIX = OFFSET_FIX_446D;
-		HV_START_OFFSET = HV_START_OFFSET_446D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_446D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_446D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_446D;
-		SYSCALL_TABLE = SYSCALL_TABLE_446D;
-		LV2MOUNTADDR = LV2MOUNTADDR_446D;
-		OPEN_HOOK = OPEN_HOOK_446D;
-		BASE_ADDR = BASE_ADDR_446D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_446D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_446D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_446D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_446D_bin_size;
-		UMOUNT = (u64) umount_446D_bin;
-		UMOUNT_SIZE = umount_446D_bin_size;
-		MAMBA = (u64) mamba_446D_lz_bin;
-		MAMBA_SIZE = mamba_446D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_446D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_446D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_450C    )==FW_DATE_1_450C) &&
-	   ( lv2peek(FW_DATE_OFFSET_450C + 8)==FW_DATE_2_450C) )
-	{
-		firmware = 0x450C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_450C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_450C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_450C;
-		OFFSET_FIX = OFFSET_FIX_450C;
-		HV_START_OFFSET = HV_START_OFFSET_450C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_450C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_450C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_450C;
-		SYSCALL_TABLE = SYSCALL_TABLE_450C;
-		LV2MOUNTADDR = LV2MOUNTADDR_450C;
-		OPEN_HOOK = OPEN_HOOK_450C;
-		BASE_ADDR = BASE_ADDR_450C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_450C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_450C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_450C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_450C_bin_size;
-		UMOUNT = (u64) umount_450C_bin;
-		UMOUNT_SIZE = umount_450C_bin_size;
-		MAMBA = (u64) mamba_450C_lz_bin;
-		MAMBA_SIZE = mamba_450C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_450C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_450C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_450D    )==FW_DATE_1_450D) &&
-	   ( lv2peek(FW_DATE_OFFSET_450D + 8)==FW_DATE_2_450D) )
-	{
-		firmware = 0x450D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_450D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_450D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_450D;
-		OFFSET_FIX = OFFSET_FIX_450D;
-		HV_START_OFFSET = HV_START_OFFSET_450D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_450D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_450D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_450D;
-		SYSCALL_TABLE = SYSCALL_TABLE_450D;
-		LV2MOUNTADDR = LV2MOUNTADDR_450D;
-		OPEN_HOOK = OPEN_HOOK_450D;
-		BASE_ADDR = BASE_ADDR_450D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_450D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_450D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_450D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_450D_bin_size;
-		UMOUNT = (u64) umount_450D_bin;
-		UMOUNT_SIZE = umount_450D_bin_size;
-		MAMBA = (u64) mamba_450D_lz_bin;
-		MAMBA_SIZE = mamba_450D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_450D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_450D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_453C    )==FW_DATE_1_453C) &&
-	   ( lv2peek(FW_DATE_OFFSET_453C + 8)==FW_DATE_2_453C) )
-	{
-		firmware = 0x453C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_453C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_453C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_453C;
-		OFFSET_FIX = OFFSET_FIX_453C;
-		HV_START_OFFSET = HV_START_OFFSET_453C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_453C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_453C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_453C;
-		SYSCALL_TABLE = SYSCALL_TABLE_453C;
-		LV2MOUNTADDR = LV2MOUNTADDR_453C;
-		OPEN_HOOK = OPEN_HOOK_453C;
-		BASE_ADDR = BASE_ADDR_453C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_453C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_453C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_453C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_453C_bin_size;
-		UMOUNT = (u64) umount_453C_bin;
-		UMOUNT_SIZE = umount_453C_bin_size;
-		MAMBA = (u64) mamba_453C_lz_bin;
-		MAMBA_SIZE = mamba_453C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_453C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_453C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_453D    )==FW_DATE_1_453D) &&
-	   ( lv2peek(FW_DATE_OFFSET_453D + 8)==FW_DATE_2_453D) )
-	{
-		firmware = 0x453D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_453D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_453D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_453D;
-		OFFSET_FIX = OFFSET_FIX_453D;
-		HV_START_OFFSET = HV_START_OFFSET_453D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_453D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_453D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_453D;
-		SYSCALL_TABLE = SYSCALL_TABLE_453D;
-		LV2MOUNTADDR = LV2MOUNTADDR_453D;
-		OPEN_HOOK = OPEN_HOOK_453D;
-		BASE_ADDR = BASE_ADDR_453D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_453D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_453D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_453D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_453D_bin_size;
-		UMOUNT = (u64) umount_453D_bin;
-		UMOUNT_SIZE = umount_453D_bin_size;
-		MAMBA = (u64) mamba_453D_lz_bin;
-		MAMBA_SIZE = mamba_453D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_453D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_453D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_455C    )==FW_DATE_1_455C) &&
-	   ( lv2peek(FW_DATE_OFFSET_455C + 8)==FW_DATE_2_455C) )
-	{
-		firmware = 0x455C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_455C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_455C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_455C;
-		OFFSET_FIX = OFFSET_FIX_455C;
-		HV_START_OFFSET = HV_START_OFFSET_455C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_455C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_455C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_455C;
-		SYSCALL_TABLE = SYSCALL_TABLE_455C;
-		LV2MOUNTADDR = LV2MOUNTADDR_455C;
-		OPEN_HOOK = OPEN_HOOK_455C;
-		BASE_ADDR = BASE_ADDR_455C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_455C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_455C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_455C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_455C_bin_size;
-		UMOUNT = (u64) umount_455C_bin;
-		UMOUNT_SIZE = umount_455C_bin_size;
-		MAMBA = (u64) mamba_455C_lz_bin;
-		MAMBA_SIZE = mamba_455C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_455C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_455C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_455D    )==FW_DATE_1_455D) &&
-	   ( lv2peek(FW_DATE_OFFSET_455D + 8)==FW_DATE_2_455D) )
-	{
-		firmware = 0x455D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_455D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_455D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_455D;
-		OFFSET_FIX = OFFSET_FIX_455D;
-		HV_START_OFFSET = HV_START_OFFSET_455D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_455D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_455D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_455D;
-		SYSCALL_TABLE = SYSCALL_TABLE_455D;
-		LV2MOUNTADDR = LV2MOUNTADDR_455D;
-		OPEN_HOOK = OPEN_HOOK_455D;
-		BASE_ADDR = BASE_ADDR_455D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_455D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_455D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_455D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_455D_bin_size;
-		UMOUNT = (u64) umount_455D_bin;
-		UMOUNT_SIZE = umount_455D_bin_size;
-		MAMBA = (u64) mamba_455D_lz_bin;
-		MAMBA_SIZE = mamba_455D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_455D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_455D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_460C    )==FW_DATE_1_460C) &&
-	   ( lv2peek(FW_DATE_OFFSET_460C + 8)==FW_DATE_2_460C) )
-	{
-		firmware = 0x460C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_460C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_460C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_460C;
-		OFFSET_FIX = OFFSET_FIX_460C;
-		HV_START_OFFSET = HV_START_OFFSET_460C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_460C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_460C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_460C;
-		SYSCALL_TABLE = SYSCALL_TABLE_460C;
-		LV2MOUNTADDR = LV2MOUNTADDR_460C;
-		OPEN_HOOK = OPEN_HOOK_460C;
-		BASE_ADDR = BASE_ADDR_460C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_460C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_460C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_460C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_460C_bin_size;
-		UMOUNT = (u64) umount_460C_bin;
-		UMOUNT_SIZE = umount_460C_bin_size;
-		MAMBA = (u64) mamba_460C_lz_bin;
-		MAMBA_SIZE = mamba_460C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_460C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_460C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_465D    )==FW_DATE_1_465D) &&
-	   ( lv2peek(FW_DATE_OFFSET_465D + 8)==FW_DATE_2_465D) )
-	{
-		firmware = 0x465D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_465D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_465D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_465D;
-		OFFSET_FIX = OFFSET_FIX_465D;
-		HV_START_OFFSET = HV_START_OFFSET_465D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_465D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_465D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_465D;
-		SYSCALL_TABLE = SYSCALL_TABLE_465D;
-		LV2MOUNTADDR = LV2MOUNTADDR_465D;
-		OPEN_HOOK = OPEN_HOOK_465D;
-		BASE_ADDR = BASE_ADDR_465D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_465D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_465D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_465D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_465D_bin_size;
-		UMOUNT = (u64) umount_465D_bin;
-		UMOUNT_SIZE = umount_465D_bin_size;
-		MAMBA = (u64) mamba_465D_lz_bin;
-		MAMBA_SIZE = mamba_465D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_465D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_465D_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_465C    )==FW_DATE_1_465C) &&
-	   ( lv2peek(FW_DATE_OFFSET_465C + 8)==FW_DATE_2_465C) )
-	{
-		firmware = 0x465C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_465C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_465C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_465C;
-		OFFSET_FIX = OFFSET_FIX_465C;
-		HV_START_OFFSET = HV_START_OFFSET_465C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_465C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_465C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_465C;
-		SYSCALL_TABLE = SYSCALL_TABLE_465C;
-		LV2MOUNTADDR = LV2MOUNTADDR_465C;
-		OPEN_HOOK = OPEN_HOOK_465C;
-		BASE_ADDR = BASE_ADDR_465C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_465C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_465C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_465C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_465C_bin_size;
-		UMOUNT = (u64) umount_465C_bin;
-		UMOUNT_SIZE = umount_465C_bin_size;
-		MAMBA = (u64) mamba_465C_lz_bin;
-		MAMBA_SIZE = mamba_465C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_465C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_465C_bin;
-		
-	} else 
-	if(( lv2peek(FW_DATE_OFFSET_470C    )==FW_DATE_1_470C) &&
-	   ( lv2peek(FW_DATE_OFFSET_470C + 8)==FW_DATE_2_470C) )
-	{
-		firmware = 0x470C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_470C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_470C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_470C;
-		OFFSET_FIX = OFFSET_FIX_470C;
-		HV_START_OFFSET = HV_START_OFFSET_470C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_470C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_470C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_470C;
-		SYSCALL_TABLE = SYSCALL_TABLE_470C;
-		LV2MOUNTADDR = LV2MOUNTADDR_470C;
-		OPEN_HOOK = OPEN_HOOK_470C;
-		BASE_ADDR = BASE_ADDR_470C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_470C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_470C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_470C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_470C_bin_size;
-		UMOUNT = (u64) umount_470C_bin;
-		UMOUNT_SIZE = umount_470C_bin_size;
-		MAMBA = (u64) mamba_470C_lz_bin;
-		MAMBA_SIZE = mamba_470C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_470C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_470C_bin;
-		
-	} else 
-	if(( lv2peek(FW_DATE_OFFSET_470D    )==FW_DATE_1_470D) &&
-	   ( lv2peek(FW_DATE_OFFSET_470D + 8)==FW_DATE_2_470D) )
-	{
-		firmware = 0x470D;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_470D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_470D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_470D;
-		OFFSET_FIX = OFFSET_FIX_470D;
-		HV_START_OFFSET = HV_START_OFFSET_470D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_470D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_470D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_470D;
-		SYSCALL_TABLE = SYSCALL_TABLE_470D;
-		LV2MOUNTADDR = LV2MOUNTADDR_470D;
-		OPEN_HOOK = OPEN_HOOK_470D;
-		BASE_ADDR = BASE_ADDR_470D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_470D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_470D;
-		
-		PAYLOAD_SKY = (u64) payload_sky_470D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_470D_bin_size;
-		UMOUNT = (u64) umount_470D_bin;
-		UMOUNT_SIZE = umount_470D_bin_size;
-		MAMBA = (u64) mamba_470D_lz_bin;
-		MAMBA_SIZE = mamba_470D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_470D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_470D_bin;
-		
-	} else 
-	if(( lv2peek(FW_DATE_OFFSET_475C    )==FW_DATE_1_475C) &&
-	   ( lv2peek(FW_DATE_OFFSET_475C + 8)==FW_DATE_2_475C) )
-	{
-		firmware = 0x475C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_475C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_475C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_475C;
-		OFFSET_FIX = OFFSET_FIX_475C;
-		HV_START_OFFSET = HV_START_OFFSET_475C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_475C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_475C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_475C;
-		SYSCALL_TABLE = SYSCALL_TABLE_475C;
-		LV2MOUNTADDR = LV2MOUNTADDR_475C;
-		OPEN_HOOK = OPEN_HOOK_475C;
-		BASE_ADDR = BASE_ADDR_475C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_475C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_475C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_475C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_475C_bin_size;
-		UMOUNT = (u64) umount_475C_bin;
-		UMOUNT_SIZE = umount_475C_bin_size;
-		MAMBA = (u64) mamba_475C_lz_bin;
-		MAMBA_SIZE = mamba_475C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_475C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_475C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_475D    )==FW_DATE_1_475D) &&
-	   ( lv2peek(FW_DATE_OFFSET_475D + 8)==FW_DATE_2_475D) )
-	{
-		firmware = 0x475D;
+s32 sys_fs_get_mount_info(sys_fs_mount_info *info, uint64_t size, uint64_t *rsize)
+{
+	lv2syscall3(842, (u64)info, size, (uint64_t)rsize);
+	return_to_user_prog(s32);
+}
 
-		OFFSET_2_FIX = OFFSET_2_FIX_475D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_475D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_475D;
-		OFFSET_FIX = OFFSET_FIX_475D;
-		HV_START_OFFSET = HV_START_OFFSET_475D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_475D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_475D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_475D;
-		SYSCALL_TABLE = SYSCALL_TABLE_475D;
-		LV2MOUNTADDR = LV2MOUNTADDR_475D;
-		OPEN_HOOK = OPEN_HOOK_475D;
-		BASE_ADDR = BASE_ADDR_475D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_475D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_475D;
+s32 sys_fs_get_mount_info_size(uint64_t *size)
+{
+	lv2syscall1(841, (uint64_t)size);
+	return_to_user_prog(s32);
+}
 
-		PAYLOAD_SKY = (u64) payload_sky_475D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_475D_bin_size;
-		UMOUNT = (u64) umount_475D_bin;
-		UMOUNT_SIZE = umount_475D_bin_size;
-		MAMBA = (u64) mamba_475D_lz_bin;
-		MAMBA_SIZE = mamba_475D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_475D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_475D_bin;
-
-	} else 
-	if(( lv2peek(FW_DATE_OFFSET_476C    )==FW_DATE_1_476C) &&
-	   ( lv2peek(FW_DATE_OFFSET_476C + 8)==FW_DATE_2_476C) )
-	{
-		firmware = 0x476C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_476C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_476C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_476C;
-		OFFSET_FIX = OFFSET_FIX_476C;
-		HV_START_OFFSET = HV_START_OFFSET_476C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_476C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_476C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_476C;
-		SYSCALL_TABLE = SYSCALL_TABLE_476C;
-		LV2MOUNTADDR = LV2MOUNTADDR_476C;
-		OPEN_HOOK = OPEN_HOOK_476C;
-		BASE_ADDR = BASE_ADDR_476C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_476C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_476C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_476C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_476C_bin_size;
-		UMOUNT = (u64) umount_476C_bin;
-		UMOUNT_SIZE = umount_476C_bin_size;
-		MAMBA = (u64) mamba_476C_lz_bin;
-		MAMBA_SIZE = mamba_476C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_476C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_476C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_476D    )==FW_DATE_1_476D) &&
-	   ( lv2peek(FW_DATE_OFFSET_476D + 8)==FW_DATE_2_476D) )
-	{
-		firmware = 0x476D;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_476D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_476D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_476D;
-		OFFSET_FIX = OFFSET_FIX_476D;
-		HV_START_OFFSET = HV_START_OFFSET_476D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_476D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_476D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_476D;
-		SYSCALL_TABLE = SYSCALL_TABLE_476D;
-		LV2MOUNTADDR = LV2MOUNTADDR_476D;
-		OPEN_HOOK = OPEN_HOOK_476D;
-		BASE_ADDR = BASE_ADDR_476D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_476D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_476D;
-
-		PAYLOAD_SKY = (u64) payload_sky_476D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_476D_bin_size;
-		UMOUNT = (u64) umount_476D_bin;
-		UMOUNT_SIZE = umount_476D_bin_size;
-		MAMBA = (u64) mamba_476D_lz_bin;
-		MAMBA_SIZE = mamba_476D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_476D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_476D_bin;
-
-	} else 
-	if(( lv2peek(FW_DATE_OFFSET_478C    )==FW_DATE_1_478C) &&
-	   ( lv2peek(FW_DATE_OFFSET_478C + 8)==FW_DATE_2_478C) )
-	{
-		firmware = 0x478C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_478C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_478C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_478C;
-		OFFSET_FIX = OFFSET_FIX_478C;
-		HV_START_OFFSET = HV_START_OFFSET_478C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_478C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_478C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_478C;
-		SYSCALL_TABLE = SYSCALL_TABLE_478C;
-		LV2MOUNTADDR = LV2MOUNTADDR_478C;
-		OPEN_HOOK = OPEN_HOOK_478C;
-		BASE_ADDR = BASE_ADDR_478C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_478C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_478C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_478C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_478C_bin_size;
-		UMOUNT = (u64) umount_478C_bin;
-		UMOUNT_SIZE = umount_478C_bin_size;
-		MAMBA = (u64) mamba_478C_lz_bin;
-		MAMBA_SIZE = mamba_478C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_478C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_478C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_478D    )==FW_DATE_1_478D) &&
-	   ( lv2peek(FW_DATE_OFFSET_478D + 8)==FW_DATE_2_478D) )
-	{
-		firmware = 0x478D;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_478D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_478D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_478D;
-		OFFSET_FIX = OFFSET_FIX_478D;
-		HV_START_OFFSET = HV_START_OFFSET_478D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_478D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_478D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_478D;
-		SYSCALL_TABLE = SYSCALL_TABLE_478D;
-		LV2MOUNTADDR = LV2MOUNTADDR_478D;
-		OPEN_HOOK = OPEN_HOOK_478D;
-		BASE_ADDR = BASE_ADDR_478D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_478D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_478D;
-
-		PAYLOAD_SKY = (u64) payload_sky_478D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_478D_bin_size;
-		UMOUNT = (u64) umount_478D_bin;
-		UMOUNT_SIZE = umount_478D_bin_size;
-		MAMBA = (u64) mamba_478D_lz_bin;
-		MAMBA_SIZE = mamba_478D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_478D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_478D_bin;
-
-	} else 
-	if(( lv2peek(FW_DATE_OFFSET_480C    )==FW_DATE_1_480C) &&
-	   ( lv2peek(FW_DATE_OFFSET_480C + 8)==FW_DATE_2_480C) )
-	{
-		firmware = 0x480C;
-		
-		OFFSET_2_FIX = OFFSET_2_FIX_480C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_480C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_480C;
-		OFFSET_FIX = OFFSET_FIX_480C;
-		HV_START_OFFSET = HV_START_OFFSET_480C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_480C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_480C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_480C;
-		SYSCALL_TABLE = SYSCALL_TABLE_480C;
-		LV2MOUNTADDR = LV2MOUNTADDR_480C;
-		OPEN_HOOK = OPEN_HOOK_480C;
-		BASE_ADDR = BASE_ADDR_480C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_480C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_480C;
-		
-		PAYLOAD_SKY = (u64) payload_sky_480C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_480C_bin_size;
-		UMOUNT = (u64) umount_480C_bin;
-		UMOUNT_SIZE = umount_480C_bin_size;
-		MAMBA = (u64) mamba_480C_lz_bin;
-		MAMBA_SIZE = mamba_480C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_480C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_480C_bin;
-		
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_480D    )==FW_DATE_1_480D) &&
-	   ( lv2peek(FW_DATE_OFFSET_480D + 8)==FW_DATE_2_480D) )
-	{
-		firmware = 0x480D;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_480D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_480D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_480D;
-		OFFSET_FIX = OFFSET_FIX_480D;
-		HV_START_OFFSET = HV_START_OFFSET_480D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_480D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_480D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_480D;
-		SYSCALL_TABLE = SYSCALL_TABLE_480D;
-		LV2MOUNTADDR = LV2MOUNTADDR_480D;
-		OPEN_HOOK = OPEN_HOOK_480D;
-		BASE_ADDR = BASE_ADDR_480D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_480D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_480D;
-
-		PAYLOAD_SKY = (u64) payload_sky_480D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_480D_bin_size;
-		UMOUNT = (u64) umount_480D_bin;
-		UMOUNT_SIZE = umount_480D_bin_size;
-		MAMBA = (u64) mamba_480D_lz_bin;
-		MAMBA_SIZE = mamba_480D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_480D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_480D_bin;
-
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_481C    )==FW_DATE_1_481C) &&
-	   ( lv2peek(FW_DATE_OFFSET_481C + 8)==FW_DATE_2_481C) )
-	{
-		firmware = 0x481C;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_481C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_481C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_481C;
-		OFFSET_FIX = OFFSET_FIX_481C;
-		HV_START_OFFSET = HV_START_OFFSET_481C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_481C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_481C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_481C;
-		SYSCALL_TABLE = SYSCALL_TABLE_481C;
-		LV2MOUNTADDR = LV2MOUNTADDR_481C;
-		OPEN_HOOK = OPEN_HOOK_481C;
-		BASE_ADDR = BASE_ADDR_481C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_481C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_481C;
-
-		PAYLOAD_SKY = (u64) payload_sky_481C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_481C_bin_size;
-		UMOUNT = (u64) umount_481C_bin;
-		UMOUNT_SIZE = umount_481C_bin_size;
-		MAMBA = (u64) mamba_481C_lz_bin;
-		MAMBA_SIZE = mamba_481C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_481C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_481C_bin;
-
-	}  else
-	if(( lv2peek(FW_DATE_OFFSET_481D    )==FW_DATE_1_481D) &&
-	   ( lv2peek(FW_DATE_OFFSET_481D + 8)==FW_DATE_2_481D) )
-	{
-		firmware = 0x481D;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_481D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_481D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_481D;
-		OFFSET_FIX = OFFSET_FIX_481D;
-		HV_START_OFFSET = HV_START_OFFSET_481D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_481D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_481D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_481D;
-		SYSCALL_TABLE = SYSCALL_TABLE_481D;
-		LV2MOUNTADDR = LV2MOUNTADDR_481D;
-		OPEN_HOOK = OPEN_HOOK_481D;
-		BASE_ADDR = BASE_ADDR_481D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_481D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_481D;
-
-		PAYLOAD_SKY = (u64) payload_sky_481D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_481D_bin_size;
-		UMOUNT = (u64) umount_481D_bin;
-		UMOUNT_SIZE = umount_481D_bin_size;
-		MAMBA = (u64) mamba_481D_lz_bin;
-		MAMBA_SIZE = mamba_481D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_481D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_481D_bin;
-
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_482C    )==FW_DATE_1_482C) &&
-	   ( lv2peek(FW_DATE_OFFSET_482C + 8)==FW_DATE_2_482C) )
-	{
-		firmware = 0x482C;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_482C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_482C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_482C;
-		OFFSET_FIX = OFFSET_FIX_482C;
-		HV_START_OFFSET = HV_START_OFFSET_482C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_482C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_482C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_482C;
-		SYSCALL_TABLE = SYSCALL_TABLE_482C;
-		LV2MOUNTADDR = LV2MOUNTADDR_482C;
-		OPEN_HOOK = OPEN_HOOK_482C;
-		BASE_ADDR = BASE_ADDR_482C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_482C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_482C;
-
-		PAYLOAD_SKY = (u64) payload_sky_482C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_482C_bin_size;
-		UMOUNT = (u64) umount_482C_bin;
-		UMOUNT_SIZE = umount_482C_bin_size;
-		MAMBA = (u64) mamba_482C_lz_bin;
-		MAMBA_SIZE = mamba_482C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_482C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_482C_bin;
-
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_482D    )==FW_DATE_1_482D) &&
-	   ( lv2peek(FW_DATE_OFFSET_482D + 8)==FW_DATE_2_482D) )
-	{
-		firmware = 0x482D;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_482D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_482D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_482D;
-		OFFSET_FIX = OFFSET_FIX_482D;
-		HV_START_OFFSET = HV_START_OFFSET_482D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_482D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_482D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_482D;
-		SYSCALL_TABLE = SYSCALL_TABLE_482D;
-		LV2MOUNTADDR = LV2MOUNTADDR_482D;
-		OPEN_HOOK = OPEN_HOOK_482D;
-		BASE_ADDR = BASE_ADDR_482D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_482D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_482D;
-
-		PAYLOAD_SKY = (u64) payload_sky_482D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_482D_bin_size;
-		UMOUNT = (u64) umount_482D_bin;
-		UMOUNT_SIZE = umount_482D_bin_size;
-		MAMBA = (u64) mamba_482D_lz_bin;
-		MAMBA_SIZE = mamba_482D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_482D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_482D_bin;
-
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_483C    )==FW_DATE_1_483C) &&
-	   ( lv2peek(FW_DATE_OFFSET_483C + 8)==FW_DATE_2_483C) )
-	{
-		firmware = 0x483C;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_483C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_483C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_483C;
-		OFFSET_FIX = OFFSET_FIX_483C;
-		HV_START_OFFSET = HV_START_OFFSET_483C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_483C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_483C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_483C;
-		SYSCALL_TABLE = SYSCALL_TABLE_483C;
-		LV2MOUNTADDR = LV2MOUNTADDR_483C;
-		OPEN_HOOK = OPEN_HOOK_483C;
-		BASE_ADDR = BASE_ADDR_483C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_483C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_483C;
-
-		PAYLOAD_SKY = (u64) payload_sky_483C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_483C_bin_size;
-		UMOUNT = (u64) umount_483C_bin;
-		UMOUNT_SIZE = umount_483C_bin_size;
-		MAMBA = (u64) mamba_483C_lz_bin;
-		MAMBA_SIZE = mamba_483C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_483C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_483C_bin;
-
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_484C    )==FW_DATE_1_484C) &&
-	   ( lv2peek(FW_DATE_OFFSET_484C + 8)==FW_DATE_2_484C) )
-	{
-		firmware = 0x484C;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_484C;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_484C;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_484C;
-		OFFSET_FIX = OFFSET_FIX_484C;
-		HV_START_OFFSET = HV_START_OFFSET_484C;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_484C;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_484C;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_484C;
-		SYSCALL_TABLE = SYSCALL_TABLE_484C;
-		LV2MOUNTADDR = LV2MOUNTADDR_484C;
-		OPEN_HOOK = OPEN_HOOK_484C;
-		BASE_ADDR = BASE_ADDR_484C;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_484C;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_484C;
-
-		PAYLOAD_SKY = (u64) payload_sky_484C_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_484C_bin_size;
-		UMOUNT = (u64) umount_484C_bin;
-		UMOUNT_SIZE = umount_484C_bin_size;
-		MAMBA = (u64) mamba_484C_lz_bin;
-		MAMBA_SIZE = mamba_484C_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_484C_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_484C_bin;
-
-	} else
-	if(( lv2peek(FW_DATE_OFFSET_484D    )==FW_DATE_1_484D) &&
-	   ( lv2peek(FW_DATE_OFFSET_484D + 8)==FW_DATE_2_484D) )
-	{
-		firmware = 0x484D;
-
-		OFFSET_2_FIX = OFFSET_2_FIX_484D;
-		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_484D;
-		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_484D;
-		OFFSET_FIX = OFFSET_FIX_484D;
-		HV_START_OFFSET = HV_START_OFFSET_484D;
-		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_484D;
-		OFFSET_FIX_LIC = OFFSET_FIX_LIC_484D;
-		OFFSET_FIX_3C = OFFSET_FIX_3C_484D;
-		SYSCALL_TABLE = SYSCALL_TABLE_484D;
-		LV2MOUNTADDR = LV2MOUNTADDR_484D;
-		OPEN_HOOK = OPEN_HOOK_484D;
-		BASE_ADDR = BASE_ADDR_484D;
-		OFFSET_1_IDPS = OFFSET_1_IDPS_484D;
-		OFFSET_2_IDPS = OFFSET_2_IDPS_484D;
-
-		PAYLOAD_SKY = (u64) payload_sky_484D_bin;
-		PAYLOAD_SKY_SIZE = payload_sky_484D_bin_size;
-		UMOUNT = (u64) umount_484D_bin;
-		UMOUNT_SIZE = umount_484D_bin_size;
-		MAMBA = (u64) mamba_484D_lz_bin;
-		MAMBA_SIZE = mamba_484D_lz_bin_size;
-		MAMBA_LOADER_SIZE = mamba_loader_484D_bin_size;
-		MAMBA_LOADER = (u64 *) mamba_loader_484D_bin;
-
-	} else {return NOK;}
+u8 DeviceDumpBootSector(u64 device_id, u32 sector_size, u32 first_sector, FAT32_boot_sector_t *boot_sector)
+{
+	u32 source;
+	u32 read;
 	
-	NEW_POKE_SYSCALL_ADDR = lv2peek( lv2peek(SYSCALL_TABLE + NEW_POKE_SYSCALL*8) ) + 0ULL;
-	UMOUNT_SYSCALL_OFFSET = lv2peek( lv2peek(SYSCALL_TABLE + 838*8) )  + 8ULL;
+	char *sector = (char *) malloc(sector_size);
+	if(sector==NULL) return FAILED;
 	
-	return OK;
+	int ret = sys_storage_open(device_id, &source);
+	if( ret != 0 ) {
+		FREE(sector);
+		return FAILED;
+	}
+	
+	sys_storage_read(source, first_sector, 1, sector, &read, 0);
+	sys_storage_close(source);
+	
+	memcpy(boot_sector, sector, sizeof(FAT32_boot_sector_t)); 
+	FREE(sector);
+	
+	FILE *f;
+	f = fopen("/dev_hdd0/boot_sector.bin", "wb");
+	fwrite(boot_sector, sizeof(FAT32_boot_sector_t), 1, f);
+	fclose(f);
+	
+	return SUCCESS;
+}
+
+u8 DeviceDumpMBRInfo(u64 device_id, u32 sector_size, mbr_t *mbr)
+{
+	u32 source;
+	u32 read;
+	
+	char *sector = (char *) malloc(sector_size);
+	if(sector==NULL) return FAILED;
+	
+	int ret = sys_storage_open(device_id, &source);
+	if( ret != 0 ) {
+		FREE(sector);
+		return FAILED;
+	}
+	
+	sys_storage_read(source, 0, 1, sector, &read, 0);
+	sys_storage_close(source);
+	
+	memcpy(mbr, sector, sizeof(mbr_t)); 
+	FREE(sector);
+	
+	return SUCCESS;
+}
+
+char *GetVolumeLabel(u64 device_id, u32 sector_size, u32 sector_position)
+{
+	u32 source;
+	u32 read;
+	
+	char *sector = (char *) malloc(sector_size);
+	if(sector==NULL) return NULL;
+	
+	int ret = sys_storage_open(device_id, &source);
+	if( ret != 0 ) {
+		FREE(sector);
+		return NULL;
+	}
+	
+	sys_storage_read(source, sector_position, 1, sector, &read, 0);
+	sys_storage_close(source);
+	
+	char *label = (char *) malloc(0xB);
+	if(label==NULL) {
+		FREE(sector);
+		return NULL;
+	}
+	
+	memcpy(label, sector, 0xB); 
+	FREE(sector);
+	
+	return label;
+}
+
+
+u8 get_mount_info(char *mount_point, sys_fs_mount_info *mount_info)
+{
+	int ret = -1;
+	uint64_t i, size;
+	sys_fs_mount_info *info;
+	
+	ret = sys_fs_get_mount_info_size(&size);
+	if (ret != 0) {
+		//print_load("Error : sys_fs_get_mount_info_size FAILED ! %X", ret);
+		return SUCCESS;
+	}
+	
+	info = malloc(size*sizeof(sys_fs_mount_info));
+	memset(info, 0, size*sizeof(sys_fs_mount_info));
+	ret = sys_fs_get_mount_info(info, size, &size);
+	if (ret != 0)
+	{
+		//print_load("Error : sys_fs_get_mount_info FAILED ! %X", ret);
+		free(info);
+		return SUCCESS;
+	}
+	
+	for (i = 0; i < size; i++)
+	{
+		if (strcmp(info[i].mount_point, mount_point) == 0)
+			break;
+	}
+	
+	if (i == size)
+	{
+		//print_load("Error : FAILED to find mount_point !%X", ret);
+		free(info);
+		return SUCCESS;
+	}
+	
+	strcpy( mount_info->mount_point, info[i].mount_point );
+	strcpy( mount_info->filesystem, info[i].filesystem );
+	strcpy( mount_info->deviceName, info[i].deviceName );
+	mount_info->ReadOnly = info[i].ReadOnly;
+
+	free(info);
+	
+	return SUCCESS;
+}
+
+u64 get_device(char *name)
+{	
+	if (strcmp(name, "CELL_FS_IOS:ATA_HDD") == 0)
+		return ATA_HDD;
+	
+	if (strcmp(name, "CELL_FS_IOS:BDVD_DRIVE") == 0 || strcmp(name, "/dev_bdvd") == 0)
+		return BDVD_DRIVE;
+	
+	if (strcmp(name, "CELL_FS_IOS:PATA0_HDD_DRIVE") == 0)
+		return PATA0_HDD_DRIVE;
+	
+	if (strcmp(name, "CELL_FS_IOS:PATA0_BDVD_DRIVE") == 0 || strcmp(name, "/dev_bdvd") == 0)
+		return PATA0_BDVD_DRIVE;
+	
+	if (strcmp(name, "CELL_FS_IOS:PATA1_HDD_DRIVE") == 0)
+		return PATA1_HDD_DRIVE;
+	
+	if (strcmp(name, "CELL_FS_IOS:PATA1_BDVD_DRIVE") == 0)
+		return PATA1_BDVD_DRIVE;
+	
+	if (strcmp(name, "CELL_FS_IOS:BUILTIN_FLASH") == 0 || strcmp(name, "/dev_flash") == 0)
+		return BUILTIN_FLASH;
+	
+	if (strcmp(name, "CELL_FS_IOS:COMPACT_FLASH") == 0 || strcmp(name, "/dev_cf") == 0)
+		return COMPACT_FLASH;
+	
+	if (strcmp(name, "CELL_FS_IOS:MEMORY_STICK") == 0 || strcmp(name, "/dev_ms") == 0)
+		return MEMORY_STICK;
+	
+	if (strcmp(name, "CELL_FS_IOS:SD_CARD") == 0 || strcmp(name, "/dev_sd") == 0)
+		return SD_CARD;
+	
+	if (strncmp(name, "CELL_FS_IOS:USB_MASS_STORAGE", 28) == 0)
+	{	
+		unsigned int num = ((name[28]-'0')*100) + ((name[29]-'0')*10) + (name[30]-'0');
+		
+		if (num > 127)
+			return 0;
+		
+		return USB_MASS_STORAGE(num);
+	}
+	
+	if (strncmp(name, "/dev_usb", 8) == 0)
+	{	
+		unsigned int num = ((name[8]-'0')*100) + ((name[9]-'0')*10) + (name[10]-'0');
+		
+		if (num > 127)
+			return 0;
+		
+		return USB_MASS_STORAGE(num);
+	}
+	
+	if (strcmp(name, "CELL_FS_IOS:BUILTIN_FLSH1") == 0 || strcmp(name, "/dev_flash1") == 0)
+		return FLASH_PARTITION(2);
+	
+	if (strcmp(name, "CELL_FS_IOS:BUILTIN_FLSH2") == 0 || strcmp(name, "/dev_flash2") == 0)
+		return FLASH_PARTITION(3);
+	
+	if (strcmp(name, "CELL_FS_IOS:BUILTIN_FLSH3") == 0 || strcmp(name, "/dev_flash3") == 0)
+		return FLASH_PARTITION(4);
+	
+	if (strcmp(name, "CELL_FS_IOS:BUILTIN_FLSH4") == 0 || strcmp(name, "/dev_flash4") == 0)
+		return FLASH_PARTITION(5);
+	
+	if (strcmp(name, "CELL_FS_UTILITY:HDD0") == 0 || strcmp(name, "/dev_hdd0") == 0)
+		return HDD_PARTITION(1);
+	
+	if (strcmp(name, "CELL_FS_UTILITY:HDD1") == 0 || strcmp(name, "/dev_hdd1") == 0)
+		return HDD_PARTITION(2);
+	
+	if (strcmp(name, "CELL_FS_UTILITY:HDD2") == 0 || strcmp(name, "/dev_hdd2") == 0)
+		return HDD_PARTITION(3);
+	
+	if (strcmp(name, "CELL_FS_UTILITY:HDD") == 0)
+		return ATA_HDD;	
+	
+	
+	//print_load("Error : Failed to find device_id of %s", name);
+	
+	return FAILED;
+}
+
+u8 is_ExtDevice(char *mount_name)
+{
+	if( strncmp(mount_name, "/dev_usb", 8) == 0) return YES;
+	if( strcmp(mount_name, "/dev_sd") == 0) return YES;
+	if( strcmp(mount_name, "/dev_cf") == 0) return YES;
+	if( strcmp(mount_name, "/dev_ms") == 0) return YES;
+	
+	return NO;
+}
+
+u64 GetFreeSpace(char *path)
+{	
+	char temp[64];
+	int n = 1; 
+	while(path[n] != '/' && path[n] != 0) n++;
+    memcpy(temp, path, n);
+    temp[n] = '/';
+    temp[n + 1]=0;
+
+	u64 freeSize = 0;
+	u32 blockSize;
+	if(is_ntfs(temp)) {
+		struct statvfs vfs;
+        ps3ntfs_statvfs(path, &vfs);
+        freeSize = (((u64)vfs.f_bsize * vfs.f_bfree));
+    } else {
+        sysFsGetFreeSize(temp, &blockSize, &freeSize);
+        freeSize = (((u64)blockSize * freeSize));
+    }
+	
+	return freeSize;
+	
+}
+
+void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
+{
+	char temp[64];
+	
+	int n = 1; 
+	while(mount_point[n] != '/' && mount_point[n] != 0) n++;
+    memcpy(temp, mount_point, n);
+    temp[n] = '/';
+    temp[n + 1]=0;
+	
+	u64 freeSize = 0;
+	u32 blockSize;
+	
+	memset(DeviceInfo, 0, sizeof(DeviceInfo_t));
+	
+	if(is_ntfs(temp))
+	{
+		struct statvfs vfs;
+        ps3ntfs_statvfs(temp, &vfs);
+        DeviceInfo->FreeSpace = (((u64)vfs.f_bsize * vfs.f_bfree));
+		DeviceInfo->TotalSpace = (((u64)vfs.f_bsize * vfs.f_blocks));
+		temp[n]=0;
+		
+		strcpy(DeviceInfo->Label, ntfsGetVolumeName(temp));
+		strcpy(DeviceInfo->FileSystem, "CELL_FS_NTFS");
+		strcpy(DeviceInfo->MountPoint, temp);
+		sprintf(DeviceInfo->Name, "CELL_FS_IOS:USB_MASS_STORAGE%03d", NTFS_Test_Device(&temp[1]));
+		
+		// interface.feature
+		DeviceInfo->ReadOnly = NO;
+		
+    } else {
+		
+		sysFsGetFreeSize(temp, &blockSize, &freeSize);
+		DeviceInfo->FreeSpace = (((u64)blockSize * freeSize));
+		temp[n]=0;
+		
+		
+		strcpy(DeviceInfo->MountPoint, temp);
+		
+#ifdef RPCS3
+		if(strcmp(temp, "/app_home")==0 || strcmp(temp, "/dev_flash")==0) {DeviceInfo->ReadOnly = YES; return;}
+			
+		
+		DeviceInfo->TotalSpace = Go(500);
+		strcpy(DeviceInfo->Label, "Device");
+		strcpy(DeviceInfo->FileSystem, "CELL_FS_FAKE");
+		strcpy(DeviceInfo->Name, "CELL_FS_FAKE:RPCS3");
+		
+		DeviceInfo->ReadOnly = NO;
+		
+#else		
+		sys_fs_mount_info mount_info;
+		if( get_mount_info(temp, &mount_info) == SUCCESS) {
+			
+			DeviceInfo->ReadOnly = mount_info.ReadOnly;
+			strcpy(DeviceInfo->FileSystem, mount_info.filesystem);
+			strcpy(DeviceInfo->Name, mount_info.deviceName);
+			
+			//DeviceInfo->ReadOnly is used to display lock icon.
+			//if it's not accessible, it's locked.
+			//if it's not writable, it's locked.
+			if(strcmp(temp, "/host_root")==0 || strcmp(temp, "/app_home")==0) {
+				if( DeviceInfo->ReadOnly==NO ) {
+					DIR *d = opendir(temp);
+					if(d==NULL) {
+						DeviceInfo->ReadOnly = YES;
+					} else {
+						closedir(d);
+					}
+				}
+			}
+			
+			u64 device_id = get_device(mount_info.deviceName);
+			if(device_id != FAILED) {
+			
+				device_info_t device_info;
+				memset(&device_info, 0, sizeof(device_info));
+				sys_storage_get_device_info(device_id, &device_info);
+				
+				memset(DeviceInfo->Label, 0, 32);
+				
+				if(is_ExtDevice(mount_info.mount_point)) {
+					
+					mbr_t mbr;
+					if( DeviceDumpMBRInfo(device_id, device_info.sector_size, &mbr) == SUCCESS) {
+						
+						//get 1st FAT32 partition, the other FAT32 aren't mounted...
+						u32 first_sector=0;
+						u32 total_sector=0;
+						int i;
+						for(i=0; i<4; i++) {
+							if(mbr.mbr_table_entry[i].partition_type == 0xB) { // FAT32
+								first_sector = ES(mbr.mbr_table_entry[i].first_sector);
+								total_sector = ES(mbr.mbr_table_entry[i].total_sector);
+								break;
+							}
+						}
+						if(total_sector != 0) {
+							DeviceInfo->TotalSpace = (u64) total_sector * (u64) device_info.sector_size;							
+							//DeviceInfo->TotalSpace = (u64) total_sector * (u64) 512ULL;
+							
+							FAT32_boot_sector_t boot_sector;
+							if( DeviceDumpBootSector(device_id, device_info.sector_size, first_sector, &boot_sector) == SUCCESS) {
+								
+								u32 entry_sector = ES(boot_sector.bios_parameter.sector_per_FAT) * boot_sector.bios_parameter.number_of_FAT 
+													+ ES(boot_sector.bios_parameter.reserved_sector) 
+													+ ES(boot_sector.bios_parameter.hidden_sectors);
+								
+								char *Label = GetVolumeLabel(device_id, ES(boot_sector.bios_parameter.byte_per_sec), entry_sector);
+								if( Label != NULL) {
+									strncpy( DeviceInfo->Label, Label, 0xB);
+									FREE(Label);
+								} else {
+									strncpy( DeviceInfo->Label, boot_sector.extended_bios_parameter.volume_label, 0xB);
+									if(strncmp(DeviceInfo->Label, "NO NAME    ", 0xB) == 0) {
+										memset(DeviceInfo->Label, 0, 32);
+									}
+								}
+								
+								if( DeviceInfo->Label[0] != 0 ) {
+									for(i=0xA; i>0; i--) {
+										if( DeviceInfo->Label[i] != ' ') break;
+										DeviceInfo->Label[i] = 0;
+									}
+								}
+							}						
+						} else {
+							DeviceInfo->TotalSpace = (u64) device_info.sector_count * (u64) device_info.sector_size;
+						}
+					}
+					
+				} else {
+					DeviceInfo->TotalSpace = (u64) device_info.sector_count * (u64) device_info.sector_size;
+				}
+			}
+		}
+#endif
+	}
+}
+
+//*************
+// device TEST
+//*************
+
+void DumpDevicesInfo()
+{
+	int ret = -1;
+	uint64_t i, size;
+	sys_fs_mount_info *info;
+	
+	ret = sys_fs_get_mount_info_size(&size);
+	if (ret != 0) {
+		print_load("Error : sys_fs_get_mount_info_size FAILED ! %X", ret);
+		return;
+	}
+	
+	info = malloc(size*sizeof(sys_fs_mount_info));
+	memset(info, 0, size*sizeof(sys_fs_mount_info));
+	ret = sys_fs_get_mount_info(info, size, &size);
+	if (ret != 0)
+	{
+		//print_load("Error : sys_fs_get_mount_info FAILED ! %X", ret);
+		free(info);
+		return;
+	}	
+	for (i = 0; i < size; i++)
+	{
+		char temp[64];
+		if(strcmp(info[i].mount_point, "/")==0) strcpy(temp, "/dev_hdd0/tmp/mount_info_root.bin");
+		else sprintf(temp, "/dev_hdd0/tmp/mount_info_%s.bin", &info[i].mount_point[1]);
+		
+		FILE *f;
+		f = fopen(temp, "wb");
+		if(f!=NULL) {
+			fwrite(&info[i], 1, sizeof(info[i]), f);
+			fclose(f);
+		}
+		
+		u64 device_id = get_device(info[i].deviceName);
+		if(device_id != FAILED) {
+			device_info_t device_info;
+			memset(&device_info, 0, sizeof(device_info));
+			sys_storage_get_device_info(device_id, &device_info);
+			
+			if(strcmp(info[i].mount_point, "/")==0) strcpy(temp, "/dev_hdd0/tmp/device_info_root.bin");
+			else sprintf(temp, "/dev_hdd0/tmp/device_info_%s.bin", &info[i].mount_point[1]);
+			
+			f = fopen(temp, "wb");
+			if(f!=NULL) {
+				fwrite(&device_info, 1, sizeof(device_info), f);
+				fclose(f);
+			}
+		}
+	}
+	free(info);
+}
+
+void DumpDevicesData()
+{
+	int ret=-1;
+	
+	u64 i, size;
+	sys_fs_mount_info *info;
+		
+	ret = sys_fs_get_mount_info_size(&size);
+	if (ret != 0) {
+		print_load("Error : sys_fs_get_mount_info_size FAILED ! %X", ret);
+		return;
+	}
+	
+	info = malloc(size*sizeof(sys_fs_mount_info));
+	memset(info, 0, size*sizeof(sys_fs_mount_info));
+		
+	ret = sys_fs_get_mount_info(info, size, &size);
+	if (ret != 0)
+	{
+		print_load("Error : DumpDevicesData sys_fs_get_mount_info FAILED ! %X", ret);
+		free(info);
+		return;
+	}
+	
+	for (i = 0; i < size; i++)
+	{
+		u64 device_id = get_device(info[i].deviceName);
+		if(device_id == FAILED) {
+			//print_load("Error : DumpDevicesData get_device %s = FAILED !", info[i].deviceName);
+			continue;
+		}
+		
+		device_info_t device_info;
+		memset(&device_info, 0, sizeof(device_info));
+		ret = sys_storage_get_device_info(device_id, &device_info);
+		if( ret != 0 ) {
+			print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
+			continue;
+		}
+		
+		
+		u32 source;
+		u32 read;
+	
+		
+		ret = sys_storage_open(device_id, &source );
+		if( ret != 0 ) {
+			//print_load("Error : DumpDevicesData sys_storage_open FAILED ! %X", ret);
+			continue;
+		}
+		
+		
+		u8 *sector = (u8 *) malloc(device_info.sector_size+1);
+		if(sector==NULL) {
+			print_load("Error : DumpDevicesData malloc FAILED ! %X", ret);
+			continue;
+		}
+		
+		char temp[128];
+		if(strcmp(info[i].mount_point, "/")==0) strcpy(temp, "/dev_hdd0/tmp/rawdata_root.bin");
+		else sprintf(temp, "/dev_hdd0/tmp/rawdata_%s.bin", &info[i].mount_point[1]);	
+		
+		FILE *f;
+		f = fopen(temp, "wb");
+		if(f==NULL) {
+			free(sector);
+			print_load("Error : DumpDevicesData fopen FAILED ! %s", temp);
+			continue;
+		}
+		
+		u64 flag = 0;
+		u64 count = device_info.sector_count;
+		
+		if(0x100000 < count) count=0x100000; else
+		if(0x10000 < count) count=0x10000; else 
+		if(0x1000 < count) count=0x100; else
+		if(0x100 < count) count=0x100; else 
+		if(0x10 < count) count=0x10; else
+		count=1;
+		
+		if(strncmp(info[i].mount_point, "/dev_flash", 10) ==0) flag = 0x22;
+		
+		int j;
+		for(j=0; j<count; j++) {
+			memset(sector, 0, device_info.sector_size);
+			sys_storage_read(source, j, 1, sector, &read, flag);
+			fwrite(sector, device_info.sector_size, 1, f);
+		}
+		fclose(f);
+		sys_storage_close(source);		
+		free(sector);	
+	}
+	
+	free(info);
 }
 
 //*******************************************************
@@ -9860,7 +10557,6 @@ void get_hash(FILE* log, int hash_type, char *path)
 
 void HashFolder(int hash_type, char *dir)
 {
-	
 	FILE* log;
 	char log_path[255];
 	char str[255];
@@ -9933,6 +10629,8 @@ u64 get_size(char *path, u8 upd_data)
 
 void Delete(char* path)
 {
+	if(path==NULL) return;
+	
 	DIR *d;
 	struct dirent *dir;
 	
@@ -9978,7 +10676,6 @@ int Delete_Game(char *path, int position)
 	
 	print_load("Deleting %s", game_path);
 
-	
 	u8 split666 = is_66600(game_path);
 	if( is_splitted_iso(game_path) || split666) {
 			
@@ -10013,9 +10710,6 @@ int Delete_Game(char *path, int position)
 		
 	print_load("Update Favorite");
 	read_fav();
-
-	print_load("Load game pictures");
-	start_Load_GamePIC();
 	
 	if(position>game_number) position=game_number;
 	
@@ -10053,7 +10747,7 @@ void Get_Game_Size(char *path)
 
 char *get_unit(u64 nb)
 {
-	char *str =(char*) malloc(sizeof(char)*32);
+	char *str =(char*) malloc(sizeof(char)*16);
 
 	char unit[3];
 	
@@ -10118,8 +10812,7 @@ void Draw_Copy_screen(void *unused)
 	
 	while(copy_flag) {
 		
-		cls();
-		ps3pad_read();
+		cls();	
 		
 		Draw_BGS();
 		Draw_Notification();
@@ -10168,11 +10861,11 @@ void Draw_Copy_screen(void *unused)
 		if(size_current) free(size_current);
 		
 		
-		if(gathering_cancel==YES) DrawString(x+400-GetWidth(STR_UNKNOWN), y, STR_UNKNOWN); 
+		if(gathering_cancel==YES) DrawString(x+400-WidthFromStr(STR_UNKNOWN), y, STR_UNKNOWN); 
 		else {
 			
 			char *size_tot = get_unit(total_size);
-			DrawString(x+400-GetWidth(size_tot), y, size_tot);
+			DrawString(x+400-WidthFromStr(size_tot), y, size_tot);
 			if(size_tot) free(size_tot);
 		}
 		
@@ -10226,18 +10919,22 @@ void Draw_Copy_screen(void *unused)
 		} else {
 			x=DrawButton(x, y, STR_TURNOFF_NO, BUTTON_SELECT);
 		}
-		if(new_pad & BUTTON_SELECT) {
+		
+		tiny3d_Flip();
+		//ScreenShot();
+		ps3pad_read();
+		
+		if(NewPad(BUTTON_SELECT)) {
 			if(shutdown==YES) shutdown=NO; else shutdown=YES;
 		}
-		if(new_pad & BUTTON_CIRCLE) {
+		if(NewPad(BUTTON_CIRCLE)) {
 			if(gathering==YES) {
 				gathering_cancel=YES;
 				show_msg(STR_CANCELLED);
 			} else 	copy_cancel = YES;
 		}
 		
-		tiny3d_Flip();
-		//ScreenShot();
+		
 	}
 	
 	if(copy_cancel == YES) Delete_Game(copy_dst, -1);
@@ -10930,7 +11627,6 @@ void TestCopy(char *src, char *dst, int i)
 }
 
 #define CopyFile CopyFile_ps3ntfs
-void end_checking();
 
 void SpeedTest()
 {
@@ -11176,7 +11872,7 @@ u8 Move(char *src, char *dst)
 }
 
 //*********************************************
-// GAME LIST TODOOOOO
+// GAME LIST
 //*********************************************
 
 void free_GAMELIST()
@@ -11185,11 +11881,14 @@ void free_GAMELIST()
 	for(i=0; i<=game_number; i++) {
 		FREE(list_game_path[i]);
 		FREE(list_game_title[i]);
+		FREE(list_game_ID[i]);
 	}
 	
 	FREE(list_game_path);
 	FREE(list_game_title);
+	FREE(list_game_ID);
 	FREE(list_game_platform);
+	FREE(list_game_havepic);
 }
 
 void sort_GAMELIST()
@@ -11228,9 +11927,21 @@ void sort_GAMELIST()
 		FREE(list_game_path[i]);
 		list_game_path[i] = strcpy_malloc(tb);
 		
+		strcpy(tb, list_game_ID[min]);
+		
+		FREE(list_game_ID[min]);
+		list_game_ID[min] = strcpy_malloc(list_game_ID[i]);
+		
+		FREE(list_game_ID[i]);
+		list_game_ID[i] = strcpy_malloc(tb);
+		
 		t = list_game_platform[min];
 		list_game_platform[min] = list_game_platform[i];
 		list_game_platform[i] = t;
+		
+		t = list_game_havepic[min];
+		list_game_havepic[min] = list_game_havepic[i];
+		list_game_havepic[i] = t;
 	}
 	
 }
@@ -11243,11 +11954,13 @@ void add_GAMELIST(char *path)
 	&& ext != _ISO_PSP && ext != _JB_PSP
 	&& ext != _ISO_PS2 && ext != _JB_PS2
 	&& ext != _ISO_PS1 && ext != _JB_PS1) return;
-	
+		
 	game_number++;
-	list_game_path = (char **) realloc( list_game_path, (game_number+1) * sizeof(char *));
+	list_game_path = (char **) realloc(list_game_path, (game_number+1) * sizeof(char *));
 	list_game_title = (char **) realloc(list_game_title, (game_number+1) * sizeof(char *));
+	list_game_ID = (char **) realloc(list_game_ID, (game_number+1) * sizeof(char *));
 	list_game_platform = (u8 *) realloc(list_game_platform, (game_number+1) * sizeof(u8) );
+	list_game_havepic = (u8 *) realloc(list_game_havepic, (game_number+1) * sizeof(u8) );
 	
 	list_game_path[game_number] = strcpy_malloc(path);
 	list_game_platform[game_number] = ext;
@@ -11259,9 +11972,17 @@ void add_GAMELIST(char *path)
 	if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
 		GetParamSFO("TITLE", title, game_number, NULL);
 	}
-	
 	list_game_title[game_number] = strcpy_malloc(title);
 	
+	char ID[20];
+	if( Get_ID(list_game_path[game_number], list_game_platform[game_number], ID) == SUCCESS) {
+		list_game_ID[game_number] = strcpy_malloc(ID);
+	} else {
+		list_game_ID[game_number] = strcpy_malloc("MGZ_ERROR.404");
+	}
+	
+	//list_game_havepic[game_number] = Have_GAMEPIC(game_number); 
+	list_game_havepic[game_number] = GAMEPIC_NONE;
 }
 
 void remove_GAMELIST(s64 pos)
@@ -11276,13 +11997,33 @@ void remove_GAMELIST(s64 pos)
 		FREE(list_game_title[i]);
 		list_game_title[i] = strcpy_malloc(list_game_title[i+1]);
 		
+		FREE(list_game_ID[i]);
+		list_game_ID[i] = strcpy_malloc(list_game_ID[i+1]);
+		
 		list_game_platform[i] = list_game_platform[i+1];
+		
+		list_game_havepic[i] = list_game_havepic[i+1];
 	}
 	
 	FREE(list_game_title[game_number]);
 	FREE(list_game_path[game_number]);
+	FREE(list_game_ID[game_number]);
 	
 	game_number--;
+	if(position > game_number) position = game_number;
+	
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		if( GAMEPIC_SLOT_POS[i] == pos ) {
+			GAMEPIC_SLOT_POS[i] = -1;
+			GAMEPIC_offset[i]=0;
+			break;
+		}
+	}
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		if( pos < GAMEPIC_SLOT_POS[i] ) {
+			GAMEPIC_SLOT_POS[i]--;
+		}
+	}
 }
 
 void get_GAMELIST(char *scan_path)
@@ -11313,6 +12054,59 @@ void get_GAMELIST(char *scan_path)
 	closedir(d);
 }
 
+void remove_SCANDIR(char *scan_path)
+{
+	char temp[128];
+	int i, j;
+	for(i=0; i<=device_number; i++) {
+		
+		memset(temp, 0, sizeof(temp));
+		sprintf(temp, "/%s/%s", list_device[i], scan_path);
+		
+		for(j=0; j<=game_number;  j++) {
+			if(strncmp(temp, list_game_path[j], strlen(temp))==0) {
+				remove_GAMELIST(j);
+			}
+		}
+	}
+}
+
+void add_SCANDIR(char *scan_path)
+{
+	char temp[128];
+	int i;
+	for(i=0; i<=device_number; i++) {
+		
+		memset(temp, 0, sizeof(temp));
+		sprintf(temp, "/%s/%s", list_device[i], scan_path);
+		
+		get_GAMELIST(temp);
+	}
+	
+	sort_GAMELIST();
+}
+
+void Load_GAMELIST()
+{
+	free_GAMELIST();
+	game_number=-1;
+	
+	int i, j;
+	char scan_path[128];
+	//get game list
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+		
+			memset(scan_path,0, sizeof(scan_path));
+			sprintf(scan_path, "/%s/%s", list_device[i], scan_dir[j]);
+			
+			get_GAMELIST(scan_path);
+		}
+	}
+	
+	sort_GAMELIST();
+}
+
 void Copy_Game(char *src, char *dst)
 {
 	start_copy_loading();	
@@ -11329,7 +12123,7 @@ void Copy_Game(char *src, char *dst)
 	Get_Game_Size(copy_src);
 	gathering=NO;
 	
-	u8 ret;
+	u8 ret = FAILED;
 	u8 split666 = is_66600(copy_src);		  
 	
 	if(split666) {
@@ -11368,7 +12162,11 @@ void Copy_Game(char *src, char *dst)
 				sprintf(temp_dst , "%s%d", temp_dst1, i);
 			}
 			if(copy_cancel==YES) goto end;
+			
+			if(path_info(temp_src) == _NOT_EXIST) break;
+			
 			ret = Copy(temp_src, temp_dst);
+			
 			if(ret==FAILED) break;
 		}
 		
@@ -11377,18 +12175,15 @@ void Copy_Game(char *src, char *dst)
 	}
 
 end:
+	//if(ret==SUCCESS) 
+	if( (total_size <= copy_current_size && copy_current_size != 0) 
+	||	(gathering_cancel == YES && copy_cancel==NO && copy_current_size > 0) ) {
 	
-	if( (total_size <= copy_current_size && copy_current_size != 0) ||	(gathering_cancel == YES && copy_cancel==NO && copy_current_size > 0) ) {
-	
-		//AddGame(copy_dst);
-		
 		add_GAMELIST(copy_dst);
-		
 		sort_GAMELIST();
-		
+		init_Load_GAMEPIC();
 		read_fav();
-		start_Load_GamePIC();
-		
+			
 		show_msg(STR_DONE);
 	} else {
 		Delete_Game(copy_dst, -1);
@@ -11417,9 +12212,8 @@ void Draw_GameProperties()
 	}
 	
 	char Game_id[20];
-	if(Get_ID(list_game_path[position], list_game_platform[position], Game_id) == FAILED) {
-		strcpy(Game_id, STR_UNKNOWN);
-	}
+	if( list_game_ID[position] == NULL) strcpy(Game_id, STR_UNKNOWN);
+	else strcpy(Game_id, list_game_ID[position]);
 	
 	u8 LoopBreak=1;
 	while(LoopBreak) {
@@ -11427,7 +12221,7 @@ void Draw_GameProperties()
 		cls();
 		
 		Draw_BGS();
-		Draw_ICON0(position, 630, 30, 100, 141.3, 75.9);
+		Draw_GAMEPIC(position, GAMEPIC_ICON0 | GAMEPIC_COVER2D, 630, 30, 100, 141.3, 0, NO, WHITE);
 		
 		int x1=50, y=40;
 		int xt;
@@ -11529,15 +12323,15 @@ void Draw_GameProperties()
 			FontColor(COLOR_3);
 			xt=DrawFormatString(x1 , y, "%s :", STR_ELFCRC);
 			FontColor(COLOR_1);
-			DrawString(xt+10 , y,  PS2CRC_STR);
+			DrawFormatString(xt+10 , y,  "%08X", PS2CRC);
 			
 			y+=new_line(1);
 			
-			if(strcmp(PS2CRC_STR, PS2ORICRC_STR) != 0) {
+			if(PS2CRC != PS2ORICRC) {
 				FontColor(COLOR_3);
 				xt=DrawFormatString(x1 , y, "%s :", STR_ELFCRCO);
 				FontColor(COLOR_1);
-				DrawString(xt+10 , y,  PS2ORICRC_STR);
+				DrawFormatString(xt+10 , y,  "%08X",PS2ORICRC);
 				
 				y+=new_line(1);
 			}
@@ -11553,10 +12347,9 @@ void Draw_GameProperties()
 		
 		tiny3d_Flip();
 		ScreenShot();
-		
 		ps3pad_read();
 		
-		if(new_pad & BUTTON_CIRCLE) {
+		if(NewPad(BUTTON_CIRCLE)) {
 			LoopBreak = 0;
 			return;
 		}
@@ -11631,11 +12424,11 @@ void dump_flash(char *dump_path)
 		sprintf(temp, "%s_%d", dump_path, j);
 	}
 	
-	ret = open_device( 0x100000000000004ull, &source );
+	ret = sys_storage_open( FLASH_NOR, &source );
 	if( ret != 0 ) { 
 		size_dump=0x77E00;
-		close_device(source);
-		open_device(0x100000000000001ull, &source);
+		sys_storage_close(source);
+		sys_storage_open(FLASH_NAND, &source);
 	} 
 	else {
 		size_dump=0x8000 ;
@@ -11646,13 +12439,13 @@ void dump_flash(char *dump_path)
 	f = fopen(temp, "wb");
 	if(f==NULL) return;
 	for(i=0x0; i < size_dump; i+=0x1) {
-		read_device( source, i, 0x1, sector, &read, 0x22 );
+		sys_storage_read( source, i, 0x1, sector, &read, 0x22 );
 		fwrite(sector, sizeof(sector), 1, f);
 		prog_bar1_value = (i*100)/size_dump;
 		if(cancel==YES) break;
 	}
 	fclose(f);
-	close_device(source);
+	sys_storage_close(source);
 	
 	if(cancel==YES) {
 		Delete(temp);
@@ -12361,7 +13154,7 @@ typedef struct
 	float sysVers;
 } update_data;
 
-void get_game_update(int position)
+void get_game_update()
 {
 	
 	start_loading();
@@ -12369,7 +13162,6 @@ void get_game_update(int position)
 	int shutdown=NO;
 	char url[128];
 	char dst[128];
-	char title_id[10];
 	int file_size=0;
 	int n=0;
 	int k=0;
@@ -12377,14 +13169,9 @@ void get_game_update(int position)
 	char *xml;
 	int d_position=0;
 	char *size_str[512];
-	
-	if(GetParamSFO("TITLE_ID", title_id, position, NULL)==FAILED) {
-		print_load("Error: Get title_id failed");
-		goto screen;
-	}
-	
-	sprintf(url, "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml", title_id, title_id);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/%s.xml", ManaGunZ_id, title_id);
+		
+	sprintf(url, "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml", list_game_ID[position], list_game_ID[position]);
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/%s.xml", ManaGunZ_id, list_game_ID[position]);
 
 	if(download(url, dst)==FAILED) {
 		print_load("Error: Download xml failed");
@@ -12434,8 +13221,7 @@ screen:
 	u8 LoopBreak=1;
 	while(LoopBreak)
 	{
-		cls();
-		ps3pad_read();
+		cls();		
 		
 		Draw_BGS();
 		Draw_Notification();
@@ -12488,21 +13274,22 @@ screen:
 		
 		tiny3d_Flip();
 		ScreenShot();
+		ps3pad_read();
 		
-		if(new_pad & BUTTON_SELECT && nPKG!=-1) {
+		if(NewPad(BUTTON_SELECT) && nPKG!=-1) {
 			if(shutdown==YES) shutdown=NO; else shutdown=YES;
 		}
-		if(new_pad & BUTTON_UP) {
+		if(NewPad(BUTTON_UP)) {
 			if(d_position>0) d_position--;
 		}
-		if(new_pad & BUTTON_DOWN) {
+		if(NewPad(BUTTON_DOWN)) {
 			if(d_position<nPKG) d_position++;
 		}
-		if(new_pad & BUTTON_CIRCLE) {
+		if(NewPad(BUTTON_CIRCLE)) {
 			LoopBreak=0;
 			return;
 		}
-		if(new_pad & BUTTON_CROSS && nPKG!=-1) { 
+		if(NewPad(BUTTON_CROSS) && nPKG!=-1) { 
 			sprintf(dst, "/dev_hdd0/packages%s", strrchr(data[d_position].url, '/'));
 			if(path_info(dst) == _FILE) show_msg(STR_DONE);
 			else {
@@ -12516,7 +13303,7 @@ screen:
 				}
 			}
 		}
-		if(new_pad & BUTTON_SQUARE && nPKG>0) {
+		if(NewPad(BUTTON_SQUARE) && nPKG>0) {
 			start_loading();
 			for(n=0; n<=nPKG; n++) {
 				sprintf(dst, "/dev_hdd0/packages%s", strrchr(data[n].url, '/'));
@@ -12542,6 +13329,7 @@ int read_scan_dir()
 	char temp[128];
 	
 	scan_dir_number=-1;
+	memset(scan_dir, 0, sizeof(scan_dir));
 	
 	sprintf(scanPath, "/dev_hdd0/game/%s/USRDIR/setting/scan_dir.txt", ManaGunZ_id);
 	
@@ -12556,7 +13344,6 @@ int read_scan_dir()
 		if(strstr(temp, "\r") != NULL ) strtok(temp, "\r");
 		scan_dir_number++;
 		strcpy(scan_dir[scan_dir_number], temp);
-		
 	}
 	
 	fclose(fp);
@@ -12583,6 +13370,166 @@ void write_scan_dir()
 	fclose(fp);
 	
 }
+
+//*******************************************************
+// Memory Monitor
+//*******************************************************
+
+typedef struct {
+    uint32_t total;
+    uint32_t avail;
+} sysMemoryInfo_t;
+
+s32 sysMemoryGetUserMemorySize(sysMemoryInfo_t * MemInfo)
+{
+    lv2syscall1(SYSCALL_MEMORY_GET_USER_MEMORY_SIZE, (uint64_t) MemInfo);
+    return_to_user_prog(s32);
+}
+
+static sys_ppu_thread_t MemMonitor_id;
+u8 MemMonitor = NO;
+sysMemoryInfo_t MemInfo;
+
+void Draw_MemMonitor()
+{
+	if(MemMonitor==NO) return;
+	
+	int i;
+	
+	float x=30;
+	float y=20;
+	float w=800;
+	float h=10;
+	float e=4;
+	
+	Draw_Box(0, y-10, 0, 0, X_MAX, h*2+2*e+20*2+20, GREY, NO);
+		
+	float MemUsed = MemInfo.total - MemInfo.avail ;
+	
+	float w2 = (MemUsed * w) / MemInfo.total;
+	
+	Draw_Box(x-e, y-e, 0, 0, w+2*e, h+2*e, WHITE, NO);
+	Draw_Box(x, y, 0, 0, w, h, BLACK, NO);
+	Draw_Box(x, y, 0, 0, w2, h, GREEN, NO);
+	
+	char *MemUsed_u = get_unit(MemUsed);
+	char *MemTot_u = get_unit(MemInfo.total);
+	
+	y+=h+2*e;
+	
+	FontColor(WHITE);
+	FontSize(15);
+	float val = (float) ((MemUsed * 100) / MemInfo.total);
+	DrawFormatString(x, y, "RAM %.1f%% - %s/%s", val, MemUsed_u,  MemTot_u);
+	
+	free(MemUsed_u);
+	free(MemTot_u);
+	
+	y+=20;
+
+//FONT
+	float w_font_max = (float) ( ( _Mo(TEXTURE_FONT_SIZE_MAX) * w) / _Mo(TEXTURE_SIZE_MAX));
+	float w_font =  (float) ( ( _Mo(TEXTURE_FONT_SIZE) * w_font_max) / _Mo(TEXTURE_FONT_SIZE_MAX));
+	Draw_Box(x-e, y-e, 0, 0, w_font_max+e, h+2*e, BLUE, NO);
+	Draw_Box(x, y, 0, 0, w_font_max , h, BLACK, NO);
+	Draw_Box(x, y, 0, 0, w_font , h, GREEN, NO);
+	FontColor(BLUE);
+	
+	float x1 = DrawString(x, y+h+2*e, "FONT") + 10;
+	
+	x+=w_font_max;
+	
+// THEME
+	
+	float w_theme_max = (float) ( ( _Mo(TEXTURE_THEME_SIZE_MAX) * w) / _Mo(TEXTURE_SIZE_MAX));
+	float w_theme =  (float) ( ( _Mo(TEXTURE_THEME_SIZE) * w_theme_max) / _Mo(TEXTURE_THEME_SIZE_MAX));
+	Draw_Box(x, y-e, 0, 0, w_theme_max, h+2*e, ORANGE, NO);
+	Draw_Box(x, y, 0, 0, w_theme_max , h, BLACK, NO);
+	Draw_Box(x, y, 0, 0, w_theme , h, GREEN, NO);
+	
+	
+	FontColor(ORANGE);
+	if(x > x1) x1=x; 
+	x1 = DrawString(x1, y+h+2*e, "THEME")+ 10;
+	
+//GAMEPIC
+	x+= w_theme_max;
+	float w_gamepic_max = (float) ( ( _Mo(TEXTURE_GAMEPIC_TOT_SIZE_MAX) * w) / _Mo(TEXTURE_SIZE_MAX));
+	float w_gamepic_slot_max = (float) ((float) w_gamepic_max / (float) GAMEPIC_MAX);
+	Draw_Box(x, y-e, 0, 0, w_gamepic_max, h+2*e, PURPLE, NO);
+	for(i=0; i<GAMEPIC_MAX; i++) {
+		//float w_gamepic_slot = (float) ( (float)((float) ( _Mo(TEXTURE_GAMEPIC_SIZE(i))) * w_gamepic_slot_max) / ((float)(_Mo(TEXTURE_GAMEPIC_SIZE_MAX))));
+		float w_gamepic_slot = w_gamepic_slot_max;
+		if( GAMEPIC_SLOT_POS[i] == -1 ) Draw_Box(x+w_gamepic_slot_max*i, y, 0, 0, w_gamepic_slot_max , h, BLACK, NO); else
+		if( GAMEPIC_SLOT_POS[i] == -2 ) Draw_Box(x+w_gamepic_slot_max*i, y, 0, 0, w_gamepic_slot_max , h, ORANGE, NO); else
+		Draw_Box(x+w_gamepic_slot_max*i, y, 0, 0, w_gamepic_slot , h, GREEN, NO);
+	}
+	for(i=0; i<=GAMEPIC_MAX; i++) {
+		Draw_Line(x + w_gamepic_slot_max*i, y-e, x + w_gamepic_slot_max*i, y+h+e, 0, BLACK);
+	}
+	if(x > x1) x1=x;
+	FontColor(PURPLE);
+	x1 = DrawFormatString(x1, y+h+2*e, "GAMEPIC : %d/%d slots", VRAM_GetSlotUsed(),  GAMEPIC_MAX) + 10;
+	
+// COVER
+	x+= w_gamepic_max;
+	float w_cover_max = (float) ( ( _Mo(TEXTURE_COVER_SIZE_MAX) * w) / _Mo(TEXTURE_SIZE_MAX));
+	float w_cover =  (float) ( ( _Mo(TEXTURE_COVER_SIZE) * w_cover_max) / _Mo(TEXTURE_COVER_SIZE_MAX));
+	Draw_Box(x, y-e, 0, 0, w_cover_max, h+2*e, PINK, NO);
+	Draw_Box(x, y, 0, 0, w_cover_max , h, BLACK, NO);
+	Draw_Box(x, y, 0, 0, w_cover , h, GREEN, NO);
+	if(x > x1) x1=x;
+	FontColor(PINK);
+	x1 = DrawString(x1, y+h+2*e, "COVER") + 10;
+	
+	x+= w_cover_max;
+	float w_tmp_max = (float) ( ( _Mo(TEXTURE_TMP_SIZE_MAX) * w) / _Mo(TEXTURE_SIZE_MAX));
+	float w_tmp =  (float) ( ( _Mo(TEXTURE_TMP_SIZE) * w_tmp_max) / _Mo(TEXTURE_TMP_SIZE_MAX));
+	Draw_Box(x, y-e, 0, 0, w_tmp_max+e, h+2*e, YELLOW, NO);
+	Draw_Box(x, y, 0, 0, w_tmp_max , h, BLACK, NO);
+	Draw_Box(x, y, 0, 0, w_tmp , h, GREEN, NO);
+	if(x > x1) x1=x;
+	FontColor(YELLOW);
+	x1 = DrawString(x1, y+h+2*e, "TEMP") + 10;
+	
+	FontColor(WHITE);
+	
+	Draw_Box(0, y+h+2*e+20 , 0, 0, X_MAX, 20, GREY, NO);
+	DrawString(30, y+h+2*e+20, GAMEPIC_LOG);
+	
+	Draw_Box(30, y+h+2*e+40, 0, 0, X_MAX-30*2, 2, WHITE, NO);
+	float x_gpos = (position*(X_MAX-30*2)) / game_number;
+	Draw_Box(30+x_gpos, y+h+2*e+40-2, 0, 0, 2, 6, GREEN, NO);
+}
+
+void MemMonitor_thread(void *unused)
+{
+	
+	while(MemMonitor) {
+		sysMemoryGetUserMemorySize(&MemInfo);
+		sleep(1);
+	}
+
+	sysThreadExit(0);
+}
+
+void start_MemMonitor()
+{
+	if(MemMonitor==NO) {
+		MemMonitor = YES;
+		sysThreadCreate(&MemMonitor_id, MemMonitor_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "MemMonitor");
+	}
+}
+
+void end_MemMonitor()
+{
+	if(MemMonitor==YES) {
+		u64 ret;
+		MemMonitor = NO;
+		sysThreadJoin(MemMonitor_id, &ret);
+	}
+}
+
 
 //*******************************************************
 // DEVICE
@@ -12619,7 +13566,7 @@ void getDevices()
 		||  strstr(dir->d_name, "dev_hdd0")
 		||  strstr(dir->d_name, "dev_sd")
 		||  strstr(dir->d_name, "dev_ms")
-		||  strstr(dir->d_name, "dev_cd")
+		||  strstr(dir->d_name, "dev_cf")
 		  ) 
 		{
 			device_number++;
@@ -12630,177 +13577,303 @@ void getDevices()
 
 }
 
-static sys_ppu_thread_t check_device_id;
 
-void check_device_thread(void *unused)
+//*******************************************************
+// PlugAndPlay
+//*******************************************************
+
+// it's used for the notifications only
+#define DEVICE_USB(x) 			x
+#define DEVICE_BDVD_DRIVE		128
+#define DEVICE_MEMORY_STICK		129
+#define DEVICE_COMPACT_FLASH	130
+#define DEVICE_SD_CARD			131
+#define DEVICE_NUMBER			132
+
+u8 PluggedDevices[DEVICE_NUMBER] = {[0 ... DEVICE_NUMBER-1] = -1};
+
+u64 GetDeviceNumber()
 {
-	int i;
-	u8 device_number_OLD = 0;
+	u64 Number=0;
+	int r, i;
+	device_info_t device_info;
+	char temp_msg[128]={0};
+	char msg[128] = {0};
 	
-	for(i=0; i<8; i++) {
-		if( PS3_NTFS_IsInserted(i) == true ) {
-			device_number_OLD++;
+// USB 0 -> 127
+	for(i=0; i< 128; i++) {
+		memset(&device_info, 0, sizeof(device_info));
+		r = sys_storage_get_device_info(USB_MASS_STORAGE(i), &device_info);
+		if(r<0) {
+			if(PluggedDevices[DEVICE_USB(i)] == YES) {
+				sprintf(temp_msg, "USB device %03d is unplugged.\n", i);
+				strcat(msg, temp_msg);
+			}
+			PluggedDevices[DEVICE_USB(i)] = NO;
+		} else {
+			Number++;
+			if(PluggedDevices[DEVICE_USB(i)] == NO) {
+				sprintf(temp_msg, "USB device %03d is plugged.\n", i);
+				strcat(msg, temp_msg);
+			}
+			PluggedDevices[DEVICE_USB(i)] = YES;
 		}
 	}
 	
-	while(checking == YES) {
+// COMPACT_FLASH
+	memset(&device_info, 0, sizeof(device_info));
+	r = sys_storage_get_device_info(COMPACT_FLASH, &device_info);
+	if(r<0) {
+		if(PluggedDevices[DEVICE_COMPACT_FLASH] == YES) {
+			strcat(msg, "Compact flash device is plugged.\n");
+		}
+		PluggedDevices[DEVICE_COMPACT_FLASH] = NO;
+	} else {
+		if(PluggedDevices[DEVICE_COMPACT_FLASH] == NO) {
+			strcat(msg, "Compact flash device is plugged.\n");
+		}
+		PluggedDevices[DEVICE_COMPACT_FLASH] = YES;
+		Number++;
+	}
 	
-		u8 device_number_NEW = 0;
+// MEMORY_STICK
+	memset(&device_info, 0, sizeof(device_info));
+	r = sys_storage_get_device_info(MEMORY_STICK, &device_info);
+	if(r<0) {
+		if(PluggedDevices[DEVICE_MEMORY_STICK] == YES) {
+			strcat(msg, "Memory stick device is plugged.\n");
+		}
+		PluggedDevices[DEVICE_MEMORY_STICK] = NO;
+	} else {
+		if(PluggedDevices[DEVICE_MEMORY_STICK] == NO) {
+			strcat(msg, "Memory stick device is plugged.\n");
+		}
+		PluggedDevices[DEVICE_MEMORY_STICK] = YES;
+		Number++;
+	}
+
+// SD_CARD
+	memset(&device_info, 0, sizeof(device_info));
+	r = sys_storage_get_device_info(SD_CARD, &device_info);
+	if(r<0) {
+		if(PluggedDevices[DEVICE_SD_CARD] == YES) {
+			strcat(msg, "SD card device is plugged.\n");
+		}
+		PluggedDevices[DEVICE_SD_CARD] = NO;
+	} else {
+		if(PluggedDevices[DEVICE_SD_CARD] == NO) {
+			strcat(msg, "SD card device is plugged.\n");
+		}
+		PluggedDevices[DEVICE_SD_CARD] = YES;
+		Number++;
+	}
+	
+// BDVD_DRIVE
+	memset(&device_info, 0, sizeof(device_info));
+	r = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
+	if(r<0) {
+		if(PluggedDevices[DEVICE_BDVD_DRIVE] == YES) {
+			strcat(msg, "Disc is ejected.\n");
+		}
+		PluggedDevices[DEVICE_BDVD_DRIVE] = NO;
+	} else {
+		if(PluggedDevices[DEVICE_BDVD_DRIVE] == NO) {
+			strcat(msg, "Disc is inserted.\n");
+		}
+		PluggedDevices[DEVICE_BDVD_DRIVE] = YES;
+		Number++;
+	}
+
+	if(msg[0] != 0) show_msg(msg);
+	
+	return Number;
+}
+
+u8 do_Refresh=NO;
+u8 PlugAndPlay=NO;
+u8 RefreshRetry=NO;
+
+static sys_ppu_thread_t PlugAndPlay_id;
+void PlugAndPlay_thread(void *unused)
+{
+	u64 Old_NumberOfDevice = 0;
+	
+	Old_NumberOfDevice = GetDeviceNumber();
+	
+	while(PlugAndPlay) {
+	
+		u64 NumberOfDevice = GetDeviceNumber();
 		
-		for(i=0; i<8; i++) {
-			if( PS3_NTFS_IsInserted(i) == true ) {
-				device_number_NEW++;
+		if ( Old_NumberOfDevice != NumberOfDevice) {
+			
+			do_Refresh=YES;
+						
+			if( Old_NumberOfDevice < NumberOfDevice && RefreshRetry == YES) {
+				// refresh several times because some devices takes times to be mounted
+				sleep(2);
+				if(do_Refresh==NO) do_Refresh = YES;
+				sleep(2);
+				if(do_Refresh==NO) do_Refresh = YES;
 			}
+			Old_NumberOfDevice = NumberOfDevice;
 		}
-		device_plug = device_number_NEW - device_number_OLD;
+		
 		sleep(1);
-		if(device_plug != 0) {
-			checking=NO;
-			break;
-		}
 	}
 
 	sysThreadExit(0);
 }
 
-void start_checking()
+void start_PlugAndPlay()
 {
-	checking = YES;
-	sysThreadCreate(&check_device_id, check_device_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "check");
+	if(PlugAndPlay==NO) {
+		PlugAndPlay = YES;
+		sysThreadCreate(&PlugAndPlay_id, PlugAndPlay_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "PlugAndPlay");
+	}
 }
 
-void end_checking()
+void end_PlugAndPlay()
 {
-	u64 ret;
-	checking = NO;
-	sysThreadJoin(check_device_id, &ret);
+	if(PlugAndPlay) {
+		u64 ret;
+		PlugAndPlay = NO;
+		sysThreadJoin(PlugAndPlay_id, &ret);
+	}
 }
 
-int move_bdemubackup_to_origin(char *device_path);
-
-void check_device()
+void AutoRefresh_GAMELIST()
 {
-	if(device_plug != 0) {
-
-		int i=0, j=0, k;
-		char scan_path[128], temp[128];
+	if(PlugAndPlay==NO) { start_PlugAndPlay(); return; }
+	if(do_Refresh == NO) return;
+	
+	do_Refresh = NO;
+	
+	start_loading();
+	
+	int i=0, j=0, k;
+	char scan_path[128], temp[128];
+	
+	char list_device_OLD[32][32]={{0}};
+	int8_t device_number_OLD=-1;
+	
+	memcpy(list_device_OLD, list_device, sizeof(list_device));
+	device_number_OLD = device_number;
 		
-		end_checking();
-		
-		start_loading();
-		
-		char list_device_OLD[20][20]={{0}};
-		int8_t device_number_OLD=-1;
-		
-		memcpy(list_device_OLD, list_device, sizeof(list_device));
-		device_number_OLD = device_number;
-		
+	getDevices();
+	
+	s64 old_game_number = game_number;
+	
+	RefreshRetry = NO; // It retry from here...
+	
+	if( device_number == device_number_OLD) {
+		print_load("Please wait...");
+		sleep(2);
 		getDevices();
+		if( device_number == device_number_OLD) {
+			print_load("Please wait even more...");
+			sleep(2);
+			getDevices();
+		}
+	}
+	
+	
+	if(device_number < device_number_OLD) { // *** unplug device ***
 		
-		if(device_number < device_number_OLD) {  // *** unplug device ***
-			for(k=0; k < device_number_OLD - device_number ; k++) {
-				char path_unplug[20];
-				for(i=0; i<=device_number_OLD; i++) {
-					for(j=0;j<=device_number;j++) {
-						if(strcmp(list_device[j], list_device_OLD[i]) == 0) break;
-						if(j==device_number) strcpy(path_unplug, list_device_OLD[i]);
-					}
-				}
-				
-				print_load("%s unplugged", path_unplug);
-				
-				if(strncmp(path_unplug, "dev_", 4)==0) {
-					char mount_point[20];
-					sprintf(mount_point, "/%s", path_unplug);
-					sysFsAioFinish(mount_point);
-				} 
-				
-				s64 old_game_number = game_number;
-				
-				for(i=0; i<=game_number; i++) {
-					
-					if(strstr(list_game_path[i], path_unplug) == NULL) {
-						remove_GAMELIST(i);
-						i--;
-					}
-				}
-				
-				if(game_number == old_game_number) {
-					device_plug = 0;
-					start_checking();
-					end_loading();
-					return;
+		u8 unplugged_devices = device_number_OLD - device_number;
+		char path_unplug[32][32]={{0}};
+		
+		k=0;
+		
+		for(i=0; i<=device_number_OLD; i++) {
+			for(j=0;j<=device_number;j++) {
+				if(strcmp(list_device[j], list_device_OLD[i]) == 0) break;
+				if(j==device_number) {
+					strcpy(path_unplug[k], list_device_OLD[i]);
+					k++;
 				}
 			}
-		} 
-		else if(device_number > device_number_OLD) { // *** plug device ***
-			for(k=0; k < device_number - device_number_OLD ; k++) {
-				
-				char path_plug[20];
-				for(i=0;i<=device_number; i++) {
-					for(j=0;j<=device_number_OLD;j++) {
-						if(strcmp(list_device_OLD[j], list_device[i])==0) break;
-						if(j==device_number_OLD) strcpy(path_plug, list_device[i]);
-					}
-				}
-				
-				print_load("%s plugged", path_plug);
-				
-				if(strncmp(path_plug, "dev_", 4)==0) {
-					char mount_point[20];
-					sprintf(mount_point, "/%s", path_plug);
-					if(sysFsAioInit(mount_point) != 0)
-						print_load("Warning :  failed to sysFsAioInit(%s)", mount_point);
-					
-				} 
-				
-				s64 old_game_number = game_number;
-							
-				print_load( "Get directories names from scan_dir.txt");
-				//get scan dir
-				if(read_scan_dir()==FAILED) {
-					device_plug = 0;
-					start_checking();
-					end_loading();
-					return;
-				}
-				
-				sprintf(temp, "/%s", path_plug);
-				move_bdemubackup_to_origin(temp);
-				
-				//get game list
-				for(j=0; j<=scan_dir_number; j++) {
-					sprintf(scan_path, "/%s/%s", path_plug, scan_dir[j]);
-										
-					get_GAMELIST(scan_path);
-				}
-				
-				if(game_number == old_game_number) {
-					device_plug = 0;
-					start_checking();
-					end_loading();
-					return;
-				}
-				
-				sort_GAMELIST();
-			}
+			if(k==unplugged_devices) break;
 		}
 		
+		k=0;
+		for(k=0; k < unplugged_devices ; k++) {
+			print_load("%s unplugged", path_unplug[k]);
+			
+			if(strncmp(path_unplug[k], "dev_", 4)==0) {
+				char mount_point[20];
+				sprintf(mount_point, "/%s", path_unplug[k]);
+				sysFsAioFinish(mount_point);
+			} 
+										
+			int l = strlen(path_unplug[k]);
+			for(i=0; i<=game_number; i++) {
+				if(strncmp(&list_game_path[i][1], path_unplug[k], l) == 0) {
+					remove_GAMELIST(i);
+					//i--;
+				}
+			}
+		}
+	} else
+	if(device_number > device_number_OLD) { // *** plug device ***
+		
+		u8 plugged_devices = device_number - device_number_OLD;
+		char path_plug[32][32]={{0}};
+		
+		k=0;
+		
+		for(i=0; i<=device_number; i++) {
+			for(j=0;j<=device_number_OLD;j++) {
+				if(strcmp(list_device_OLD[j], list_device[i]) == 0) break;
+				if(j==device_number_OLD) {
+					strcpy(path_plug[k], list_device[i]);
+					k++;
+				}
+			}
+			if(k==plugged_devices) break;
+		}
+		
+		for(k=0; k < plugged_devices; k++) {
+			
+			print_load("%s plugged", path_plug[k]);
+			
+			if(strncmp(path_plug[k], "dev_", 4)==0) {
+				char mount_point[20];
+				sprintf(mount_point, "/%s", path_plug[k]);
+				if(sysFsAioInit(mount_point) != 0)
+					print_load("Warning :  failed to sysFsAioInit(%s)", mount_point);
+			} 
+						
+			print_load( "Get directory names from scan_dir.txt");
+			//get scan dir
+			if(read_scan_dir()==FAILED) {
+				do_Refresh = NO;
+				end_loading();
+				return;
+			}
+			
+			sprintf(temp, "/%s", path_plug[k]);
+			move_bdemubackup_to_origin(temp);
+			
+			//get game list
+			for(j=0; j<=scan_dir_number; j++) {
+				sprintf(scan_path, "/%s/%s", path_plug[k], scan_dir[j]);
+									
+				get_GAMELIST(scan_path);
+			}	
+		}
+	}	
+	
+	if(game_number != old_game_number) {
 		print_load("Reloading...");
-
-		device_plug = 0;
+	
+		sort_GAMELIST();
+		init_Load_GAMEPIC();
 		
 		GetThemes();
-		
 		read_fav();
-		
-		start_Load_GamePIC();
-		
-		start_checking();
-		end_loading();
-
-	} 
-	else if(checking==NO) start_checking();
+	}
+	
+	end_loading();
 }
 
 //*******************************************************
@@ -12894,9 +13967,12 @@ u8 CheckMD5(char *path)
 	ExtractZipFile(MD5_DB, MD5_FILE, MD5_redump);
 	
 	if( path_info(MD5_redump) == _NOT_EXIST )
-	if( Download_MD5(gameID) == FAILED ) return FAILED;
+	if( Download_MD5(gameID) == FAILED ) {
+		print_load("Error : redump MD5 not found");
+		return FAILED;
+	}
 	
-	if ( md5_file(path, (u8 *) MD5_local) == FAILED ) {
+	if( md5_file(path, (u8 *) MD5_local) == FAILED ) {
 		print_load("Error : failed to get MD5");
 		return FAILED;
 	}
@@ -12926,8 +14002,8 @@ u8 CheckMD5(char *path)
 	}
 	
 	fputs("*** MD5 from redump.org ***\n\n", f);
-	fputs(MD5_buff, f);
-	fputs("\n\n*** real MD5 ***\n\n", f);
+	fwrite(MD5_buff, size, 1, f);
+	fputs("\n*** real MD5 ***\n\n", f);
 	fputs(MD5_local_STR, f);
 	fputs(" ", f);
 	fputs(&strrchr(path, '/')[1], f);
@@ -13104,9 +14180,27 @@ uint8_t PS2emu_is_patched()
 	return NO;
 }
 
+u32 getCRC(char *self)
+{
+	u32 memsize=0x1000;
+	
+	FILE *f = fopen(self, "rb");
+	if(f==NULL) return 0;
+	u8 *mem=malloc(memsize);
+	if(mem==NULL) return 0;
+	fread(mem, memsize, 1, f);
+	fclose(f);
+	u32 crc = crc32(0L, Z_NULL, 0);
+	crc = crc32(crc, (const unsigned char*) mem, memsize);
+	free(mem);
+	
+	return crc;
+}
+
 uint8_t patch_PS2()
 {	
-
+	if( HEN )  return SUCCESS;
+	
 	if( PS2emu_is_patched() == YES ) return SUCCESS;
 	
 	uint8_t *ps2gxemu_stage1;
@@ -13122,7 +14216,7 @@ uint8_t patch_PS2()
 	uint8_t *ps2netemu_stage2;
 	uint32_t ps2netemu_stage2_size;
 	
-	uint64_t value;
+	u32 crc;
 	FILE* f;
 	
 	char tmp_dir[128];
@@ -13138,120 +14232,36 @@ uint8_t patch_PS2()
 	Delete(tmp_dir);
 	mkdir(tmp_dir, 0777);
 	
-	f = fopen("/dev_flash/ps2emu/ps2_gxemu.self", "rb");
-	if(f==NULL) return FAILED;
-	fseek(f, 0xF8, SEEK_SET);
-	fread(&value, 8, 1, f);
-	fclose(f);
+	crc = getCRC("/dev_flash/ps2emu/ps2_gxemu.self");
 	
-	if(value == 0x2BB8028) { // 421+
-		ps2gxemu_stage1_size = (uint32_t) ps2gxemu_stage1_421_bin_size;
-		ps2gxemu_stage1 = (uint8_t *) ps2gxemu_stage1_421_bin;
-		ps2gxemu_stage2_size = (uint32_t) ps2gxemu_stage2_421_bin_size;
-		ps2gxemu_stage2 = (uint8_t *) ps2gxemu_stage2_421_bin;
-	} else
-	if(value == 0x2BB8A28) { // 430+
-		ps2gxemu_stage1_size = (uint32_t) ps2gxemu_stage1_430_bin_size;
-		ps2gxemu_stage1 = (uint8_t *) ps2gxemu_stage1_430_bin;
-		ps2gxemu_stage2_size = (uint32_t) ps2gxemu_stage2_430_bin_size;
-		ps2gxemu_stage2 = (uint8_t *) ps2gxemu_stage2_430_bin;
-	} else
-	if(value == 0x2BB8C28) { // 440+
-		ps2gxemu_stage1_size = (uint32_t) ps2gxemu_stage1_440_bin_size;
-		ps2gxemu_stage1 = (uint8_t *) ps2gxemu_stage1_440_bin;
-		ps2gxemu_stage2_size = (uint32_t) ps2gxemu_stage2_440_bin_size;
-		ps2gxemu_stage2 = (uint8_t *) ps2gxemu_stage2_440_bin;
-	} else
-	if(value == 0x2BBAB28) { // 453+
-		ps2gxemu_stage1_size = (uint32_t) ps2gxemu_stage1_453_bin_size;
-		ps2gxemu_stage1 = (uint8_t *) ps2gxemu_stage1_453_bin;
-		ps2gxemu_stage2_size = (uint32_t) ps2gxemu_stage2_453_bin_size;
-		ps2gxemu_stage2 = (uint8_t *) ps2gxemu_stage2_453_bin;
-	} else return FAILED;
-	
-	if ( ps2gen("/dev_flash/ps2emu/ps2_gxemu.self", tmp_gx, ps2gxemu_stage1, ps2gxemu_stage1_size) == FAILED) {
+	if( get_gxemu(crc, &ps2gxemu_stage1, &ps2gxemu_stage1_size, &ps2gxemu_stage2, &ps2gxemu_stage2_size)==FAILED) {
+		print_load("Error: Failed to load_gxemu");
 		return FAILED;
 	}
 	
-	f = fopen("/dev_flash/ps2emu/ps2_emu.self", "rb");
-	if(f==NULL) return FAILED;
-	fseek(f, 0xF8, SEEK_SET);
-	fread(&value, 8, 1, f);
-	fclose(f);
+	if( ps2gen("/dev_flash/ps2emu/ps2_gxemu.self", tmp_gx, ps2gxemu_stage1, ps2gxemu_stage1_size) == FAILED) {
+		return FAILED;
+	}
 	
-	if(value == 0x1079370) { // 421+
-		ps2hwemu_stage1_size = (uint32_t) ps2hwemu_stage1_421_bin_size;
-		ps2hwemu_stage1 = (uint8_t *) ps2hwemu_stage1_421_bin;
-		ps2hwemu_stage2_size = (uint32_t) ps2hwemu_stage2_421_bin_size;
-		ps2hwemu_stage2 = (uint8_t *) ps2hwemu_stage2_421_bin;
-	} else
-	if(value == 0x1079C70) { // 430+
-		ps2hwemu_stage1_size = (uint32_t) ps2hwemu_stage1_421_bin_size;
-		ps2hwemu_stage1 = (uint8_t *) ps2hwemu_stage1_421_bin;
-		ps2hwemu_stage2_size = (uint32_t) ps2hwemu_stage2_430_bin_size;
-		ps2hwemu_stage2 = (uint8_t *) ps2hwemu_stage2_430_bin;
-	} else
-	if(value == 0x1079DF0) { // 440+
-		ps2hwemu_stage1_size = (uint32_t) ps2hwemu_stage1_440_bin_size;
-		ps2hwemu_stage1 = (uint8_t *) ps2hwemu_stage1_440_bin;
-		ps2hwemu_stage2_size = (uint32_t) ps2hwemu_stage2_440_bin_size;
-		ps2hwemu_stage2 = (uint8_t *) ps2hwemu_stage2_440_bin;
-	} else
-	if(value == 0x107BDF0) { // 453+
-		ps2hwemu_stage1_size = (uint32_t) ps2hwemu_stage1_453_bin_size;
-		ps2hwemu_stage1 = (uint8_t *) ps2hwemu_stage1_453_bin;
-		ps2hwemu_stage2_size = (uint32_t) ps2hwemu_stage2_453_bin_size;
-		ps2hwemu_stage2 = (uint8_t *) ps2hwemu_stage2_453_bin;
-	} else return FAILED;
+	crc = getCRC("/dev_flash/ps2emu/ps2_emu.self");
+	
+	if( get_hwemu(crc, &ps2hwemu_stage1, &ps2hwemu_stage1_size, &ps2hwemu_stage2, &ps2hwemu_stage2_size)==FAILED) {
+		print_load("Error: Failed to load_hwemu");
+		return FAILED;
+	}
 	
 	if ( ps2gen("/dev_flash/ps2emu/ps2_emu.self", tmp_hw, ps2hwemu_stage1, ps2hwemu_stage1_size) == FAILED) {
 		return FAILED;
 	}
 	
-	f = fopen("/dev_flash/ps2emu/ps2_netemu.self", "rb");
-	if(f==NULL) return FAILED;
-	fseek(f, 0xF8, SEEK_SET);
-	fread(&value, 8, 1, f);
-	fclose(f);
+	crc = getCRC("/dev_flash/ps2emu/ps2_netemu.self");
 	
-	if(value == 0x283B90) { // 421+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_421_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_421_bin;
-	} else
-	if(value == 0x284578) { // 430+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_430_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_430_bin;
-	} else
-	if(value == 0x288F68) { // 440+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_440_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_440_bin;
-	} else
-	if(value == 0x2890A8) { // 446+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_446_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_446_bin;
-	} else
-	if(value == 0x28E8F8) { // 450+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_450_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_450_bin;
-	} else
-	if(value == 0x28F638) { // 453+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_453_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_453_bin;
-	} else
-	if(value == 0x28F6B8) { // 455+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_455_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_455_bin;
-	} else
-	if(value == 0x28F878) { // 460+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_460_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_460_bin;
-	} else
-	if(value == 0x28F940) { // 478+
-		ps2netemu_stage2_size = (uint32_t) ps2netemu_stage2_478_bin_size;
-		ps2netemu_stage2 = (uint8_t *) ps2netemu_stage2_478_bin;
-	} else return FAILED;
+	if( get_netemu(crc, &ps2netemu_stage2, &ps2netemu_stage2_size)==FAILED) {
+		print_load("Error: Failed to load_gxemu");
+		return FAILED;
+	}
 	
-	if ( ps2gen("/dev_flash/ps2emu/ps2_netemu.self", tmp_net, ps2netemu_stage2, ps2netemu_stage2_size) == FAILED) {
+	if( ps2gen("/dev_flash/ps2emu/ps2_netemu.self", tmp_net, ps2netemu_stage2, ps2netemu_stage2_size) == FAILED) {
 		return FAILED;
 	}
 	
@@ -13259,31 +14269,27 @@ uint8_t patch_PS2()
 		sys_fs_mount("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0);
 		usleep(1000);
 	}
+	
 	/*
 	print_load("Saving Original files...")
 	char bak[128];
 	sprintf(bak, "/dev_hdd0/game/%s/USRDIR/PS2BAK", ManaGunZ_id);
 	Delete(bak);
-	mkdir(bak, 0777);
 	if ( Copy("/dev_blind/ps2emu", bak) == FAILED ) {
 		print_load("Error : failed to copy original files");
 		return FAILED;
 	}
 	*/
 	
-	Delete("/dev_blind/ps2emu");
-	mkdir("/dev_blind/ps2emu", 0777);
+	if( path_info("/dev_blind") == _NOT_EXIST) {
+		print_load("Error : failed to mount dev_blind");
+		return FAILED;
+	}
 	
-	if( Copy(tmp_net, "/dev_blind/ps2emu/ps2_netemu.self") == FAILED ) {
-		print_load("Error : failed to copy patched ps2_netemu");
-		return FAILED;
-	} else 
-	if( Copy(tmp_hw, "/dev_blind/ps2emu/ps2_hwemu.self") == FAILED ) {
-		print_load("Error : failed to copy patched ps2_hwemu");
-		return FAILED;
-	} else 
-	if( Copy(tmp_gx, "/dev_blind/ps2emu/ps2_gxemu.self") == FAILED ) {
-		print_load("Error : failed to copy patched ps2_gxemu");
+	Delete("/dev_blind/ps2emu");
+	
+	if( Copy(tmp_dir, "/dev_blind/ps2emu") == FAILED ) {
+		print_load("Error : failed to copy patched emu files");
 		return FAILED;
 	}
 	
@@ -13598,14 +14604,14 @@ char upit(char in){
 	return in;
 } 
 
-void Download_covers()
+u32 Download_covers()
 {
 	int i;
 	char game_ID[20];
 	char link[255];
 	char out[255];
 	
-	int nb_dl = -1;
+	u32 nb_dl = 0;
 	
 	print_head("Downloading covers");
 	
@@ -13617,10 +14623,8 @@ void Download_covers()
 		memset(game_ID, 0, sizeof(game_ID));
 		memset(link, 0, sizeof(link));
 		
-		if( Get_ID(list_game_path[i], list_game_platform[i], game_ID) == FAILED) {
-			print_load("Error : Failed to get ID %s", list_game_path[i]);
-			continue;
-		}
+		strcpy(game_ID, list_game_ID[i]);
+		
 		int j;
 		for(j=0; j < strlen(game_ID); j++) game_ID[j] = upit(game_ID[j]);
 		
@@ -13871,7 +14875,7 @@ void Download_covers()
 		
 	}
 	
-	if(0 <= nb_dl) start_Load_GamePIC();
+	return nb_dl;
 }
 
 //*******************************************************
@@ -14269,8 +15273,8 @@ int Sign_PS2ELF(char *in, char *out)
 	_add_shdrs=(char*) "TRUE";
 	_vendor_id=(char*) "02000003";
 	_self_type=(char*) "LV2";
-	_fw_version=(char*) "0004002100000000";
 	_key_rev=(char*) "0";
+	_fw_version=(char*) "0004002100000000";
 	_app_version=(char*) "0004002100000000";
 	_encrypt_file = TRUE;
 	
@@ -14396,7 +15400,7 @@ u8 re_sign_SELF(char *path)
 {	
 	char elf[128];
 	char bak[128];
-	char local_path[128]; //faster in local if file is in usb
+	char local_path[128]; //faster in hdd0
 	char *filename;
 	
 	filename=strrchr(path, '/');
@@ -14647,7 +15651,6 @@ void unplug_device()
 		while(need_unplug()==YES) {
 			int i;
 			cls();
-			ps3pad_read();
 		
 			Draw_BGS();
 			int x=50, y=40;
@@ -14663,6 +15666,8 @@ void unplug_device()
 		
 			tiny3d_Flip();
 			ScreenShot();
+			//ps3pad_read();
+			
 		}
 		sleep(1);
 		start_loading();
@@ -14700,8 +15705,8 @@ void SetPrimaryUSB()
 		
 		for(f0=0; f0<8; f0++) {
 			if(f0!=indx) {
-				sys_storage_ext_fake_storage_event(7, 0, ((f0<6)?USB_MASS_STORAGE_1(f0):USB_MASS_STORAGE_2(f0)));
-				sys_storage_ext_fake_storage_event(3, 0, ((f0<6)?USB_MASS_STORAGE_1(f0):USB_MASS_STORAGE_2(f0)));
+				sys_storage_ext_fake_storage_event(7, 0, USB_MASS_STORAGE(f0));
+				sys_storage_ext_fake_storage_event(3, 0, USB_MASS_STORAGE(f0));
 			}
 		}
 
@@ -14763,7 +15768,8 @@ char *LoadFile(char *path, int *file_size)
 	
 	char *mem = malloc(*file_size);
 	if(mem==NULL) return NULL;
-	
+	memset(mem, 0, s.st_size);
+
 	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
 	if(f1<0) return NULL;
 	
@@ -14908,7 +15914,7 @@ PS3_GM01:
 	sprintf(temp_buffer, "%s/PS3_GM01", device_path);
 	sprintf(temp_buffer + 256, "%s/PS3_GM01/PS3PATH2.BUP", device_path);
 	
-	if(path_info(temp_buffer) == _NOT_EXIST) return -1;;
+	if(path_info(temp_buffer) == _NOT_EXIST) return -1;
 
 	file = LoadFile(temp_buffer + 256, &file_size);
 	if(!file) return -1;
@@ -14955,7 +15961,7 @@ int patch_bdmirror()
 		device=-1;
 		print_load("mount ps2disc");
 		sys_fs_mount("CELL_FS_IOS:BDVD_DRIVE", "CELL_FS_ISO9660", "/dev_ps2disc", 1);
-		sleep(1);
+		usleep(1000);
 		
 		for(n=0; n<10;n++) {
 			if(path_info("/dev_ps2disc") != _NOT_EXIST) break;
@@ -15197,7 +16203,6 @@ int patch_libfs(int8_t device)
 	/*80*/	0x4B,0xFF,0xFE,0xF8
 	};
 	
-	FILE* fp;
 	char patched_libfs_from_MM[128];
 	char patched_libfs_from_iris[128];
 	char patched_libfs_from_reactPSN[128];
@@ -15232,8 +16237,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 		
-		int size;
-		
+		int size=0;
 		char *data = LoadFile(ori_prx, &size);
 		if(data==NULL) {
 			print_load("Error : can't read the original libfs");
@@ -15264,9 +16268,9 @@ int patch_libfs(int8_t device)
 		memcpy(&data[n-0x20], patch_from_MM, 0x84);
 	
 		//write
-		if( SaveFile(patched_prx, data, size) == FAILED) 
-		{
-			free(data);
+		u8 ret = SaveFile(patched_prx, data, size);
+		free(data);
+		if(ret  == FAILED) {
 			print_load("Error : cannot create the file");
 			return NOK;
 		}
@@ -15300,33 +16304,9 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 		
-		char *data;
-		long size;
-		size_t result;
-		fp = fopen(ori_prx, "rb");
-		if(fp!=NULL) {
-			fseek (fp , 0 , SEEK_END);
-			size = ftell (fp);
-			fseek(fp, 0, SEEK_SET);
-			
-			data = (char*) malloc (sizeof(char)*size);
-			if (data == NULL) {
-				free(data); 
-				fclose(fp);
-				print_load("Error : failed to malloc data");
-				return NOK;
-			}
-				
-			result = fread(data, 1, size, fp);
-			if (result != size) {
-				free (data);
-				fclose (fp); 
-				print_load("Error : Failed to read data");
-				return NOK;
-			}
-			fclose (fp);
-				
-		} else {
+		int size=0;
+		char *data = LoadFile(ori_prx, &size);
+		if(data==NULL) {
 			print_load("Error : can't read the original libfs");
 			return NOK;
 		}
@@ -15351,22 +16331,12 @@ int patch_libfs(int8_t device)
 		// memcpy(&data[m + 0x64], patch_from_iris + 0x64, 0xB4 - 0x64);
 		
 		//write
-		fp = fopen(patched_prx, "wb");
-		if(fp==NULL){
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot create the file");
-			return NOK;
-		}
-		result = fwrite(data, 1, size, fp);
-		if(result != size) {
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot write the file\n");
-			return NOK;
-		}
-		fclose(fp);
+		u8 ret = SaveFile(patched_prx, data, size);
 		free(data);
+		if(ret  == FAILED) {
+			print_load("Error : cannot create the %s", patched_prx);
+			return NOK;
+		}
 		
 		if(Sign_PRX(patched_prx, patched_libfs_from_iris) == NOK) {
 			print_load("Error : cannot sign the prx\n");
@@ -15398,34 +16368,9 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 		
-		char *data;
-		long size;
-		size_t result;
-		fp = fopen(ori_prx, "rb");
-		if(fp!=NULL) {
-
-			fseek (fp , 0 , SEEK_END);
-			size = ftell (fp);
-			fseek(fp, 0, SEEK_SET);
-			
-			data = (char*) malloc (sizeof(char)*size);
-			if (data == NULL) {
-				free(data); 
-				fclose(fp);
-				print_load("Error : failed to malloc data");
-				return NOK;
-			}
-				
-			result = fread(data, 1, size, fp);
-			if (result != size) {
-				free (data);
-				fclose (fp); 
-				print_load("Error : Failed to read data");
-				return NOK;
-			}
-			fclose (fp);
-				
-		} else {
+		int size=0;
+		char *data = LoadFile(ori_prx, &size);
+		if(data==NULL) {
 			print_load("Error : can't read the original libfs");
 			return NOK;
 		}
@@ -15456,22 +16401,12 @@ int patch_libfs(int8_t device)
 		memcpy(&data[n-0x68], patch_from_reactPSN, 0xA8);
 		
 		//write
-		fp = fopen(patched_prx, "wb");
-		if(fp==NULL){
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot create the file");
-			return NOK;
-		}
-		result = fwrite(data, 1, size, fp);
-		if(result != size) {
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot write the file\n");
-			return NOK;
-		}
-		fclose(fp);
+		u8 ret = SaveFile(patched_prx, data, size);
 		free(data);
+		if(ret  == FAILED) {
+			print_load("Error : cannot create the %s", patched_prx);
+			return NOK;
+		}
 		
 		if(Sign_PRX(patched_prx, patched_libfs_from_reactPSN) == NOK) {
 			print_load("Error : cannot sign the prx\n");
@@ -15522,7 +16457,6 @@ char *get_libfs_path()
 
 int patch_exp_plug()
 {
-	FILE* fp;
 	char patched_sprx[128];
 	
 	sprintf(patched_sprx, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
@@ -15547,36 +16481,10 @@ int patch_exp_plug()
 			return NOK;
 		}
 		
-		char *data;
-		long size;
-		size_t result;
-		
-		fp = fopen(ori_prx, "rb");
-		if(fp!=NULL) {
-
-			fseek (fp , 0 , SEEK_END);
-			size = ftell (fp);
-			fseek(fp, 0, SEEK_SET);
-			
-			data = (char*) malloc (sizeof(char)*size);
-			if (data == NULL) {
-				free(data); 
-				fclose(fp);
-				print_load("Error : failed to malloc data");
-				return NOK;
-			}
-				
-			result = fread(data, 1, size, fp);
-			if (result != size) {
-				free (data);
-				fclose (fp); 
-				print_load("Error : Failed to read data");
-				return NOK;
-			}
-			fclose (fp);
-				
-		} else {
-			print_load("Error : can't read the original explore_plugin.prx");
+		int size=0;
+		char *data = LoadFile(ori_prx, &size);
+		if(data==NULL) {
+			print_load("Error : can't read the original_explore_plugin_%X.prx", firmware);
 			return NOK;
 		}
 		
@@ -15603,24 +16511,15 @@ int patch_exp_plug()
 		}
 		
 		//write
-		fp = fopen(patched_prx, "wb");
-		if(!fp){
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot create the file");
-			return NOK;
-		}
-		result = fwrite(data, 1, size, fp);
-		if(result != size) {
-			free(data);
-			fclose(fp);
-			print_load("Error : cannot write the file");
-			return NOK;
-		}
-		fclose(fp);
+		u8 ret = SaveFile(patched_prx, data, size);
 		free(data);
+		if(ret  == FAILED) {
+			print_load("Error : cannot create the %s", patched_prx);
+			return NOK;
+		}
 		
 		if(Sign_PRX(patched_prx, patched_sprx) == NOK) {
+			print_load("Error : cannot sign the prx\n");
 			return NOK;
 		}
 	
@@ -16083,6 +16982,34 @@ u8 get_ext(char *file)
 }
 
 //*******************************************************
+// HEN
+//*******************************************************
+
+int syscall_is_HEN()
+{
+	lv2syscall1(8, SYSCALL8_OPCODE_IS_HEN);
+	return_to_user_prog(int);
+}
+
+int HEN_rev()
+{
+	lv2syscall1(8, SYSCALL8_OPCODE_HEN_REV);
+	return_to_user_prog(int);
+}
+
+u8 is_HEN()
+{
+	if( syscall_is_HEN() == SYSCALL8_OPCODE_IS_HEN) return YES;
+	return NO;
+}
+
+void HEN_game_settings()
+{
+	if( emu==BDEMU ) emu=NONE;
+	use_ex_plug=NO;
+}
+
+//*******************************************************
 //Iris Mount Game
 //*******************************************************
 
@@ -16350,8 +17277,8 @@ void iris_Mount()
 		if( ret != 0) print_load("Error %d: failed to patch bdmirroir", ret);
 		sleep(1);
 		
-		sprintf(temp_buffer, "%s/PS3_DISC.SFB", GamPath);
-		add_sys8_path_table("/dev_bdvd/PS3_DISC.SFB", temp_buffer);
+		sprintf(temp_buffer, "%s/DISC_PS3.SFB", GamPath);
+		add_sys8_path_table("/dev_bdvd/DISC_PS3.SFB", temp_buffer);
 		
 		add_sys8_bdvd(NULL, NULL);
 		
@@ -16553,8 +17480,8 @@ void mm_Mount()
 		if( ret != 0) print_load("Error %d: patch_bdmirror failed", ret);
 		sleep(1);
 
-		sprintf(temp, "%s/PS3_DISC.SFB", GamPath);
-		add_to_map("/dev_bdvd/PS3_DISC.SFB", temp);
+		sprintf(temp, "%s/DISC_PS3.SFB", GamPath);
+		add_to_map("/dev_bdvd/DISC_PS3.SFB", temp);
 		
 	} else
 	if(emu == BDEMU) {
@@ -16729,6 +17656,17 @@ u8 can_mount()
 	return NO;
 }
 
+u8 can_be_mounted(u8 ext)
+{
+	if(can_mount()) {
+		if(ext==_ISO_PS3 || ext==_JB_PS3) return YES;
+		if(ext==_ISO_PS2 && !HEN) return YES;
+		if(ext==_ISO_PS1) return YES;
+		if(ext==_ISO_PSP) return YES;
+	}
+	
+	return NO;
+}
 
 void cobra_MountISO(int EMU)
 {
@@ -16861,8 +17799,8 @@ void cobra_Mount()
 			if( ret != 0) print_load("Error %d: patch_bdmirror failed", ret);
 			sleep(1);
 
-			sprintf(temp, "%s/PS3_DISC.SFB", GamPath);
-			{sys_map_path("/dev_bdvd/PS3_DISC.SFB", temp);}
+			sprintf(temp, "%s/DISC_PS3.SFB", GamPath);
+			{sys_map_path("/dev_bdvd/DISC_PS3.SFB", temp);}
 		} else
 		if(emu == BDEMU) {		
 			char *libfs_path = get_libfs_path();
@@ -17229,8 +18167,8 @@ void mamba_Mount()
 			if( ret != 0) print_load("Error %d: patch_bdmirror failed", ret);
 			sleep(1);
 
-			sprintf(temp, "%s/PS3_DISC.SFB", GamPath);
-			{mamba_map("/dev_bdvd/PS3_DISC.SFB", temp);}
+			sprintf(temp, "%s/DISC_PS3.SFB", GamPath);
+			{mamba_map("/dev_bdvd/DISC_PS3.SFB", temp);}
 		} else
 		if(emu == BDEMU) {
 			char *libfs_path = get_libfs_path();
@@ -17263,12 +18201,15 @@ void mamba_Mount()
 
 u8 MountGame(char *GamePath)
 {
-	if(can_mount()==NO) return FAILED;
-	if(is_66600(GamePath)) return FAILED;
-	
-	strcpy(GamPath, GamePath); // todo : something better...
-	
 	u8 platform = get_ext(GamePath);
+	
+	if(can_be_mounted(platform)==NO || is_66600(GamePath)) {
+		print_load("Error : Cannot be mounted");
+		return FAILED;
+	}
+	
+	strcpy(GamPath, GamePath);
+	
 	iso = is_iso(GamePath);
 	
 	if(platform == _ISO_PS3 || platform == _JB_PS3) {
@@ -17305,18 +18246,26 @@ u8 MountGame(char *GamePath)
 		if(platform == _ISO_PSP) emul = EMU_PSP;
 		
 		if(PEEKnPOKE) {
-			if(!cobra && !mamba) mamba = install_mamba();
+			if(!cobra && !mamba) {
+				mamba = install_mamba();
+				if(!mamba) {
+					print_load("Error : 0x01234567");
+					return FAILED;
+				}
+			}
 		}
 		
-		if(emul == EMU_PS2_DVD) { 
+		if(emul == EMU_PS2_DVD) {
 			patch_PS2();
 			CONFIG_check(GamePath);
 		}
 		
 		cobra_MountISO(emul);
 		cobra_MountISO(emul);
-	} else 
+	} else {
+		print_load("Error : 0x11223344");
 		return FAILED;
+	}
 	
 	// todo : check if game mounted...
 	
@@ -18088,10 +19037,17 @@ u8 pkg_list(const char *filename)
 	fputs(str, txt);
 	sprintf(str, "Content ID : %s\n",	  header.content_id);
 	fputs(str, txt);
-
-	fseek(in.fd, header.pkg_info_offset, SEEK_SET);
 	
-	fread(&info, 1, sizeof(pkg_info), in.fd);
+	//fseek(in.fd, header.pkg_info_offset, SEEK_SET);
+	//fread(&info, 1, sizeof(pkg_info), in.fd);
+	// |-> broked by FAKE_ stdio functions...
+	FILE *f;
+	f = fopen((char *) filename, "rb");
+	if( f!= NULL ) {
+		fseek(f, header.pkg_info_offset, SEEK_SET);
+		fread(&info, 1, sizeof(pkg_info), f);
+		fclose(f);
+	}
 	
 	switch (info.drm_type)
 	{
@@ -18297,13 +19253,18 @@ u8 read_AutoMount_setting()
 	fread(&emu, sizeof(u8), 1, fp);
 	fread(&libfs_from, sizeof(u8), 1, fp);
 	fread(&mount_app_home, sizeof(u8), 1, fp);
-	fread(&use_ex_plug, sizeof(u8), 1, fp);
+	fread(&use_ex_plug, sizeof(u8), 1, fp);	
+	
 	fread(&path_size, sizeof(u16), 1, fp);
-	fread(list_game_path[0], path_size, 1, fp);
+	list_game_path = (char **) malloc(sizeof(char *));
+	list_game_path[0] = (char *) malloc(path_size+1);
+	fread(list_game_path, path_size, 1, fp);
 	fclose(fp);
 	
 	if(iso) payload=SNAKE;
 	if(PEEKnPOKE==NO) payload=SNAKE;
+	
+	if( HEN ) HEN_game_settings();
 	
 	return SUCCESS;
 }
@@ -18337,9 +19298,23 @@ u8 write_AutoMount_setting(char *path)
 	return SUCCESS;
 }
 
-int make_launcher_pkg(char *title_id)
+int make_launcher_pkg(char *title_id, char *path)
 {
-print_load("Start...");
+
+print_load("Init...");
+	char title[512];
+	if( strcmp(path, list_game_path[position]) == 0) {
+		strcpy(title, list_game_title[position]);
+	} else {
+		
+		strcpy(title, &strrchr(path, '/')[1]);
+		RemoveExtention(title);
+		u8 ext = get_ext(path);
+		if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
+			GetParamSFO("TITLE", title, game_number, NULL);
+		}
+	}
+	
 	char content_id[37];
 	char src[128];
 	char dst[128];
@@ -18352,6 +19327,7 @@ print_load("Start...");
 	mkdir(dst, 0777);
 	
 //	sys
+print_load("Copy sys...");
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys", ManaGunZ_id);
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys", ManaGunZ_id);
 	if( Copy(src, dst) == FAILED ) {
@@ -18361,6 +19337,7 @@ print_load("Start...");
 	}
 
 //  self
+print_load("Copy self...");
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/ManaGunZ.self", ManaGunZ_id);
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/ManaGunZ.self", ManaGunZ_id);
 	if( CopyFile(src, dst) == FAILED ) {
@@ -18370,15 +19347,16 @@ print_load("Start...");
 	}
 	
 //	ICON0
+print_load("Copy icon0...");
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/ICON0.PNG", ManaGunZ_id);
-	if(iso==YES) {
-		if( ExtractFromISO(list_game_path[position], "/PS3_GAME/ICON0.PNG", dst) == FAILED) {
+	if(is_iso(path)) {
+		if( ExtractFromISO(path, "/PS3_GAME/ICON0.PNG", dst) == FAILED) {
 			print_load("Error : failed to get ICON0.PNG");
 			Delete(lch);
 			return FAILED;
 		}
 	} else {
-		sprintf(src, "%s/PS3_GAME/ICON0.PNG", list_game_path[position]);
+		sprintf(src, "%s/PS3_GAME/ICON0.PNG", path);
 		if( CopyFile(src, dst) == FAILED ) {
 			print_load("Error : failed to copy ICON0.PNG");
 			Delete(lch);
@@ -18386,8 +19364,8 @@ print_load("Start...");
 		}
 	}
 	
-print_load("param");
 //	PARAM.SFO
+print_load("Copy param...");
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/PARAM.SFO", ManaGunZ_id);
 	sprintf(src, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
 	if( CopyFile(src, dst) == FAILED ) {
@@ -18395,27 +19373,33 @@ print_load("param");
 		Delete(lch);
 		return FAILED;
 	}
-print_load("titleID");
+	
+// TITLE ID
+print_load("Set title ID...");
 	if( SetParamSFO("TITLE_ID", title_id, -1, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE_ID");
 		Delete(lch);
 		return FAILED;
 	}
-print_load("title");
-	if( SetParamSFO("TITLE", list_game_title[position], -1, dst) == FAILED ) {
+	
+// TITLE
+print_load("Set title...");
+	if( SetParamSFO("TITLE", title, -1, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE");
 		Delete(lch);
 		return FAILED;
 	}
-print_load("AutoMount");
+	
 // AUTOMOUNT
-	if( write_AutoMount_setting(list_game_path[position]) == FAILED ) {
+print_load("Create AutoMount...");
+	if( write_AutoMount_setting(path) == FAILED ) {
 		print_load("Error : failed to write AutoMount file");
 		Delete(lch);
 		return FAILED;
 	}
-print_load("EBOOT.ELF");
+	
 // EBOOT.BIN
+print_load("Extract EBOOT...");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/EBOOT.BIN", ManaGunZ_id);
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
 	if( Extract(src, dst) == FAILED ) {
@@ -18423,7 +19407,9 @@ print_load("EBOOT.ELF");
 		Delete(lch);
 		return FAILED;
 	}
-print_load("EBOOT.BIN");
+	
+// NEW EBOOT
+print_load("Make new EBOOT...");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.BIN", ManaGunZ_id);
 	sprintf(content_id, "EP0001-%s_00-0000000000000000", title_id);
@@ -18434,19 +19420,19 @@ print_load("EBOOT.BIN");
 	}
 	Delete(src);
 	
-print_load("ASCII");
-// Name of Package file
+// Name of PKG
+print_load("Set pkg name...");
 	char ascii_name[60]={0};
 	int i;
 	int k=0;
-	int l=strlen(list_game_title[position]);
+	int l=strlen(title);
 	for(i=0; i<=l; i++) {		
-		if(list_game_title[position][i]==32 //	space	
-		|| (48<=list_game_title[position][i] && list_game_title[position][i]<=57) //number
-		|| (65<=list_game_title[position][i] && list_game_title[position][i]<=90) // A..Z
-		|| (97<=list_game_title[position][i] && list_game_title[position][i]<=122)) //a..z
+		if(title[i]==32 //	space	
+		|| (48<=title[i] && title[i]<=57) //number
+		|| (65<=title[i] && title[i]<=90) // A..Z
+		|| (97<=title[i] && title[i]<=122)) //a..z
 		{
-			ascii_name[k]=list_game_title[position][i];
+			ascii_name[k]=title[i];
 			k++;
 			if(k>40) {
 				break;
@@ -18457,11 +19443,10 @@ print_load("ASCII");
 	strcat(ascii_name, title_id);
 	strcat(ascii_name, "]");
 	
-print_load("Make Package");
 // Make package	
+print_load("Make Package...");
 	strcpy(dst, "/dev_hdd0/packages");
 	mkdir(dst, 0777);
-	
 	sprintf(dst, "/dev_hdd0/packages/%s.pkg", ascii_name);
 	Delete(dst);
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR", ManaGunZ_id);
@@ -18470,8 +19455,8 @@ print_load("Make Package");
 		Delete(lch);
 		return FAILED;
 	}
-	
 // Delete launcher directory
+print_load("Delete launcher directory...");
 	Delete(lch);
 	
 	return SUCCESS;
@@ -18670,9 +19655,8 @@ void update_MGZ()
 		
 		free(mem);
 		
-		if(Load_GamePIC==YES) end_Load_GamePIC();
-		end_load_PIC1();
-		end_checking();
+		end_Load_GAMEPIC();
+		end_load_CURPIC();
 		end_loading();
 		sysModuleUnload(SYSMODULE_PNGDEC);
 		sysModuleUnload(SYSMODULE_JPGDEC);
@@ -18692,6 +19676,103 @@ void update_MGZ()
 // Settings
 //*******************************************************
 
+void read_RootSetting()
+{
+	if( root_display != STYLE_CUSTOM ) return;
+	if( lang_code_loaded == LANG_NONE ) return;
+	
+	FILE *fp;
+	char setPath[128];
+	u8 format_id[6]={0};
+	
+	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/root.bin", ManaGunZ_id);
+	
+	fp = fopen(setPath, "rb");
+	if(fp==NULL) return;
+	
+	fread(&fm_LineSize, sizeof(u8), 1, fp);
+	fread(&fm_RowNumber, sizeof(u8), 1, fp);
+	fread(&fm_FontRowSize[0], sizeof(u8), 1, fp);
+	fread(&fm_FontRowSize[1], sizeof(u8), 1, fp);
+	fread(&fm_FontRowSize[2], sizeof(u8), 1, fp);
+	fread(&fm_CustomIcons, sizeof(u8), 1, fp);
+	fread(&fm_CapacityBarWidth, sizeof(float), 1, fp);
+	fread(&format_id[0], sizeof(u8), 1, fp);
+	fread(&format_id[1], sizeof(u8), 1, fp);
+	fread(&format_id[2], sizeof(u8), 1, fp);
+	fread(&format_id[3], sizeof(u8), 1, fp);
+	fread(&format_id[4], sizeof(u8), 1, fp);
+	fread(&format_id[5], sizeof(u8), 1, fp);
+	fclose(fp);
+	
+	if(format_id[0] == FM_FORMAT_INIT) {
+		fm_CustomIcons = NO;
+		fm_LineSize=SMALL;
+		fm_RowNumber=0;
+		
+		fm_FontRowSize[0] = LINE_H1;
+		strcpy( fm_Format[ LEFTROW(0)  ], STR_FM_MOUNTPOINT);
+		strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_EMPTY);
+			
+		fm_FontRowSize[1] = 0;
+		strcpy( fm_Format[ LEFTROW(1)  ], STR_FM_EMPTY);
+		strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+		fm_FontRowSize[2] = 0;
+		strcpy( fm_Format[ LEFTROW(2)  ], STR_FM_EMPTY);
+		strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+		
+		fm_CapacityBarWidth=0;
+		
+		return;
+	}
+	
+	int i;
+	for(i=0; i < 6; i++) {
+		char *format = FM_SetFormat(format_id[i]);
+		if(format != NULL) {
+			strcpy(fm_Format[i], format);
+			FREE(format);
+		}
+	}
+	
+}
+
+void write_RootSetting()
+{
+	if( root_display != STYLE_CUSTOM ) return;
+	if( lang_code_loaded == LANG_NONE ) return;
+	
+	FILE *fp;
+	char setPath[128];
+
+	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/root.bin", ManaGunZ_id);
+	
+	u8 format_id[6] = {0};
+	int i;
+	for(i=0; i<6; i++) format_id[i] = FM_GetFormat(fm_Format[i]);
+	
+	fp = fopen(setPath, "wb");
+	if(fp==NULL) return;
+	
+	fwrite(&fm_LineSize, sizeof(u8), 1, fp);
+	fwrite(&fm_RowNumber, sizeof(u8), 1, fp);
+	fwrite(&fm_FontRowSize[0], sizeof(u8), 1, fp);
+	fwrite(&fm_FontRowSize[1], sizeof(u8), 1, fp);
+	fwrite(&fm_FontRowSize[2], sizeof(u8), 1, fp);
+	fwrite(&fm_CustomIcons, sizeof(u8), 1, fp);
+	fwrite(&fm_CapacityBarWidth, sizeof(float), 1, fp);
+	fwrite(&format_id[0], sizeof(u8), 1, fp);
+	fwrite(&format_id[1], sizeof(u8), 1, fp);
+	fwrite(&format_id[2], sizeof(u8), 1, fp);
+	fwrite(&format_id[3], sizeof(u8), 1, fp);
+	fwrite(&format_id[4], sizeof(u8), 1, fp);
+	fwrite(&format_id[5], sizeof(u8), 1, fp);
+	fclose(fp);
+	
+	SetFilePerms(setPath);
+}
+
 void read_setting()
 {
 	FILE* fp=NULL;
@@ -18705,7 +19786,7 @@ void read_setting()
 		fread(&Themes[1], sizeof(char), 0x40, fp);
 		fread(&Themes[2], sizeof(char), 0x40, fp);
 		fread(&Themes[3], sizeof(char), 0x40, fp);
-		fread(&LIST_Show_ICON0, sizeof(u8), 1, fp);
+		fread(&Show_ICON0, sizeof(u8), 1, fp);
 		fread(&UI_position, sizeof(u8), 1, fp);
 		fread(&GRID_TYPE, sizeof(u8), 1, fp);
 		fread(&GRID_DIRECTION, sizeof(u8), 1, fp);
@@ -18738,8 +19819,24 @@ void read_setting()
 		fread(&Font, sizeof(char), 0x40, fp);
 		fread(&filter_x, sizeof(float), 1, fp);
 		fread(&filter_y, sizeof(float), 1, fp);
+		fread(&FILTER_NOTIF, sizeof(u8), 1, fp);
+		fread(&COLOR_NOTIF, sizeof(u32), 1, fp);
+		fread(&FILTER_BOXHEAD, sizeof(u8), 1, fp);
+		fread(&COLOR_BOXHEAD, sizeof(u32), 1, fp);
+		fread(&FILTER_BOXBODY, sizeof(u8), 1, fp);
+		fread(&COLOR_BOXBODY, sizeof(u32), 1, fp);
+		fread(&FILTER_SIDEBAR, sizeof(u8), 1, fp);
+		fread(&COLOR_SIDEBAR, sizeof(u32), 1, fp);
+		fread(&FILTER_BGS, sizeof(u8), 1, fp);
+		fread(&COLOR_BGS, sizeof(u32), 1, fp);
+		fread(&FILTER_BG, sizeof(u8), 1, fp);
+		fread(&COLOR_BG, sizeof(u32), 1, fp);
+		fread(&root_display, sizeof(u8), 1, fp);
+		
 		fclose(fp);
-	}	
+	}
+	
+	read_RootSetting();
 }
 
 void write_setting()
@@ -18758,7 +19855,7 @@ void write_setting()
 		fwrite(&Themes[1], sizeof(char), 0x40, fp);
 		fwrite(&Themes[2], sizeof(char), 0x40, fp);
 		fwrite(&Themes[3], sizeof(char), 0x40, fp);
-		fwrite(&LIST_Show_ICON0, sizeof(u8), 1, fp);
+		fwrite(&Show_ICON0, sizeof(u8), 1, fp);
 		fwrite(&UI_position, sizeof(u8), 1, fp);
 		fwrite(&GRID_TYPE, sizeof(u8), 1, fp);
 		fwrite(&GRID_DIRECTION, sizeof(u8), 1, fp);
@@ -18791,32 +19888,56 @@ void write_setting()
 		fwrite(&Font, sizeof(char), 0x40, fp);
 		fwrite(&filter_x, sizeof(float), 1, fp);
 		fwrite(&filter_y, sizeof(float), 1, fp);
+		fwrite(&FILTER_NOTIF, sizeof(u8), 1, fp);
+		fwrite(&COLOR_NOTIF, sizeof(u32), 1, fp);
+		fwrite(&FILTER_BOXHEAD, sizeof(u8), 1, fp);
+		fwrite(&COLOR_BOXHEAD, sizeof(u32), 1, fp);
+		fwrite(&FILTER_BOXBODY, sizeof(u8), 1, fp);
+		fwrite(&COLOR_BOXBODY, sizeof(u32), 1, fp);
+		fwrite(&FILTER_SIDEBAR, sizeof(u8), 1, fp);
+		fwrite(&COLOR_SIDEBAR, sizeof(u32), 1, fp);
+		fwrite(&FILTER_BGS, sizeof(u8), 1, fp);
+		fwrite(&COLOR_BGS, sizeof(u32), 1, fp);
+		fwrite(&FILTER_BG, sizeof(u8), 1, fp);
+		fwrite(&COLOR_BG, sizeof(u32), 1, fp);
+		fwrite(&root_display, sizeof(u8), 1, fp);
+		
 		fclose(fp);
 		SetFilePerms(setPath);
 	}
+	
+	write_RootSetting();
 	
 	char sfo[64];
 	sprintf(sfo, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
 	SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, 0, sfo);
 	
 	if(lang_code != lang_code_loaded) update_lang();
-
-	if(Load_GamePIC == NO && COVER_Loaded == NO && Show_COVER == YES) {
-		start_Load_GamePIC();
-	}
 	
 	read_setting();
 }
 
-void read_game_setting(char *file_name)
+void read_game_setting(int pos)
 {
 	FILE* fp=NULL;
-	char setPath[128];
 	
-	if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, file_name);
-	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, file_name);
-	fp = fopen(setPath, "rb");
-	if(fp!=NULL)	{
+	if(0<=pos) {
+		char oldPath[128];	
+		char setPath[128];
+		
+		if(iso) sprintf(oldPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_title[pos]);
+		else	sprintf(oldPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, list_game_title[pos]);
+		
+		if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_ID[pos]);
+		else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, list_game_ID[pos]);
+		
+		if(path_info(setPath) == _FILE) Delete(oldPath); 
+		else rename(oldPath, setPath);
+		
+		fp = fopen(setPath, "rb");
+	}
+	
+	if(fp!=NULL) {
 		fread(&direct_boot, sizeof(u8), 1, fp);
 		fread(&clean_syscall, sizeof(u8), 1, fp);
 		fread(&change_IDPS, sizeof(u8), 1, fp);
@@ -18829,8 +19950,7 @@ void read_game_setting(char *file_name)
 		fread(&mount_app_home, sizeof(u8), 1, fp);
 		fread(&use_ex_plug, sizeof(u8), 1, fp);
 		fclose(fp);
-	} 
-	else {
+	} else {
 		direct_boot = NO;
 		clean_syscall = NO;
 		change_IDPS = NO;
@@ -18847,19 +19967,24 @@ void read_game_setting(char *file_name)
 	
 	if(iso) payload=SNAKE;
 	if(PEEKnPOKE==NO) payload=SNAKE;
+	
+	if( HEN ) HEN_game_settings();
 }
 
-void write_game_setting(char *file_name)
+void write_game_setting(int pos)
 {
 	if(AutoM == YES) return;
-
-	FILE* fp=NULL;
-	char setPath[128];
 	
-	if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, file_name);
-	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, file_name);
-	fp = fopen(setPath, "wb");
-	if(fp!=NULL)	{
+	FILE* fp=NULL;
+	
+	if(0<=pos) {		
+		char setPath[128];
+		if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_ID[pos]);
+		else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, list_game_ID[pos]);
+		fp = fopen(setPath, "wb");
+	}
+	
+	if(fp!=NULL){
 		fwrite(&direct_boot, sizeof(u8), 1, fp);
 		fwrite(&clean_syscall, sizeof(u8), 1, fp);
 		fwrite(&change_IDPS, sizeof(u8), 1, fp);
@@ -18873,7 +19998,8 @@ void write_game_setting(char *file_name)
 		fwrite(&use_ex_plug, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
-	read_game_setting(file_name);
+	
+	read_game_setting(pos);
 }
 
 void write_fav()
@@ -19014,6 +20140,7 @@ int init_ManaGunZ()
 
 	cobra = is_cobra();
 	mamba = is_mamba();
+	HEN = is_HEN();
 	
 	if(PEEKnPOKE) {
 		peek_IDPS();
@@ -19044,7 +20171,6 @@ int init_ManaGunZ()
 		{mamba_map((char*)"//dev_bdvd", NULL);}
 		{mamba_map((char*)"/app_home", NULL);}
 		{mamba_map((char*)"//app_home", NULL);}
-		{mamba_map((char*)"//app_home", NULL);}
 		{mamba_map("/dev_flash/sys/external/libfs.sprx", NULL);}
 		{mamba_map("/dev_flash/vsh/module/explore_plugin.sprx", NULL);}
 	}
@@ -19064,7 +20190,7 @@ int init_ManaGunZ()
 		real_disk = YES;
 	}
 	*/
-	
+
 	getDevices();
 
 	char temp[128];
@@ -19072,6 +20198,7 @@ int init_ManaGunZ()
 		sprintf(temp, "/%s", list_device[i]);
 		move_bdemubackup_to_origin(temp);
 	}
+	
 	if(path_info("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt") == _FILE) {
 		open_txt_viewer("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt");
 		Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt");
@@ -19084,24 +20211,342 @@ int init_ManaGunZ()
 // PAD
 //*******************************************************
 
-void get_R2speed()
+u8 AnyOldPad()
 {
-	if(old_pad & BUTTON_R2) {
-		R2speed = 6 - paddata.PRE_R2/50;
-	} else R2speed=6;
-	
-	if(old_pad & BUTTON_LEFT || old_pad & BUTTON_RIGHT || old_pad & BUTTON_UP || old_pad & BUTTON_DOWN) {
-		hold_it++;
-		if(hold_it > 30) {
-			slow_it++;
-			if(R2speed < slow_it) slow_it=0;
-		}
-	} else {slow_it=1; hold_it=0;}	
+	if(old_pad) return YES;
+	return NO;
 }
 
-u8 R2pad(int button)
+u8 AnyNewPad()
 {
-	return (new_pad & button || ((old_pad & button) && slow_it==0));
+	if(new_pad) return YES;
+	return NO;
+}
+
+void SetHold(u32 button, u64 value);
+u8 NewPad(u32 button)
+{
+	
+	if(new_pad & button) {
+		if(button != BUTTON_CIRCLE) {
+			SetHold(BUTTON_CIRCLE, 0);
+			hold_CIRCLE=0;
+			spam_CIRCLE=-1;
+		}
+		return YES;
+	}
+	
+	return NO;
+}
+
+u8 OldPad(u32 button)
+{
+	if(old_pad & button) return YES;
+	return NO;
+}
+
+u64 GetHold(u32 button)
+{
+	if(button & BUTTON_R) return hold_value[0];
+	if(button & BUTTON_L) return hold_value[1];
+	if(button & BUTTON_LEFT) return hold_value[2];
+	if(button & BUTTON_DOWN) return hold_value[3];
+	if(button & BUTTON_RIGHT) return hold_value[4];
+	if(button & BUTTON_UP) return hold_value[5];
+	if(button & BUTTON_START) return hold_value[6];
+	if(button & BUTTON_R3) return hold_value[7];
+	if(button & BUTTON_L3) return hold_value[8];
+	if(button & BUTTON_SELECT) return hold_value[9];
+	if(button & BUTTON_SQUARE) return hold_value[10];
+	if(button & BUTTON_CROSS) return hold_value[11];
+	if(button & BUTTON_CIRCLE) return hold_value[12];
+	if(button & BUTTON_TRIANGLE) return hold_value[13];
+	if(button & BUTTON_R1) return hold_value[14];
+	if(button & BUTTON_L1) return hold_value[15];
+	if(button & BUTTON_R2) return hold_value[16];
+	if(button & BUTTON_L2) return hold_value[17];
+	
+	return 0;	
+}
+
+void SetHold(u32 button, u64 value)
+{
+	if(button & BUTTON_R) hold_value[0]=value;
+	if(button & BUTTON_L) hold_value[1]=value;
+	if(button & BUTTON_LEFT) hold_value[2]=value;
+	if(button & BUTTON_DOWN) hold_value[3]=value;
+	if(button & BUTTON_RIGHT) hold_value[4]=value;
+	if(button & BUTTON_UP) hold_value[5]=value;
+	if(button & BUTTON_START) hold_value[6]=value;
+	if(button & BUTTON_R3) hold_value[7]=value;
+	if(button & BUTTON_L3) hold_value[8]=value;
+	if(button & BUTTON_SELECT) hold_value[9]=value;
+	if(button & BUTTON_SQUARE) hold_value[10]=value;
+	if(button & BUTTON_CROSS) hold_value[11]=value;
+	if(button & BUTTON_CIRCLE) hold_value[12]=value;
+	if(button & BUTTON_TRIANGLE) hold_value[13]=value;
+	if(button & BUTTON_R1) hold_value[14]=value;
+	if(button & BUTTON_L1) hold_value[15]=value;
+	if(button & BUTTON_R2) hold_value[16]=value;
+	if(button & BUTTON_L2) hold_value[17]=value;
+}
+
+u64 GetSlow(u32 button)
+{
+	if(button & BUTTON_R) return slow_value[0];
+	if(button & BUTTON_L) return slow_value[1];
+	if(button & BUTTON_LEFT) return slow_value[2];
+	if(button & BUTTON_DOWN) return slow_value[3];
+	if(button & BUTTON_RIGHT) return slow_value[4];
+	if(button & BUTTON_UP) return slow_value[5];
+	if(button & BUTTON_START) return slow_value[6];
+	if(button & BUTTON_R3) return slow_value[7];
+	if(button & BUTTON_L3) return slow_value[8];
+	if(button & BUTTON_SELECT) return slow_value[9];
+	if(button & BUTTON_SQUARE) return slow_value[10];
+	if(button & BUTTON_CROSS) return slow_value[11];
+	if(button & BUTTON_CIRCLE) return slow_value[12];
+	if(button & BUTTON_TRIANGLE) return slow_value[13];
+	if(button & BUTTON_R1) return slow_value[14];
+	if(button & BUTTON_L1) return slow_value[15];
+	if(button & BUTTON_R2) return slow_value[16];
+	if(button & BUTTON_L2) return slow_value[17];
+	
+	return 0;	
+}
+
+void SetSlow(u32 button, u64 value)
+{
+	if(button & BUTTON_R) slow_value[0]=value;
+	if(button & BUTTON_L) slow_value[1]=value;
+	if(button & BUTTON_LEFT) slow_value[2]=value;
+	if(button & BUTTON_DOWN) slow_value[3]=value;
+	if(button & BUTTON_RIGHT) slow_value[4]=value;
+	if(button & BUTTON_UP) slow_value[5]=value;
+	if(button & BUTTON_START) slow_value[6]=value;
+	if(button & BUTTON_R3) slow_value[7]=value;
+	if(button & BUTTON_L3) slow_value[8]=value;
+	if(button & BUTTON_SELECT) slow_value[9]=value;
+	if(button & BUTTON_SQUARE) slow_value[10]=value;
+	if(button & BUTTON_CROSS) slow_value[11]=value;
+	if(button & BUTTON_CIRCLE) slow_value[12]=value;
+	if(button & BUTTON_TRIANGLE) slow_value[13]=value;
+	if(button & BUTTON_R1) slow_value[14]=value;
+	if(button & BUTTON_L1) slow_value[15]=value;
+	if(button & BUTTON_R2) slow_value[16]=value;
+	if(button & BUTTON_L2) slow_value[17]=value;
+}
+
+u8 OldPadTicks(u32 button, u32 Ticks) 
+{
+	if(OldPad(button)) {
+		u64 hold = GetHold(button);
+		if(Ticks < hold) return YES;
+		hold++;
+		SetHold(button, hold);
+	} else SetHold(button, 0);
+	
+	return NO;
+}
+
+u64 OldPadDelay(u32 button, u64 nDelay) 
+{
+	if(OldPad(button)) {
+		u64 start = GetHold(button);
+		u64 end = nTime();
+		if(start==0) {
+			SetHold(button, end);
+			return 0;
+		}		
+		u64 t = end - start;		
+		if(nDelay < t) return t;
+	} else SetHold(button, 0);
+	
+	return 0;
+}
+
+u8 HoldCircleTicks()
+{
+	if(NewPad(BUTTON_CIRCLE)) {
+		hold_CIRCLE+=MAX_HOLD/4;
+		if(MAX_HOLD < hold_CIRCLE) return YES;
+		return NO;
+	}
+	
+	if(OldPad(BUTTON_CIRCLE)) {
+		if(MAX_HOLD < hold_CIRCLE) return YES;
+		hold_CIRCLE++;
+	} else {
+		hold_CIRCLE-=2;
+		if(hold_CIRCLE < 0) hold_CIRCLE=0;
+	}
+	
+	return NO;
+}
+
+u64 WaitToUnload = 0;
+s64 TimeCircle = 0;
+
+u8 HoldCircleDelay()
+{
+	if(NewPad(BUTTON_CIRCLE)) {
+		u64 start = GetHold(BUTTON_CIRCLE);
+		WaitToUnload = nTime();
+		if(start==0) SetHold(BUTTON_CIRCLE, WaitToUnload);
+		spam_CIRCLE++;
+		if(spam_CIRCLE==spam_CIRCLE_MAX) return YES;
+		return NO;
+	} else
+	if(OldPad(BUTTON_CIRCLE)) {
+		u64 start = GetHold(BUTTON_CIRCLE);
+		
+		if(start==0) return NO;
+		
+		u64 end = nTime();
+		
+		TimeCircle = end - start;
+		
+		if(TimeCircle<=0) {
+			start=0;
+			hold_CIRCLE = 0;
+		} else {
+			hold_CIRCLE = (u64) ((TimeCircle * MAX_HOLD / MAX_HOLD_S) * 2);
+			if(MAX_HOLD < hold_CIRCLE) return YES;
+		}
+		
+		if( 2*MAX_HOLD / 3 < hold_CIRCLE && spam_CIRCLE < 2) spam_CIRCLE=2; else
+		if( MAX_HOLD / 3 < hold_CIRCLE && spam_CIRCLE < 1) spam_CIRCLE=1;
+		
+		WaitToUnload = end;
+	} else {
+		u64 start = GetHold(BUTTON_CIRCLE);
+		if(start!=0) {
+			u64 end = nTime();
+			if(WaitToUnload) {
+				s64 s = end - WaitToUnload;
+				if(n_s(1) < s) {
+					WaitToUnload = 0;
+					spam_CIRCLE=-1;
+				} else {
+					SetHold(BUTTON_CIRCLE, start+s);
+					return NO;
+				}
+			}
+			
+			start += n_ms(200);
+			s64 t = end - start;
+			
+			while(TimeCircle < t) {
+				start += n_ms(200);
+				t = end - start;
+			}
+			TimeCircle = t;
+			
+			if(t <= 0) {
+				start=0;
+				hold_CIRCLE = 0;
+			} else {
+				hold_CIRCLE = (u64) ((t * MAX_HOLD / MAX_HOLD_S) * 2);
+			}
+			
+			if(MAX_HOLD < hold_CIRCLE) {
+				start=0;
+				hold_CIRCLE = 0;
+			}
+			
+			SetHold(BUTTON_CIRCLE, start);
+		} else {
+			hold_CIRCLE=0;
+			spam_CIRCLE=-1;
+		}
+	}
+	
+	return NO;
+}
+
+u8 R2pad(u32 button)
+{
+	
+	if(NewPad(button)) return YES;	
+	
+	u64 t = OldPadDelay(button, n_ms(50));
+	if(0<t) {
+		u64 slow = GetSlow(button);
+		
+		if( R2speed == 6 ) { // the user don't use R2
+			if( n_s(4.0) < t ) {SetSlow(button, 0); return YES; } else
+			if( n_s(3.5) < t && 0 < slow)  {SetSlow(button, 0); return YES; } else
+			if( n_s(3.0) < t && 1 < slow ) {SetSlow(button, 0); return YES; } else
+			if( n_s(2.5) < t && 2 < slow ) {SetSlow(button, 0); return YES; } else
+			if( n_s(2.0) < t && 3 < slow ) {SetSlow(button, 0); return YES; } else
+			if( n_s(1.5) < t && 4 < slow ) {SetSlow(button, 0); return YES; } else
+			if( n_s(1.0) < t && 5 < slow ) {SetSlow(button, 0); return YES; }
+		} else 
+		if(R2speed < slow) {
+			SetSlow(button, 0);
+			return YES;
+		}
+		slow++;
+		SetSlow(button, slow);
+	} else SetSlow(button, 0);
+		
+	return NO;
+}
+
+u8 ComboNewPad(u32 button1, u32 button2)
+{
+	if( (NewPad(button1) && OldPad(button2))
+	||  (NewPad(button2) && OldPad(button1)) ) return YES;
+	
+	return NO;
+}
+
+void get_R2speed()
+{
+	if(OldPad(BUTTON_R2)) {
+		R2speed = 6 - paddata.PRE_R2/50;
+	} else R2speed=6;
+}
+
+void R2_SyncLeftJoystick()
+{
+	u8 old_x = x_L;
+	u8 old_y = y_L;
+	
+	x_L = (paddata.button[6] - 128);
+	y_L = (paddata.button[7] - 128);
+	
+	if (y_L < -28) {
+		if(old_y == 0) new_pad |= BUTTON_UP; else
+		{
+			old_pad |= BUTTON_UP;
+			R2speed = 6 + y_L/20;
+		}
+	} else 
+	if (28 < y_L) {
+		if(old_y == 0) new_pad |= BUTTON_DOWN; else
+		{
+			old_pad |= BUTTON_DOWN;
+			R2speed = 6 - y_L/20;
+		}
+	} else 
+	if (x_L < -28) {
+		if(old_x == 0) new_pad |= BUTTON_LEFT; else
+		{
+			old_pad |= BUTTON_LEFT;
+			R2speed = 6 + x_L/20 ;
+		}
+	} else 
+	if (28 < x_L) {
+		if(old_x == 0) new_pad |= BUTTON_RIGHT; else
+		{
+			old_pad |= BUTTON_RIGHT;
+			R2speed = 6 - x_L/20;
+		}
+	} else { 
+		x_L=0; y_L=0;
+		get_R2speed();
+	}
 }
 
 float R2JoyStick_X(int joystick)
@@ -19184,6 +20629,11 @@ void init_FileExplorer()
 	
 	option_copy = (char **) malloc(WINDOW_MAX_ITEMS * sizeof(char *));
 	for(i=0; i<WINDOW_MAX_ITEMS; i++) option_copy[i]=NULL;
+	
+	DevicesInfo = (DeviceInfo_t *) malloc(WINDOW_MAX_ITEMS * sizeof(DeviceInfo_t));
+	memset(DevicesInfo, 0, sizeof(DevicesInfo));
+	
+	DevicesInfo_N = -1;
 }
 
 void finalize_FileExplorer()
@@ -19234,6 +20684,8 @@ void finalize_FileExplorer()
 
 	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(option_copy[i]);
 	FREE(option_copy);
+	
+	free(DevicesInfo);
 }
 
 // *** PRX list tools ***
@@ -19258,7 +20710,7 @@ void add_to_list(char *file_path, char *str)
 {
 	FILE* fr;
 	FILE* fw;
-	char line[255];
+	char line[255] = {0};
 	char temp[255];
 	
 	strcpy(temp, file_path);
@@ -19274,9 +20726,13 @@ void add_to_list(char *file_path, char *str)
 	while(fgets(line, 255, fr) != NULL) {
 		if(line[0]=='\r' || line[0]=='\n') continue;
 		
-		strtok(line, "\r\n");
+		if(strstr(line, "\r") != NULL) strtok(line, "\r");
+		if(strstr(line, "\n") != NULL) strtok(line, "\n");
+		
 		if(FirstLine==NO) fputs("\n", fw);
 		fputs(line, fw);
+		
+		memset(line, 0, 255);
 		FirstLine=NO;
 	}
 	
@@ -19294,7 +20750,7 @@ void remove_from_list(char *file_path, char *str)
 {
 	FILE* fr;
 	FILE* fw;
-	char line[255];
+	char line[255] = {0};
 	char temp[255];
 	
 	strcpy(temp, file_path);
@@ -19308,54 +20764,17 @@ void remove_from_list(char *file_path, char *str)
 	uint8_t FirstLine = YES;
 	
 	while(fgets(line, 255, fr) != NULL) {
-		if(line[0]=='\r' || line[0]=='\n') continue;
-		strtok(line, "\r\n");
-		if(strcmp(line, str) == 0) continue;
-		if(FirstLine==NO) fputs("\n", fw);
-		fputs(line, fw);
-		FirstLine=NO;
-	}
-	
-	fclose(fr);
-	fclose(fw);
-	
-	unlink(file_path);
-	rename(temp, file_path);
-}
-
-void plugins_move(char *file_path, char *plugin_dir)
-{
-	FILE* fr;
-	FILE* fw;
-	char line[255];
-	char temp[255];
-	
-	char Plug_NEW[255];
-	
-	int len = strlen(plugin_dir);
-	
-	strcpy(temp, file_path);
-	strcat(temp, "_temp");
-	
-	fr=fopen(file_path, "rb");
-	if(fr==NULL) return;
-	fw=fopen(temp, "wb");
-	if(fw==NULL) return;
-	
-	uint8_t FirstLine = YES;
-	
-	while(fgets(line, 255, fr) != NULL) {
-		if(line[0]=='\r' || line[0]=='\n') continue;
-		strtok(line, "\r\n");
+		if(line[0]=='\r' || line[0]=='\n') {memset(line, 0, 255); continue; }
 		
-		if(strncmp(line, plugin_dir, len) != 0) {
-			sprintf(Plug_NEW, "%s/%s", plugin_dir, &strrchr(line, '/')[1]);
-			if( Move(line, Plug_NEW) == SUCCESS) strcpy(line, Plug_NEW);
-		}
+		if(strstr(line, "\r") != NULL) strtok(line, "\r");
+		if(strstr(line, "\n") != NULL) strtok(line, "\n");
+		
+		if(strcmp(line, str) == 0) {memset(line, 0, 255); continue;}
 		
 		if(FirstLine==NO) fputs("\n", fw);
 		fputs(line, fw);
 		FirstLine=NO;
+		memset(line, 0, 255);
 	}
 	
 	fclose(fr);
@@ -19368,51 +20787,53 @@ void plugins_move(char *file_path, char *plugin_dir)
 // *** ICONS ***
 void DrawIcon_Directory(float x, float y, float z)
 {
-	// CONTENT_FSIZE = 15;
-	
+	float k = LINE_H/LINE_H1;
 	if(PICTURE_offset[FOLDER] != 0) {
 		tiny3d_SetTexture(0, PICTURE_offset[FOLDER], PICTURE[FOLDER].width, PICTURE[FOLDER].height, PICTURE[FOLDER].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x+1, y+1, z, 0, 13, 13, WHITE, YES);
+		Draw_Box(x+1*k, y+1*k, z, 0, 13*k, 13*k, WHITE, YES);
 	} else {
+		float k = LINE_H/LINE_H1;
+		
 		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+1 , y+1 , z);
+		tiny3d_VertexPos(x+1*k , y+1*k , z);
 		tiny3d_VertexColor(0xFFC90EFF);
-		tiny3d_VertexPos(x+11 , y+1 , z);
-		tiny3d_VertexPos(x+11 , y+6 , z);
-		tiny3d_VertexPos(x+13 , y+8 , z);
-		tiny3d_VertexPos(x+13 , y+12 , z);
-		tiny3d_VertexPos(x+1  , y+12 , z);
+		tiny3d_VertexPos(x+11*k , y+1*k , z);
+		tiny3d_VertexPos(x+11*k , y+6*k , z);
+		tiny3d_VertexPos(x+13*k , y+8*k , z);
+		tiny3d_VertexPos(x+13*k , y+12*k , z);
+		tiny3d_VertexPos(x+1*k  , y+12*k , z);
 		tiny3d_End();
+		
 		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+1 , y+1 , z);
+		tiny3d_VertexPos(x+1*k , y+1*k , z);
 		tiny3d_VertexColor(0xFFE280FF);
-		tiny3d_VertexPos(x+7 , y+3 , z);
-		tiny3d_VertexPos(x+7 , y+14 , z);
-		tiny3d_VertexPos(x+1 , y+12 , z);
+		tiny3d_VertexPos(x+7*k , y+3*k , z);
+		tiny3d_VertexPos(x+7*k , y+14*k , z);
+		tiny3d_VertexPos(x+1*k , y+12*k , z);
 		tiny3d_End();
 
 		tiny3d_SetPolygon(TINY3D_LINES);
-		tiny3d_VertexPos(x+1 , y+1 , z);
+		tiny3d_VertexPos(x+1*k , y+1*k , z);
 		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(x+11 , y+1 , z);
-		tiny3d_VertexPos(x+11 , y+6 , z);
-		tiny3d_VertexPos(x+13 , y+8 , z);
-		tiny3d_VertexPos(x+13 , y+12 , z);
-		tiny3d_VertexPos(x+7  , y+12 , z);
+		tiny3d_VertexPos(x+11*k , y+1*k , z);
+		tiny3d_VertexPos(x+11*k , y+6*k , z);
+		tiny3d_VertexPos(x+13*k , y+8*k , z);
+		tiny3d_VertexPos(x+13*k , y+12*k , z);
+		tiny3d_VertexPos(x+7 *k , y+12*k , z);
 		tiny3d_End();
 
 		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(x+1 , y+1 , z);
+		tiny3d_VertexPos(x+1*k , y+1*k , z);
 		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(x+7 , y+3 , z);
-		tiny3d_VertexPos(x+7 , y+14 , z);
-		tiny3d_VertexPos(x+1 , y+12 , z);
+		tiny3d_VertexPos(x+7*k , y+3*k , z);
+		tiny3d_VertexPos(x+7*k , y+14*k , z);
+		tiny3d_VertexPos(x+1*k , y+12*k , z);
 		tiny3d_End();
 
 		tiny3d_SetPolygon(TINY3D_LINES);
-		tiny3d_VertexPos(x+12 , y+9 , z);
+		tiny3d_VertexPos(x+12*k , y+9*k , z);
 		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(x+12 , y+11 , z);
+		tiny3d_VertexPos(x+12*k , y+11*k , z);
 		tiny3d_End();
 	}
 
@@ -19420,33 +20841,34 @@ void DrawIcon_Directory(float x, float y, float z)
 
 void DrawIcon_File(float x, float y, float z, u32 color)
 {
-	// CONTENT_FSIZE = 15
+	float k = LINE_H/LINE_H1;
 	
 	if(PICTURE_offset[FILES] != 0) {
 		tiny3d_SetTexture(0, PICTURE_offset[FILES], PICTURE[FILES].width, PICTURE[FILES].height, PICTURE[FILES].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x+1, y+1, z, 0, 13, 13, color, YES);
+		Draw_Box(x+1*k, y+1*k, z, 0, 13*k, 13*k, color, YES);
 	} else {
+		
 		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+2 , y+1 , z);
+		tiny3d_VertexPos(x+2*k , y+1*k , z);
 		tiny3d_VertexColor(color);
-		tiny3d_VertexPos(x+10, y+1 , z);
-		tiny3d_VertexPos(x+13, y+4 , z);
-		tiny3d_VertexPos(x+13, y+14 , z);
-		tiny3d_VertexPos(x+2 , y+14 , z);
+		tiny3d_VertexPos(x+10*k, y+1*k , z);
+		tiny3d_VertexPos(x+13*k, y+4*k , z);
+		tiny3d_VertexPos(x+13*k, y+14*k , z);
+		tiny3d_VertexPos(x+2*k , y+14*k , z);
 		tiny3d_End();
 		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(x+2 , y+1 , z);
+		tiny3d_VertexPos(x+2*k , y+1*k , z);
 		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(x+10, y+1 , z);
-		tiny3d_VertexPos(x+13, y+4 , z);
-		tiny3d_VertexPos(x+13, y+14 , z);
-		tiny3d_VertexPos(x+2 , y+14 , z);
+		tiny3d_VertexPos(x+10*k, y+1*k , z);
+		tiny3d_VertexPos(x+13*k, y+4*k , z);
+		tiny3d_VertexPos(x+13*k, y+14*k , z);
+		tiny3d_VertexPos(x+2 *k, y+14*k , z);
 		tiny3d_End();
 		tiny3d_SetPolygon(TINY3D_LINES);
-		tiny3d_VertexPos(x+10 , y+1 , z);
+		tiny3d_VertexPos(x+10*k , y+1*k , z);
 		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(x+10, y+4 , z);
-		tiny3d_VertexPos(x+13, y+4 , z);
+		tiny3d_VertexPos(x+10*k, y+4*k , z);
+		tiny3d_VertexPos(x+13*k, y+4*k , z);
 		tiny3d_End();
 	}
 	
@@ -19454,33 +20876,125 @@ void DrawIcon_File(float x, float y, float z, u32 color)
 
 void DrawIcon_TXT(float x, float y, float z, u32 color)
 {
+	float k = LINE_H/LINE_H1;
+	
 	DrawIcon_File(x, y, z, WHITE);
 	
 	tiny3d_SetPolygon(TINY3D_LINES);
-	tiny3d_VertexPos(x+2 , y+6 , z);
+	tiny3d_VertexPos(x+5*k , y+6*k , z);
 	tiny3d_VertexColor(BLUE);
-	tiny3d_VertexPos(x+13, y+6 , z);
+	tiny3d_VertexPos(x+12*k, y+6*k , z);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_LINES);
-	tiny3d_VertexPos(x+2 , y+8 , z);
+	tiny3d_VertexPos(x+5*k , y+8*k , z);
 	tiny3d_VertexColor(BLUE);
-	tiny3d_VertexPos(x+13, y+8 , z);
+	tiny3d_VertexPos(x+12*k, y+8*k , z);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_LINES);
-	tiny3d_VertexPos(x+2 , y+10 , z);
+	tiny3d_VertexPos(x+5*k , y+10*k , z);
 	tiny3d_VertexColor(BLUE);
-	tiny3d_VertexPos(x+13, y+10 , z);
+	tiny3d_VertexPos(x+12*k, y+10*k , z);
 	tiny3d_End();
 	
 	tiny3d_SetPolygon(TINY3D_LINES);
-	tiny3d_VertexPos(x+2 , y+12 , z);
+	tiny3d_VertexPos(x+5*k, y+12*k , z);
 	tiny3d_VertexColor(BLUE);
-	tiny3d_VertexPos(x+13, y+12 , z);
+	tiny3d_VertexPos(x+12*k, y+12*k , z);
 	tiny3d_End();
 
 }
+
+void DrawIcon(float x, float y, float z, u8 pic, u32 color, u8 lock)
+{
+	float k = LINE_H/LINE_H1;
+	
+	if(PICTURE_offset[pic] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[pic], PICTURE[pic].width, PICTURE[pic].height, PICTURE[pic].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x+k, y+k, z, 0, 13*k, 13*k, color, YES);
+	} else {
+		DrawIcon_File(x, y, z, color);
+	}
+	
+	if(lock) {
+		if(PICTURE_offset[LOCK] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[LOCK], PICTURE[LOCK].width, PICTURE[LOCK].height, PICTURE[LOCK].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x+(3*LINE_H)/4-LINE_H/8, y+(3*LINE_H)/4-LINE_H/8, z, 0, LINE_H/4, LINE_H/4, WHITE, YES);
+		} else {
+			Draw_Box(x+(3*LINE_H)/4-LINE_H/8, y+(3*LINE_H)/4-LINE_H/8, z, 0, LINE_H/4, LINE_H/4, RED, YES);
+		}
+	}
+}
+
+void Draw_CloseBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[CLOSE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[CLOSE], PICTURE[CLOSE].width, PICTURE[CLOSE].height, PICTURE[CLOSE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
+		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexPos(x+4 , y+3 , z);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos(x+10, y+9 , z);
+		tiny3d_VertexPos(x+16, y+3 , z);
+		tiny3d_VertexPos(x+17, y+4 , z);
+		tiny3d_VertexPos(x+11, y+10, z);
+		tiny3d_VertexPos(x+17, y+16, z);
+		tiny3d_VertexPos(x+16, y+17, z);
+		tiny3d_VertexPos(x+10, y+11, z);
+		tiny3d_VertexPos(x+4 , y+17, z);
+		tiny3d_VertexPos(x+3 , y+16, z);
+		tiny3d_VertexPos(x+9 , y+10, z);
+		tiny3d_VertexPos(x+3 , y+4 , z);
+		tiny3d_End();
+		
+	}
+}
+
+void Draw_MinimizeBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[MINIMIZE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[MINIMIZE], PICTURE[MINIMIZE].width, PICTURE[MINIMIZE].height, PICTURE[MINIMIZE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
+		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexPos(x+3 , y+7  , z);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos(x+5 , y+7  , z);
+		tiny3d_VertexPos(x+10, y+12 , z);
+		tiny3d_VertexPos(x+15, y+7  , z);
+		tiny3d_VertexPos(x+17, y+7  , z);
+		tiny3d_VertexPos(x+10, y+14 , z);
+	}
+}
+
+void Draw_MaximizeBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[MAXIMIZE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[MAXIMIZE], PICTURE[MAXIMIZE].width, PICTURE[MAXIMIZE].height, PICTURE[MAXIMIZE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
+		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexPos(x+3 , y+13 , z);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos(x+10, y+6  , z);
+		tiny3d_VertexPos(x+17, y+13 , z);
+		tiny3d_VertexPos(x+15, y+13 , z);
+		tiny3d_VertexPos(x+10, y+8  , z);
+		tiny3d_VertexPos(x+5 , y+13 , z);
+	}
+}
+
 
 //**** DOCK ****
 
@@ -19490,16 +21004,21 @@ void DrawIcon_TXT(float x, float y, float z, u32 color)
 #define WINDOW_LOC_LEFT			3
 #define WINDOW_LOC_FULL			4
 
+#define WINDOW_LOC_W_DEFAULT	(500)
+#define WINDOW_LOC_H_DEFAULT	(TOP_H + COL_H1 + LINE_H1 * 15 + BORDER)
+#define WINDOW_LOC_X_DEFAULT	(X_MAX/2 - WINDOW_LOC_W_DEFAULT/2)
+#define WINDOW_LOC_Y_DEFAULT	((Y_MAX-45)/2 - WINDOW_LOC_H_DEFAULT/2)
+
 void SetWindowLocation(int WINDOW_LOC)
 {
 	switch(WINDOW_LOC)
 	{
 		case WINDOW_LOC_DEFAULT:
 		{
-			window_x[window_activ]=100+30*window_activ;
-			window_y[window_activ]=30+30*window_activ;
-			window_h[window_activ]=335;
-			window_w[window_activ]=500;
+			window_x[window_activ]=WINDOW_LOC_X_DEFAULT+30*window_activ;
+			window_y[window_activ]=WINDOW_LOC_Y_DEFAULT+30*window_activ;
+			window_h[window_activ]=WINDOW_LOC_H_DEFAULT;
+			window_w[window_activ]=WINDOW_LOC_W_DEFAULT;
 			break;
 		}
 		case WINDOW_LOC_RIGHT:
@@ -19533,10 +21052,10 @@ void SetWindowLocation(int WINDOW_LOC)
 
 u8 GetWindowLocation()
 {
-	if( window_x[window_activ]==100+30*window_activ
-	&&	window_y[window_activ]==30+30*window_activ
-	&&	window_h[window_activ]==335
-	&&	window_w[window_activ]==500) 
+	if( window_x[window_activ]==WINDOW_LOC_X_DEFAULT+30*window_activ
+	&&	window_y[window_activ]==WINDOW_LOC_Y_DEFAULT+30*window_activ
+	&&	window_h[window_activ]==WINDOW_LOC_H_DEFAULT
+	&&	window_w[window_activ]==WINDOW_LOC_W_DEFAULT) 
 		return WINDOW_LOC_DEFAULT;
 	else 
 	if(	window_x[window_activ]==X_MAX/2
@@ -19575,70 +21094,107 @@ void Draw_window()
 		if(window_activ==n) Draw_Box(window_x[n], window_y[n], window_z[n], 3, window_w[n], window_h[n], 0x4080D0FF, NO);
 		else Draw_Box(window_x[n], window_y[n], window_z[n], 3, window_w[n], window_h[n], 0x205070FF, NO);
 		
-		//TOP
 		
+		//TOP
 		char TOP_str[255];
-		FontSize(TOP_H/2);
+		FontSize(TOP_H_FONT);
 		FontColor(WHITE);
 		
 		strcpy(TOP_str, window_path[n]);
-		if(strcmp(TOP_str, "/") == 0 ) strcat(TOP_str, "root");
-		if( GetWidth(TOP_str) > window_w[n] - 50) {
-			sprintf(TOP_str, "...%s", strrchr(window_path[n], '/'));
-			while(GetWidth(TOP_str) > window_w[n] - 50) {
-				TOP_str[strlen(TOP_str)-1] = 0;
-				TOP_str[strlen(TOP_str)-1] = 0;
-				TOP_str[strlen(TOP_str)-1] = 0;
-				TOP_str[strlen(TOP_str)-1] = 0;
-				TOP_str[strlen(TOP_str)] = '.';
-				TOP_str[strlen(TOP_str)] = '.';
-				TOP_str[strlen(TOP_str)] = '.';
+		if(strcmp(TOP_str, "/") == 0) {
+			if(fm_LineSize==BIG) LINE_H = LINE_H1*2.0;
+			else LINE_H = LINE_H1;
+			
+			COL_H = 0;
+			strcpy(TOP_str, STR_ROOTLABEL);
+		} else {
+			COL_H = COL_H1;
+			LINE_H = LINE_H1;
+			if( WidthFromStr(TOP_str) > window_w[n] - BORDER-CLOSEBOX_W-DOCKBOX_W-5) {
+				sprintf(TOP_str, "...%s", strrchr(window_path[n], '/'));
+				while(WidthFromStr(TOP_str) > window_w[n] - BORDER-CLOSEBOX_W-DOCKBOX_W-5) {
+					TOP_str[strlen(TOP_str)-1] = 0;
+					TOP_str[strlen(TOP_str)-1] = 0;
+					TOP_str[strlen(TOP_str)-1] = 0;
+					TOP_str[strlen(TOP_str)-1] = 0;
+					TOP_str[strlen(TOP_str)] = '.';
+					TOP_str[strlen(TOP_str)] = '.';
+					TOP_str[strlen(TOP_str)] = '.';
+				}
 			}
 		}
-		DrawString(window_x[n]+BORDER, window_y[n]+10, TOP_str);
+		DrawString(window_x[n]+BORDER+5, window_y[n]+BORDER+3, TOP_str);
 		
 		//CLOSE BOX
-		Draw_Box(window_x[n]+window_w[n]-40, window_y[n]+10, window_z[n], 0, 30, 20, RED, NO);	
-		DrawStringFromCenterX(window_x[n]+window_w[n]-40+15, window_y[n]+11, "X");
-
-		//CONTENT BOX
-		FontSize(CONTENT_FSIZE);
-		FontColor(BLACK);
-
-		Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H, window_z[n], 0,  window_w[n]-BORDER*2, window_h[n]-TOP_H-BORDER, 0xF0F0F0FF, NO);
-		
-		//COLUMN HEADER BOX
-		Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H,  window_z[n], 0, window_w[n]-BORDER*2, COL_H, 0xD4DBEDFF, NO); 
-		DrawString(window_x[n]+BORDER+5, window_y[n]+TOP_H+3, STR_NAME);
-		
-		if(window_w_col_size[n]< COL_W_MIN) window_w_col_size[n]=COL_W_MIN;
-		if(window_w[n] - window_w_col_size[n] - BORDER*2 - SCROLL_W < COL_W_MIN) window_w_col_size[n] = window_w[n] - COL_W_MIN - BORDER*2 - SCROLL_W;
-		
-		tiny3d_SetPolygon(TINY3D_LINES);
-		tiny3d_VertexPos(window_x[n]+window_w[n] - BORDER-SCROLL_W-window_w_col_size[n], window_y[n]+TOP_H+2 , window_z[n]);
-		tiny3d_VertexColor(0x505050FF);
-		tiny3d_VertexPos(window_x[n]+window_w[n] - BORDER-SCROLL_W-window_w_col_size[n], window_y[n]+TOP_H+COL_H-2 , window_z[n]);
-		tiny3d_End();
-		
-		DrawString(window_x[n]+window_w[n]-BORDER-SCROLL_W-window_w_col_size[n] + 5, window_y[n]+TOP_H+3, STR_SIZE);
-		
+		if(n==window_activ) {
+			if( is_float_window() == NO) {
+				if( window_x[n]+window_w[n]-BORDER-CLOSEBOX_W < curs_x && curs_x < window_x[n]+window_w[n]-BORDER
+				&&  window_y[n]+BORDER						 	< curs_y && curs_y < window_y[n]+BORDER+CLOSEBOX_H )
+				{
+					Draw_Box(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W, window_y[n]+BORDER, window_z[n], 0, CLOSEBOX_W, CLOSEBOX_H, RED, NO);
+				}
+			}
+			Draw_CloseBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W/2-CLOSEBOX_H/2, window_y[n]+BORDER, window_z[n], CLOSEBOX_H, CLOSEBOX_H);
+			
+			//DOCK BOX
+			if( is_float_window() == NO) {
+				if( window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W < curs_x && curs_x < window_x[n]+window_w[n]-BORDER-CLOSEBOX_W
+				&&  window_y[n]+BORDER						 	< curs_y && curs_y < window_y[n]+BORDER+DOCKBOX_H )
+				{
+					Draw_Box(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W, window_y[n]+BORDER, window_z[n], 0, DOCKBOX_W, DOCKBOX_H,  OVERLAY_COLOR, NO);
+				}
+			}
+			if( GetWindowLocation() == WINDOW_LOC_FULL ) {
+				Draw_MinimizeBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W/2-DOCKBOX_H/2, window_y[n]+BORDER, window_z[n], DOCKBOX_H, DOCKBOX_H);		
+			} else {
+				Draw_MaximizeBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W/2-DOCKBOX_H/2, window_y[n]+BORDER, window_z[n], DOCKBOX_H, DOCKBOX_H);
+			}
+		}
+				
 		//SCROLL BAR
-		window_item_N[n] = ((window_h[n] - TOP_H-COL_H-BORDER) / CONTENT_FSIZE) - 1;
+		window_item_N[n] = ((window_h[n] - TOP_H-COL_H-BORDER) / LINE_H) - 1;
 		window_scroll_N[n] = 0;
 		if(window_content_N[n] > window_item_N[n] ) window_scroll_N[n] = window_content_N[n] - window_item_N[n];
 		if(window_scroll_P[n] > window_scroll_N[n]) window_scroll_P[n] = window_scroll_N[n];
+			
+		window_scroll_size[n] = (window_h[n]-TOP_H-COL_H-BORDER) - (SCROLL_H_MIN*window_scroll_N[n]);
+		if( window_scroll_size[n] < SCROLL_H_MIN ) window_scroll_size[n] = SCROLL_H_MIN;
 		
-		Draw_Box(window_x[n]+window_w[n]-BORDER-SCROLL_W, window_y[n]+TOP_H+COL_H, window_z[n],  0, SCROLL_W, window_h[n]-TOP_H-COL_H-BORDER, 0xD0D0D0FF, NO);
-
 		if(window_scroll_N[n]>0) {
-			window_scroll_size[n] = (window_h[n]-TOP_H-COL_H-BORDER) - (SCROLL_H_MIN*window_scroll_N[n]);
-			if( window_scroll_size[n] < SCROLL_H_MIN ) window_scroll_size[n] = SCROLL_H_MIN;
+			
+			SCROLL_W = SCROLL_W1;
 			
 			window_scroll_y[n]	= (window_h[n]-TOP_H-COL_H-window_scroll_size[n]-BORDER) * window_scroll_P[n] / window_scroll_N[n];
 			if(n==window_activ) window_scroll_y[n] += curs_move_scroll;
 			if(window_scroll_y[n] < 0) window_scroll_y[n]=0;
 			
-			Draw_Box(window_x[n]+window_w[n]-BORDER-SCROLL_W, window_y[n]+TOP_H+COL_H+window_scroll_y[n], window_z[n], 0, SCROLL_W, window_scroll_size[n], 0x9090C0FF, NO);
+			Draw_Box(window_x[n]+window_w[n]-BORDER-SCROLL_W, window_y[n]+TOP_H+COL_H, window_z[n],  0, SCROLL_W, window_h[n]-TOP_H-COL_H-BORDER, 0xD0D0D0FF, NO);
+			Draw_Box(window_x[n]+window_w[n]-BORDER-SCROLL_W, window_y[n]+TOP_H+COL_H+window_scroll_y[n], window_z[n], 0, SCROLL_W, window_scroll_size[n], 0x9090C0FF, NO);			
+		} else {
+			SCROLL_W = 0;
+		}
+		
+		//CONTENT BOX
+		Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H, window_z[n], 0,  window_w[n]-BORDER*2, window_h[n]-TOP_H-BORDER, 0xF0F0F0FF, NO);
+		
+		FontColor(BLACK);
+		if(strcmp(window_path[n], "/") != 0 ) {
+		
+			//COLUMN HEADER BOX
+			Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H,  window_z[n], 0, window_w[n]-BORDER*2, COL_H, 0xD4DBEDFF, NO); 
+			DrawString(window_x[n]+BORDER+5, window_y[n]+TOP_H+3, STR_NAME);
+			
+		
+			if(window_w_col_size[n]< COL_W_MIN) window_w_col_size[n]=COL_W_MIN;
+			if(window_w[n] - window_w_col_size[n] - BORDER*2 - SCROLL_W < COL_W_MIN) window_w_col_size[n] = window_w[n] - COL_W_MIN - BORDER*2 - SCROLL_W;
+					
+			tiny3d_SetPolygon(TINY3D_LINES);
+			tiny3d_VertexPos(window_x[n]+window_w[n] - BORDER-SCROLL_W-window_w_col_size[n], window_y[n]+TOP_H+2 , window_z[n]);
+			tiny3d_VertexColor(0x505050FF);
+			tiny3d_VertexPos(window_x[n]+window_w[n] - BORDER-SCROLL_W-window_w_col_size[n], window_y[n]+TOP_H+COL_H-2 , window_z[n]);
+			tiny3d_End();
+			
+			DrawString(window_x[n]+window_w[n]-BORDER-SCROLL_W-window_w_col_size[n] + 5, window_y[n]+TOP_H+3, STR_SIZE);
 		}
 		
 		// CONTENT
@@ -19646,246 +21202,723 @@ void Draw_window()
 		for(i=0 ; i<=window_item_N[n]; i++) {
 			if(window_content_N[n] < i+window_scroll_P[n]) break;
 			
-			if(  window_x[window_activ]+BORDER				        < curs_x && curs_x < window_x[window_activ]+window_w[window_activ]-BORDER-SCROLL_W
-			&&	 window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*i	< curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*(i+1)				
-			&& n==window_activ	&& option_activ == NO && prop_activ == NO)
-			{
-				Draw_Box(window_x[window_activ]+BORDER, window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[window_activ], 0, window_w[window_activ]-5-10-5, CONTENT_FSIZE,  0x00D0FFFF, NO);
+			if(n==window_activ) {
+				if( is_float_window() == NO) {
+					if(  window_x[n]+BORDER				    < curs_x && curs_x < window_x[n]+window_w[n]-BORDER-SCROLL_W
+					&&	 window_y[n]+TOP_H+COL_H+LINE_H*i	< curs_y && curs_y < window_y[n]+TOP_H+COL_H+LINE_H*(i+1) )
+					{
+						Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], 0,
+								 window_w[n]-BORDER-SCROLL_W-BORDER, LINE_H,  OVERLAY_COLOR, NO);
+					}
+				}
 			}
 			
 			if(window_content_Selected[n][i+window_scroll_P[n]] == YES) {
-				Draw_Box(window_x[n]+5, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], 0, window_w[n]-5-10-5, CONTENT_FSIZE,  0x0090FFFF, NO);
+				Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], 0, 
+						 window_w[n]-BORDER-SCROLL_W-BORDER, LINE_H,  0x0090FFFF, NO);
 			}
 			
-			DrawTXTInBox(window_x[n]+BORDER+ICON+5, 
-						 window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, 
+			if( strcmp(window_path[n], "/")==0) {
+				int j;
+				u8 found=NO;
+				for(j=0; j<=DevicesInfo_N; j++) {
+					if( strcmp(&DevicesInfo[j].MountPoint[1], window_content_Name[n][window_scroll_P[n]+i]) == 0) {								
+						found=YES;
+						break;
+					}
+				}
+				
+				// ------------------------------------------------------------
+				// TODO give a LABEL to dev_hdd0, dev_hdd1, dev_flash... etc. 
+				// Save them in mgz directory.
+				// ------------------------------------------------------------
+			
+				if( fm_LineSize == SMALL ) {
+					
+					FontSize(LINE_H);
+					
+					float Rx = window_x[n]+BORDER+LINE_H+5;
+					float Ry = window_y[n]+TOP_H+COL_H+LINE_H*i+1;
+					float Rw = window_w[n]- BORDER*2-SCROLL_W-LINE_H-5-5-5;
+					float Rx2 = Rx + Rw;
+							
+					char *RowLeft  =NULL;
+					char *RowRight =NULL;
+					
+					if(found) {
+						RowLeft = FM_GetContent(fm_Format[0], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);
+						RowRight = FM_GetContent(fm_Format[1], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);
+					} else {
+						RowLeft = strcpy_malloc(window_content_Name[n][window_scroll_P[n]+i]);
+					}
+					
+					float wrl = WidthFromStr(RowLeft);
+					float wrr = WidthFromStr(RowRight);
+					
+					if( Rx2 - wrr < Rx + wrl ) FREE(RowRight);
+					
+					if(RowLeft!=NULL) {
+						DrawTXTInBox(Rx, 
+									 Ry, 
+									 window_z[n], 
+									 Rw, 
+									 1, 
+									 RowLeft,
+									 0, BLACK);
+						FREE(RowLeft);
+					}
+					if(RowRight!=NULL) {
+						DrawTXTInBox(Rx2 - wrr, 
+									 Ry, 
+									 window_z[n], 
+									 wrr+5,
+									 1,
+									 RowRight, 
+									 0, BLACK);
+						FREE(RowRight);
+					}
+					
+				} else 
+				if( fm_LineSize == BIG ) {
+					float Rx = window_x[n]+BORDER+LINE_H+5;
+					float Ry = window_y[n]+TOP_H+COL_H+LINE_H*i+1;
+					float Rw = window_w[n]- BORDER*2-SCROLL_W-LINE_H-5-5-5;
+					float Rx2 = Rx + Rw;
+					
+					u8 outside = NO;
+					int k;		
+					for(k=0; k<=fm_RowNumber*2; k+=2) {
+						u8 f = FM_GetFormat(fm_Format[k]);
+						if(FM_FORMAT_CAPACITY <= f) {
+							if(fm_CapacityBarWidth != 0) Rx2 = Rx + fm_CapacityBarWidth;
+							if(f==FM_FORMAT_CAPACITY_MEMOUTSIDE) outside=YES;
+							break;
+						}
+					}
+					
+					for(k=0; k<=fm_RowNumber*2; k+=2) {
+						FontSize(fm_FontRowSize[k/2]);
+						u8 f = FM_GetFormat(fm_Format[k]);
+						
+						if(k!=0) Ry+=fm_FontRowSize[k/2]/4.0;
+						
+						if( f < FM_FORMAT_CAPACITY ) {
+							
+							char *RowLeft = NULL;
+							char *RowRight= NULL;
+							
+							if( found ) {
+								RowLeft = FM_GetContent(fm_Format[k], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);							
+								RowRight = FM_GetContent(fm_Format[k+1], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);
+							} else {
+								if(FM_FORMAT_MOUNTPOINT<=f) {
+									RowLeft = strcpy_malloc(window_content_Name[n][window_scroll_P[n]+i]);
+								}
+							}
+							float wrl = WidthFromStr(RowLeft);
+							float wrr = WidthFromStr(RowRight);
+					
+							if( outside == NO && Rx2 - wrr < Rx + wrl ) FREE(RowRight);
+							if( outside == YES && Rx2 < Rx + wrl) FREE(RowRight);
+							if( outside == YES && Rx + Rw < Rx2 + wrr) FREE(RowRight);
+							
+							if(RowLeft!=NULL) {
+								DrawTXTInBox(Rx, 
+											 Ry, 
+											 window_z[n], 
+											 Rw, 
+											 1, 
+											 RowLeft, 
+											 0, BLACK);
+								FREE(RowLeft);
+							}
+							if(RowRight!=NULL) {
+								float wr = 3 ;
+								if( outside == NO ) wr = -wrr;
+								DrawTXTInBox(Rx2 + wr, 
+											 Ry, 
+											 window_z[n], 
+											 wrr+5, 
+											 1, 
+											 RowRight, 
+											 0, BLACK);
+								FREE(RowRight);
+							}							
+						} 
+						else 
+						if( FM_FORMAT_CAPACITY <= f && found) {
+							if( DevicesInfo[j].TotalSpace != 0 ) {
+								float wc = fm_CapacityBarWidth;
+								if( wc == 0 ) wc = Rw;
+								float xc = 5.0;
+								if(outside) xc = wc + 3;
+								if(Rx + Rw < Rx + wc ) wc = Rw;
+								
+								DrawCapacityBar(Rx, 
+												Ry, 
+												window_z[n],
+												wc, 
+												fm_FontRowSize[k/2] - fm_FontRowSize[k/2]/6.0, 
+												DevicesInfo[j].TotalSpace, 
+												DevicesInfo[j].FreeSpace); 
+								
+								if ( FM_FORMAT_CAPACITY != f ) 
+								{
+									char MemRow[128];
+									char *Total_str = get_unit(DevicesInfo[j].TotalSpace);
+									char *Free_str = get_unit(DevicesInfo[j].FreeSpace);
+									sprintf(MemRow, "%s %s %s", Free_str, STR_FREEOF, Total_str);
+									FREE(Total_str);
+									FREE(Free_str);
+									
+									float Rcy = Ry;
+									if(outside) {
+										if( Rx + Rw < Rx + xc + WidthFromStr(MemRow)) Rcy = -50;
+									}
+																		
+									DrawTXTInBox(Rx+xc,
+												 Rcy,
+												 window_z[n], 
+												 wc, 1, MemRow, 0, BLACK);
+								}
+							
+							}
+						}
+						
+						
+						Ry+=fm_FontRowSize[k/2] - fm_FontRowSize[k/2]/4.0;
+					}
+				}
+				
+				// ICONS
+				if( fm_CustomIcons == NO) {
+				
+					u8 ext = window_content_Type[n][window_scroll_P[n]+i];
+			
+					if(ext == _DIRECTORY) {
+						DrawIcon_Directory(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n]);
+					} else {
+						DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
+					}
+				} else {
+				
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_hdd", 7)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], HDD, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_usb", 7)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], USB, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "ntfs", 4)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], USB, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_bdvd", 8)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS3, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_ps2disk", 11)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS2, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_flash", 9)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_blind", 9)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_rebug", 9)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_rewrite", 9)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
+					} else 
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "app_home", 8)==0) {
+						if( window_content_Type[n][window_scroll_P[n]+i] == _ISO_PS3) {
+							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS3, WHITE, DevicesInfo[j].ReadOnly);
+						} else {
+							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], APP_HOME, WHITE, DevicesInfo[j].ReadOnly);
+						}
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "host_root", 8)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], HOST_ROOT, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_cf", 6)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], CF, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_ms", 6)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], MS, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_sd", 6)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], SD, WHITE, DevicesInfo[j].ReadOnly);
+					} else
+					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_simple_hdd", 14)==0) {
+						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], HDD, WHITE, DevicesInfo[j].ReadOnly);
+					} else {
+						DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
+					}
+				}
+				
+				continue;
+			}
+						
+			DrawTXTInBox(window_x[n]+BORDER+LINE_H+5, 
+						 window_y[n]+TOP_H+COL_H+LINE_H*i, 
 						 window_z[n], 
-						 window_w[n]- BORDER*2-SCROLL_W-window_w_col_size[n]-ICON-5-5-5, 
+						 window_w[n]- BORDER*2-SCROLL_W-window_w_col_size[n]-LINE_H-5-5-5, 
 						 1, 
 						 window_content_Name[n][window_scroll_P[n]+i], 
 						 0, BLACK);
+							 
 			
-			if(window_content_Type[n][window_scroll_P[n]+i] != _DIRECTORY) {
+			if(window_content_Type[n][window_scroll_P[n]+i] != _DIRECTORY && strcmp(window_path[n], "/") != 0) {
 				char *size_str = get_unit(window_content_Size[n][window_scroll_P[n]+i]);
-				float size_str_w = GetWidth(size_str);
-				DrawString(window_x[n]+window_w[n]-BORDER-SCROLL_W-size_str_w - 5  , window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, size_str);
+				float size_str_w = WidthFromStr(size_str);
+				DrawString(window_x[n]+window_w[n]-BORDER-SCROLL_W-size_str_w - 5  , window_y[n]+TOP_H+COL_H+LINE_H*i, size_str);
 				free(size_str);
 			}
-			
+		
+		
 			u8 ext = window_content_Type[n][window_scroll_P[n]+i];
 			
 			if(ext == _DIRECTORY) {
-				DrawIcon_Directory(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n]);
-			} 
-			else if(ext == _PNG || ext == _JPG) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], GREEN);
+				DrawIcon_Directory(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n]);
+			} else
+			if(ext == _PNG || ext == _JPG) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], GREEN);
+			} else
+			if(ext == _SELF || ext == _SPRX || ext == _EBOOT_BIN) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], RED);
+			} else
+			if(ext == _ELF || ext == _PRX || ext == _EBOOT_ELF) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], ORANGE);
+			} else
+			if(ext == _PKG) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], BLUE);
+			} else
+			if(ext == _RCO) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], PURPLE);
+			} else
+			if(ext == _TRP) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], PINK);
+			} else
+			if(ext == _SFO) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], GREY);
+			} else
+			if(can_read(ext)) {
+				DrawIcon_TXT(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
+			} else
+			if(ext == _ISO) {
+				Draw_DISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], LINE_H, COLOR_ISO);
+			} else {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
 			}
-			else if(ext == _SELF || ext == _SPRX || ext == _EBOOT_BIN) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], RED);
-			}
-			else if(ext == _ELF || ext == _PRX || ext == _EBOOT_ELF) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], ORANGE);
-			}
-			else if(ext == _PKG) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], BLUE);
-			}
-			else if(ext == _RCO) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], PURPLE);
-			}
-			else if(ext == _TRP) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], PINK);
-			}
-			else if(ext == _SFO) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], GREY);
-			}
-			else if(can_read(ext)==YES) {
-				DrawIcon_TXT(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], WHITE);
-			}
-			else if(ext == _ISO) {
-				Draw_DISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], 16, COLOR_ISO);
-			}
-			else if(ext == _ISO_PS3) {
-				Draw_GAMEDISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], 16, _ISO_PS3);
-			}
-			else if(ext == _ISO_PS2) {
-				Draw_GAMEDISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], 16, _ISO_PS2);
-			}
-			else if(ext == _ISO_PS1) {
-				Draw_GAMEDISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], 16, _ISO_PS1);
-			}
-			else if(ext == _ISO_PSP) {
-				Draw_GAMEDISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], 16, _ISO_PSP);
-			}
-			else DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+CONTENT_FSIZE*i, window_z[n], WHITE);
-			
 		}
 	}
 }
 
 void Draw_cursor()
 {	
-	if(loading) return; 
+	if(loading) return;
+	if(picture_viewer_activ) return;
+	
+	// main colors, separated here because eventually can be passed as arguments of the function
+	u32 cci = 0xffffffff; // cursor color in
+	u32 cco = 0x000000ff; // cursor color out
+	u32 ccp = 0x70ff70ff; // cursor color push
+	
+	// shadow colors, separated here for alpha tests
+	u32 sci = 0x00000080; // shadow color in
+	u32 sco = 0x00000040; // shadow color out
+	
+	if(curs_push == YES) cci = ccp;
 	
 	if(window_resize_H == YES) {
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x-9 , curs_y , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x-5 , curs_y-4 , 0);
-		tiny3d_VertexPos(curs_x-5 , curs_y+4 , 0);
-		tiny3d_End();
-		
-		if(curs_push==YES) Draw_Box(curs_x-5, curs_y-1, 0, 0, 10, 2, RED, NO); else Draw_Box(curs_x-5, curs_y-1, 0, 0, 10, 2, WHITE, NO);
-		
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x+9 , curs_y , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x+5 , curs_y-4 , 0);
-		tiny3d_VertexPos(curs_x+5 , curs_y+4 , 0);
-		tiny3d_End();
-		
-		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(curs_x-9 , curs_y , 0);
-		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(curs_x-5 , curs_y-4 , 0);
-		tiny3d_VertexPos(curs_x-5 , curs_y-1 , 0);
-		tiny3d_VertexPos(curs_x+5 , curs_y-1 , 0);
-		tiny3d_VertexPos(curs_x+5 , curs_y-4 , 0);
-		tiny3d_VertexPos(curs_x+9 , curs_y , 0);
-		tiny3d_VertexPos(curs_x+5 , curs_y+4 , 0);
-		tiny3d_VertexPos(curs_x+5 , curs_y+1 , 0);
-		tiny3d_VertexPos(curs_x-5 , curs_y+1 , 0);
-		tiny3d_VertexPos(curs_x-5 , curs_y+4 , 0);
-		tiny3d_End();
+		if(PICTURE_offset[CURSOR_H] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[CURSOR_H], PICTURE[CURSOR_H].width, PICTURE[CURSOR_H].height, PICTURE[CURSOR_H].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(curs_x-12.5, curs_y-5.5, 0, 0, 25, 11, cci, YES);
+		}
+		else {
+			// shadows
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x-4 , curs_y+3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-3 , curs_y+3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x-4 , curs_y-3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-3 , curs_y-3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x+4 , curs_y+3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+5 , curs_y+3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+8 , curs_y   , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+9 , curs_y   , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+4 , curs_y-3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+5 , curs_y-3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			
+			// heads
+			tiny3d_SetPolygon(TINY3D_TRIANGLES);
+			tiny3d_VertexPos(curs_x-8 , curs_y   , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x-4 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x-4 , curs_y-3 , 0);
+			tiny3d_VertexPos(curs_x+8 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y-3 , 0);
+			tiny3d_End();
+			
+			// shaft
+			tiny3d_SetPolygon(TINY3D_TRIANGLE_STRIP);
+			tiny3d_VertexPos(curs_x-4 , curs_y+1 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x+4 , curs_y+1 , 0);
+			tiny3d_VertexPos(curs_x-4 , curs_y-1 , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y-1 , 0);
+			tiny3d_End();
+			
+			// outline
+			tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+			tiny3d_VertexPos(curs_x-8 , curs_y   , 0);
+			tiny3d_VertexColor(cco);
+			tiny3d_VertexPos(curs_x-4 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x-4 , curs_y+1 , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y+1 , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x+8 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y-3 , 0);
+			tiny3d_VertexPos(curs_x+4 , curs_y-1 , 0);
+			tiny3d_VertexPos(curs_x-4 , curs_y-1 , 0);
+			tiny3d_VertexPos(curs_x-4 , curs_y-3 , 0);
+			tiny3d_End();
+		}
 	} else 
 	if(window_resize_V == YES) {
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x   , curs_y-9 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x-4 , curs_y-5 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y-5 , 0);
-		tiny3d_End();
-		if(curs_push==YES) Draw_Box(curs_x-1, curs_y-5, 0, 0, 2, 10, RED, NO); else Draw_Box(curs_x-1, curs_y-5, 0, 0, 2, 10, WHITE, NO);
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x   , curs_y+9 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x-4 , curs_y+5 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y+5 , 0);
-		tiny3d_End();
-		
-		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(curs_x   , curs_y-9 , 0);
-		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(curs_x-4 , curs_y-5 , 0);
-		tiny3d_VertexPos(curs_x-1 , curs_y-5 , 0);
-		tiny3d_VertexPos(curs_x-1 , curs_y+5 , 0);
-		tiny3d_VertexPos(curs_x-4 , curs_y+5 , 0);
-		tiny3d_VertexPos(curs_x   , curs_y+9 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y+5 , 0);
-		tiny3d_VertexPos(curs_x+1 , curs_y+5 , 0);
-		tiny3d_VertexPos(curs_x+1 , curs_y-5 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y-5 , 0);
-		tiny3d_End();
+		if(PICTURE_offset[CURSOR_V] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[CURSOR_V], PICTURE[CURSOR_V].width, PICTURE[CURSOR_V].height, PICTURE[CURSOR_V].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(curs_x-5.5, curs_y-12.5, 0, 0, 11, 25, cci, YES);
+		}
+		else {
+			// shadows
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x   , curs_y-8 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+1 , curs_y-8 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+3 , curs_y-4 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+4 , curs_y-4 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x+1 , curs_y-4 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+2 , curs_y-4 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+1 , curs_y+4 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+2 , curs_y+4 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x+3 , curs_y+4 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+4 , curs_y+4 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x   , curs_y+8 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+1 , curs_y+8 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			
+			// heads
+			tiny3d_SetPolygon(TINY3D_TRIANGLES);
+			tiny3d_VertexPos(curs_x   , curs_y-8 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x-3 , curs_y-4 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y-4 , 0);
+			tiny3d_VertexPos(curs_x   , curs_y+8 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y+4 , 0);
+			tiny3d_VertexPos(curs_x-3 , curs_y+4 , 0);
+			tiny3d_End();
+			
+			// shaft
+			tiny3d_SetPolygon(TINY3D_TRIANGLE_STRIP);
+			tiny3d_VertexPos(curs_x-1 , curs_y+4 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x+1 , curs_y+4 , 0);
+			tiny3d_VertexPos(curs_x-1 , curs_y-4 , 0);
+			tiny3d_VertexPos(curs_x+1 , curs_y-4 , 0);
+			tiny3d_End();
+			
+			// outline
+			tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+			tiny3d_VertexPos(curs_x   , curs_y-8 , 0);
+			tiny3d_VertexColor(cco);
+			tiny3d_VertexPos(curs_x+3 , curs_y-4 , 0);
+			tiny3d_VertexPos(curs_x+1 , curs_y-4 , 0);
+			tiny3d_VertexPos(curs_x+1 , curs_y+4 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y+4 , 0);
+			tiny3d_VertexPos(curs_x   , curs_y+8 , 0);
+			tiny3d_VertexPos(curs_x-3 , curs_y+4 , 0);
+			tiny3d_VertexPos(curs_x-1 , curs_y+4 , 0);
+			tiny3d_VertexPos(curs_x-1 , curs_y-4 , 0);
+			tiny3d_VertexPos(curs_x-3 , curs_y-4 , 0);
+			tiny3d_End();
+		}
 	} else
 	if(window_resize_D1 == YES) {
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x-6 , curs_y-6 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x-6 , curs_y-2 , 0);
-		tiny3d_VertexPos(curs_x-2 , curs_y-6 , 0);
-		tiny3d_End();
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x-5 , curs_y-4 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x-4 , curs_y-5 , 0);
-		tiny3d_VertexPos(curs_x+5 , curs_y+4 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y+5 , 0);
-		tiny3d_End();
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x+6 , curs_y+6 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x+6 , curs_y+2 , 0);
-		tiny3d_VertexPos(curs_x+2 , curs_y+6 , 0);
-		tiny3d_End();
-		
-		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(curs_x-6 , curs_y-6 , 0);
-		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(curs_x-6 , curs_y-2 , 0);
-		tiny3d_VertexPos(curs_x-4 , curs_y-3 , 0);
-		tiny3d_VertexPos(curs_x+3 , curs_y+4 , 0);
-		tiny3d_VertexPos(curs_x+2 , curs_y+6 , 0);
-		tiny3d_VertexPos(curs_x+6 , curs_y+6 , 0);
-		tiny3d_VertexPos(curs_x+6 , curs_y+2 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y+3 , 0);
-		tiny3d_VertexPos(curs_x-3 , curs_y-4 , 0);
-		tiny3d_VertexPos(curs_x-2 , curs_y-6 , 0);
-		tiny3d_End();
-		
+		if(PICTURE_offset[CURSOR_D1] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[CURSOR_D1], PICTURE[CURSOR_D1].width, PICTURE[CURSOR_D1].height, PICTURE[CURSOR_D1].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(curs_x-9.5, curs_y-9.5, 0, 0, 19, 19, cci, YES);
+		}
+		else {
+			// shadows
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x-6 , curs_y-6 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-5 , curs_y-6 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x   , curs_y-5 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+1 , curs_y-5 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x-2 , curs_y-3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-1 , curs_y-3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+3 , curs_y+2 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+4 , curs_y+2 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x+5 , curs_y   , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+6 , curs_y   , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+6 , curs_y+6 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+7 , curs_y+6 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x-5 , curs_y   , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-4 , curs_y   , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x-3 , curs_y-2 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-2 , curs_y-2 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			
+			// heads
+			tiny3d_SetPolygon(TINY3D_TRIANGLES);
+			tiny3d_VertexPos(curs_x-6 , curs_y-6 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x   , curs_y-5 , 0);
+			tiny3d_VertexPos(curs_x-5 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x+6 , curs_y+6 , 0);
+			tiny3d_VertexPos(curs_x   , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x+5 , curs_y   , 0);
+			tiny3d_End();
+			
+			// shaft
+			tiny3d_SetPolygon(TINY3D_TRIANGLE_STRIP);
+			tiny3d_VertexPos(curs_x-3 , curs_y-2 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x+2 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x-2 , curs_y-3 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y+2 , 0);
+			tiny3d_End();
+			
+			// outline
+			tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+			tiny3d_VertexPos(curs_x-6 , curs_y-6 , 0);
+			tiny3d_VertexColor(cco);
+			tiny3d_VertexPos(curs_x   , curs_y-5 , 0);
+			tiny3d_VertexPos(curs_x-2 , curs_y-3 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y+2 , 0);
+			tiny3d_VertexPos(curs_x+5 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x+6 , curs_y+6 , 0);
+			tiny3d_VertexPos(curs_x   , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x+2 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x-3 , curs_y-2 , 0);
+			tiny3d_VertexPos(curs_x-5 , curs_y   , 0);
+			tiny3d_End();
+		}
 	} else
 	if(window_resize_D2 == YES) {
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x+6 , curs_y-6 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x+6 , curs_y-2 , 0);
-		tiny3d_VertexPos(curs_x+2 , curs_y-6 , 0);
-		tiny3d_End();
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x+5 , curs_y-4 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x+4 , curs_y-5 , 0);
-		tiny3d_VertexPos(curs_x-5 , curs_y+4 , 0);
-		tiny3d_VertexPos(curs_x-4 , curs_y+5 , 0);
-		tiny3d_End();
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(curs_x-6 , curs_y+6 , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x-6 , curs_y+2 , 0);
-		tiny3d_VertexPos(curs_x-2 , curs_y+6 , 0);
-		tiny3d_End();
-		
-		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(curs_x+6 , curs_y-6 , 0);
-		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(curs_x+6 , curs_y-2 , 0);
-		tiny3d_VertexPos(curs_x+4 , curs_y-3 , 0);
-		tiny3d_VertexPos(curs_x-3 , curs_y+4 , 0);
-		tiny3d_VertexPos(curs_x-2 , curs_y+6 , 0);
-		tiny3d_VertexPos(curs_x-6 , curs_y+6 , 0);
-		tiny3d_VertexPos(curs_x-6 , curs_y+2 , 0);
-		tiny3d_VertexPos(curs_x-4 , curs_y+3 , 0);
-		tiny3d_VertexPos(curs_x+3 , curs_y-4 , 0);
-		tiny3d_VertexPos(curs_x+2 , curs_y-6 , 0);
-		tiny3d_End();
+		if(PICTURE_offset[CURSOR_D2] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[CURSOR_D2], PICTURE[CURSOR_D2].width, PICTURE[CURSOR_D2].height, PICTURE[CURSOR_D2].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(curs_x-9.5, curs_y-9.5, 0, 0, 19, 19, cci, YES);
+		}
+		else {
+			// shadows
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x-6 , curs_y+6 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-5 , curs_y+6 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x   , curs_y+5 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+1 , curs_y+5 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x-2 , curs_y+3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-1 , curs_y+3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+3 , curs_y-2 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+4 , curs_y-2 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x+5 , curs_y   , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+6 , curs_y   , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+6 , curs_y-6 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+7 , curs_y-6 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x-5 , curs_y   , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-4 , curs_y   , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x-3 , curs_y+2 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x-2 , curs_y+2 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			
+			// heads
+			tiny3d_SetPolygon(TINY3D_TRIANGLES);
+			tiny3d_VertexPos(curs_x-6 , curs_y+6 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x-5 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x   , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x+6 , curs_y-6 , 0);
+			tiny3d_VertexPos(curs_x+5 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x   , curs_y-5 , 0);
+			tiny3d_End();
+			
+			// shaft
+			tiny3d_SetPolygon(TINY3D_TRIANGLE_STRIP);
+			tiny3d_VertexPos(curs_x-3 , curs_y+2 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x-2 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x+2 , curs_y-3 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y-2 , 0);
+			tiny3d_End();
+			
+			// outline
+			tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+			tiny3d_VertexPos(curs_x-6 , curs_y+6 , 0);
+			tiny3d_VertexColor(cco);
+			tiny3d_VertexPos(curs_x   , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x-2 , curs_y+3 , 0);
+			tiny3d_VertexPos(curs_x+3 , curs_y-2 , 0);
+			tiny3d_VertexPos(curs_x+5 , curs_y   , 0);
+			tiny3d_VertexPos(curs_x+6 , curs_y-6 , 0);
+			tiny3d_VertexPos(curs_x   , curs_y-5 , 0);
+			tiny3d_VertexPos(curs_x+2 , curs_y-3 , 0);
+			tiny3d_VertexPos(curs_x-3 , curs_y+2 , 0);
+			tiny3d_VertexPos(curs_x-5 , curs_y   , 0);
+			tiny3d_End();
+		}
 	}
 	else {
-		tiny3d_SetPolygon(TINY3D_TRIANGLES);
-		tiny3d_VertexPos(curs_x , curs_y , 0);
-		if(curs_push==YES) tiny3d_VertexColor(RED); else tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(curs_x  , curs_y + 15, 0);
-		tiny3d_VertexPos(curs_x+9, curs_y + 12, 0);
-		tiny3d_End();
-		tiny3d_SetPolygon(TINY3D_LINE_LOOP);
-		tiny3d_VertexPos(curs_x , curs_y , 0);
-		tiny3d_VertexColor(BLACK);
-		tiny3d_VertexPos(curs_x  , curs_y + 15, 0);
-		tiny3d_VertexPos(curs_x+9, curs_y + 12, 0);
-		tiny3d_End();
+		if(PICTURE_offset[CURSOR] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[CURSOR], PICTURE[CURSOR].width, PICTURE[CURSOR].height, PICTURE[CURSOR].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(curs_x+1, curs_y+1, 0, 0, 11, 17, cci, YES);
+		}
+		else {
+			// shadows
+			tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+			tiny3d_VertexPos(curs_x,    curs_y,    0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+1,  curs_y,    0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+9 , curs_y+3 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+10, curs_y+3 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+6 , curs_y+5 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+7 , curs_y+5 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+12, curs_y+11, 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+13, curs_y+11, 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+11, curs_y+12, 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+12, curs_y+12, 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_VertexPos(curs_x+5 , curs_y+6 , 0);
+			tiny3d_VertexColor(sci);
+			tiny3d_VertexPos(curs_x+6 , curs_y+6 , 0);
+			tiny3d_VertexColor(sco);
+			tiny3d_End();
+			
+			// head
+			tiny3d_SetPolygon(TINY3D_TRIANGLE_FAN);
+			tiny3d_VertexPos(curs_x, curs_y, 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x+3 , curs_y+9 , 0);
+			tiny3d_VertexPos(curs_x+5 , curs_y+6 , 0);
+			tiny3d_VertexPos(curs_x+6 , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x+9 , curs_y+3 , 0);
+			tiny3d_End();
+			
+			// shaft
+			tiny3d_SetPolygon(TINY3D_TRIANGLE_STRIP);
+			tiny3d_VertexPos(curs_x+5,  curs_y+6 , 0);
+			tiny3d_VertexColor(cci);
+			tiny3d_VertexPos(curs_x+6 , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x+11, curs_y+12, 0);
+			tiny3d_VertexPos(curs_x+12, curs_y+11, 0);
+			tiny3d_End();
+			
+			// outline
+			tiny3d_SetPolygon(TINY3D_LINE_LOOP);
+			tiny3d_VertexPos(curs_x , curs_y , 0);
+			tiny3d_VertexColor(cco);
+			tiny3d_VertexPos(curs_x+3 , curs_y+9 , 0);
+			tiny3d_VertexPos(curs_x+5 , curs_y+6 , 0);
+			tiny3d_VertexPos(curs_x+11, curs_y+12, 0);
+			tiny3d_VertexPos(curs_x+12, curs_y+11, 0);
+			tiny3d_VertexPos(curs_x+6 , curs_y+5 , 0);
+			tiny3d_VertexPos(curs_x+9 , curs_y+3 , 0);
+			tiny3d_End();
+		}
 	}
 }
 
-void sort()
+void sort(int window_id)
 {
+	if(window_id==-1) return;
+	
+	if(strcmp(window_path[window_id], "/") == 0) window_sort[window_id] = ASC;
+	
 	int min;
 	u8 t;
 	u64 t1;
 	int i, j;
-	
 	int Folder_N = -1;
 	int File_N = -1;
 	
-	for (i = 0; i<=window_content_N[window_activ]; i++) {
-		if(strcmp(window_content_Name[window_activ][i], "..") == 0) continue;
-		if(window_content_Type[window_activ][i] == _DIRECTORY) Folder_N++;
+	for (i = 0; i<=window_content_N[window_id]; i++) {
+		if(strcmp(window_content_Name[window_id][i], "..") == 0) continue;
+		if(window_content_Type[window_id][i] == _DIRECTORY) Folder_N++;
 		else File_N++;
 	}
 	
@@ -19897,17 +21930,17 @@ void sort()
 
 	Folder_N = -1;
 	File_N = -1;
-	for (i = 0; i<=window_content_N[window_activ]; i++) {
-		if(strcmp(window_content_Name[window_activ][i], "..") == 0) continue;
-		if(window_content_Type[window_activ][i] == _DIRECTORY) {
+	for (i = 0; i<=window_content_N[window_id]; i++) {
+		if(strcmp(window_content_Name[window_id][i], "..") == 0) continue;
+		if(window_content_Type[window_id][i] == _DIRECTORY) {
 			Folder_N++;
-			list_Dir[Folder_N] = strcpy_malloc(window_content_Name[window_activ][i]);
-			list_Dir_sel[Folder_N] = window_content_Selected[window_activ][i];
+			list_Dir[Folder_N] = strcpy_malloc(window_content_Name[window_id][i]);
+			list_Dir_sel[Folder_N] = window_content_Selected[window_id][i];
 		} else {
 			File_N++;
-			list_Fil[File_N] = strcpy_malloc(window_content_Name[window_activ][i]);
-			list_Fil_sel[File_N] = window_content_Selected[window_activ][i];
-			list_Fil_siz[File_N] = window_content_Size[window_activ][i];
+			list_Fil[File_N] = strcpy_malloc(window_content_Name[window_id][i]);
+			list_Fil_sel[File_N] = window_content_Selected[window_id][i];
+			list_Fil_siz[File_N] = window_content_Size[window_id][i];
 		}
 	}
 	
@@ -19923,7 +21956,7 @@ void sort()
 			tb = strcpy_malloc(list_Dir[min]);
 			if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
 			if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
-			if(window_sort[window_activ] == ASC) {
+			if(window_sort[window_id] == ASC) {
 				if(strcmp(ta, tb) < 0) min = j;
 			} else if(strcmp(ta, tb) > 0) min = j;
 		}
@@ -19950,7 +21983,7 @@ void sort()
 			tb = strcpy_malloc(list_Fil[min]);
 			if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
 			if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
-			if(window_sort[window_activ] == ASC) {
+			if(window_sort[window_id] == ASC) {
 				if(strcmp(ta, tb) < 0) min = j;
 			} else if(strcmp(ta, tb) > 0) min = j;
 		}
@@ -19976,42 +22009,42 @@ void sort()
 	FREE(tb);
 	
 	u32 n;
-	for(n=0; n<WINDOW_MAX_ITEMS; n++) FREE(window_content_Name[window_activ][n]);
+	for(n=0; n<WINDOW_MAX_ITEMS; n++) FREE(window_content_Name[window_id][n]);
 	
 	u8 Parent=NO;
-	if(strcmp(window_path[window_activ], "/") != 0) {
+	if(strcmp(window_path[window_id], "/") != 0) {
 		Parent=YES;
-		window_content_Name[window_activ][0] = strcpy_malloc("..");
-		window_content_Selected[window_activ][0] = NO;
-		window_content_Type[window_activ][0] = _DIRECTORY;
-		window_content_Size[window_activ][0] = 0;
+		window_content_Name[window_id][0] = strcpy_malloc("..");
+		window_content_Selected[window_id][0] = NO;
+		window_content_Type[window_id][0] = _DIRECTORY;
+		window_content_Size[window_id][0] = 0;
 	}
 
-	if(window_sort[window_activ] == ASC) {
+	if(window_sort[window_id] == ASC) {
 		for(j=0; j<=Folder_N; j++) {
-			window_content_Name[window_activ][j+Parent] = strcpy_malloc(list_Dir[j]);
-			window_content_Selected[window_activ][j+Parent] = list_Dir_sel[j];
-			window_content_Type[window_activ][j+Parent] = _DIRECTORY;
-			window_content_Size[window_activ][j+Parent] = 0;
+			window_content_Name[window_id][j+Parent] = strcpy_malloc(list_Dir[j]);
+			window_content_Selected[window_id][j+Parent] = list_Dir_sel[j];
+			window_content_Type[window_id][j+Parent] = _DIRECTORY;
+			window_content_Size[window_id][j+Parent] = 0;
 		}
 		for(j=0; j<=File_N; j++) {
-			window_content_Name[window_activ][j+Parent+Folder_N+1] = strcpy_malloc(list_Fil[j]);
-			window_content_Selected[window_activ][j+Parent+Folder_N+1] = list_Fil_sel[j];
-			window_content_Type[window_activ][j+Parent+Folder_N+1] = get_ext(list_Fil[j]);
-			window_content_Size[window_activ][j+Parent+Folder_N+1] = list_Fil_siz[j];
+			window_content_Name[window_id][j+Parent+Folder_N+1] = strcpy_malloc(list_Fil[j]);
+			window_content_Selected[window_id][j+Parent+Folder_N+1] = list_Fil_sel[j];
+			window_content_Type[window_id][j+Parent+Folder_N+1] = get_ext(list_Fil[j]);
+			window_content_Size[window_id][j+Parent+Folder_N+1] = list_Fil_siz[j];
 		}
 	} else {
 		for(j=0; j<=File_N; j++) {
-			window_content_Name[window_activ][j+Parent] = strcpy_malloc(list_Fil[j]);
-			window_content_Selected[window_activ][j+Parent] = list_Fil_sel[j];
-			window_content_Type[window_activ][j+Parent] = get_ext(list_Fil[j]);
-			window_content_Size[window_activ][j+Parent] = list_Fil_siz[j];
+			window_content_Name[window_id][j+Parent] = strcpy_malloc(list_Fil[j]);
+			window_content_Selected[window_id][j+Parent] = list_Fil_sel[j];
+			window_content_Type[window_id][j+Parent] = get_ext(list_Fil[j]);
+			window_content_Size[window_id][j+Parent] = list_Fil_siz[j];
 		}
 		for(j=0; j<=Folder_N; j++) {
-			window_content_Name[window_activ][j+Parent+File_N+1] = strcpy_malloc(list_Dir[j]);
-			window_content_Selected[window_activ][j+Parent+File_N+1] = list_Dir_sel[j];
-			window_content_Type[window_activ][j+Parent+File_N+1] = _DIRECTORY;
-			window_content_Size[window_activ][j+Parent+File_N+1] = 0;
+			window_content_Name[window_id][j+Parent+File_N+1] = strcpy_malloc(list_Dir[j]);
+			window_content_Selected[window_id][j+Parent+File_N+1] = list_Dir_sel[j];
+			window_content_Type[window_id][j+Parent+File_N+1] = _DIRECTORY;
+			window_content_Size[window_id][j+Parent+File_N+1] = 0;
 		}
 	}
 	
@@ -20022,34 +22055,38 @@ void sort()
 	free(list_Fil_sel);
 }
 
-void CloseWindow()
+void CloseWindow(int window_id)
 {
-	if(window_activ==-1) return;
+	if(window_id==-1) return;
 	
 	u32 i;
 	
-	FREE(window_path[window_activ]);
-	FREE(window_lastpath[window_activ]);	
-	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(window_content_Name[window_activ][i]);
-	FREE(window_content_Name[window_activ]);
-	FREE(window_content_Size[window_activ]);
-	FREE(window_content_Type[window_activ]);
-	FREE(window_content_Selected[window_activ]);
+	FREE(window_path[window_id]);
+	FREE(window_lastpath[window_id]);	
+	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(window_content_Name[window_id][i]);
+	FREE(window_content_Name[window_id]);
+	FREE(window_content_Size[window_id]);
+	FREE(window_content_Type[window_id]);
+	FREE(window_content_Selected[window_id]);
 	
-	window_open[window_activ] = NO;
-	window_activ=-1;
+	window_open[window_id] = NO;
 	
-	for(i=0; i<WINDOW_MAX; i++) {
-		if(window_open[i] == NO) continue;
-		if(window_activ==-1) window_activ=i; else
-		if(window_z[window_activ] > window_z[i]) window_activ=i; 
-	}
-	if(window_activ != -1) {
-		window_z[window_activ] = 1;
+	if(window_id == window_activ) {
+		
+		window_activ=-1;
+		
 		for(i=0; i<WINDOW_MAX; i++) {
 			if(window_open[i] == NO) continue;
-			if(i==window_activ) continue;
-			window_z[i]++;
+			if(window_activ==-1) window_activ=i; else
+			if(window_z[window_activ] > window_z[i]) window_activ=i; 
+		}
+		if(window_activ != -1) {
+			window_z[window_activ] = 1;
+			for(i=0; i<WINDOW_MAX; i++) {
+				if(window_open[i] == NO) continue;
+				if(i==window_activ) continue;
+				window_z[i]++;
+			}
 		}
 	}
 }
@@ -20104,77 +22141,62 @@ void UpdateLastPath()
     }
 }
 
-void Window(char *directory)
+void RefreshDevices()
 {
-	if(directory==NULL) {
-		if( OpenWindow() == FAILED) return;		
-	} 
-	else if( strcmp(directory, "..") == 0) {
-		if(window_activ==-1) return;
-		if(strcmp(window_path[window_activ], "/") == 0) return;
-		char temp[255];
-		strcpy(temp, window_path[window_activ]);
-		temp[strrchr(temp, '/') - temp] = 0;
-		memset(window_path[window_activ], 0, sizeof(window_path[window_activ]));
-		strcpy(window_path[window_activ], temp);
-		if(window_path[window_activ][0] == 0) window_path[window_activ][0] = '/';
-	}
-	else if(strcmp(directory, ".") == 0) {
-		if(window_activ==-1) return;
-		//refresh;
-	}
-	else {
-		if(window_activ==-1) return;
-		if(strcmp(window_path[window_activ], "/") != 0) {
-			strcat(window_path[window_activ], "/");
-		}
-		strcat(window_path[window_activ], directory);
-	}
-	
-	UpdateLastPath();
-	
-	if(window_activ==-1) return;
-	
-	MountNTFS();
-	
-	window_content_N[window_activ]=-1;
-	u32 n;
-	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
-		FREE(window_content_Name[window_activ][n]);
-		window_content_Type[window_activ][n] = _FILE;
-		window_content_Size[window_activ][n] = 0;
-		window_content_Selected[window_activ][n] = NO;
-	}
-	
-#ifdef RPCS3
-	if(strcmp(window_path[window_activ], "/") == 0) {
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd0");
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd1");
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_usb000");
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_flash");
-		return;
-	}
-#endif
-	
-	if(path_info("/dev_hdd1")==_NOT_EXIST) {
-		sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
-		sysFsAioInit("/dev_hdd1");
-	}
+	memset(DevicesInfo, 0, sizeof(DevicesInfo));
 	
 	char temp[512];
-	
+	DevicesInfo_N=-1;
 	DIR *d;
 	struct dirent *dir;
 	
-	d = opendir(window_path[window_activ]);
+	d = opendir("/");
+	if(d==NULL) return;
+	while ((dir = readdir(d))) {
+		if(strcmp(dir->d_name, ".")==0) continue;
+		if(strcmp(dir->d_name, "..")==0) continue; 
+		if(!strncmp(dir->d_name, "$", 1)) continue;
+		
+		DevicesInfo_N++;
+		sprintf(temp, "/%s/", dir->d_name);
+		GetDeviceInfo(temp, &DevicesInfo[DevicesInfo_N]);
+	}
+	closedir(d);
+	
+// can't see NTFS with opendir("/")
+	int r,i;
+	for(i = 0; i < 8 ; i++) {
+		r = -1;
+		sprintf(temp, "ntfs%c", 48+i);
+		r = NTFS_Test_Device(temp);
+		if(r>=0) {
+			sprintf(temp, "/ntfs%c:/", 48+i);
+			DevicesInfo_N++;
+			GetDeviceInfo(temp, &DevicesInfo[DevicesInfo_N]);
+		}
+	}
+}
+
+void RefreshWindow(window_id)
+{
+	char temp[512];
+	int n, i; 
+	if(window_open[window_id] == NO) return;
+		
+	// clear
+	window_content_N[window_id]=-1;
+	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
+		FREE(window_content_Name[window_id][n]);
+		window_content_Type[window_id][n] = _FILE;
+		window_content_Size[window_id][n] = 0;
+		window_content_Selected[window_id][n] = NO;
+	}
+	
+	// OpenDir
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir(window_path[window_id]);
 	if(d==NULL) return;
 	
 	while ((dir = readdir(d))) {
@@ -20182,48 +22204,144 @@ void Window(char *directory)
 		if(strcmp(dir->d_name, "..")==0) continue; // NTFS : added for all directories after
 		if(!strncmp(dir->d_name, "$", 1)) continue; // NTFS : ignore system files
 
-		if(window_content_N[window_activ] == WINDOW_MAX_ITEMS-1) {
+		if(window_content_N[window_id] == WINDOW_MAX_ITEMS-1) {
 			show_msg("Too many files...");
 			closedir(d);
-			sort();
+			sort(window_id);
 			return;
 		}
-		window_content_N[window_activ]++;
+		
+		window_content_N[window_id]++;
 		if(dir->d_type & DT_DIR) {
-			window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
-		} else {		
-			if(strcmp(window_path[window_activ], "/") != 0) {
-				sprintf(temp, "%s/%s", window_path[window_activ], dir->d_name);
-				window_content_Size[window_activ][window_content_N[window_activ]] = get_size(temp, NO);
+			window_content_Type[window_id][window_content_N[window_id]] = _DIRECTORY;
+			if(strcmp(window_path[window_id], "/") == 0) {
+				if(strcmp(dir->d_name, "app_home") == 0 || strcmp(dir->d_name, "dev_bdvd") == 0) {
+					sprintf(temp, "/%s", dir->d_name);
+					window_content_Type[window_id][window_content_N[window_id]] = get_ext(temp);
+				}
 			}
-			window_content_Type[window_activ][window_content_N[window_activ]] = get_ext(dir->d_name);
+		} else {
+			if(strcmp(window_path[window_id], "/") != 0) {
+				sprintf(temp, "%s/%s", window_path[window_id], dir->d_name);
+				window_content_Size[window_id][window_content_N[window_id]] = get_size(temp, NO);				
+			}
+			window_content_Type[window_id][window_content_N[window_id]] = get_ext(dir->d_name);
 		}
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc(dir->d_name);
+		window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc(dir->d_name);
 	}
 	closedir(d);
 	
-// can't see NTFS with opendir("/")
-	if(strcmp(window_path[window_activ], "/") == 0) {
-		
-		int r,i;
+	if(strcmp(window_path[window_id], "/") == 0) {
+		// can't see NTFS with opendir("/")
 		for(i = 0; i < 8 ; i++) {
-			r = -1;
+			n = -1;
 			sprintf(temp, "ntfs%c", 48+i);
-			r = NTFS_Test_Device(temp);
-			if(r>=0) {
-				window_content_N[window_activ]++;
-				window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+			n = NTFS_Test_Device(temp);
+			if(n>=0) {
+				window_content_N[window_id]++;
+				window_content_Type[window_id][window_content_N[window_id]]= _DIRECTORY;
 				sprintf(temp, "ntfs%c:", 48+i);
-				window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc(temp);
+				window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc(temp);
 			}
 		}
 	} else {
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("..");
+		window_content_N[window_id]++;
+		window_content_Type[window_id][window_content_N[window_id]]= _DIRECTORY;
+		window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc("..");
 	}
 	
-	sort();
+	sort(window_id);
+}
+
+void Window(char *directory)
+{
+	char temp[512];
+	
+	if(directory==NULL) {
+		if( OpenWindow() == FAILED) return;		
+	} else 
+	if(strcmp(directory, "..") == 0) {
+		if(window_activ==-1) return;
+		if(strcmp(window_path[window_activ], "/") == 0) return;
+		strcpy(temp, window_path[window_activ]);
+		temp[strrchr(temp, '/') - temp] = 0;
+		memset(window_path[window_activ], 0, sizeof(window_path[window_activ]));
+		strcpy(window_path[window_activ], temp);
+		if(window_path[window_activ][0] == 0) window_path[window_activ][0] = '/';
+	} else
+	if(strcmp(directory, ".") == 0) {
+		//refresh;
+		if(window_activ==-1) return;
+	} else {
+		if(window_activ==-1) return;
+		if(strcmp(window_path[window_activ], "/") != 0) {
+			strcat(window_path[window_activ], "/");
+		}
+		strcat(window_path[window_activ], directory);
+		UpdateLastPath();
+	}
+	
+#ifdef RPCS3
+	
+	window_content_N[window_activ]=-1;
+	int n;
+	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
+		FREE(window_content_Name[window_activ][n]);
+		window_content_Type[window_activ][n] = _FILE;
+		window_content_Size[window_activ][n] = 0;
+		window_content_Selected[window_activ][n] = NO;
+	}
+	
+	if(strcmp(window_path[window_activ], "/") == 0) {
+		DevicesInfo_N=-1;
+		memset(DevicesInfo, 0, sizeof(DevicesInfo));
+		
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd0");
+		DevicesInfo_N++;
+		GetDeviceInfo("/dev_hdd0/", &DevicesInfo[window_content_N[window_activ]]);
+		
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd1");
+		DevicesInfo_N++;
+		GetDeviceInfo("/dev_hdd1/", &DevicesInfo[window_content_N[window_activ]]);
+		
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_usb000");
+		DevicesInfo_N++;
+		GetDeviceInfo("/dev_usb000/", &DevicesInfo[window_content_N[window_activ]]);
+		
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_flash");
+		DevicesInfo_N++;
+		GetDeviceInfo("/dev_flash/", &DevicesInfo[window_content_N[window_activ]]);
+		
+// RPCS3 app_home = /dev_hdd0/game/MANAGUNZ0/USRDIR
+
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("app_home");
+		DevicesInfo_N++;
+		GetDeviceInfo("/app_home/", &DevicesInfo[window_content_N[window_activ]]);
+		
+		return;
+	}
+#endif
+		
+	MountNTFS();
+	
+	if(path_info("/dev_hdd1")==_NOT_EXIST) {
+		sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
+		//sysFsAioInit("/dev_hdd1");
+	}
+	
+	RefreshDevices();
+
+	RefreshWindow(window_activ);
 }
 
 void GotoLastPath()
@@ -20265,7 +22383,7 @@ void properties_input()
 {
 	if(prop_activ == NO) return;
 	
-	if(new_pad & BUTTON_CIRCLE)
+	if(NewPad(BUTTON_CIRCLE))
 	{
 		prop_activ=NO;
 		total_size=0;
@@ -20351,10 +22469,11 @@ void open_properties()
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = strcpy_malloc(window_path[window_activ]);
 	}
 	
-// TOFIX : GetWidth use DrawString : It can't be used here while the "loading thread" is running !
+// TOFIX : getWidth use DrawString : It can't be used here while the "loading thread" is running !
+// FIXED... need a test.
 /* 
 	int l = strlen(PROP_ITEM_VALUE[PROP_ITEM_NUMBER]); 
-	while((float) GetWidth(PROP_ITEM_VALUE[PROP_ITEM_NUMBER]) > (float) PROP_W - (float) PROP_COL_W - (float) 10.0f) {
+	while((float) WidthFromStr(PROP_ITEM_VALUE[PROP_ITEM_NUMBER]) > (float) PROP_W - (float) PROP_COL_W - (float) 10.0f) {
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-1]=0;
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-2]='.';
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-3]='.';
@@ -20426,7 +22545,8 @@ void picture_viewer_input()
 {
 	if(picture_viewer_activ == NO) return;
 	
-	if(new_pad & BUTTON_RIGHT) {	
+	if(NewPad(BUTTON_RIGHT))
+	{	
 		int flag=NO, i;
 		for(i=0; i<=window_content_N[window_activ]; i++) {
 			if(flag==YES) {
@@ -20440,7 +22560,8 @@ void picture_viewer_input()
 		}
 	}
 	
-	if(new_pad & BUTTON_LEFT) {	
+	if(NewPad(BUTTON_LEFT))
+	{	
 		int flag=NO, i;
 		for(i=window_content_N[window_activ]; i>0; i--) {
 			if(flag==YES) {
@@ -20454,7 +22575,7 @@ void picture_viewer_input()
 		}
 	}
 	
-	if(new_pad & BUTTON_CIRCLE)
+	if(NewPad(BUTTON_CIRCLE))
 	{
 		picture_viewer_activ=NO;
 		memset(TMP_PIC_path, 0, sizeof(TMP_PIC_path));
@@ -20515,79 +22636,65 @@ void open_picture_viewer(char *pict_path)
 
 //**** txt viewer ****
 
-void nextLine()
+float DrawTXTInBox(float x, float y, float z, float w, float h, char *string, u32 bg_color, u32 font_color)
 {
-	u64 i;
-	float xt=TXT_X;
-	for(i=txt_linpos; i < txt_viewer_content_size; i++) {
-		if(txt_viewer_content[i] == '\n'  || xt > TXT_X+TXT_W) {
-			txt_linpos = i+1;
-			return;
-		}
-		xt = DrawFormatString(xt, -50, "%c", txt_viewer_content[i]);
-	}
-}
-
-void prevLine()
-{
-	u64 i;
-	float xt=TXT_X;
-	if(txt_linpos == 0) return;
-	if(txt_linpos == 1) {
-		txt_linpos=0;
-		return;
-	}
-	for(i=txt_linpos-2; i >= 0; i--) {
-		if(txt_viewer_content[i] == '\n'  || xt > TXT_X+TXT_W) {
-			txt_linpos = i+1;
-			return;
-		}
-		if(i==0) {
-			txt_linpos=0;
-			return;
-		}
-		xt = DrawFormatString(xt, -50, "%c", txt_viewer_content[i]);
-	}
-}
-
-void DrawTXTInBox(float x, float y, float z, float w, float h, char *txt, u32 bg_color, u32 font_color)
-{
-	Draw_Box(x, y, z, 0, w, h, bg_color, NO);
+	if(y<0) return x;
+	
+	
 	SetFontZ(z);
 	FontColor(font_color);
-	float xt = x;
-	float yt = y;
-	u64 i, j;
-	u64 l = strlen(txt);
 	
-	for(i=0; i < l ; i++) {
-		if(txt[i] == '\r') continue;
-		if(txt[i] == '\n') {
-			xt = x; 
-			yt+=new_line(1);
-			continue;
-		} 
-		else if(txt[i] == '\t') {
-			for(j=x; j < x+w; j+=30) {
-				if(j>xt) {
-					xt=j;
-					break;
-				}
-			}
-			continue;
-		}
-		
-		if(xt > x+w) {
-			if(h==1) {xt = DrawString(xt, yt, "..."); return;}
-			xt = x;
-			yt+=new_line(1);
-		}
-		
-		if(yt > y+h) { txt_scroll=YES; return;}
-		
-		xt = DrawFormatString(xt, yt, "%c", txt[i]);
-	}
+	float h1 = h;
+	if(h==1) h1 = GetFontHeight();
 	
+	if( bg_color != 0) Draw_Box(x, y, z, 0, w, h1, bg_color, NO);
+	
+	
+	set_ttf_window(x, y, w, h1, WIN_AUTO_LF);
+	Z_ttf = z;
+    x = (float) display_ttf_string(0, 0, string, font_color, 0, GetFontWidth(), GetFontHeight());
+	
+	set_ttf_window(0, 0, 848, 512, 0);
+	
+	return x;
+        
+}
+
+int GetNumberOfLine(float x, float y, float w, float h, char *string)
+{
+	float h1 = h;
+	if(h==1) h1 = GetFontHeight();
+	
+	Z_ttf = 0.0;
+	Y_ttf = y;
+	set_ttf_window(x, y, w, h1, WIN_AUTO_LF);
+    int lines =  display_ttf_line(-1, 0, 0, string, 0, 0, GetFontWidth(), GetFontHeight());
+   
+	set_ttf_window(0, 0, 848, 512, 0);
+	
+	return lines;
+}
+
+float DrawTXTInBoxScroll(int line, float x, float y, float z, float w, float h, char *string, u32 bg_color, u32 font_color)
+{
+	if(y<0) return x;
+	
+	SetFontZ(z);
+	FontColor(font_color);
+	
+	float h1 = h;
+	if(h==1) h1 = GetFontHeight();
+	
+	if( bg_color != 0) Draw_Box(x, y, z, 0, w, h1, bg_color, NO);
+	
+	set_ttf_window(x, y, w, h1, WIN_AUTO_LF);
+    Z_ttf = z;
+	x = (float) display_ttf_line(line, 0, 0, string, font_color, 0, GetFontWidth(), GetFontHeight());
+    	
+	set_ttf_window(0, 0, 848, 512, 0);
+	
+	return x;
+        
 }
 
 void txt_viewer_input()
@@ -20596,21 +22703,29 @@ void txt_viewer_input()
 	
 	get_R2speed();
 	
-	if( R2pad(BUTTON_DOWN) && txt_scroll == YES )
+	if( R2pad(BUTTON_DOWN) )
 	{
-		nextLine();
+		if(txt_line < txt_scroll ) txt_line++;
 	}
-	if( R2pad(BUTTON_UP) && txt_linpos != 0)
+	if( R2pad(BUTTON_UP))
 	{
-		prevLine();
+		if(0<txt_line) txt_line--;
 	}
 	
-	if(new_pad & BUTTON_CIRCLE)
+	if(txt_viewer_path!=NULL) {
+		if(NewPad(BUTTON_SQUARE)) {
+			Delete(txt_viewer_path);
+			FREE(txt_viewer_path);
+		}
+	}
+	
+	if(NewPad(BUTTON_CIRCLE))
 	{
 		txt_viewer_activ=NO;
-		if(txt_viewer_content) {free(txt_viewer_content); txt_viewer_content=NULL; txt_viewer_content_size=0;}
+		if(txt_viewer_path==NULL && scene==SCENE_FILEMANAGER) Window(".");
+		FREE(txt_viewer_content);
+		FREE(txt_viewer_path);
 	}
-
 }
 
 void Draw_txt_viewer_input()
@@ -20624,7 +22739,7 @@ void Draw_txt_viewer_input()
 	
 	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	x=DrawButton(x, y, STR_SCROLL, BUTTON_UP | BUTTON_DOWN);
-	
+	if(txt_viewer_path!=NULL) x=DrawButton(x, y, STR_DELETE, BUTTON_SQUARE);
 }
 
 void Draw_txt_viewer()
@@ -20637,53 +22752,26 @@ void Draw_txt_viewer()
 	Draw_Box(TXT_X-20-5 , TXT_Y-20-5 , 0, 0, TXT_W+40+10 , TXT_H+40+10 , BLACK, NO); // Black Border
 	Draw_Box(TXT_X-20   , TXT_Y-20   , 0, 0, TXT_W+40	, TXT_H+40	, WHITE, NO); // White Border
 	
-	
-	Draw_Box(TXT_X, TXT_Y, 0, 0, TXT_W, TXT_H, WHITE, NO);
-	
-	SetFontZ(0);
-	FontColor(BLACK);
-	
-	float xt = TXT_X;
-	float yt = TXT_Y;
-	u64 i, j;
-	
-	for(i=txt_linpos; i < txt_viewer_content_size ; i++) {
-		if(txt_viewer_content[i] == '\r') continue;
-		if(txt_viewer_content[i] == '\n') {
-			xt = TXT_X; 
-			yt+=new_line(1);
-			continue;
-		} 
-		else if(txt_viewer_content[i] == '\t') {
-			for(j=TXT_X; j < TXT_X+TXT_W; j+=30) {
-				if(j>xt) {
-					xt=j;
-					break;
-				}
-			}
-			continue;
-		}
-		
-		if(xt > TXT_X+TXT_W) {
-			xt = TXT_X;
-			yt+=new_line(1);
-		}
-		
-		if(yt > TXT_Y+TXT_H) { txt_scroll=YES; return;}
-		
-		xt = DrawFormatString(xt, yt, "%c", txt_viewer_content[i]);
-	}
+	DrawTXTInBoxScroll(txt_line, TXT_X, TXT_Y, 0, TXT_W, TXT_H, txt_viewer_content, WHITE, BLACK);
 }
 
 void open_txt_viewer(char *txt_path)
 {
-	txt_linpos=0;
-	txt_scroll=NO;
-			
-	txt_viewer_content = LoadFile(txt_path, &txt_viewer_content_size);
+	txt_line=0;
+	txt_scroll=0;
+	
+	FREE(txt_viewer_path);
+	txt_viewer_path = strcpy_malloc(txt_path);
+	
+	int size;
+	txt_viewer_content = LoadFile(txt_viewer_path, &size);
+	
+	txt_scroll = GetNumberOfLine(TXT_X, TXT_Y, TXT_W, TXT_H, txt_viewer_content) + 1;
+	
+	if(TXT_LINE_MAX < txt_scroll) txt_scroll -= TXT_LINE_MAX;
+	else txt_scroll = 0;
 	
 	txt_viewer_activ = YES;
-	
 }
 
 //**** SFO viewer ****
@@ -20728,7 +22816,7 @@ void SFO_viewer_input()
 {
 	if(SFO_viewer_activ == NO) return;
 	
-	if(new_pad & BUTTON_CIRCLE)
+	if(NewPad(BUTTON_CIRCLE))
 	{
 		SFO_viewer_activ=NO;
 	}
@@ -20816,7 +22904,7 @@ void Draw_SFO_viewer()
 	int SFO_Y=512/2-SFO_H/2;
 	float x=0;
 	for(i=0; i<SFO_NB; i++) {
-		if(x < GetWidth(SFO_KEY[i])) x = GetWidth(SFO_KEY[i]);
+		if(x < WidthFromStr(SFO_KEY[i])) x = WidthFromStr(SFO_KEY[i]);
 	}
 	SFO_COL1_W = x + 10;
 	
@@ -20830,6 +22918,211 @@ void Draw_SFO_viewer()
 		DrawTXTInBox(SFO_X+SFO_COL1_W+5, SFO_Y+SFO_FONT*i, 0, SFO_COL2_W-10-5, 1, SFO_DATA[i], 0, BLACK);
 	}
 }
+
+void update_RootDisplay()
+{
+	
+	memset(fm_Format, 0, sizeof(fm_Format));
+	
+	switch(root_display)
+	{
+		case STYLE1:
+		{
+			fm_CustomIcons = NO;
+			fm_LineSize=SMALL;
+			fm_RowNumber=0;
+			
+			fm_FontRowSize[0] = LINE_H1;
+			strcpy( fm_Format[ LEFTROW(0)  ], STR_FM_MOUNTPOINT);
+			strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[1] = 0;
+			strcpy( fm_Format[ LEFTROW(1)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[2] = 0;
+			strcpy( fm_Format[ LEFTROW(2)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+			
+			fm_CapacityBarWidth=0;
+			
+			break;
+		}
+		case STYLE2:
+		{
+		
+			fm_CustomIcons = YES;
+			fm_LineSize=SMALL;
+			fm_RowNumber=0;
+			
+			fm_FontRowSize[0] = LINE_H1;
+			sprintf(fm_Format[ LEFTROW(0) ], "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+			strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_FILESYSTEM);
+			
+			fm_FontRowSize[1] = 0;
+			strcpy( fm_Format[ LEFTROW(1)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[2] = 0;
+			strcpy( fm_Format[ LEFTROW(2)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+			
+			fm_CapacityBarWidth=0;
+			
+			
+			break;
+		}
+		case STYLE3:
+		{
+			fm_CustomIcons = YES;
+			fm_LineSize=BIG;
+			fm_RowNumber=1;
+			
+			fm_FontRowSize[0] = LINE_H1;
+			sprintf(fm_Format[ LEFTROW(0)  ], "%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT);
+			strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_FILESYSTEM);
+			
+			fm_FontRowSize[1] = 12.0;
+			sprintf(fm_Format[ LEFTROW(1)  ], "%s + %s", STR_FM_CAPACITY, STR_FM_MEMINSIDE);
+			strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[2] = 0;
+			strcpy( fm_Format[ LEFTROW(2)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+			
+			fm_CapacityBarWidth=0;
+						
+			break;
+		}
+		case STYLE4:
+		{
+			fm_CustomIcons = YES;
+			fm_LineSize=BIG;
+			fm_RowNumber=1;
+			
+			fm_FontRowSize[0] = LINE_H1;
+			sprintf(fm_Format[ LEFTROW(0)  ], "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+			strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_FILESYSTEM);
+			
+			fm_FontRowSize[1] = LINE_H1;
+			sprintf(fm_Format[ LEFTROW(1)  ], "%s + %s", STR_FM_CAPACITY, STR_FM_MEMOUTSIDE);
+			strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[2] = 0;
+			strcpy( fm_Format[ LEFTROW(2)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+			
+			fm_CapacityBarWidth=250;
+			
+			
+			break;
+		}
+		case STYLE5:
+		{
+			fm_CustomIcons = YES;
+			fm_LineSize=BIG;
+			fm_RowNumber=2;
+			
+			fm_FontRowSize[0] = 16.0;
+			sprintf(fm_Format[ LEFTROW(0)  ], "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+			strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_FILESYSTEM);
+			
+			fm_FontRowSize[1] = 16.0;
+			strcpy( fm_Format[ LEFTROW(1)  ], STR_FM_MEMORY);
+			strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[2] = 0.0;
+			strcpy( fm_Format[ LEFTROW(2)  ], STR_FM_EMPTY);
+			strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+			
+			fm_CapacityBarWidth=0;
+			
+			
+			break;
+		}
+		case STYLE6:
+		{
+			fm_CustomIcons = YES;
+			fm_LineSize=BIG;
+			fm_RowNumber=2;
+			
+			fm_FontRowSize[0] = 14;
+			sprintf(fm_Format[ LEFTROW(0)  ], "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+			strcpy( fm_Format[ RIGHTROW(0) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[1] = 7;
+			strcpy( fm_Format[ LEFTROW(1)  ], STR_FM_FILESYSTEM);
+			strcpy( fm_Format[ RIGHTROW(1) ], STR_FM_EMPTY);
+			
+			fm_FontRowSize[2] = 11;
+			sprintf(fm_Format[ LEFTROW(2)  ], "%s + %s", STR_FM_CAPACITY, STR_FM_MEMINSIDE);
+			strcpy( fm_Format[ RIGHTROW(2) ], STR_FM_EMPTY);
+			
+			fm_CapacityBarWidth=250;
+			
+			
+			break;
+		}
+		case STYLE_CUSTOM:
+		default:
+		{	
+			read_RootSetting();
+			
+			break;
+		}
+	}
+	
+	write_setting();
+}
+
+void show_msg_RootDisplay()
+{
+	
+	switch(root_display)
+	{
+		case STYLE_CUSTOM:
+		{
+			show_msg(STR_STYLE_CUSTOM);
+			break;
+		}
+		case STYLE1:
+		{
+			show_msg(STR_STYLE1);
+			break;
+		}
+		case STYLE2:
+		{
+			show_msg(STR_STYLE2);
+			break;
+		}
+		case STYLE3:
+		{
+			show_msg(STR_STYLE3);
+			break;
+		}
+		case STYLE4:
+		{
+			show_msg(STR_STYLE4);			
+			break;
+		}
+		case STYLE5:
+		{
+			show_msg(STR_STYLE5);		
+			break;
+		}
+		case STYLE6:
+		{
+			show_msg(STR_STYLE6);
+			break;
+		}
+		default:
+		{	
+			break;
+		}
+	}
+}
+
+
 
 //**** Option ****
 
@@ -20855,7 +23148,7 @@ void Option(char *item)
 			window_content_Size[window_activ][window_content_N[window_activ]] = 0;
 			window_content_Type[window_activ][window_content_N[window_activ]] = _DIRECTORY;
 			window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc(&strrchr(temp, '/')[1]);
-			sort();
+			sort(window_activ);
 		}
 	} else
 	if(strcmp(item, STR_NEWFILE) == 0) {
@@ -20875,15 +23168,13 @@ void Option(char *item)
 			window_content_Size[window_activ][window_content_N[window_activ]] = 0;
 			window_content_Type[window_activ][window_content_N[window_activ]] = _FILE;
 			window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc(&strrchr(temp, '/')[1]);
-			sort();
+			sort(window_activ);
 		}
 	} else
-	if(strcmp(item, "SpeedTest") == 0) {
-		start_copy_loading();
-		SpeedTest();
-		end_copy_loading();
-		open_txt_viewer("/dev_hdd0/speed_test.txt");
-		
+	if(strcmp(item, "Test") == 0) {
+		start_loading();
+		print_load("Sleep 10");	sleep(10);
+		end_loading();
 	} else
 	if(strcmp(item, STR_PASTE) == 0) {
 		start_copy_loading();
@@ -20921,12 +23212,14 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_JOIN) == 0) {
 		start_copy_loading();
-		gathering=YES;
-		strcpy(copy_src, option_sel[0]);
-		sprintf(copy_dst, "%s%s", window_path[window_activ], strrchr(copy_src, '/'));
-		Get_Game_Size(option_sel[0]);
-		gathering=NO;
-		CopyJoin(copy_src, copy_dst);
+		for(i=0; i<=option_sel_N; i++) {
+			gathering=YES;
+			strcpy(copy_src, option_sel[i]);
+			sprintf(copy_dst, "%s%s", window_path[window_activ], strrchr(copy_src, '/'));
+			Get_Game_Size(option_sel[i]);
+			gathering=NO;
+			CopyJoin(copy_src, copy_dst);
+		}
 		end_copy_loading();
 		Window(".");
 	} else
@@ -21003,22 +23296,26 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_EXTRACT_ELF) == 0) {
 		start_loading();
-		char elf[255];
-		strcpy(elf, option_sel[0]);	
-		RemoveExtention(elf);
-		strcat(elf, ".elf");
-		
-		if( path_info(elf) != _NOT_EXIST) Delete(elf);
-		
-		if(Extract(option_sel[0], elf)==FAILED) {
-			print_load("Error : Failed to extract");
+		for(i=0; i<=option_sel_N; i++) {
+			char elf[255];
+			strcpy(elf, option_sel[i]);	
+			RemoveExtention(elf);
+			strcat(elf, ".elf");
+			
+			if( path_info(elf) != _NOT_EXIST) Delete(elf);
+			
+			if(Extract(option_sel[i], elf)==FAILED) {
+				print_load("Error : Failed to extract");
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_RESIGN_SELF) == 0) {
 		start_loading();
-		re_sign_SELF(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			re_sign_SELF(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	} else
@@ -21027,22 +23324,26 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_EXTRACT_EBOOT) == 0) {
 		start_loading();
-		char elf[255];
-		strcpy(elf, option_sel[0]);	
-		RemoveExtention(elf);
-		strcat(elf, ".ELF");
-		
-		if( path_info(elf) != _NOT_EXIST) Delete(elf);
-		
-		if(Extract(option_sel[0], elf)==FAILED) {
-			print_load("Error : Failed to extract");
+		for(i=0; i<=option_sel_N; i++) {
+			char elf[255];
+			strcpy(elf, option_sel[i]);	
+			RemoveExtention(elf);
+			strcat(elf, ".ELF");
+			
+			if( path_info(elf) != _NOT_EXIST) Delete(elf);
+			
+			if(Extract(option_sel[i], elf)==FAILED) {
+				print_load("Error : Failed to extract");
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_RESIGN_EBOOT) == 0) {
 		start_loading();
-		re_sign_EBOOT(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			re_sign_EBOOT(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	} else
@@ -21051,103 +23352,128 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_SIGN_EBOOT) == 0) {
 		start_loading();
-		char BIN[255];
-		strcpy(BIN, option_sel[0]);	
-		RemoveExtention(BIN);
-		strcat(BIN, ".BIN");
-		
-		char BIN_ORI[255];
-		strcpy(BIN_ORI, BIN);
-		strcat(BIN_ORI, "_ORI");
-		
-		if( path_info(BIN) != _NOT_EXIST) {
-			rename(BIN, BIN_ORI);
-		}
-		
-		if( Sign_EBOOT(option_sel[0], BIN) == FAILED) {
-			print_load("Error : failed to sign EBOOT");
-			rename(BIN_ORI, BIN);
+		for(i=0; i<=option_sel_N; i++) {
+			char BIN[255];
+			strcpy(BIN, option_sel[i]);	
+			RemoveExtention(BIN);
+			strcat(BIN, ".BIN");
+			
+			char BIN_ORI[255];
+			strcpy(BIN_ORI, BIN);
+			strcat(BIN_ORI, "_ORI");
+			
+			if( path_info(BIN) != _NOT_EXIST) {
+				rename(BIN, BIN_ORI);
+			}
+			
+			if( Sign_EBOOT(option_sel[i], BIN) == FAILED) {
+				print_load("Error : failed to sign EBOOT");
+				rename(BIN_ORI, BIN);
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_SIGN_ELF) == 0) {
 		start_loading();
-		char SELF[255];
-		strcpy(SELF, option_sel[0]);	
-		RemoveExtention(SELF);
-		strcat(SELF, ".self");
-		
-		char SELF_ORI[255];
-		strcpy(SELF_ORI, SELF);
-		strcat(SELF_ORI, "_ORI");
-		
-		if( path_info(SELF) != _NOT_EXIST) {
-			rename(SELF, SELF_ORI);
+		for(i=0; i<=option_sel_N; i++) {
+			char SELF[255];
+			strcpy(SELF, option_sel[i]);	
+			RemoveExtention(SELF);
+			strcat(SELF, ".self");
+			
+			char SELF_ORI[255];
+			strcpy(SELF_ORI, SELF);
+			strcat(SELF_ORI, "_ORI");
+			
+			if( path_info(SELF) != _NOT_EXIST) {
+				rename(SELF, SELF_ORI);
+			}
+			
+			if( Sign_ELF(option_sel[i], SELF) == FAILED) {
+				print_load("Error : failed to sign ELF");
+				rename(SELF_ORI, SELF);
+			}
 		}
-		
-		if( Sign_ELF(option_sel[0], SELF) == FAILED) {
-			print_load("Error : failed to sign ELF");
-			rename(SELF_ORI, SELF);
-		}
-		
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_EXTRACT_PRX) == 0) {
 		start_loading();
-		char prx[255];
-		strcpy(prx, option_sel[0]);	
-		RemoveExtention(prx);
-		strcat(prx, ".prx");
-		if( path_info(prx) != _NOT_EXIST) Delete(prx);
-		if(Extract(option_sel[0], prx)==FAILED) {
-			print_load("Error : Failed to extract");
+		for(i=0; i<=option_sel_N; i++) {
+			char prx[255];
+			strcpy(prx, option_sel[i]);	
+			RemoveExtention(prx);
+			strcat(prx, ".prx");
+			if( path_info(prx) != _NOT_EXIST) Delete(prx);
+			if(Extract(option_sel[i], prx)==FAILED) {
+				print_load("Error : Failed to extract");
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_RESIGN_SPRX) == 0) {
 		start_loading();
-		re_sign_SPRX(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			re_sign_SPRX(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_SIGN_PRX) == 0) {
 		start_loading();
 		
-		char SPRX[255];
-		strcpy(SPRX, option_sel[0]);	
-		RemoveExtention(SPRX);
-		strcat(SPRX, ".sprx");
-		
-		char SPRX_ORI[255];
-		strcpy(SPRX_ORI, SPRX);
-		strcat(SPRX_ORI, "_ORI");
-		
-		if( path_info(SPRX) != _NOT_EXIST) {	
-			rename(SPRX, SPRX_ORI);
-		}
-		
-		if( Sign_ELF(option_sel[0], SPRX) == FAILED) {
-			print_load("Error : failed to sign SPRX");
-			rename(SPRX_ORI, SPRX);
+		for(i=0; i<=option_sel_N; i++) {
+			char SPRX[255];
+			strcpy(SPRX, option_sel[i]);	
+			RemoveExtention(SPRX);
+			strcat(SPRX, ".sprx");
+			
+			char SPRX_ORI[255];
+			strcpy(SPRX_ORI, SPRX);
+			strcat(SPRX_ORI, "_ORI");
+			
+			if( path_info(SPRX) != _NOT_EXIST) {	
+				rename(SPRX, SPRX_ORI);
+			}
+			
+			if( Sign_ELF(option_sel[i], SPRX) == FAILED) {
+				print_load("Error : failed to sign SPRX");
+				rename(SPRX_ORI, SPRX);
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_CHECK_IRD) == 0) {
 		start_loading();
-		if ( CheckIRD(option_sel[0]) == SUCCESS) {
-			if(is_iso(option_sel[0])) sprintf(temp, "%s.MD5_check.txt", option_sel[0]);
-			else sprintf(temp, "%s/MD5_check.txt", option_sel[0]);
-			open_txt_viewer(temp);
+		for(i=0; i<=option_sel_N; i++) {
+			if ( CheckIRD(option_sel[i]) == SUCCESS) {
+				if(is_iso(option_sel[i])) sprintf(temp, "%s.MD5_check.txt", option_sel[i]);
+				else sprintf(temp, "%s/MD5_check.txt", option_sel[i]);
+				if(option_sel_N==0) open_txt_viewer(temp);
+			}
+		}
+		end_loading();
+	} else
+	if(strcmp(item, STR_MAKE_SHTCUT_PKG) == 0) {
+	
+		start_loading();
+		for(i=0; i<=option_sel_N; i++) {
+			char mk_pkg_ID[10];
+			srand(time(NULL));
+			int r = rand()%9999;
+			sprintf(mk_pkg_ID, "NPEB4%04d", r);
+			make_launcher_pkg(mk_pkg_ID, option_sel[i]);
 		}
 		end_loading();
 	} else
 	if(strcmp(item, STR_EXTRACT_PKG) == 0) {
 		start_loading();
-		pkg_unpack(option_sel[0], NULL);
+		for(i=0; i<=option_sel_N; i++) {
+			pkg_unpack(option_sel[i], NULL);
+		}
 		end_loading();
 		Window(".");
 	} else
@@ -21159,7 +23485,9 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_MAKE_PKG) == 0) {
 		start_loading();
-		make_pkg(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			make_pkg(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	} else
@@ -21204,198 +23532,232 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_EXTRACT_TRP) == 0) {
 		start_loading();
-		trophy_extract(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			trophy_extract(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_GETMD5) == 0) {
 		start_loading();
-		HashFolder(MD5_HASH, option_sel[0]);
-		if(cancel == NO) {
-			char temp[255];
-			sprintf(temp, "%s/content.md5", option_sel[0]);
-			open_txt_viewer(temp);
+		for(i=0; i<=option_sel_N; i++) {
+			HashFolder(MD5_HASH, option_sel[i]);
+			if(cancel == NO) {
+				char temp[255];
+				sprintf(temp, "%s/content.md5", option_sel[i]);
+				open_txt_viewer(temp);
+			}
 		}
 		end_loading();
 	} else
 	if(strcmp(item, STR_GETSHA1) == 0) {
 		start_loading();
-		HashFolder(SHA1_HASH, option_sel[0]);
-		if(cancel == NO) {
-			char temp[255];
-			sprintf(temp, "%s/content.sha1", option_sel[0]);
-			open_txt_viewer(temp);
+		for(i=0; i<=option_sel_N; i++) {
+			HashFolder(SHA1_HASH, option_sel[i]);
+			if(cancel == NO) {
+				char temp[255];
+				sprintf(temp, "%s/content.sha1", option_sel[i]);
+				open_txt_viewer(temp);
+			}
 		}
 		end_loading();
 	} else 
 	if(strcmp(item, STR_CHECK_CRC32) == 0) {
 		start_loading();
-		if(CheckCRC32(option_sel[0]) == SUCCESS) {
-			char temp[255];
-			strcpy(temp, option_sel[0]);
-			temp[strlen(temp)-4]=0;
-			strcat(temp, "_CHECK.crc");
-			open_txt_viewer(temp);
+		for(i=0; i<=option_sel_N; i++) {
+			if(CheckCRC32(option_sel[i]) == SUCCESS) {
+				char temp[255];
+				strcpy(temp, option_sel[i]);
+				temp[strlen(temp)-4]=0;
+				strcat(temp, "_CHECK.crc");
+				open_txt_viewer(temp);
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_CHECK_MD5) == 0) {
 		start_loading();
-		if(CheckMD5(option_sel[0]) == SUCCESS) {
-			char temp[255];
-			strcpy(temp, option_sel[0]);
-			temp[strlen(temp)-4]=0;
-			strcat(temp, "_CHECK.md5");
-			open_txt_viewer(temp);
+		for(i=0; i<=option_sel_N; i++) {
+			if(CheckMD5(option_sel[i]) == SUCCESS) {
+				char temp[255];
+				strcpy(temp, option_sel[i]);
+				temp[strlen(temp)-4]=0;
+				strcat(temp, "_CHECK.md5");
+				if(option_sel_N==0) open_txt_viewer(temp);
+			}
 		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_EXTRACT_RCO) == 0) {
 		start_loading();
-		print_head("Extracting RCO");
-		rco_dump(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting %s", option_sel[i]);
+			rco_dump(option_sel[i]);
+		}		
 		end_loading();
 		Window(".");
 	} else 
 	if(strcmp(item, STR_EXTRACT_ISO) == 0) {
 		start_loading();
-		print_head("Extracting ISO...");
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting %s", option_sel[i]);
 		
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		if(strstr(dst, ".iso.0") || strstr(dst, ".ISO.0")) dst[strlen(dst)-6]=0; 
-		else dst[strlen(dst)-4]=0;
-		
-		u8 ret = extractps3iso(option_sel[0], dst, is_usb(option_sel[0]));
-		
-		if(ret==FAILED) show_msg(STR_FAILED); 
-		else show_msg(STR_DONE);
-		
+			char dst[255];
+			strcpy(dst, option_sel[0]);
+			if(strstr(dst, ".iso.0") || strstr(dst, ".ISO.0")) dst[strlen(dst)-6]=0; 
+			else dst[strlen(dst)-4]=0;
+			
+			u8 ret = extractps3iso(option_sel[0], dst, is_usb(option_sel[0]));
+			
+			if(ret==FAILED) show_msg(STR_FAILED); 
+			else show_msg(STR_DONE);
+		}
 		end_loading();
 		Window(".");
 	} 
 	else
 	if(strcmp(item, STR_CONVERT_ISO) == 0) {
 		start_loading();
-		print_head("Converting to ISO...");
-		
-		char dst[255];
-		sprintf(dst, "%s.ISO", option_sel[0]);
-		
-		u8 ret = makeps3iso(option_sel[0], dst, is_usb(option_sel[0]));
-		
-		if(ret==FAILED) show_msg(STR_FAILED); 
-		else show_msg(STR_DONE);
-		
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Converting to ISO : %s", option_sel[i]);
+			
+			char dst[255];
+			sprintf(dst, "%s.ISO", option_sel[i]);
+			
+			u8 ret = makeps3iso(option_sel[i], dst, is_usb(option_sel[i]));
+			
+			if(ret==FAILED) show_msg(STR_FAILED); 
+			else show_msg(STR_DONE);
+		}
 		end_loading();
 		Window(".");
 	}
 	else
 	if(strcmp(item, STR_COMPRESS_ISO) == 0) {
 		start_loading();
-		print_head("Compressing ISO...");
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		dst[strlen(dst)-3]='C';
-		dst[strlen(dst)-2]='S';
-		dst[strlen(dst)-1]='O';
-		if(comp_ciso(option_sel[0], dst, 1)==FAILED) Delete(dst);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Compressing ISO : %s", option_sel[i]);
+			char dst[255];
+			strcpy(dst, option_sel[i]);
+			dst[strlen(dst)-3]='C';
+			dst[strlen(dst)-2]='S';
+			dst[strlen(dst)-1]='O';
+			if(comp_ciso(option_sel[i], dst, 1)==FAILED) Delete(dst);
+		}
 		end_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_DECOMPRESS_CSO) == 0) {
 		start_loading();
-		print_head("Decompressing CSO...");
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		dst[strlen(dst)-3]='I';
-		dst[strlen(dst)-2]='S';
-		dst[strlen(dst)-1]='O';
-		if(decomp_ciso(option_sel[0], dst)==FAILED) Delete(dst);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Decompressing CSO : %s", option_sel[i]);
+			char dst[255];
+			strcpy(dst, option_sel[i]);
+			dst[strlen(dst)-3]='I';
+			dst[strlen(dst)-2]='S';
+			dst[strlen(dst)-1]='O';
+			if(decomp_ciso(option_sel[i], dst)==FAILED) Delete(dst);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_EXTRACT_THM) == 0) {
 		start_loading();
-		print_head("Extracting THM...");
-		ExtractTHM(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting THM : %s", option_sel[i]);
+			ExtractTHM(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_EXTRACT_P3T) == 0) {
 		start_loading();
-		print_head("Extracting P3T...");
-		cxml_extract(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting P3T...");
+			cxml_extract(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_EXTRACT_RAF) == 0) {
 		start_loading();
-		print_head("Extracting RAF...");
-		cxml_extract(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting RAF...");
+			cxml_extract(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_EXTRACT_QRC) == 0) {
 		start_loading();
-		print_head("Extracting QRC...");
-		ExtractQRC(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting QRC...");
+			ExtractQRC(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	}
 	else
 	if(strcmp(item, STR_CONVERT_GTF_DDS) == 0) {
 		start_loading();
-		print_head("Converting to DDS...");
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		dst[strlen(dst)-3]='d';
-		dst[strlen(dst)-2]='d';
-		dst[strlen(dst)-1]='s';
-		gtf2dds(option_sel[0], dst, 0, 0);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Converting to DDS...");
+			char dst[255];
+			strcpy(dst, option_sel[i]);
+			dst[strlen(dst)-3]='d';
+			dst[strlen(dst)-2]='d';
+			dst[strlen(dst)-1]='s';
+			gtf2dds(option_sel[i], dst, 0, 0);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_CONVERT_VAG_WAV) == 0) {
 		start_loading();
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		dst[strlen(dst)-3]='w';
-		dst[strlen(dst)-2]='a';
-		dst[strlen(dst)-1]='v';
-		print_head("Converting to wav...");
-		VAG2WAV(option_sel[0], dst);
+		for(i=0; i<=option_sel_N; i++) {
+			char dst[255];
+			strcpy(dst, option_sel[i]);
+			dst[strlen(dst)-3]='w';
+			dst[strlen(dst)-2]='a';
+			dst[strlen(dst)-1]='v';
+			print_head("Converting to wav...");
+			VAG2WAV(option_sel[i], dst);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_CONVERT_JSX_JS) == 0) {
 		start_loading();
-		print_head("Converting to JS...");
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		dst[strlen(dst)-1]=0;
-		JSX2JS(option_sel[0], dst);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Converting to JS...");
+			char dst[255];
+			strcpy(dst, option_sel[0]);
+			dst[strlen(dst)-1]=0;
+			JSX2JS(option_sel[i], dst);
+		}
 		end_loading();
 		Window(".");
 	}
 	else 
 	if(strcmp(item, STR_CONVERT_DDS_PNG) == 0) { 
 		start_loading();
-		print_head("Converting to PNG...");
-		char dst[255];
-		strcpy(dst, option_sel[0]);
-		dst[strlen(dst)-3]='p';
-		dst[strlen(dst)-2]='n';
-		dst[strlen(dst)-1]='g';
-		ConvertImage(option_sel[0], dst);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Converting to PNG...");
+			char dst[255];
+			strcpy(dst, option_sel[i]);
+			dst[strlen(dst)-3]='p';
+			dst[strlen(dst)-2]='n';
+			dst[strlen(dst)-1]='g';
+			ConvertImage(option_sel[i], dst);
+		}
 		end_loading();
 		Window(".");
 	}
@@ -21429,15 +23791,17 @@ void Option(char *item)
 	else
 	if(strcmp(item, STR_EXTRACT_ZIP) == 0) { 
 		start_loading();
-		print_head("Extracting ZIP");
-		ExtractZip(option_sel[0]);
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Extracting ZIP");
+			ExtractZip(option_sel[i]);
+		}
 		end_loading();
 		Window(".");
 	}
 	else
 	if(strcmp(item, STR_MOUNTGAME) == 0) {
 		start_loading();
-		read_game_setting(NULL);
+		read_game_setting(-1);
 		MountGame(option_sel[0]);
 		end_loading();
 	}
@@ -21459,7 +23823,7 @@ void Option(char *item)
 	} 
 	else
 	if(strcmp(item, STR_CLOSE) == 0) {
-		CloseWindow();
+		CloseWindow(window_activ);
 	}
 	
 }
@@ -21500,22 +23864,23 @@ void Open_option()
 		if(PEEKnPOKE) {
 			add_option_item(STR_DUMP_LV1);
 			add_option_item(STR_DUMP_LV2);
-			
 		}
 		add_option_item(STR_DUMP_FLASH);
-		add_option_item("SpeedTest");
+		add_option_item("Test");
 	}
 	else {
-		u8 all_is_dir=YES;
-		int all_same_ext=-1;
+	
+		int same_ext = -1;
 		for(i=0; i<=window_content_N[window_activ]; i++) {
 			if(window_content_Selected[window_activ][i] == YES) {
 				option_sel_N++;
 				option_sel[option_sel_N] = sprintf_malloc("%s/%s", window_path[window_activ], window_content_Name[window_activ][i]);
-				if(path_info(option_sel[option_sel_N]) != _DIRECTORY) all_is_dir=NO;
-				if(all_same_ext != -2) {
-					if(all_same_ext == -1) all_same_ext = get_ext(option_sel[option_sel_N]); else
-					if(all_same_ext != get_ext(option_sel[option_sel_N])) all_same_ext = -2;
+				
+				if(same_ext == -1) { //1st ext
+					same_ext = get_ext(option_sel[option_sel_N]);
+				} else 
+				if(same_ext != -2) {
+					if(same_ext != get_ext(option_sel[option_sel_N])) same_ext = -2;
 				}
 			}
 		}
@@ -21535,167 +23900,167 @@ void Open_option()
 		}																									
 		add_option_item(STR_SELECT_ALL);
 		
-		if(option_sel_N == 0) {
-			add_option_item(STR_RENAME);
-			
-			if(path_info(option_sel[0]) == _DIRECTORY ) {
-				add_option_item(STR_MAKE_PKG);
-				add_option_item(STR_GETMD5);
-				add_option_item(STR_GETSHA1);				
-			}
-			
-			u8 ext = get_ext(option_sel[0]);
-			
-			if(ext == _JPG || ext == _PNG) {
-				add_option_item(STR_VIEW);
-			} else 
-			if( can_read(ext) == YES) {
-				add_option_item(STR_VIEW_TXT);
-			} else
-			if(ext == _SFO) {
-				add_option_item(STR_VIEW_SFO);
-			} else
-			if(ext == _XREG) {
-				add_option_item(STR_READ_XREG);
-			} else
-			if(ext == _SELF) {
-				add_option_item(STR_EXTRACT_ELF);
-				add_option_item(STR_RESIGN_SELF);
-				add_option_item(STR_LAUNCH_SELF);
-			} else 
-			if(ext == _EBOOT_BIN) {
-				add_option_item(STR_EXTRACT_EBOOT);
-				add_option_item(STR_RESIGN_EBOOT);
-				add_option_item(STR_LAUNCH_EBOOT);
-			} else 
-			if(ext == _EBOOT_ELF) {
-				add_option_item(STR_SIGN_EBOOT);
-			} else 
-			if(ext == _ELF) {
-				add_option_item(STR_SIGN_ELF);
-			}  else		
-			if(ext == _SPRX) {
-				add_option_item(STR_EXTRACT_PRX);
-				add_option_item(STR_RESIGN_SPRX);
+		if(option_sel_N==0) add_option_item(STR_RENAME);
+		
+		if( 0 <= option_sel_N) {
+			if(0 <= same_ext) {
 				
-				if(path_info("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt") != _NOT_EXIST) {
-					if(is_it_inside("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt", option_sel[0]) == YES) {
-						add_option_item(STR_REMOVE_PRXLOADER);
-					} else {
-						add_option_item(STR_ADD_PRXLOADER);
-					}					
+				u8 ext = same_ext;			
+				
+				if(ext == _DIRECTORY || ext == _JB_PS3 || ext == _JB_PS2 || ext == _JB_PS1 || ext == _JB_PSP) {
+					add_option_item(STR_MAKE_PKG);
+					add_option_item(STR_GETMD5);
+					add_option_item(STR_GETSHA1);
 				}
 				
-				if(path_info("/dev_hdd0/prx_plugins.txt") != _NOT_EXIST) {
-					if(is_it_inside("/dev_hdd0/prx_plugins.txt", option_sel[0]) == YES) {
-						add_option_item(STR_REMOVE_PRXLOADER2);
-					} else {
-						add_option_item(STR_ADD_PRXLOADER2);
-					}					
-				}
-				
-				if(path_info("/dev_hdd0/mamba_plugins.txt") != _NOT_EXIST) {
-					if(is_it_inside("/dev_hdd0/mamba_plugins.txt", option_sel[0]) == YES) {
-						add_option_item(STR_REMOVE_MAMBA);
-					} else {
-						add_option_item(STR_ADD_MAMBA);
+				if(ext == _JPG || ext == _PNG) {
+					if(option_sel_N==0) add_option_item(STR_VIEW);
+					
+					if(ext == _PNG && option_sel_N < 0) {
+						add_option_item(STR_MAKE_APNG);
 					}
-				}
-				
-				if(path_info("/dev_hdd0/boot_plugins.txt") != _NOT_EXIST) {
-					if(is_it_inside("/dev_hdd0/boot_plugins.txt", option_sel[0]) == YES) {
-						add_option_item(STR_REMOVE_COBRA);
-					} else {
-						add_option_item(STR_ADD_COBRA);
-					}
-				}
-			} else
-			if(ext == _PRX) {
-				add_option_item(STR_SIGN_PRX);
-			} else
-			if(ext == _RCO) {
-				add_option_item(STR_EXTRACT_RCO);
-			} else 
-			if(ext == _PKG) {
-				add_option_item(STR_EXTRACT_PKG);
-				add_option_item(STR_PKG_INFO);
-			} else
-			if(ext == _TRP) {
-				add_option_item(STR_EXTRACT_TRP);
-			} else
-			if(ext == _JB_PS3 || ext == _ISO_PS3) {
-				if(ext == _ISO_PS3) {
-					add_option_item(STR_EXTRACT_ISO);
+				} else 
+				if( can_read(ext) == YES) {
+					if(option_sel_N==0) add_option_item(STR_VIEW_TXT);
 				} else
-				if(ext == _JB_PS3) {
-					add_option_item(STR_CONVERT_ISO);
+				if(ext == _SFO) {
+					if(option_sel_N==0) add_option_item(STR_VIEW_SFO);
+				} else
+				if(ext == _XREG) {
+					if(option_sel_N==0) add_option_item(STR_READ_XREG);
+				} else
+				if(ext == _SELF) {
+					add_option_item(STR_EXTRACT_ELF);
+					add_option_item(STR_RESIGN_SELF);
+					if(option_sel_N==0) add_option_item(STR_LAUNCH_SELF);
+				} else 
+				if(ext == _EBOOT_BIN) {
+					add_option_item(STR_EXTRACT_EBOOT);
+					add_option_item(STR_RESIGN_EBOOT);
+					if(option_sel_N==0) add_option_item(STR_LAUNCH_EBOOT);
+				} else 
+				if(ext == _EBOOT_ELF) {
+					add_option_item(STR_SIGN_EBOOT);
+				} else 
+				if(ext == _ELF) {
+					add_option_item(STR_SIGN_ELF);
+				}  else		
+				if(ext == _SPRX) {
+					add_option_item(STR_EXTRACT_PRX);
+					add_option_item(STR_RESIGN_SPRX);
+					
+					if(option_sel_N==0) {
+						if(path_info("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt") != _NOT_EXIST) {
+							if(is_it_inside("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt", option_sel[0]) == YES) {
+								add_option_item(STR_REMOVE_PRXLOADER);
+							} else {
+								add_option_item(STR_ADD_PRXLOADER);
+							}					
+						}
+									
+						if(path_info("/dev_hdd0/prx_plugins.txt") != _NOT_EXIST) {
+							if(is_it_inside("/dev_hdd0/prx_plugins.txt", option_sel[0]) == YES) {
+								add_option_item(STR_REMOVE_PRXLOADER2);
+							} else {
+								add_option_item(STR_ADD_PRXLOADER2);
+							}					
+						}
+						
+						if(path_info("/dev_hdd0/mamba_plugins.txt") != _NOT_EXIST) {
+							if(is_it_inside("/dev_hdd0/mamba_plugins.txt", option_sel[0]) == YES) {
+								add_option_item(STR_REMOVE_MAMBA);
+							} else {
+								add_option_item(STR_ADD_MAMBA);
+							}
+						}
+						
+						if(path_info("/dev_hdd0/boot_plugins.txt") != _NOT_EXIST) {
+							if(is_it_inside("/dev_hdd0/boot_plugins.txt", option_sel[0]) == YES) {
+								add_option_item(STR_REMOVE_COBRA);
+							} else {
+								add_option_item(STR_ADD_COBRA);
+							}
+						}
+					
+					}
+				} else
+				if(ext == _PRX) {
+					add_option_item(STR_SIGN_PRX);
+				} else
+				if(ext == _RCO) {
+					add_option_item(STR_EXTRACT_RCO);
+				} else 
+				if(ext == _PKG) {
+					add_option_item(STR_EXTRACT_PKG);
+					if(option_sel_N==0) add_option_item(STR_PKG_INFO);
+				} else
+				if(ext == _TRP) {
+					add_option_item(STR_EXTRACT_TRP);
+				} else
+				if(ext == _JB_PS3 || ext == _ISO_PS3) {
+					if(ext == _ISO_PS3) {
+						add_option_item(STR_EXTRACT_ISO);
+					} else
+					if(ext == _JB_PS3) {
+						add_option_item(STR_CONVERT_ISO);
+					}
+					//add_option_item(STR_MAKE_SHTCUT_PKG);
+					add_option_item(STR_CHECK_IRD);
+				} else
+				if(ext == _ISO_PSP) {
+					add_option_item(STR_COMPRESS_ISO);
+					add_option_item(STR_CHECK_CRC32);
+				} else
+				if(ext == _CSO) {
+					add_option_item(STR_DECOMPRESS_CSO);
+				} else
+				if(ext == _THM) {
+					add_option_item(STR_EXTRACT_THM);
+				} else
+				if(ext == _P3T) {
+					add_option_item(STR_EXTRACT_P3T);
+				} else
+				if(ext == _RAF) {
+					add_option_item(STR_EXTRACT_RAF);
+				} else
+				if(ext == _QRC) {
+					add_option_item(STR_EXTRACT_QRC);
+				} else
+				if(ext == _JSX) {
+					add_option_item(STR_CONVERT_JSX_JS);
+				} else
+				if(ext == _VAG) {
+					add_option_item(STR_CONVERT_VAG_WAV);
+				} else
+				if(ext == _GTF) {
+					add_option_item(STR_CONVERT_GTF_DDS);
+				} else
+				if(ext == _DDS) {
+					add_option_item(STR_CONVERT_DDS_PNG);
+				} else
+				if(ext == _ZIP) {
+					add_option_item(STR_EXTRACT_ZIP);
 				}
-				add_option_item(STR_CHECK_IRD);
-			} else
-			if(ext == _ISO_PSP) {
-				add_option_item(STR_COMPRESS_ISO);
-				add_option_item(STR_CHECK_CRC32);
-			} else
-			if(ext == _CSO) {
-				add_option_item(STR_DECOMPRESS_CSO);
-			} else
-			if(ext == _THM) {
-				add_option_item(STR_EXTRACT_THM);
-			} else
-			if(ext == _P3T) {
-				add_option_item(STR_EXTRACT_P3T);
-			} else
-			if(ext == _RAF) {
-				add_option_item(STR_EXTRACT_RAF);
-			} else
-			if(ext == _QRC) {
-				add_option_item(STR_EXTRACT_QRC);
-			} else
-			if(ext == _JSX) {
-				add_option_item(STR_CONVERT_JSX_JS);
-			} else
-			if(ext == _VAG) {
-				add_option_item(STR_CONVERT_VAG_WAV);
-			} else
-			if(ext == _GTF) {
-				add_option_item(STR_CONVERT_GTF_DDS);
-			} else
-			if(ext == _DDS) {
-				add_option_item(STR_CONVERT_DDS_PNG);
-			} else
-			if(ext == _ZIP) {
-				add_option_item(STR_EXTRACT_ZIP);
-			}
-			
-			if( is_66600(option_sel[0])) {
-				add_option_item(STR_JOIN);
-			}
-			
-			if(can_mount()) {
-				if(ext == _ISO_PS3 || ext == _ISO_PS2 || ext == _ISO_PS1 || ext == _ISO_PSP || ext == _JB_PS3) {
+				
+				if(option_sel_N==0) {
+					if( is_66600(option_sel[0])) {
+						add_option_item(STR_JOIN);
+					}
+				}
+				
+				if(can_be_mounted(ext) && option_sel_N==0) {
 					add_option_item(STR_MOUNTGAME);
 				}
 			}
-			
-			
-		}
-		
-		if(all_same_ext >= 0 && option_sel_N > 0) {
-			if(all_same_ext == _PNG) {
-				add_option_item(STR_MAKE_APNG);
-			}
-		}
-		
-		if(0 <= option_sel_N) {
 			add_option_item(STR_SET_PERMS);
 		}
-		
 		add_option_item(STR_PROPS);
 	}
 	
+	
 	float k=0;
 	for(i=0; i<=option_item_N; i++) {
-		if(k<GetWidth(option_item[i])) k=GetWidth(option_item[i]);
+		if(k<WidthFromStr(option_item[i])) k=WidthFromStr(option_item[i]);
 	}
 	option_activ = YES;
 	option_x = curs_x - 7;
@@ -21721,10 +24086,10 @@ void Draw_option()
 		if(option_x 	 < curs_x && curs_x < option_x+option_w
 		&& option_y+15*i < curs_y && curs_y < option_y+15*(i+1)) {
 			FontColor(GREEN);
-			Draw_Box(option_x, option_y+15*i, 0, 0, option_w, 15, 0x00D0FFFF, NO);
+			Draw_Box(option_x, option_y+15*i, 0, 0, option_w, 15, OVERLAY_COLOR, NO);
 		} else FontColor(BLACK);
 		
-		DrawFormatString(option_x+5, option_y+15*i, option_item[i]);
+		DrawFormatString(option_x+5, option_y+15*i+2, option_item[i]);
 	}
 }
 
@@ -21744,7 +24109,7 @@ u8 option_input()
 {
 	if(option_activ == NO) return OFF;
 	
-	if(new_pad & BUTTON_CROSS) {	
+	if(NewPad(BUTTON_CROSS)) {	
 		//Cursor on option
 		if(	option_x < curs_x && curs_x < option_x + option_w
 		&& 	option_y < curs_y && curs_y < option_y + option_h )
@@ -21760,11 +24125,11 @@ u8 option_input()
 		close_option();
 	}
 	
-	if((new_pad & BUTTON_TRIANGLE) || (new_pad & BUTTON_CIRCLE))  {
+	if(NewPad(BUTTON_TRIANGLE) || NewPad(BUTTON_CIRCLE) ) {
 		close_option();
 	}
 	
-	if(new_pad & BUTTON_UP) {
+	if(NewPad(BUTTON_UP)) {
 		if(	option_x < curs_x && curs_x < option_x + option_w
 		&& 	option_y + 15 < curs_y && curs_y < option_y + option_h )
 		{
@@ -21772,7 +24137,7 @@ u8 option_input()
 		}
 	}
 	
-	if(new_pad & BUTTON_DOWN) {
+	if(NewPad(BUTTON_DOWN)) {
 		if(	option_x < curs_x && curs_x < option_x + option_w
 		&& 	option_y < curs_y && curs_y < option_y + option_h - 15 )
 		{
@@ -21785,6 +24150,8 @@ u8 option_input()
 
 void cursor_input() 
 {
+	if(picture_viewer_activ) return;
+	
 	curs_move_x = R2JoyStick_X(BUTTON_L);
 	curs_move_y = R2JoyStick_Y(BUTTON_L);
 	curs_x += curs_move_x;
@@ -21796,78 +24163,104 @@ void cursor_input()
 
 }
 
+u8 is_float_window()
+{
+	if(option_activ) return YES;
+	if(prop_activ) return YES;
+	if(picture_viewer_activ) return YES;
+	if(txt_viewer_activ) return YES;
+	if(SFO_viewer_activ) return YES;
+	
+	return NO;
+}
+
 u8 window_input()
 {
 	int i;
 	int k;
 	
-	if(option_activ == YES) return CONTINUE;
-	if(prop_activ == YES) return CONTINUE;
-	if(picture_viewer_activ == YES) return CONTINUE;
-	if(txt_viewer_activ == YES) return CONTINUE;
-	if(SFO_viewer_activ == YES) return CONTINUE;
+	if(is_float_window()) return CONTINUE;
 	
 	get_R2speed();
 
-	if(old_pad & BUTTON_CROSS) curs_push = YES;
+	if(OldPad(BUTTON_CROSS)) curs_push = YES;
 	else curs_push = NO;
 
 // Exit FileManager
 #ifdef FILEMANAGER
-	if(window_activ < 0) {
-		if(new_pad & BUTTON_CIRCLE) {
-			while(hold_CIRCLE%30!=0) hold_CIRCLE++;
-			hold_CIRCLE+=15;
-		} else
-		if(old_pad & BUTTON_CIRCLE) {
-			hold_CIRCLE++;
-		} else {
-			if(hold_CIRCLE%30==0) hold_CIRCLE=0;
-			else hold_CIRCLE--;
-		}
-
-		if(hold_CIRCLE>90) {
+	if(window_activ < 0) {	
+		if(HoldCircleDelay()) {
 			finalize_FileExplorer();
 			return BREAK;
 		}
-	} else {
-		if(new_pad & BUTTON_CIRCLE) {
-			CloseWindow();
+	}
+	else {
+		if(NewPad(BUTTON_CIRCLE)) {
+			CloseWindow(window_activ);
 			return CONTINUE;
 		}
 	}
 #else
-	if(new_pad & BUTTON_CIRCLE) {
+	if(NewPad(BUTTON_CIRCLE)) {
 		if(window_activ < 0) {
 			finalize_FileExplorer();
 			return BREAK;
 		} else {
-			CloseWindow();
+			CloseWindow(window_activ);
 			return CONTINUE;
 		}
 	}
 #endif
 
+	if(NewPad(BUTTON_R3)) {
+		root_display++;
+		if(MAX_STYLE<root_display) root_display=0;
+		update_RootDisplay();
+		show_msg_RootDisplay();
+	}
+	
 	// OPTIONS
-	if((new_pad & BUTTON_TRIANGLE))  {
+	if(NewPad(BUTTON_TRIANGLE)) {
 		Open_option();
 		return CONTINUE;
 	}
 	
 	// New window
-	if(new_pad & BUTTON_START) {
+	if(NewPad(BUTTON_START)) {
 		Window(NULL);
 	}
 	
 #ifdef FILEMANAGER
-	if(new_pad & BUTTON_SELECT) {
+	if(NewPad(BUTTON_SELECT)) {
 		open_SETTINGS();
 		return CONTINUE;
 	}
 #endif
 	
-	if(window_activ < 0) return CONTINUE;
-
+	if(window_activ < 0) {
+		window_move = NO;
+		window_resize_H = NO;
+		window_resize_V = NO;
+		window_resize_D1 = NO;
+		window_resize_D2 = NO;
+		return CONTINUE;
+	}
+	
+	if(strcmp(window_path[window_activ], "/") == 0) {
+		if(fm_LineSize==BIG) LINE_H = LINE_H1*2.0;
+		else LINE_H = LINE_H1;
+		COL_H=0;
+	} else {
+		COL_H = COL_H1;
+		LINE_H = LINE_H1;
+	}
+	
+	if(window_scroll_N[window_activ]>0) {
+		SCROLL_W = SCROLL_W1;		
+	} else {
+		SCROLL_W = 0;
+	}
+	
 	// R3 move window
 	window_x[window_activ] += R2JoyStick_X(BUTTON_R);
 	window_y[window_activ] += R2JoyStick_Y(BUTTON_R);
@@ -21877,7 +24270,7 @@ u8 window_input()
 	if(window_y[window_activ] < 0 ) window_y[window_activ]=0;
 
 	// 'MOUSE CLICK'
-	if(new_pad & BUTTON_CROSS) {
+	if(NewPad(BUTTON_CROSS)) {
 		//Cursor on activ window
 		if(	window_x[window_activ] < curs_x && curs_x < (window_x[window_activ] + window_w[window_activ])
 		&& 	window_y[window_activ] < curs_y && curs_y < (window_y[window_activ] + window_h[window_activ])   )
@@ -21885,8 +24278,8 @@ u8 window_input()
 			// browse
 			for(i=0 ; i<=window_item_N[window_activ]; i++) {
 				if(window_content_N[window_activ] < i+window_scroll_P[window_activ]) break;
-				if(  window_x[window_activ]+BORDER						< curs_x && curs_x < window_x[window_activ]	+ window_w[window_activ]-SCROLL_W-BORDER
-				&&	 window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*i	< curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*(i+1)				)
+				if(  window_x[window_activ]+BORDER					< curs_x && curs_x < window_x[window_activ]	+ window_w[window_activ]-SCROLL_W-BORDER
+				&&	 window_y[window_activ]+TOP_H+COL_H+LINE_H*i	< curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H+LINE_H*(i+1)				)
 				{
 					if(window_content_Type[window_activ][i+window_scroll_P[window_activ]] == _DIRECTORY) {
 						Window(window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
@@ -21909,7 +24302,7 @@ u8 window_input()
 					if(window_content_Type[window_activ][i+window_scroll_P[window_activ]] == _ISO) {
 						char IsoPath[255];
 						sprintf(IsoPath, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
-						read_game_setting(NULL);
+						read_game_setting(-1);
 						if( MountGame(IsoPath) == SUCCESS) {
 							finalize_FileExplorer();
 							exit(0);
@@ -21919,19 +24312,33 @@ u8 window_input()
 			}
 			
 			// Close
-			if( window_x[window_activ]+window_w[window_activ]-10-30 < curs_x && curs_x < window_x[window_activ]+window_w[window_activ]-10
-			&&  window_y[window_activ]+10						 	< curs_y && curs_y < window_y[window_activ]+10+20 )
+			if( window_x[window_activ]+window_w[window_activ]-BORDER-CLOSEBOX_W < curs_x && curs_x < window_x[window_activ]+window_w[window_activ]-BORDER
+			&&  window_y[window_activ]+BORDER						 	        < curs_y && curs_y < window_y[window_activ]+BORDER+CLOSEBOX_H )
 			{
-				CloseWindow();
+				CloseWindow(window_activ);
+				return CONTINUE;
 			}
-						
-			// sort Name
-			if( window_x[window_activ]+BORDER   < curs_x && curs_x < window_x[window_activ] + window_w[window_activ]-BORDER-SCROLL_W - window_w_col_size[window_activ]- 10
-			&&	window_y[window_activ]+TOP_H	< curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H )
+			// Maximize / Minimize
+			if( window_x[window_activ]+window_w[window_activ]-BORDER-CLOSEBOX_W-DOCKBOX_W < curs_x && curs_x < window_x[window_activ]+window_w[window_activ]-BORDER-CLOSEBOX_W
+			&&  window_y[window_activ]+BORDER						 	< curs_y && curs_y < window_y[window_activ]+BORDER+DOCKBOX_H )
 			{
-				if(window_sort[window_activ] == ASC) window_sort[window_activ] = DSC;
-				else window_sort[window_activ] = ASC;
-				sort();
+				if(GetWindowLocation() != WINDOW_LOC_FULL) {
+					SetWindowLocation(WINDOW_LOC_FULL);
+				} else {
+					SetWindowLocation(WINDOW_LOC_DEFAULT);
+				}
+				return CONTINUE;
+			}
+			
+			// sort Name
+			if(0 < COL_H) {
+				if( window_x[window_activ]+BORDER   < curs_x && curs_x < window_x[window_activ] + window_w[window_activ]-BORDER-SCROLL_W - window_w_col_size[window_activ]- 10
+				&&	window_y[window_activ]+TOP_H	< curs_y && curs_y < window_y[window_activ] + TOP_H + COL_H )
+				{
+					if(window_sort[window_activ] == ASC) window_sort[window_activ] = DSC;
+					else window_sort[window_activ] = ASC;
+					sort(window_activ);
+				}
 			}
 		}
 		// cursor on passiv window
@@ -21960,14 +24367,14 @@ u8 window_input()
 	}
 	
 	//SELECT ITEM
-	if(new_pad & BUTTON_SQUARE) {
+	if(NewPad(BUTTON_SQUARE)) {
 		if(	window_x[window_activ] < curs_x && curs_x < (window_x[window_activ] + window_w[window_activ])
 		&& 	window_y[window_activ] < curs_y && curs_y < (window_y[window_activ] + window_h[window_activ])   )
 		{
 			for(i=0 ; i <=window_item_N[window_activ]; i++) {
-				if(window_content_N[window_activ] < i+window_scroll_P[window_activ]) break;
-				if(  window_x[window_activ]+BORDER							< curs_x && curs_x < window_x[window_activ] + window_w[window_activ]-SCROLL_W-BORDER
-				&&	 window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*i		< curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H+CONTENT_FSIZE*(i+1)				)
+				if(window_content_N[window_activ] < i + window_scroll_P[window_activ]) break;
+				if(  window_x[window_activ]+BORDER		 					< curs_x && curs_x < window_x[window_activ] + window_w[window_activ]-SCROLL_W-BORDER
+				&&	 window_y[window_activ]+TOP_H+COL_H+LINE_H*i		< curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H+LINE_H*(i+1)				)
 				{
 					if(window_content_Selected[window_activ][i+window_scroll_P[window_activ]] == NO) {
 						if(strcmp(window_content_Name[window_activ][i+window_scroll_P[window_activ]], "..") != 0) {
@@ -22163,37 +24570,37 @@ u8 window_input()
 	}
 	
 	// DOCK screen
-	if(old_pad & BUTTON_R1) {
-		if(new_pad & BUTTON_LEFT) {
+	if(OldPad(BUTTON_R1)) {
+		if(NewPad(BUTTON_LEFT)) {
 			SetWindowLocation(WINDOW_LOC_LEFT);
 			return CONTINUE;
 		} else
-		if(new_pad & BUTTON_UP) {
+		if(NewPad(BUTTON_UP)) {
 			SetWindowLocation(WINDOW_LOC_FULL);
 			return CONTINUE;
 		} else
-		if(new_pad & BUTTON_RIGHT) {
+		if(NewPad(BUTTON_RIGHT)) {
 			SetWindowLocation(WINDOW_LOC_RIGHT);
 			return CONTINUE;
 		} else
-		if(new_pad & BUTTON_DOWN) {
+		if(NewPad(BUTTON_DOWN)) {
 			SetWindowLocation(WINDOW_LOC_DEFAULT);
 			return CONTINUE;
 		}
 	 }
 	
 	//Refresh Window 
-	if(new_pad & BUTTON_L3) {
+	if(NewPad(BUTTON_L3)) {
 		Window(".");
 	}
 	
 	//Parent directory
-	if(old_pad & BUTTON_L1) {
-		if(new_pad & BUTTON_LEFT) {
+	if(OldPad(BUTTON_L1)) {
+		if(NewPad(BUTTON_LEFT)) {
 			Window("..");
 			return CONTINUE;
 		} else
-		if(new_pad & BUTTON_RIGHT) {
+		if(NewPad(BUTTON_RIGHT)) {
 			GotoLastPath();
 			return CONTINUE;
 		}
@@ -22234,67 +24641,107 @@ u8 window_input()
 
 void Draw_input()
 {
-	float x=INPUT_X;
-	float y=INPUT_Y;
-	FontColor(COLOR_1);
-	SetFontZ(0);
-
-	if(option_activ == NO 
-	&& prop_activ == NO 
-	&& picture_viewer_activ == NO 
-	&& txt_viewer_activ == NO
-	&& SFO_viewer_activ == NO) {
-		if(window_activ < 0) {
-#ifdef FILEMANAGER 
-			if(hold_CIRCLE) {
-				DrawProgRing(x+7, y+7.5, 20, ((hold_CIRCLE%30)*100)/30, COLOR_3);
-				FontColor(COLOR_3);
-				DrawFormatString(x+10, y-12, "%d", (90 - hold_CIRCLE)/30);
-				FontColor(COLOR_1);
-			}
-			x=DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
+    float x=INPUT_X;
+    float y=INPUT_Y;
+    FontColor(COLOR_1);
+    SetFontZ(0);
+ 
+    if(is_float_window() == NO) {
+		x=DrawButton(x, y, STR_OPEN, BUTTON_START);
+#ifdef FILEMANAGER
+        x=DrawButton(x, y, STR_SETTINGS, BUTTON_SELECT);
+#endif
+        if(0 <= window_activ) {
+            x=DrawButton(x, y, STR_SELECT, BUTTON_SQUARE);
+            x=DrawButton(x, y, STR_OPTION, BUTTON_TRIANGLE);
+            x=DrawButton(x, y, STR_CLICK, BUTTON_CROSS);
+            x=DrawButton(x, y, STR_CURSOR, BUTTON_L);
+            x=DrawButton(x, y, STR_REFRESH, BUTTON_L3);
+            x=DrawButton(x, y, STR_WINDOW, BUTTON_R);
+            x=DrawButton(x, y, STR_SCROLL, BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
+            x=DrawButton(x, y, STR_CLOSE, BUTTON_CIRCLE);
+        } else
+        if(window_activ < 0) {
+#ifdef FILEMANAGER
+			x=DrawSpam(x, y);
+			x=DrawButton(x, y, STR_EXIT, BUTTON_CIRCLE);
 #else
 			x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 #endif
-		} else {
-			x=DrawButton(x, y, STR_CLOSE, BUTTON_CIRCLE);
+        }
+    } else
+    if(option_activ == YES) {
+        x=DrawButton(x, y, STR_CLICK, BUTTON_CROSS);
+        x=DrawButton(x, y, STR_CURSOR, BUTTON_L);
+        x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+    } else
+    if(prop_activ == YES || SFO_viewer_activ == YES) {
+        x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+    } else
+    if(txt_viewer_activ == YES){
+        Draw_txt_viewer_input();
+    } else
+    if(picture_viewer_activ == YES) {
+        x=DrawButton(x, y, STR_PREVIOUS, BUTTON_LEFT);
+        x=DrawButton(x, y, STR_NEXT, BUTTON_RIGHT);
+        x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+    }
+}
+
+// close if device of this window is unplugged
+void AutoClose(int window_id)
+{
+	if(window_open[window_id] == NO) return;
+
+	if(strcmp(window_path[window_id], "/") == 0) return;
+
+	int n=1;
+	char temp[512];
+	while(window_path[window_id][n] != '/' && window_path[window_id][n] != 0) n++;
+	strncpy(temp, window_path[window_id], n);
+	temp[n]=0;
+
+	u8 found = NO;
+	for(n=0; n <=DevicesInfo_N; n++) {
+		if(strcmp(temp, DevicesInfo[n].MountPoint) == 0) {
+			found = YES;
+			break;
 		}
-#ifdef FILEMANAGER
-		x=DrawButton(x, y, STR_SETTINGS, BUTTON_SELECT);
-#endif
-		x=DrawButton(x, y, STR_OPEN, BUTTON_START);
-		x=DrawButton(x, y, STR_OPTION, BUTTON_TRIANGLE);
-		x=DrawButton(x, y, STR_CLICK, BUTTON_CROSS);
-		if(0 <= window_activ) {
-			x=DrawButton(x, y, STR_SELECT, BUTTON_SQUARE);
-			x=DrawButton(x, y, STR_CURSOR, BUTTON_L);
-			x=DrawButton(x, y, STR_REFRESH, BUTTON_L3);
-			x=DrawButton(x, y, STR_WINDOW, BUTTON_R);
-			x=DrawButton(x, y, STR_SCROLL, BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT);
-		}
-	} else
-	if(option_activ == YES)	{
-		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
-		x=DrawButton(x, y, STR_CLICK, BUTTON_CROSS);
-		x=DrawButton(x, y, STR_CURSOR, BUTTON_L);
-	} else
-	if(prop_activ == YES || SFO_viewer_activ == YES) {
-		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
-	} else
-	if(txt_viewer_activ == YES){
-		Draw_txt_viewer_input();
-	} else
-	if(picture_viewer_activ == YES) {
-		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
-		x=DrawButton(x, y, STR_PREVIOUS, BUTTON_LEFT);
-		x=DrawButton(x, y, STR_NEXT, BUTTON_RIGHT);
 	}
+	
+	if(found==NO) CloseWindow(window_id);
+}
+
+void AutoRefresh_Windows()
+{
+
+#ifdef RPCS3
+	return;
+#endif
+
+	if(PlugAndPlay == NO) {start_PlugAndPlay(); return;}
+	if(do_Refresh == NO) return;
+	
+	MountNTFS();
+	
+	RefreshDevices();
+
+	int k;
+	for(k=0; k<WINDOW_MAX; k++) {
+		AutoClose(k);
+		if(window_open[k] == NO) continue;
+		if(strcmp(window_path[k], "/") == 0) RefreshWindow(k);
+	}
+	
+	do_Refresh  = NO;
 }
 
 void Draw_FileExplorer()
 {
 	start_loading();
+	update_RootDisplay();
 	init_FileExplorer();
+	
 	Window(NULL);
 	end_loading();
 	
@@ -22304,29 +24751,35 @@ void Draw_FileExplorer()
 		cls();
 		
 		Draw_BGS();
+		Draw_MemMonitor();
 		
 		if(MENU) {
 			scene = SCENE_SETTINGS;
 			Draw_MENU();
 			Draw_MENU_input();
+			Draw_picture_viewer();
+			Draw_txt_viewer();
+			Draw_SFO_viewer();
+			Draw_Notification();
 		} else {
 			scene = SCENE_FILEMANAGER;
 			Draw_window();
 			Draw_option();
 			Draw_properties();
+			Draw_picture_viewer();
+			Draw_txt_viewer();
+			Draw_SFO_viewer();
+			Draw_Notification();
 			Draw_input();
 			Draw_cursor();
 		}
 		
-		Draw_picture_viewer();
-		Draw_txt_viewer();
-		Draw_SFO_viewer();
-		Draw_Notification();
-
-		tiny3d_Flip();
-		ScreenShot();
+		AutoRefresh_Windows();
 		
+		tiny3d_Flip();
 		ps3pad_read();
+		
+		ScreenShot();
 		
 		if(MENU) {
 			input_MENU();
@@ -22334,17 +24787,61 @@ void Draw_FileExplorer()
 			if(	option_input() == OFF)
 			if( window_input() == BREAK) {
 				LoopBreak =0;
-				return;
+				break;
 			}
 			cursor_input();
 			properties_input();
 		}
-				
+		
 		picture_viewer_input();
 		txt_viewer_input();
 		SFO_viewer_input();
 	}
+	
+	end_PlugAndPlay();
+}
 
+void preview_window(u8 show_window)
+{
+#ifdef FILEMANAGER
+	if(show_window==NO) return;
+	while(0<=window_activ) CloseWindow(window_activ);
+	Window(NULL);
+	window_x[window_activ]+=275;
+	window_y[window_activ]=250;
+	window_z[window_activ]=0;
+	
+#else
+	if(show_window==NO) {
+		if(window_path!=NULL) finalize_FileExplorer();
+		return;
+	}
+	if(window_path==NULL) {
+		init_FileExplorer();
+		Window(NULL);
+		window_x[window_activ]=275;
+		window_y[window_activ]=250;
+		window_z[window_activ]=0;
+	}
+#endif
+	Draw_window();
+}
+
+void show_preview()
+{
+	u32 title=ITEMS_POSITION;
+	if(TITLES[title]==NULL) {
+		int i;
+		for(i=1; i<=ITEMS_NUMBER; i++) {
+			int i_pos = ITEMS_POSITION-i;
+			if( i_pos < 0 ) return;
+			if(TITLES[i_pos] != NULL) {
+				title = i_pos;
+				break;
+			}
+		}
+	}
+	preview_window(strcmp(TITLES[title], STR_ROOT_DISPLAY) == 0 && MENU_LVL != LVL_TITLE);
 }
 
 //*******************************************************
@@ -22406,7 +24903,9 @@ void new_MENU()
 	
 	ITEMS_POSITION = 0;	
 	MENU=YES;
-	IN_ITEMS_VALUE=NO;
+	
+	if(USE_TITLE_MENU) MENU_LVL=LVL_TITLE;
+	else MENU_LVL=LVL_ITEMS;
 	
 }
 
@@ -22444,9 +24943,12 @@ void add_item_MENU(char *str, u8 type)
 	ITEMS[ITEMS_NUMBER] = strcpy_malloc(str);
 	ITEMS_TYPE[ITEMS_NUMBER]=type;
 	
-	if(type==ITEM_CHECKBOX || type==ITEM_COMMAND) {
+	if(type==ITEM_CHECKBOX || type==ITEM_COMMAND || type==ITEM_TOGGLE) {
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER]=NO;
 		ITEMS_VALUE_NUMBER[ITEMS_NUMBER] = 1;
+	} else 
+	if(type==ITEM_LOCKED) {
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER]=0;
 	}
 }
 
@@ -22469,8 +24971,12 @@ void add_title_MENU(char *str)
 
 u8 item_is(char *str)
 {
-	if(ITEMS[ITEMS_POSITION]==NULL) return NO;
-	if(strcmp(ITEMS[ITEMS_POSITION], str) == 0) return YES;
+	if(MENU_LVL == LVL_TITLE && 0<=TITLE_MENU_FIRST_ITEM) {
+		if(strcmp(TITLES[TITLE_MENU_FIRST_ITEM], str) == 0) return YES;
+	} else {
+		if(ITEMS[ITEMS_POSITION]==NULL) return NO;
+		if(strcmp(ITEMS[ITEMS_POSITION], str) == 0) return YES;
+	}
 	
 	return NO;
 }
@@ -22532,7 +25038,10 @@ void Draw_HELP()
 	if(item_is(STR_UI)) {
 		DrawString(x, y, STR_UI_DESC);
 	} else
-	if(item_is(STR_COLOR_1) || item_is(STR_COLOR_2) || item_is(STR_COLOR_3) || item_is(STR_COLOR_4)) {
+	if(item_is(STR_COLOR_1) || item_is(STR_COLOR_2) || item_is(STR_COLOR_3) || item_is(STR_COLOR_4)
+	|| item_is(STR_COLOR_NOTIF) || item_is(STR_COLOR_BOXHEAD) || item_is(STR_COLOR_BOXBODY) || item_is(STR_COLOR_SIDEBAR)
+	|| item_is(STR_COLOR_BGS) || item_is(STR_COLOR_BG) )
+	{
 		DrawString(x, y, STR_COLOR_DESC);
 	} else
 	if(item_is(STR_SHOW_WAVES)) {
@@ -22727,8 +25236,9 @@ void Draw_HELP()
 void Draw_MENU()
 {
 	if(MENU == NO) return;
+	if(txt_viewer_activ) return;
 	
-	int x1, x2, y=40, y1, i, j;
+	int x1, x2, x3, y=40, y1, i, j;
 	u32 color;
 	
 	y1=y;
@@ -22736,20 +25246,47 @@ void Draw_MENU()
 	FontSize(15);
 	SetFontZ(10);
 	
+	float FINAL_ITEMS_X = 50.0;
 	if(MENU_SIDE == NO) {
-		MENU_ITEMS_X = 50;
+		MENU_ITEMS_X = FINAL_ITEMS_X;
 		MENU_ITEMS_VALUE_X = 250;
 		Draw_BGS();
 	} else {
-		TranslateTo(&MENU_ITEMS_X, 593.0);
-		MENU_ITEMS_VALUE_X = (X_MAX-MENU_ITEMS_X)/2 + MENU_ITEMS_X;
+		FINAL_ITEMS_X = 593.0;
+		TranslateTo(&MENU_ITEMS_X, FINAL_ITEMS_X);
+		MENU_ITEMS_VALUE_X = 2*(X_MAX-MENU_ITEMS_X)/3 + MENU_ITEMS_X;
 		Draw_SIDEBAR(MENU_ITEMS_X-10);
 		SetFontZ(9);
 	}
 	
-	x1 = MENU_ITEMS_X;
-	x2 = MENU_ITEMS_VALUE_X;
-
+	if( USE_TITLE_MENU ) {
+		x3 = MENU_ITEMS_X;
+		x1 = MENU_ITEMS_VALUE_X;
+		x2 = MENU_ITEMS_VALUE_X + 200;
+	} else {
+		x3 = 0;
+		x1 = MENU_ITEMS_X;
+		x2 = MENU_ITEMS_VALUE_X;
+	}
+	
+	if( USE_TITLE_MENU ) {
+		TITLE_MENU_FIRST_ITEM =ITEMS_POSITION;
+		TITLE_MENU_LAST_ITEM  =ITEMS_POSITION;
+			
+		for(i=1; i<=ITEMS_NUMBER; i++) {
+			int i_pos = ITEMS_POSITION+i;
+			if( ITEMS_NUMBER < i_pos) break;
+			if(TITLES[i_pos] != NULL) break;
+			TITLE_MENU_LAST_ITEM = i_pos;
+		}
+		for(i=0; i<=ITEMS_NUMBER; i++) {
+			int i_pos = ITEMS_POSITION-i;
+			if(i_pos<0) break;
+			TITLE_MENU_FIRST_ITEM = i_pos;
+			if(TITLES[i_pos] != NULL) break;
+		}	
+	}
+	
 	if(ITEMS_POSITION < MENU_SCROLL_START) MENU_SCROLL = 0;
 	if(MENU_SCROLL_START <= ITEMS_POSITION && ITEMS_POSITION <= MENU_SCROLL_START + MENU_SCROLL ) MENU_SCROLL = ITEMS_POSITION - MENU_SCROLL_START;
 	
@@ -22757,87 +25294,156 @@ void Draw_MENU()
 	
 	for(i=0; i<=ITEMS_NUMBER; i++) {
 		
+		if(ITEMS_POSITION == i) {
+			if( USE_TITLE_MENU ) {
+				current_x=x1;
+				current_y=y+new_line(1);
+			} else {
+				current_x=x2;
+				current_y=y;
+			}
+		}
+		
 		if(TITLES[i] != NULL) {
 			
-			y+=10;
-			Draw_title(x1, y, TITLES[i]);
-			
-			if(strcmp( TITLES[i], STR_THM_SETTINGS)==0) {
-				FontColor(COLOR_4);
-				FontSize(18);
-				DrawFormatString(x2, y, Themes[UI_position]);
-				FontSize(15);
-				FontColor(COLOR_1);
-			}
-			
-			y+=new_line(1)+15;
-			y1=y;
-			
-			if(MENU_SCROLL > 0) {
-				for(j=ITEMS_NUMBER; j>=0; j--){
-					if(TITLES[j] != NULL) {
-						MENU_SCROLL_START=j;
-						break;
-					}
+			if( USE_TITLE_MENU ) {
+				if( TITLE_MENU_FIRST_ITEM==i) FontColor(COLOR_2);
+				else FontColor(COLOR_1);
+				DrawString(x3, y1, TITLES[i]);
+				y1+=new_line(1);
+			} else {
+				y+=10;
+				Draw_title(x1, y, TITLES[i]);
+				
+				if(strcmp( TITLES[i], STR_THM_SETTINGS)==0) {
+					FontColor(COLOR_4);
+					FontSize(18);
+					DrawFormatString(x2, y, Themes[UI_position]);
+					FontSize(15);
+					FontColor(COLOR_1);
 				}
-				if(MENU_SCROLL_START==i) {
-					DrawUp(x1-7, y1+5);
-					i+=MENU_SCROLL;
+				
+				y+=new_line(1)+15;
+				y1=y;
+				
+				if(MENU_SCROLL > 0) {
+					for(j=ITEMS_NUMBER; j>=0; j--){
+						if(TITLES[j] != NULL) {
+							MENU_SCROLL_START=j;
+							break;
+						}
+					}
+					if(MENU_SCROLL_START==i) {
+						DrawUp(x1-7, y1+5);
+						i+=MENU_SCROLL;
+					}
 				}
 			}
 		}
 		
+		if( USE_TITLE_MENU ) {
+			if( !(TITLE_MENU_FIRST_ITEM<=i && i<=TITLE_MENU_LAST_ITEM) ) continue;
+			if( i == TITLE_MENU_FIRST_ITEM ) y = 40;
+		}
+		
 		if(i==MENU_TABLE_START) y1=y;
 		
-		if(ITEMS_TYPE[i] == ITEM_TEXTBOX) {
-			if(ITEMS_POSITION == i) FontColor(COLOR_2); 
-			else FontColor(COLOR_1);
+		if(ITEMS_TYPE[i] == ITEM_TOGGLE) {
+			u8 active=YES;
 			
-			DrawFormatString(x1, y, ITEMS[i]);
+			if(ITEMS_POSITION == i && MENU_LVL != LVL_TITLE) {
+				color = COLOR_2;
+				FontColor(COLOR_2); 
+			} else {
+				color = COLOR_1;
+				FontColor(COLOR_1);
+				//active=NO;
+			}
+			
+			if( strcmp(ITEMS[i], STR_PATCH_EXP) == 0 ) {
+				DrawChildArrow(x1+5, y, 9, 10, 7, color);
+				DrawFormatString(x1+20, y, ITEMS[i]);
+			} else {
+				DrawFormatString(x1, y, ITEMS[i]);
+			}
+			
+			Draw_toggle(x2, y, 9, 12, ITEMS_VALUE_POSITION[i], active);
+			
+			y+=new_line(1);
+			
+		} else
+		if(ITEMS_TYPE[i] == ITEM_LOCKED) {
+		
+			color = SetALPHA(GetALPHA(COLOR_1)/2, COLOR_1);
+			
+			FontColor(color);
+			
+			if( strcmp(ITEMS[i], STR_CURRENT) == 0 ) {
+				DrawChildArrow(x1+5, y, 9, 10, 7, color);
+				DrawFormatString(x1+20, y, ITEMS[i]);
+			} else {
+				DrawFormatString(x1, y, ITEMS[i]);
+			}
+			
+			if( ITEMS_VALUE_NUMBER[i] == 0 ) DrawFormatString(x2, y, ITEMS_VALUE[i][0]);
+			
+			y+=new_line(1);
+		} else
+		if(ITEMS_TYPE[i] == ITEM_TEXTBOX) {
+			
+			if(ITEMS_POSITION == i && MENU_LVL != LVL_TITLE) {
+				color = COLOR_2;
+				FontColor(COLOR_2);
+			} else {
+				color = COLOR_1;
+				FontColor(COLOR_1);
+			}
+						
+			if( strcmp(ITEMS[i], STR_PATCH_LIBFS) == 0 ) {
+				DrawChildArrow(x1+5, y, 9, 10, 7, color);
+				DrawFormatString(x1+20, y, ITEMS[i]);
+			} else {
+				DrawFormatString(x1, y, ITEMS[i]);
+			}
 			
 			FontColor(COLOR_1);
 			
+			
 			if( ITEMS_VALUE_NUMBER[i] != -1 ) {
-				if(IN_ITEMS_VALUE == YES && ITEMS_POSITION == i) {
+				float x2_t = x2;
+				
+				if(MENU_LVL==LVL_VALUE && ITEMS_POSITION==i) {
 					FontColor(COLOR_2);
+					
+					float w=WidthFromStr(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);				
+					
+					if(X_MAX - 5 < x2+w && MENU_ITEMS_X == FINAL_ITEMS_X) {
+						y+=new_line(1);
+						DrawChildArrow(x1+10, y, 9, 10, 7, COLOR_2);
+						x2_t=x1+25;
+					}
+					
 					if( ITEMS_VALUE_NUMBER[i] > 0 ) {
-						float w=GetWidth(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
 						float h=GetFontHeight();
-						DrawDown(x2+w/2, y+h*0.85);
-						DrawUp(x2+w/2,  y);	
-					}
-					DrawFormatString(x2, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);					
-					/*					
-					// START OF .:THEME TAGS:.
-					if(strcmp(ITEMS[i], STR_THM)==0) {
-						if(!(strcmp(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]], STR_NONE) == 0)) {
-							char tags[10];
-							if(strstr(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0") != NULL) {
-								strcpy(tags, "HDD ");
-							} else 
-							if(strstr(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_usb") != NULL) {
-								int t;
-								sscanf(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_usb%d%*s" , &t);
-								sprintf(tags, "USB%d ", t);
-							} else 
-							if(strstr(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/ntfs") != NULL) {
-								int t;
-								sscanf(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/ntfs%d%*s" , &t);
-								sprintf(tags, "NTFS%d ", t);
-							}
-							u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-							if(ThemeType==MGZ) strcat(tags, "MGZ"); else
-							if(ThemeType==P3T) strcat(tags, "P3T"); else
-							if(ThemeType==THM) strcat(tags, "THM"); 
-							FontColor(COLOR_3);
-							DrawFormatString(x2-90, y, tags);
-						}
-					}
-					// END OF .:THEME TAGS:.
-					*/
+						DrawDown(x2_t+w/2, y+h*0.85);
+						DrawUp(x2_t+w/2,  y);
+					}					
+					
+					DrawFormatString(x2_t, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
+					
 				} else {
 					FontColor(COLOR_1);
-					if(ITEMS_VALUE_SHOW[i]==YES) DrawFormatString(x2, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
+					
+					if(ITEMS_VALUE_SHOW[i]==YES) {
+						float w=WidthFromStr(ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);				
+					
+						if(X_MAX - 5 < x2+w && MENU_ITEMS_X == FINAL_ITEMS_X) {
+							y+=new_line(1);
+							DrawChildArrow(x1+10, y, 9, 10, 7, COLOR_1);
+							x2_t=x1+25;
+						}
+						DrawFormatString(x2_t, y, ITEMS_VALUE[i][ITEMS_VALUE_POSITION[i]]);
+					}
 				}
 				
 			}
@@ -22848,26 +25454,18 @@ void Draw_MENU()
 			if(i>0) {
 				if(ITEMS_TYPE[i-1] == ITEM_TEXTBOX) { y+=10; y1=y; }
 			}
-			
-			if(ITEMS_POSITION==i) color = COLOR_2; else color = COLOR_1;
 		
-			Draw_checkbox(ITEMS_VALUE_POSITION[i], x1, y, ITEMS[i], color);
-			y+=new_line(1);
+			Draw_checkbox(x1, y, 0, ITEMS[i], ITEMS_VALUE_POSITION[i], ITEMS_POSITION==i && MENU_LVL != LVL_TITLE);
 			
+			y+=new_line(1);
 		} else
 		if(ITEMS_TYPE[i] == ITEM_COMMAND) {
 			if(i>0) {
 				if(ITEMS_TYPE[i-1] == ITEM_TEXTBOX) { y+=10; y1=y; }
 			}
 			
-			if(ITEMS_POSITION==i) {
-				if(ITEMS_VALUE_SHOW[i]==YES) color = COLOR_3;
-				else color = COLOR_2; 
-			} else {
-				if(ITEMS_VALUE_SHOW[i]==YES) color = COLOR_4;
-				else color = COLOR_1;
-			}
-			Draw_checkbox(ITEMS_VALUE_POSITION[i], x1, y, ITEMS[i], color);
+			Draw_itembox(x1, y, 0, ITEMS[i], ITEMS_VALUE_POSITION[i], ITEMS_POSITION==i, ITEMS_VALUE_SHOW[i]==YES);
+			
 			y+=new_line(1);
 			
 			if(ITEMS_POSITION==i) {	
@@ -22889,17 +25487,18 @@ void Draw_MENU()
 			
 		} else
 		if(ITEMS_TYPE[i] == ITEM_COLORBOX) {			
-			if(ITEMS_POSITION == i) FontColor(COLOR_2); 
+			if(ITEMS_POSITION == i && MENU_LVL != LVL_TITLE) FontColor(COLOR_2); 
 			else FontColor(COLOR_1);
 			
 			DrawFormatString(x1, y, ITEMS[i]);
 
 			memcpy(&color, ITEMS_VALUE[i][0], 4);
 			
-			color=color - GetALPHA(color) + 0xFF;
-			Draw_Box(x2, y, 10, 0, 16, 10, color, NO);
-			if(ITEMS_POSITION == i) {x_COLOR=x2; y_COLOR=y;}
+			DrawFormatString(x2 + 20, y, "0x%08X", color);
 			
+			color=color - GetALPHA(color) + 0xFF;
+			Draw_Box(x2, y+1, 10, 0, 16, 10, color, NO);		
+						
 			y+=new_line(1);
 		}
 			
@@ -22918,12 +25517,20 @@ void Draw_MENU()
 			}
 		}
 		
-		if(y>450) {
+		if(y>450 && !USE_TITLE_MENU) {
 			if(ITEMS_POSITION > i) MENU_SCROLL += ITEMS_POSITION - i;
 			if(i<ITEMS_NUMBER) DrawDown(x1-7, 450);
 			break;
 		}
 	}
+	
+	
+	
+	show_preview();
+	
+	
+	
+	
 }
 
 //*******************************************************
@@ -22941,39 +25548,39 @@ void input_ICON0_creator()
 {
 	if(ICON0_creator == NO) return;
 
-	if(old_pad & BUTTON_UP) {
+	if(OldPad(BUTTON_UP)) {
 		if(Y_ICON0_creator>0) Y_ICON0_creator--;
 	}
 	
-	if(old_pad & BUTTON_DOWN) {
-		if(Y_ICON0_creator + H_ICON0_creator < COVER[position].height) Y_ICON0_creator++;
+	if(OldPad(BUTTON_DOWN)) {
+		if(Y_ICON0_creator + H_ICON0_creator < COVER.height) Y_ICON0_creator++;
 	}
 	
-	if(old_pad & BUTTON_LEFT) {
+	if(OldPad(BUTTON_LEFT)) {
 		if(X_ICON0_creator>0) X_ICON0_creator--;
 	}
 	
-	if(old_pad & BUTTON_RIGHT) {
-		if(X_ICON0_creator + W_ICON0_creator < COVER[position].width) X_ICON0_creator++;
+	if(OldPad(BUTTON_RIGHT)) {
+		if(X_ICON0_creator + W_ICON0_creator < COVER.width) X_ICON0_creator++;
 	}
 	
-	if(old_pad & BUTTON_L1) {
-		if(W_ICON0_creator < COVER[position].width) {
+	if(OldPad(BUTTON_L1)) {
+		if(W_ICON0_creator < COVER.width) {
 			W_ICON0_creator++;
 			H_ICON0_creator = 176 * W_ICON0_creator / 320;
-			if(X_ICON0_creator + W_ICON0_creator > COVER[position].width) X_ICON0_creator=COVER[position].width-W_ICON0_creator;
-			if(Y_ICON0_creator + H_ICON0_creator > COVER[position].height) Y_ICON0_creator=COVER[position].height-H_ICON0_creator;
+			if(X_ICON0_creator + W_ICON0_creator > COVER.width) X_ICON0_creator=COVER.width-W_ICON0_creator;
+			if(Y_ICON0_creator + H_ICON0_creator > COVER.height) Y_ICON0_creator=COVER.height-H_ICON0_creator;
 		}
 	}
 	
-	if(old_pad & BUTTON_L2) {
-		if(W_ICON0_creator > COVER[position].width / 4) {
+	if(OldPad(BUTTON_L2)) {
+		if(W_ICON0_creator > COVER.width / 4) {
 			W_ICON0_creator--;
 			H_ICON0_creator = 176 * W_ICON0_creator / 320;
 		}
 	}
 	
-	if(old_pad & BUTTON_SQUARE) {
+	if(NewPad(BUTTON_SQUARE)) {
 		start_loading();
 		char out[255];
 		strcpy(out, list_game_path[position]);
@@ -22984,10 +25591,10 @@ void input_ICON0_creator()
 		ICON0_creator=NO;
 		memset(ICON0_creator_PATH, 0, sizeof(ICON0_creator_PATH));
 		end_loading();
-		start_Load_GamePIC();
+		if( !(list_game_havepic[position] & GAMEPIC_ICON0) ) list_game_havepic[position] += GAMEPIC_ICON0;
 	}
 	
-	if(new_pad & BUTTON_CIRCLE)
+	if(NewPad(BUTTON_CIRCLE))
 	{
 		ICON0_creator=NO;
 		memset(ICON0_creator_PATH, 0, sizeof(ICON0_creator_PATH));
@@ -23003,30 +25610,30 @@ void Draw_ICON0_creator()
 	float xi, yi, wi, hi;
 	float xj, yj, wj, hj;
 	
-	if(COVER_offset[position] != 0 ) {
-		tiny3d_SetTexture(0, COVER_offset[position], COVER[position].width, COVER[position].height, COVER[position].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+	if(COVER_offset != 0 ) {
+		tiny3d_SetTexture(0, COVER_offset, COVER.width, COVER.height, COVER.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		
-		if( COVER[position].width > 748) {
+		if( COVER.width > 748) {
 			wi = 748;
-			hi = COVER[position].height * 748 / COVER[position].width;
+			hi = COVER.height * 748 / COVER.width;
 		} else 
-		if (COVER[position].width > 412) {
+		if (COVER.width > 412) {
 			hi = 412;
-			wi = COVER[position].width * 412 / COVER[position].height;
+			wi = COVER.width * 412 / COVER.height;
 		} else {
-			wi = COVER[position].width;
-			hi = COVER[position].height;
+			wi = COVER.width;
+			hi = COVER.height;
 		}
 		xi = (848 - wi) / 2;
 		yi = (512 - hi) / 2;
 	
 		Draw_Box(xi, yi, 0, 0, wi, hi, WHITE, YES);
 		
-		wj = W_ICON0_creator * wi / COVER[position].width;
-		hj = H_ICON0_creator * hi / COVER[position].height;
+		wj = W_ICON0_creator * wi / COVER.width;
+		hj = H_ICON0_creator * hi / COVER.height;
 		
-		xj = X_ICON0_creator * wi / COVER[position].width;
-		yj = Y_ICON0_creator * hi / COVER[position].height ;
+		xj = X_ICON0_creator * wi / COVER.width;
+		yj = Y_ICON0_creator * hi / COVER.height ;
 		
 		Draw_LineBox(xi+xj, yi+yj, 0, 5, wj, hj, RED);
 	}
@@ -23051,44 +25658,41 @@ void Draw_ICON0_creator_input()
 void open_ICON0_creator()
 {
 	char temp[128];
-	char title_id[20];
-	
-	if(Get_ID(list_game_path[position], list_game_platform[position], title_id) == FAILED) return;
-	
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, title_id);
+
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, title_id);
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, title_id);
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, title_id);
+	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
 	
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", title_id);
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", title_id);
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", title_id);
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", title_id);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", title_id);
+	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
 	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", title_id);
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", title_id);
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", title_id);
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", title_id);
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[position]);
+	if(path_info(temp) == _FILE) goto read;
+	
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[position]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[position]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[position]);
+	if(path_info(temp) == _FILE) goto read;
+	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[position]);
 	if(path_info(temp) == _FILE) goto read;
 	
 	return;
@@ -23099,7 +25703,7 @@ read:
 	
 	X_ICON0_creator=0;
 	Y_ICON0_creator=0;
-	W_ICON0_creator=COVER[position].width;
+	W_ICON0_creator=COVER.width;
 	H_ICON0_creator= 176 * W_ICON0_creator / 320;
 	
 	ICON0_creator = YES;
@@ -23127,7 +25731,7 @@ void open_PS2_GAME_MENU();
 	
 int ps2_netemu_cobra(int param)
 {
-	lv2syscall2(8, (uint64_t)0x1ee9, (uint64_t)(int)param);
+	lv2syscall2(8, (uint64_t) SYSCALL8_OPCODE_USE_PS2NETEMU, (uint64_t)(int)param);
 	return_to_user_prog(int);
 }
 
@@ -23647,7 +26251,7 @@ void CONFIG_check(char *IsoPath)
 		{
 			cls();
 			Draw_BGS();
-			
+						
 			FontColor(COLOR_1);
 			FontSize(20);
 			
@@ -23670,23 +26274,24 @@ void CONFIG_check(char *IsoPath)
 			
 			if(config_number>0) DrawButton(x, y, STR_CHANGE, BUTTON_SQUARE);
 			
+			Draw_MemMonitor();
 			tiny3d_Flip();
 			ScreenShot();
-			
 			ps3pad_read();
 			
-			if(config_number>0 && new_pad & BUTTON_SQUARE) {
+			
+			if(config_number>0 && NewPad(BUTTON_SQUARE)) {
 				if(config_position==config_number) config_position=0;
 				else config_position++;
 			}
-			if(new_pad & BUTTON_CROSS) {
+			if(NewPad(BUTTON_CROSS)) {
 				char CONFIG_path[128];
 				sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/%s/%s.CONFIG", ManaGunZ_id, CONFIG_STR[config_number], PS2_ID);
 				CopyFile(CONFIG_path, CurrentCONFIG);
 				LoopBreak = 0;
 				break;
 			}
-			if(new_pad & BUTTON_CIRCLE) {
+			if(NewPad(BUTTON_CIRCLE)) {
 				LoopBreak=0;
 				break;
 			}
@@ -24007,7 +26612,7 @@ u8 CONFIG_exist_PNACH(char *PnachPath)
 	while(fgets(line, 128, fp) != NULL) {
 		if( strstr(line, "patch") == NULL && strstr(line, "comment")==NULL && strstr(line, "gametitle")==NULL ) continue;
 		
-		if(strncmp(line, "patch=1", 7) == 0) 
+		if(strncmp(line, "patch=", 6) == 0) 
 		{			
 			if(strstr(line, ",") == NULL) continue;
 			
@@ -24026,8 +26631,8 @@ u8 CONFIG_exist_PNACH(char *PnachPath)
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //data
 			sscanf(token, "%8lX", &value);
-			Patched_Data = value;
-
+			Patched_Data = reverse32(value);
+			
 			EEoffset = EEoffset - (EEoffset >> 28)*0x10000000;
 			
 			ret += CONFIG_exist_PS2PATCH(0, EEoffset);
@@ -24056,7 +26661,7 @@ void CONFIG_remove_PNACH(char *PnachPath)
 	while(fgets(line, 128, fp) != NULL) {
 		if( strstr(line, "patch") == NULL && strstr(line, "comment")==NULL && strstr(line, "gametitle")==NULL ) continue;
 		
-		if(strncmp(line, "patch=1", 7) == 0) 
+		if(strncmp(line, "patch=", 6) == 0) 
 		{			
 			if(strstr(line, ",") == NULL) continue;
 			
@@ -24075,7 +26680,7 @@ void CONFIG_remove_PNACH(char *PnachPath)
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //data
 			sscanf(token, "%8lX", &value);
-			Patched_Data = value;
+			Patched_Data = reverse32(value);
 
 			EEoffset = EEoffset - (EEoffset >> 28)*0x10000000;
 			
@@ -24106,7 +26711,7 @@ void CONFIG_add_PNACH(char *PnachPath)
 	while(fgets(line, 128, fp) != NULL) {
 		if( strstr(line, "patch") == NULL && strstr(line, "comment")==NULL && strstr(line, "gametitle")==NULL ) continue;
 		
-		if(strncmp(line, "patch=1", 7) == 0) 
+		if(strncmp(line, "patch=", 6) == 0) 
 		{			
 			if(strstr(line, ",") == NULL) continue;
 			
@@ -24125,7 +26730,7 @@ void CONFIG_add_PNACH(char *PnachPath)
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //data
 			sscanf(token, "%8lX", &value);
-			Patched_Data = value;
+			Patched_Data = reverse32(value);
 			
 			EEoffset = EEoffset - (EEoffset >> 28)*0x10000000;
 			
@@ -24852,7 +27457,7 @@ void input_PS2_CONFIG_EDITOR()
 	}
 	
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
 			else ITEMS_POSITION--;
 			if(ITEMS_POSITION==MENU_TABLE_END) ITEMS_POSITION=MENU_TABLE_START+MENU_COLUMN_ITEMS_NUMBER; 
@@ -24862,7 +27467,7 @@ void input_PS2_CONFIG_EDITOR()
 		}
 	} else
 	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
 			else ITEMS_POSITION++;
 		} else {
@@ -24870,23 +27475,27 @@ void input_PS2_CONFIG_EDITOR()
 			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
 		}
 	} else
-	if(new_pad & BUTTON_CROSS) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1 
+	if(NewPad(BUTTON_CROSS)) {
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION]==0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1 
 		&& ITEMS_TYPE[ITEMS_POSITION] != ITEM_COMMAND && ITEMS_TYPE[ITEMS_POSITION] != ITEM_CHECKBOX) 
 		{
-			IN_ITEMS_VALUE = YES;
+			MENU_LVL = LVL_VALUE;
 		} else {
 			PS2_CONFIG_MENU_CROSS();
 		}
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO)
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(MENU_LVL == LVL_ITEMS)
 			close_PS2_CONFIG_EDITOR();
 		else
-			IN_ITEMS_VALUE = NO;
+			MENU_LVL = LVL_ITEMS;
 	} else
-	if(new_pad & BUTTON_START) {
-		if(IN_ITEMS_VALUE == NO) {
+	if(NewPad(BUTTON_START)) {
+		if(MENU_LVL == LVL_ITEMS) {
 			start_loading();
 			if( Create_PS2_CONFIG() ) show_msg(STR_DONE);
 			else show_msg(STR_FAILED);
@@ -24916,7 +27525,7 @@ void Draw_PS2_CONFIG_EDITOR_input()
 		x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
 	}
 	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
-	if(IN_ITEMS_VALUE == NO) {
+	if(MENU_LVL == LVL_ITEMS) {
 		x=DrawButton(x, y, STR_SAVE_CONFIG, BUTTON_START );
 	}
 }
@@ -24927,7 +27536,7 @@ void open_PS2_CONFIG_EDITOR()
 	start_loading();
 	
 	close_PS2_GAME_MENU();
-	
+	USE_TITLE_MENU=NO;
 	new_MENU();
 	
 	char CONFIG_path[128];
@@ -24958,7 +27567,38 @@ u32 Get_PS2CRC()
 	prog_bar1_value=-1;
 	
 	return reverse32(CRC);
+}
+
+typedef struct
+{
+	u32 offset;
+	u32 data;
+} PnachRestore_s;
+
+PnachRestore_s *LoadPnachRestore(char *file, int *size)
+{
+	int lsize;
 	
+	PnachRestore_s *data = (PnachRestore_s *) LoadFile(file, &lsize);
+	
+	*size = lsize/8;
+	
+	return data;
+}
+
+u8 GetRestoreData(PnachRestore_s *in, int size, u32 offset, u32 *data)
+{
+	int j;
+	
+	for(j=0; j<size; j++) {
+		if(offset==in[j].offset) {
+			*data = in[j].data;
+			return SUCCESS;
+		}
+	}
+	*data = 0;
+	
+	return FAILED;
 }
 
 u32 Get_Original_PS2CRC()
@@ -24968,54 +27608,54 @@ u32 Get_Original_PS2CRC()
 	
 	print_load("Getting original CRC...");
 	
-	const u32* srcdata = (u32*) PS2ELF_mem;
-
-	FILE* f;
 	char Rest[128];
-	u32 offset;
-	u32 data;
+	char wsRest[128];
 	
-	sprintf(Rest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2CRC_STR);	
-	f = fopen(Rest, "rb");
-	if(f != NULL) {
-		while( fread(&offset, 1, 4, f) == 4) {
-			if( fread(&data, 1, 4, f) == 4 ) {
-				*(u32 *) &srcdata[offset/4] = data; 
-			}
-		}
-		
-		fclose(f);
-	}
+	sprintf(Rest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);	
+	sprintf(wsRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);	
 	
-	sprintf(Rest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
-	
-	f = fopen(Rest, "rb");
-	if(f != NULL) {
-		while( fread(&offset, 1, 4, f) == 4) {
-			if( fread(&data, 1, 4, f) == 4 ) {
-				*(u32 *) &srcdata[offset/4] = data; 
-			}
-		}
-		
-		fclose(f);
-	}
-	
-	if(PS2PATCH_480P_offset) {
-		memcpy((char *) srcdata + PS2PATCH_480P_offset,  (char *) PS2PATCH_480P_FLAG_DISABLE, sizeof(PS2PATCH_480P_FLAG_DISABLE));	
-	}
-	
-	if(PS2PATCH_YFIX_offset) {
-		memcpy((char *) srcdata + PS2PATCH_YFIX_offset,  (char *) PS2PATCH_YFIX_FLAG_DISABLE, sizeof(PS2PATCH_YFIX_FLAG_DISABLE));	
-	}
-	
-	if(PS2PATCH_FMVSKIP_offset) {
-		memcpy((char *) srcdata + PS2PATCH_FMVSKIP_offset,  (char *) PS2PATCH_FMVSKIP_FLAG_DISABLE, sizeof(PS2PATCH_FMVSKIP_FLAG_DISABLE));	
-	}
-	
+	int i;
 	u32 CRC=0;
-	u32 i;
-
-	for(i=PS2ELF_mem_size/4; i; --i, ++srcdata) CRC ^= *srcdata;
+	
+	int RestSize;
+	int wsRestSize;
+	PnachRestore_s *RestData = LoadPnachRestore(Rest, &RestSize);
+	PnachRestore_s *wsRestData = LoadPnachRestore(wsRest, &wsRestSize);
+	
+	
+	if(PS2PATCH_480P_offset && PS2PATCH_480P == YES) {
+		memcpy((char *) PS2ELF_mem + PS2PATCH_480P_offset,  (char *) PS2PATCH_480P_FLAG_DISABLE, sizeof(PS2PATCH_480P_FLAG_DISABLE));	
+	}
+	
+	if(PS2PATCH_YFIX_offset && PS2PATCH_YFIX == YES) {
+		memcpy((char *) PS2ELF_mem + PS2PATCH_YFIX_offset,  (char *) PS2PATCH_YFIX_FLAG_DISABLE, sizeof(PS2PATCH_YFIX_FLAG_DISABLE));	
+	}
+	
+	if(PS2PATCH_FMVSKIP_offset && PS2PATCH_FMVSKIP == YES) {
+		memcpy((char *) PS2ELF_mem + PS2PATCH_FMVSKIP_offset,  (char *) PS2PATCH_FMVSKIP_FLAG_DISABLE, sizeof(PS2PATCH_FMVSKIP_FLAG_DISABLE));	
+	}
+		
+	for(i=0; i<PS2ELF_mem_size; i+=4) {
+		u32 data=0;
+		if(GetRestoreData(RestData, RestSize, i, &data)==SUCCESS) {
+			CRC ^= data;
+		} else 
+		if(GetRestoreData(wsRestData, wsRestSize, i, &data)==SUCCESS) {
+			CRC ^= data;
+		} else {
+			CRC ^= *(u32 *) &PS2ELF_mem[i];
+		}	
+	}
+	
+	if(PS2PATCH_480P_offset && PS2PATCH_480P == YES) {
+		memcpy((char *) PS2ELF_mem + PS2PATCH_480P_offset,  (char *) PS2PATCH_480P_FLAG_ENABLE, sizeof(PS2PATCH_480P_FLAG_ENABLE));	
+	}
+	if(PS2PATCH_YFIX_offset && PS2PATCH_YFIX == YES) {
+		memcpy((char *) PS2ELF_mem + PS2PATCH_YFIX_offset,  (char *) PS2PATCH_YFIX_FLAG_ENABLE, sizeof(PS2PATCH_YFIX_FLAG_ENABLE));	
+	}
+	if(PS2PATCH_FMVSKIP_offset && PS2PATCH_FMVSKIP == YES) {
+		memcpy((char *) PS2ELF_mem + PS2PATCH_FMVSKIP_offset,  (char *) PS2PATCH_FMVSKIP_FLAG_ENABLE, sizeof(PS2PATCH_FMVSKIP_FLAG_ENABLE));	
+	}
 	
 	return reverse32(CRC);
 	
@@ -25101,48 +27741,57 @@ void find_PS2PATCH()
 	prog_bar2_value=-1;
 }
 
+void init_PS2CRC()
+{
+	if(PS2ELF_mem!=NULL) FREE(PS2ELF_mem);
+	
+	print_head("Loading...");
+		
+	PS2ELF_mem = LoadFileFromISO(YES, list_game_path[position], PS2_ID, &PS2ELF_mem_size);
+	if(PS2ELF_mem==NULL) print_load("Error : failed to load elf %s", PS2_ID);
+	
+	find_PS2PATCH();
+	
+	PS2CRC=0;
+	PS2ORICRC=0;
+	
+	PS2CRC = Get_PS2CRC();
+	PS2ORICRC = Get_Original_PS2CRC();
+}
+
 void update_PS2CRC()
 {
-	
 	if(PS2ELF_mem==NULL) {
-		print_head("Loading...");
-		
-		PS2ELF_mem = LoadFileFromISO(YES, list_game_path[position], PS2_ID, &PS2ELF_mem_size);
-		if(PS2ELF_mem==NULL) print_load("Error : failed to load elf %s", PS2_ID);
-		
-		find_PS2PATCH();
-		
-		sprintf(PS2CRC_STR, "%08lX", (long unsigned int) Get_PS2CRC());
-		
-		sprintf(PS2ORICRC_STR, "%08lX", (long unsigned int) Get_Original_PS2CRC());
-		
+		init_PS2CRC();
 		return;
-		
 	}
-
-	char old_PS2CRC[8];
 	
-	strcpy(old_PS2CRC, PS2CRC_STR);
+	u32 new_PS2CRC = Get_PS2CRC();
 	
-	sprintf(PS2CRC_STR, "%08lX", (long unsigned int) Get_PS2CRC());
+	if( new_PS2CRC == PS2CRC) return;
 	
-	char old_PnatchRes[128];
-	char new_PnatchRes[128];
-		
-	sprintf(old_PnatchRes, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnatchrest", ManaGunZ_id, old_PS2CRC);
-	sprintf(new_PnatchRes, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnatchrest", ManaGunZ_id, PS2CRC_STR);
+	char old[255];
+	char new[255];
 	
-	rename(old_PnatchRes, new_PnatchRes);
+	sprintf(old, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnatchrest", ManaGunZ_id, PS2CRC);
+	sprintf(new, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnatchrest", ManaGunZ_id, new_PS2CRC);
 	
-	char old_WSRes[128];
-	char new_WSRes[128];
+	if( path_info(old) == _FILE) {
+		if( rename(old, new) != 0) {
+			print_load("Error : failed to rename %08X.pnatchrest to %08X.pnatchrest", PS2CRC, new_PS2CRC);
+		}
+	}
 	
-	sprintf(old_WSRes, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, old_PS2CRC);
-	sprintf(new_WSRes, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
+	sprintf(old, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
+	sprintf(new, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, new_PS2CRC);
 	
-	rename(old_WSRes, new_WSRes);	
+	if( path_info(old) == _FILE) {
+		if( rename(old, new) != 0) {
+			print_load("Error : failed to rename %08X.wsrest to %08X.wsrest", PS2CRC, new_PS2CRC);
+		}
+	}
 	
-	sprintf(PS2ORICRC_STR, "%08lX", (long unsigned int) Get_Original_PS2CRC());
+	PS2CRC = new_PS2CRC;
 }
 
 u8 Apply_PS2PATCH(u32 patch_offset, u8 *patch_value, int patch_size)
@@ -25170,7 +27819,7 @@ u8 Apply_PS2PATCH(u32 patch_offset, u8 *patch_value, int patch_size)
 	
 	fclose(fi);
 	
-	memcpy((char *) &PS2ELF_mem[patch_offset], patch_value, patch_size);
+	memcpy((char *) PS2ELF_mem + patch_offset, patch_value, patch_size);
 	
 	update_PS2CRC();
 	
@@ -25181,7 +27830,7 @@ u8 is_pnached()
 {
 	char PnachRest[128];
 	
-	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2CRC_STR);
+	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);
 	
 	if(path_info(PnachRest) == _NOT_EXIST) return NO; else
 	return YES;
@@ -25189,12 +27838,12 @@ u8 is_pnached()
 
 u8 Pnach_exist()
 {
-	sprintf(pnach, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnach", ManaGunZ_id, PS2ORICRC_STR);
+	sprintf(pnach, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnach", ManaGunZ_id, PS2ORICRC);
 	if(path_info(pnach) == _FILE) return YES;
 	
 	int i;
 	for(i=0; i<=device_number; i++) {
-		sprintf(pnach, "/%s/PNACH/%s.pnach", list_device[i], PS2ORICRC_STR);
+		sprintf(pnach, "/%s/PNACH/%08X.pnach", list_device[i], PS2ORICRC);
 		if(path_info(pnach) == _FILE) return YES;
 	}
 	
@@ -25355,8 +28004,8 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 	while(fgets(line, 128, fp) != NULL) {
 		if( strstr(line, "patch") == NULL && strstr(line, "comment")==NULL && strstr(line, "gametitle")==NULL ) continue;
 		
-		if(strncmp(line, "patch=1", 7) == 0) 
-		{			
+		if(strncmp(line, "patch=", 6) == 0) 
+		{
 			if(strstr(line, ",") == NULL) continue;
 			
 			char *token;
@@ -25374,7 +28023,7 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 			if(token == NULL) continue;
 			token = strtok (NULL, ", "); //data
 			sscanf(token, "%8lX", &value);
-			new_data = value;
+			new_data = reverse32(value);
 			
 			offset = offset - (EntryPoint - 8 - ProgOffset);
 			offset = offset - (offset >> 28)*0x10000000;
@@ -25388,7 +28037,7 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 				return FAILED;
 			}
 			
-			new_data = reverse32(new_data);
+			
 			fseek(fi, file_offset + offset, SEEK_SET);
 			fread(&old_data, 4, 1, fi);
 			
@@ -25418,7 +28067,7 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 
 u8 WS_exist()
 {
-	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.ws", ManaGunZ_id, PS2ORICRC_STR);
+	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.ws", ManaGunZ_id, PS2ORICRC);
 	
 	if(path_info(WS) == _NOT_EXIST) return NO;
 	
@@ -25427,14 +28076,14 @@ u8 WS_exist()
 
 void get_WS()
 {
-	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.ws", ManaGunZ_id, PS2ORICRC_STR);
+	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.ws", ManaGunZ_id, PS2ORICRC);
 	
 	if(path_info(WS) != _NOT_EXIST) return;
 	
 	char ZIP_WS[32];
 	char ZIP[128];
 	
-	sprintf(ZIP_WS, "%s.pnach", PS2ORICRC_STR);
+	sprintf(ZIP_WS, "%08X.pnach", PS2ORICRC);
 	sprintf(ZIP, "/dev_hdd0/game/%s/USRDIR/sys/ws.zip", ManaGunZ_id);
 	
 	ExtractZipFile(ZIP, ZIP_WS, WS);
@@ -25444,7 +28093,7 @@ u8 is_WS()
 {
 	char WSRest[128];
 	
-	sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
+	sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
 	
 	if(path_info(WSRest) == _NOT_EXIST) return NO; else
 	return YES;
@@ -25590,7 +28239,7 @@ void init_PS2_GAME_MENU()
 		add_item_MENU(STR_ADD_LIMG, ITEM_TEXTBOX);
 	}
 	
-	if(COVER_offset[position] != 0) {
+	if(COVER_offset != 0) {
 		add_item_MENU(STR_CREATE_ICON0, ITEM_TEXTBOX);
 	}
 	
@@ -25700,13 +28349,30 @@ u8 PS2_GAME_MENU_CROSS()
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_REM_FAV)) {
-		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
-		else show_msg(STR_FAILED);
+		if(remove_favorite()==SUCCESS) {
+			show_msg(STR_DONE);
+			if(UI_position != XMB && Only_FAV) {
+				int i;
+				int old_position = position;
+				for(i=0; i<=game_number; i++) {
+					if(position-i<0 && game_number<position+i) break;
+					if(Show_it(position+i) == YES) {position+=i; break;}
+					if(Show_it(position-i) == YES) {position-=i; break;}
+				}
+				if(old_position == position && 0 <= position) position = -1;
+				return BREAK;
+			} else 
+			if(UI_position == XMB && XMB_H_position==XMB_COLUMN_FAVORITES) {
+				return BREAK;
+			}	
+		} else {
+			show_msg(STR_FAILED);
+		}
 	} else 
 	if(item_is(STR_REST_PNACH)) {
 		start_loading();
 		char PnachRest[128];
-		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2CRC_STR);
+		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);
 		u8 ret = restore_pnach(PnachRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg(STR_DONE);
@@ -25715,7 +28381,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_APPLY_PNACH)) {
 		start_loading();
 		char PnachRest[128];
-		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.pnachrest", ManaGunZ_id, PS2CRC_STR);
+		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);
 		u8 ret = apply_pnach(pnach, PnachRest);
 		end_loading();
 		
@@ -25725,7 +28391,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_ENABLE_WS)) {
 		start_loading();
 		char WSRest[128];
-		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
+		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
 		u8 ret = apply_pnach(WS, WSRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg(STR_DONE);
@@ -25734,7 +28400,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_DISABLE_WS)) {
 		start_loading();
 		char WSRest[128];
-		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%s.wsrest", ManaGunZ_id, PS2CRC_STR);
+		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
 		u8 ret = restore_pnach(WSRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg(STR_DONE);
@@ -25890,7 +28556,7 @@ void input_PS2_GAME_MENU()
 	get_R2speed();
 	
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
 			else ITEMS_POSITION--;
 		} else {
@@ -25900,7 +28566,7 @@ void input_PS2_GAME_MENU()
 	}
 	
 	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
 			else ITEMS_POSITION++;
 		} else {
@@ -25909,15 +28575,19 @@ void input_PS2_GAME_MENU()
 		}
 	}
 	
-	if(new_pad & BUTTON_CROSS) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
-			IN_ITEMS_VALUE = YES;
+	if(NewPad(BUTTON_CROSS)) {
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION]==0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			MENU_LVL = LVL_VALUE;
 		} else {
 			if( PS2_GAME_MENU_CROSS() == BREAK ) close_PS2_GAME_MENU();
 		}
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO) {
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(MENU_LVL == LVL_ITEMS) {
 			close_PS2_GAME_MENU();
 			if(PS2ELF_mem != NULL) {
 				free(PS2ELF_mem);
@@ -25927,7 +28597,7 @@ void input_PS2_GAME_MENU()
 		}
 		else {
 			init_PS2_GAME_MENU();
-			IN_ITEMS_VALUE = NO;
+			MENU_LVL = LVL_ITEMS;
 		}
 	}
 }
@@ -25935,12 +28605,12 @@ void input_PS2_GAME_MENU()
 void open_PS2_GAME_MENU()
 {
 	start_loading();
-	
+	USE_TITLE_MENU=NO;
 	new_MENU();
 	
 	Get_ID(list_game_path[position], list_game_platform[position], PS2_ID);
 	
-	update_PS2CRC();
+	init_PS2CRC();
 	get_WS();
 	
 	has_LIMG = LIMG_exist(list_game_path[position]);
@@ -26033,8 +28703,25 @@ u8 PSP_GAME_MENU_CROSS()
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_REM_FAV)) {
-		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
-		else show_msg(STR_FAILED);
+		if(remove_favorite()==SUCCESS) {
+			show_msg(STR_DONE);
+			if(UI_position != XMB && Only_FAV) {
+				int i;
+				int old_position = position;
+				for(i=0; i<=game_number; i++) {
+					if(position-i<0 && game_number<position+i) break;
+					if(Show_it(position+i) == YES) {position+=i; break;}
+					if(Show_it(position-i) == YES) {position-=i; break;}
+				}
+				if(old_position == position && 0 <= position) position = -1;
+				return BREAK;
+			} else 
+			if(UI_position == XMB && XMB_H_position==XMB_COLUMN_FAVORITES) {
+				return BREAK;
+			}	
+		} else {
+			show_msg(STR_FAILED);
+		}
 	} else 
 	if(item_is(STR_CHECK_CRC32)) {
 		start_loading();
@@ -26113,7 +28800,7 @@ void input_PSP_GAME_MENU()
 	get_R2speed();
 
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
 			else ITEMS_POSITION--;
 		} else {
@@ -26123,7 +28810,7 @@ void input_PSP_GAME_MENU()
 	}
 	
 	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
 			else ITEMS_POSITION++;
 		} else {
@@ -26132,18 +28819,22 @@ void input_PSP_GAME_MENU()
 		}
 	}
 	
-	if(new_pad & BUTTON_CROSS) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
-			IN_ITEMS_VALUE = YES;
+	if(NewPad(BUTTON_CROSS)) {
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION]==0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			MENU_LVL = LVL_VALUE;
 		} else {
 			if( PSP_GAME_MENU_CROSS() == BREAK ) close_PSP_GAME_MENU();
 		}
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO) close_PSP_GAME_MENU();
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(MENU_LVL == LVL_ITEMS) close_PSP_GAME_MENU();
 		else {
 			init_PSP_GAME_MENU();
-			IN_ITEMS_VALUE = NO;
+			MENU_LVL = LVL_ITEMS;
 		}
 	}
 }
@@ -26151,6 +28842,7 @@ void input_PSP_GAME_MENU()
 void open_PSP_GAME_MENU()
 {
 	start_loading();
+	USE_TITLE_MENU=NO;
 	new_MENU();
 	init_PSP_GAME_MENU();
 	MENU_SIDE=Use_SideMenu;
@@ -26198,7 +28890,7 @@ void init_PS1_GAME_MENU()
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 	
-	if(COVER_offset[position] != 0) {
+	if(COVER_offset != 0) {
 		add_item_MENU(STR_CREATE_ICON0, ITEM_TEXTBOX);
 	}
 	
@@ -26246,8 +28938,25 @@ u8 PS1_GAME_MENU_CROSS()
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_REM_FAV)) {
-		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
-		else show_msg(STR_FAILED);
+		if(remove_favorite()==SUCCESS) {
+			show_msg(STR_DONE);
+			if(UI_position != XMB && Only_FAV) {
+				int i;
+				int old_position = position;
+				for(i=0; i<=game_number; i++) {
+					if(position-i<0 && game_number<position+i) break;
+					if(Show_it(position+i) == YES) {position+=i; break;}
+					if(Show_it(position-i) == YES) {position-=i; break;}
+				}
+				if(old_position == position && 0 <= position) position = -1;
+				return BREAK;
+			} else 
+			if(UI_position == XMB && XMB_H_position==XMB_COLUMN_FAVORITES) {
+				return BREAK;
+			}	
+		} else {
+			show_msg(STR_FAILED);
+		}
 	} else 
 	if(item_is(STR_CHECK_MD5)) {
 		start_loading();
@@ -26322,11 +29031,11 @@ void input_PS1_GAME_MENU()
 	if(MENU==NO) return;
 	if(ICON0_creator == YES) return;
 	if(txt_viewer_activ == YES) return;
-	
+
 	get_R2speed();
 
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
 			else ITEMS_POSITION--;
 		} else {
@@ -26336,7 +29045,7 @@ void input_PS1_GAME_MENU()
 	}
 	
 	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
 			else ITEMS_POSITION++;
 		} else {
@@ -26345,18 +29054,22 @@ void input_PS1_GAME_MENU()
 		}
 	}
 	
-	if(new_pad & BUTTON_CROSS) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
-			IN_ITEMS_VALUE = YES;
+	if(NewPad(BUTTON_CROSS)) {
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION]==0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			MENU_LVL = LVL_VALUE;
 		} else {
 			if( PS1_GAME_MENU_CROSS() == BREAK ) close_PS1_GAME_MENU();
 		}
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO) close_PS1_GAME_MENU();
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(MENU_LVL == LVL_ITEMS) close_PS1_GAME_MENU();
 		else {
 			init_PS1_GAME_MENU();
-			IN_ITEMS_VALUE = NO;
+			MENU_LVL = LVL_ITEMS;
 		}
 	}
 }
@@ -26364,6 +29077,7 @@ void input_PS1_GAME_MENU()
 void open_PS1_GAME_MENU()
 {
 	start_loading();
+	USE_TITLE_MENU=NO;
 	new_MENU();
 	init_PS1_GAME_MENU();
 	MENU_SIDE=Use_SideMenu;
@@ -26401,17 +29115,17 @@ void LoadEID5_IDPS()
     u64 buffer[ 0x40 ];
     int ret = 1;
     
-    ret = open_device( 0x100000000000004ull, &source );
+    ret = sys_storage_open( FLASH_NOR, &source );
     
     if( ret != 0 ) {
 		offset = 0x20D; 
-		close_device( source );
-		open_device( 0x100000000000001ull, &source );
+		sys_storage_close( source );
+		sys_storage_open( FLASH_NAND, &source );
 	}
 	else offset = 0x181; 
    
-    read_device( source, offset, 0x1, buffer, &read, 0x22 );
-	close_device( source );
+    sys_storage_read( source, offset, 0x1, buffer, &read, 0x22 );
+	sys_storage_close( source );
 	
 	memcpy(IDPS, &buffer[ 0x3a ], 0x10);
 }
@@ -26421,17 +29135,17 @@ u8 CHOOSE_IDPS_position=0;
 void Draw_CHOOSE_IDPS_menu()
 {
 	int x = 70;
-	int y = 512/2;
+	
 	int x1=x;
+	float h = 15+25+10+15;
+	float y = 512/2 - h/2;
 	
 	FontSize(20);
 	
-	u8 i;
-	for(i=0; i<0x10; i++) x1=DrawString(x1, -50, "FF");
-	
 	Draw_Box(0, 0, 0, 0, 848, 512, 0x00000080, NO);
-	Draw_Box(50, y-15 , 0, 10, x1+20+20, 15+25+10+15, GREY, NO);
+	Draw_Box(0, y, 0, 0, X_MAX, h, GREY, NO);
 	
+	y+=15;
 	
 	FontColor(COLOR_3);
 	SetFontZ(0);
@@ -26617,7 +29331,7 @@ void Draw_CHOOSE_IDPS_menu()
 
 u8 input_CHOOSE_IDPS()
 {
-	if(new_pad & BUTTON_DOWN) {
+	if(NewPad(BUTTON_DOWN)) {
 	
 		if(CHOOSE_IDPS_position==0) {
 			if(IDPS[0x5] - (IDPS[0x5] >> 4)*0x10 > 0x2) IDPS[0x5]--;
@@ -26676,7 +29390,7 @@ u8 input_CHOOSE_IDPS()
 		}
 	}
 	
-	if(new_pad & BUTTON_UP) {
+	if(NewPad(BUTTON_UP)) {
 		if(CHOOSE_IDPS_position==0) {
 			if(IDPS[0x5] - (IDPS[0x5] >> 4)*0x10 < 0xF)	IDPS[0x5]++;
 		} else
@@ -26734,27 +29448,27 @@ u8 input_CHOOSE_IDPS()
 		}
 	}
 	
-	if(new_pad & BUTTON_RIGHT) {
+	if(NewPad(BUTTON_RIGHT)) {
 		if(0 <= CHOOSE_IDPS_position && CHOOSE_IDPS_position < 17) {
 			CHOOSE_IDPS_position++;
 		}
 	}
 	
-	if(new_pad & BUTTON_LEFT) {
+	if(NewPad(BUTTON_LEFT)) {
 		if(0 < CHOOSE_IDPS_position && CHOOSE_IDPS_position <= 17) {
 			CHOOSE_IDPS_position--;
 		}
 	}
 	
-	if(new_pad & BUTTON_SQUARE) {
+	if(NewPad(BUTTON_SQUARE)) {
 		peek_IDPS();
 	}
 	
-	if(new_pad & BUTTON_TRIANGLE) {
+	if(NewPad(BUTTON_TRIANGLE)) {
 		LoadEID5_IDPS();
 	}
 	
-	if(new_pad & BUTTON_CIRCLE) {
+	if(NewPad(BUTTON_CIRCLE)) {
 		return BREAK;
 	}
 	
@@ -26787,8 +29501,8 @@ void Draw_CHOOSE_IDPS()
 		
 		tiny3d_Flip();
 		ScreenShot();
-		
 		ps3pad_read();
+		
 				
 		if(input_CHOOSE_IDPS() == BREAK) {
 			LoopBreak=0;
@@ -26801,7 +29515,7 @@ void Draw_CHOOSE_IDPS()
 
 void close_PS3_GAME_MENU()
 {
-	write_game_setting(list_game_title[position]);
+	write_game_setting(position);
 	Draw_MENU_input = &EmptyFunc;
 	input_MENU = &EmptyFunc;
 	MENU=NO;
@@ -26815,86 +29529,74 @@ void init_PS3_GAME_MENU()
 	init_MENU();
 	
 	add_title_MENU(STR_GAME_SETTINGS);
-	
-	add_item_MENU(STR_DIRECT_BOOT, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direct_boot;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	if(PEEKnPOKE) {
-
-		add_item_MENU(STR_CLEAN_SYSCALL, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = clean_syscall;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
-		add_item_MENU(STR_CHANGE_IDPS, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = change_IDPS;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	}
-	
-	add_item_MENU(STR_EXT_GAME_DATA, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = ext_game_data;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	add_item_MENU(STR_PAYLOAD, ITEM_TEXTBOX);
-	if(cobra) add_item_value_MENU("Cobra");
-	else add_item_value_MENU("Mamba");
+	add_item_MENU(STR_DIRECT_BOOT, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direct_boot;
+		
 	if(PEEKnPOKE) {
-		if(iso == NO) {	
+		add_item_MENU(STR_CLEAN_SYSCALL, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = clean_syscall;
+			
+		add_item_MENU(STR_CHANGE_IDPS, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = change_IDPS;
+	}
+		
+	add_item_MENU(STR_EXT_GAME_DATA, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = ext_game_data;
+	
+	
+	if(iso || HEN) {
+		add_item_MENU(STR_PAYLOAD, ITEM_LOCKED);
+		if(cobra) add_item_value_MENU("Cobra");
+		else add_item_value_MENU("Mamba");
+	} else {
+		add_item_MENU(STR_PAYLOAD, ITEM_TEXTBOX);
+		if(cobra) add_item_value_MENU("Cobra");
+		else add_item_value_MENU("Mamba");
+		if(PEEKnPOKE) {
 			add_item_value_MENU("Iris");
 			add_item_value_MENU("multiMAN");
 		}
 	}
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = payload;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
+		
 	if(iso == NO) {	
-		if(cobra==YES && usb==YES) {
-			add_item_MENU(STR_PRIM_USB, ITEM_TEXTBOX);
-			add_item_value_MENU(STR_NO);
-			add_item_value_MENU(STR_YES);
+		if(cobra && usb) {
+			add_item_MENU(STR_PRIM_USB, ITEM_TOGGLE);
 			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = prim_USB;
-			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		}
 		
-		add_item_MENU(STR_BDEMU, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NONE);
-		add_item_value_MENU("BDMIRROR");
-		add_item_value_MENU("BDEMU");
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		if(emu==BDEMU) {
-			add_item_MENU(STR_PATCH_LIBFS, ITEM_TEXTBOX);
-			add_item_value_MENU("reactPSN");
-			add_item_value_MENU("Iris");
-			add_item_value_MENU("multiMAN");
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = libfs_from;
+		if( HEN ) {
+			add_item_MENU("BDMIRROR", ITEM_TOGGLE);
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
+		} else {
+			add_item_MENU(STR_BDEMU, ITEM_TEXTBOX);
+			add_item_value_MENU(STR_NONE);
+			add_item_value_MENU("BDMIRROR");
+			add_item_value_MENU("BDEMU");
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
 			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+			
+			if(emu==BDEMU) {
+				add_item_MENU(STR_PATCH_LIBFS, ITEM_TEXTBOX);
+				add_item_value_MENU("reactPSN");
+				add_item_value_MENU("Iris");
+				add_item_value_MENU("multiMAN");
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = libfs_from;
+				ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+			}
 		}
 	}
 	
-	add_item_MENU(STR_MOUNT_APPHOME, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
+	add_item_MENU(STR_MOUNT_APPHOME, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = mount_app_home;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	if(mount_app_home==YES) {
-		add_item_MENU(STR_PATCH_EXP, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
+	if(mount_app_home && !HEN) {
+		add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	}
-	
+
 	add_title_MENU(STR_GAME_OPTION);
 		
 	if(is_favorite(list_game_path[position]) == NO) {
@@ -26923,15 +29625,17 @@ void init_PS3_GAME_MENU()
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 	
-	add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);
+	// add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);
 	
-	add_item_MENU(STR_PATCH_EBOOT, ITEM_TEXTBOX);
-	
-	if(iso==NO) {
-		if(is_resigned_GAME(list_game_path[position])==NO) {
-			add_item_MENU(STR_RESIGN, ITEM_TEXTBOX);
-		} else {
-			add_item_MENU(STR_RESTORE, ITEM_TEXTBOX);
+	if( !HEN ) {
+		add_item_MENU(STR_PATCH_EBOOT, ITEM_TEXTBOX);
+		
+		if(iso==NO) {
+			if(is_resigned_GAME(list_game_path[position])==NO) {
+				add_item_MENU(STR_RESIGN, ITEM_TEXTBOX);
+			} else {
+				add_item_MENU(STR_RESTORE, ITEM_TEXTBOX);
+			}
 		}
 	}
 	
@@ -26955,8 +29659,7 @@ void init_PS3_GAME_MENU()
 	add_item_MENU(STR_CHECK_IRD, ITEM_TEXTBOX);
 	add_item_MENU(STR_DL_UPDATE, ITEM_TEXTBOX);
 	
-	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);
-	
+	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);	
 }
 
 void PS3_GAME_MENU_UPDATE()
@@ -26979,7 +29682,7 @@ void PS3_GAME_MENU_UPDATE()
 	if(item_is(STR_PRIM_USB)) {
 		prim_USB = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is(STR_BDEMU)) {
+	if(item_is(STR_BDEMU) || item_is("BDMIRROR")) {
 		emu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
 	if(item_is(STR_PATCH_LIBFS)) {
@@ -26997,9 +29700,6 @@ void PS3_GAME_MENU_UPDATE()
 
 u8 PS3_GAME_MENU_CROSS()
 {
-	if(item_is(STR_CHANGE_IDPS)) {
-		Draw_CHOOSE_IDPS();
-	} else 
 	if(item_is(STR_RENAME)) {
 		char tmpName[128];
 		strcpy(tmpName, list_game_title[position]);
@@ -27018,23 +29718,37 @@ u8 PS3_GAME_MENU_CROSS()
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_REM_FAV)) {
-		if(remove_favorite()==SUCCESS) show_msg(STR_DONE); 
-		else show_msg(STR_FAILED);
+		if(remove_favorite()==SUCCESS) {
+			show_msg(STR_DONE);
+			if(UI_position != XMB && Only_FAV) {
+				int i;
+				int old_position = position;
+				for(i=0; i<=game_number; i++) {
+					if(position-i<0 && game_number<position+i) break;
+					if(Show_it(position+i) == YES) {position+=i; break;}
+					if(Show_it(position-i) == YES) {position-=i; break;}
+				}
+				if(old_position == position && 0 <= position) position = -1;
+				return BREAK;
+			} else 
+			if(UI_position == XMB && XMB_H_position==XMB_COLUMN_FAVORITES) {
+				return BREAK;
+			}	
+		} else {
+			show_msg(STR_FAILED);
+		}
 	} else 
 	if(item_is(STR_MAKE_SHTCUT_PKG)) {
 		
 		char mk_pkg_ID[10];
-		if( GetParamSFO("TITLE_ID", mk_pkg_ID, position, NULL) == SUCCESS ) {
-			mk_pkg_ID[0]='N';
-			mk_pkg_ID[1]='P'; 
-			mk_pkg_ID[3]='B';
-			mk_pkg_ID[4]='4';
-		} else strcpy(mk_pkg_ID, "NPEB40000");
+		if( list_game_ID[position] != NULL ) strcpy(mk_pkg_ID, list_game_ID[position]);
+		else strcpy(mk_pkg_ID, "NPEB40000");
+		
 		if(Get_OSK_String("Title ID", mk_pkg_ID, 10) == SUCCESS) {
 			if(mk_pkg_ID[0]!=0) {
 				u8 ret;
 				start_loading();
-				ret=make_launcher_pkg(mk_pkg_ID);
+				ret=make_launcher_pkg(mk_pkg_ID, list_game_path[position]);
 				end_loading();
 				if(ret == SUCCESS) show_msg(STR_DONE);
 				else show_msg(STR_FAILED);
@@ -27106,9 +29820,9 @@ u8 PS3_GAME_MENU_CROSS()
 			
 			sort_GAMELIST();
 		
-			read_fav();
+			init_Load_GAMEPIC();
 			
-			start_Load_GamePIC();
+			read_fav();
 			
 			show_msg(STR_DONE);
 		} 
@@ -27141,11 +29855,11 @@ u8 PS3_GAME_MENU_CROSS()
 			add_GAMELIST(IsoGame);
 			
 			sort_GAMELIST();
+			
+			init_Load_GAMEPIC();
 		
 			read_fav();
-			
-			start_Load_GamePIC();
-			
+						
 			show_msg(STR_DONE);
 		} 
 		else 
@@ -27178,7 +29892,7 @@ u8 PS3_GAME_MENU_CROSS()
 		}
 	} else 
 	if(item_is(STR_DL_UPDATE)) {
-		get_game_update(position);
+		get_game_update();
 	} else 
 	if(item_is(STR_PROPS)) {
 		start_loading();
@@ -27197,14 +29911,25 @@ u8 PS3_GAME_MENU_CROSS()
 	return CONTINUE;
 }
 
-void PS3_GAME_MENU_SQUARE()
+u8 PS3_GAME_MENU_SQUARE()
 {
-	
+	return CONTINUE;
 }
 
-void PS3_GAME_MENU_TRIANGLE()
+u8 PS3_GAME_MENU_TRIANGLE()
 {
-	
+	return CONTINUE;
+}
+
+u8 PS3_GAME_MENU_R1()
+{
+	if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {	
+		if(item_is(STR_CHANGE_IDPS) && change_IDPS) {
+			Draw_CHOOSE_IDPS();
+		}
+	}
+
+	return CONTINUE;
 }
 
 void input_PS3_GAME_MENU()
@@ -27212,65 +29937,175 @@ void input_PS3_GAME_MENU()
 	if(MENU==NO) return;
 	if(ICON0_creator == YES) return;
 	if(txt_viewer_activ == YES) return;
+
+	int i;
 	
 	get_R2speed();
-
+	
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
-			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
-			else ITEMS_POSITION--;
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				u8 twice=NO;
+				if(TITLES[ITEMS_POSITION]==NULL) twice=YES;
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos = ITEMS_POSITION-i;
+					if( i_pos < 0 ) i_pos+=ITEMS_NUMBER+1;
+					if(TITLES[i_pos] != NULL) {
+						if(twice==NO) {
+							ITEMS_POSITION = i_pos;
+							break;
+						} else twice=NO;
+					}
+				}
+			} else if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION==TITLE_MENU_FIRST_ITEM) ITEMS_POSITION=TITLE_MENU_LAST_ITEM;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
 		} else {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
-		}
-	}
-	
-	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
-			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
-			else ITEMS_POSITION++;
-		} else {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
-		}
-	}
-	
-	PS3_GAME_MENU_UPDATE();
-	
-	if(new_pad & BUTTON_CROSS) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
-			IN_ITEMS_VALUE = YES;
-		} else {
-			if(PS3_GAME_MENU_CROSS() == BREAK) close_PS3_GAME_MENU();
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
 		}
 	} else
-	if(new_pad & BUTTON_SQUARE) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+	if(R2pad(BUTTON_DOWN)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL==LVL_TITLE) {
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos=ITEMS_POSITION+i;
+					if(ITEMS_NUMBER<i_pos) i_pos-=ITEMS_NUMBER+1;
+					if(TITLES[i_pos]!=NULL) {
+						ITEMS_POSITION=i_pos;
+						break;
+					}
+				}
+			} else
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION == TITLE_MENU_LAST_ITEM) ITEMS_POSITION = TITLE_MENU_FIRST_ITEM;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}				
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_CROSS)) {
+		if(MENU_LVL == LVL_TITLE) {
+			MENU_LVL = LVL_ITEMS;
+		} else 
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) ITEMS_VALUE_POSITION[ITEMS_POSITION]=YES;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=NO;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			MENU_LVL = LVL_VALUE;
+		} else {
+			if(PS3_GAME_MENU_CROSS() == BREAK) {
+				close_PS3_GAME_MENU();
+				return;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_SQUARE)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
 			}
 		} else {
-			PS3_GAME_MENU_SQUARE(); 
+			if(PS3_GAME_MENU_SQUARE() == BREAK) {
+				close_PS3_GAME_MENU();
+				return;
+			}
 		}
 	} else
-	if(new_pad & BUTTON_TRIANGLE) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+	if(NewPad(BUTTON_TRIANGLE)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
 			}
 		} else {
-			PS3_GAME_MENU_TRIANGLE(); 
+			if(PS3_GAME_MENU_TRIANGLE() == BREAK) {
+				close_PS3_GAME_MENU();
+				return;
+			}
 		}
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO) close_PS3_GAME_MENU();
-		else {
-			init_PS3_GAME_MENU();
-			IN_ITEMS_VALUE = NO;
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				close_PS3_GAME_MENU(); 
+				return;
+			} else 
+			if(MENU_LVL == LVL_ITEMS) {
+				MENU_LVL = LVL_TITLE;
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				MENU_LVL = LVL_ITEMS;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				close_PS3_GAME_MENU(); 
+				return;
+			} else {
+				MENU_LVL = LVL_ITEMS;
+				init_PS3_GAME_MENU();
+			}
+		}
+	} else 
+	if(NewPad(BUTTON_R1)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else {
+			PS3_GAME_MENU_R1();
 		}
 	}
+	
+	if(new_pad) PS3_GAME_MENU_UPDATE();
 }
 
 void Draw_PS3_GAME_MENU_input()
@@ -27284,7 +30119,7 @@ void Draw_PS3_GAME_MENU_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	if(IN_ITEMS_VALUE == YES) {
+	if(MENU_LVL == LVL_VALUE) {
 		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	} else {
 		x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
@@ -27295,25 +30130,35 @@ void Draw_PS3_GAME_MENU_input()
 			}
 		}	
 	}
+	if( item_is(STR_CHANGE_IDPS) && change_IDPS) {
+		x=DrawButton(x, y, STR_EDIT_IDPS, BUTTON_R1);
+	}
 
 }
 
 void open_PS3_GAME_MENU()
 {
-	start_loading();
+	//start_loading();
+	
+	read_game_setting(position);
+	
+	USE_TITLE_MENU=NO;
 	new_MENU();
-	read_game_setting(list_game_title[position]);
-	init_PS3_GAME_MENU();
 	MENU_SIDE=Use_SideMenu;
 	if(MENU_SIDE) MENU_ITEMS_X=X_MAX;
+	
 	Draw_MENU_input = &Draw_PS3_GAME_MENU_input;
 	input_MENU = &input_PS3_GAME_MENU;
-	end_loading();
+	
+	init_PS3_GAME_MENU();
+	
+	new_pad = 0;
+	
+	//end_loading();
 }
 
 void open_GameMenu()
 {
-	
 	if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
 		open_PS3_GAME_MENU();
 	} else
@@ -27333,6 +30178,9 @@ void open_GameMenu()
 // SETTINGS MENU
 //*******************************************************
 
+#define PLUGINS_PATH			"/dev_hdd0/plugins"
+#define PLUGINS_PATH_LENGTH		17
+
 u8 BOOTFILE_ITEM;
 
 void close_PLUGINS_MANAGER()
@@ -27340,8 +30188,40 @@ void close_PLUGINS_MANAGER()
 	Draw_MENU_input = &EmptyFunc;
 	input_MENU = &EmptyFunc;
 	free_MENU();
+	
 	open_SETTINGS();
 }
+
+void GetPlugins(char *PluginsPath)
+{
+	char temp[512];
+	
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(PluginsPath);
+	if(d!=NULL) {			
+		while ((dir = readdir(d))) {
+			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+			
+			sprintf(temp, "%s/%s", PluginsPath, dir->d_name);
+		
+			if(dir->d_type & DT_DIR) GetPlugins(temp);
+			
+			if(get_ext(dir->d_name) != _SPRX) continue;
+			
+			if(ITEMS_NUMBER==MENU_MAX_ITEMS-1) break;
+			
+			add_item_MENU(&temp[PLUGINS_PATH_LENGTH+1], ITEM_CHECKBOX);
+			
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = is_it_inside(ITEMS_VALUE[BOOTFILE_ITEM][ITEMS_VALUE_POSITION[BOOTFILE_ITEM]], temp);
+			
+		}
+		closedir(d);
+	}
+}
+
+u8 cobra_bootfile_exist = NO;
+u8 mamba_bootfile_exist = NO;
 
 void init_PLUGINS_MANAGER()
 {
@@ -27376,18 +30256,30 @@ void init_PLUGINS_MANAGER()
 	
 	add_title_MENU(STR_PLUGIN_MANAGER);
 	add_item_MENU(STR_BOOT_FILE, ITEM_TEXTBOX);
+	
+	if( cobra ) {
+		if(path_info("/dev_hdd0/boot_plugins.txt") == _FILE) {
+			cobra_bootfile_exist = YES;
+			add_item_value_MENU("/dev_hdd0/boot_plugins.txt");
+		} else {
+			cobra_bootfile_exist = NO;
+		}
+	} else 
+	if( mamba ) {
+		if(path_info("/dev_hdd0/mamba_plugins.txt") == _FILE) {
+			mamba_bootfile_exist = YES;
+			add_item_value_MENU("/dev_hdd0/mamba_plugins.txt");
+		} else {
+			mamba_bootfile_exist = NO;
+		}
+	}
 	if(path_info("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt") == _FILE) {
 		add_item_value_MENU("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt");
 	}
 	if(path_info("/dev_hdd0/prx_plugins.txt") == _FILE) {
 		add_item_value_MENU("/dev_hdd0/prx_plugins.txt");
 	}
-	if(path_info("/dev_hdd0/mamba_plugins.txt") == _FILE) {
-		add_item_value_MENU("/dev_hdd0/mamba_plugins.txt");
-	}
-	if(path_info("/dev_hdd0/boot_plugins.txt") == _FILE) {
-		add_item_value_MENU("/dev_hdd0/boot_plugins.txt");
-	}
+	
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
 	BOOTFILE_ITEM = ITEMS_NUMBER;
@@ -27398,11 +30290,13 @@ void init_PLUGINS_MANAGER()
 	FILE* f = fopen(ITEMS_VALUE[BOOTFILE_ITEM][ITEMS_VALUE_POSITION[BOOTFILE_ITEM]], "r");
 	if(f) {
 		char line[255];
-		int l = strlen("/dev_hdd0/plugins");
+		int l = strlen(PLUGINS_PATH);
 		while(fgets(line, 255, f) != NULL) {
 			if(line[0]=='\r' || line[0]=='\n') continue;
-			strtok(line, "\r\n");
-			if(strncmp(line, "/dev_hdd0/plugins", l) != 0) {
+			if(strstr(line, "\r") != NULL) strtok(line, "\r");
+			if(strstr(line, "\n") != NULL) strtok(line, "\n");
+			
+			if(strncmp(line, PLUGINS_PATH, l) != 0) {
 				if(ITEMS_NUMBER==MENU_MAX_ITEMS-1) break;
 				add_item_MENU(line, ITEM_TEXTBOX);
 			}
@@ -27410,24 +30304,43 @@ void init_PLUGINS_MANAGER()
 		fclose(f);
 	}
 	
-	DIR *d;
-	struct dirent *dir;
-	d = opendir("/dev_hdd0/plugins");
-	if(d!=NULL) {			
-		while ((dir = readdir(d))) {
-			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
-			if(get_ext(dir->d_name) == _SPRX) {
-				if(ITEMS_NUMBER==MENU_MAX_ITEMS-1) break;
-				add_item_MENU(dir->d_name, ITEM_CHECKBOX);
-				sprintf(temp, "/dev_hdd0/plugins/%s", dir->d_name);
-				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = is_it_inside(ITEMS_VALUE[BOOTFILE_ITEM][ITEMS_VALUE_POSITION[BOOTFILE_ITEM]], temp);
-			}	
-		}
-		closedir(d);
-	}
+	GetPlugins(PLUGINS_PATH);
 	
 	MENU_TABLE_END=ITEMS_NUMBER;
 	MENU_COLUMN_ITEMS_NUMBER = 1+(ITEMS_NUMBER-BOOTFILE_ITEM)/4;
+}
+
+u8 PLUGINS_MANAGER_R1()
+{
+	if(ITEMS_POSITION == BOOTFILE_ITEM) {
+		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			open_txt_viewer(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		}
+	}
+	
+	init_PLUGINS_MANAGER();
+	
+	return CONTINUE;
+}
+
+u8 PLUGINS_MANAGER_L1()
+{
+	if(ITEMS_POSITION == BOOTFILE_ITEM) {
+		FILE* f=NULL;
+		if(cobra && !cobra_bootfile_exist) {
+			f=fopen("/dev_hdd0/boot_plugins.txt", "wb");
+			if(f) cobra_bootfile_exist=YES;
+		} else 
+		if(mamba && !mamba_bootfile_exist) {
+			f=fopen("/dev_hdd0/mamba_plugins.txt", "wb");
+			if(f) mamba_bootfile_exist=YES;
+		}
+		if(f) fclose(f);
+	}
+	
+	init_PLUGINS_MANAGER();
+	
+	return CONTINUE;
 }
 
 u8 PLUGINS_MANAGER_CROSS()
@@ -27443,30 +30356,33 @@ u8 PLUGINS_MANAGER_CROSS()
 // BOOT FILE
 	if(ITEMS_POSITION == BOOTFILE_ITEM) {
 		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
-			if(cobra || mamba) {
-				FILE* f=NULL;
-				if(cobra) f=fopen("/dev_hdd0/boot_plugins.txt", "wb"); else
-				if(mamba) f=fopen("/dev_hdd0/mamba_plugins.txt", "wb");	
-				if(f) fclose(f);
+			FILE* f=NULL;
+			if(cobra) {
+				f=fopen("/dev_hdd0/boot_plugins.txt", "wb"); 
+				if(f) cobra_bootfile_exist=YES;
+			} else
+			if(mamba) {
+				f=fopen("/dev_hdd0/mamba_plugins.txt", "wb");
+				if(f) mamba_bootfile_exist=YES;
 			}
+			if(f) fclose(f);
 		} else {
 			open_txt_viewer(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 		}
-
 	} else 
 // PLUGIN MANAGER
 	if(ITEMS_POSITION > BOOTFILE_ITEM) { 
 		if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_TEXTBOX) {
-			char NewPath[255];
-			sprintf(NewPath, "/dev_hdd0/plugins/%s", &strrchr(ITEMS[ITEMS_POSITION], '/')[1]);
+			char NewPath[255] = {0};
+			sprintf(NewPath, PLUGINS_PATH "/%s", &strrchr(ITEMS[ITEMS_POSITION], '/')[1]);
 			if( Move(ITEMS[ITEMS_POSITION], NewPath) == SUCCESS) {
 				remove_from_list(ITEMS_VALUE[BOOTFILE_ITEM][ITEMS_VALUE_POSITION[BOOTFILE_ITEM]], ITEMS[ITEMS_POSITION]);
 				add_to_list(ITEMS_VALUE[BOOTFILE_ITEM][ITEMS_VALUE_POSITION[BOOTFILE_ITEM]], NewPath);
 			}
 		} else 
 		if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_CHECKBOX) {
-			char temp[128];
-			sprintf(temp, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
+			char temp[255] = {0};
+			sprintf(temp, PLUGINS_PATH "/%s", ITEMS[ITEMS_POSITION]);
 			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) 
 				remove_from_list(ITEMS_VALUE[BOOTFILE_ITEM][ITEMS_VALUE_POSITION[BOOTFILE_ITEM]], temp);
 			else 
@@ -27481,14 +30397,13 @@ u8 PLUGINS_MANAGER_CROSS()
 
 u8 PLUGINS_MANAGER_SQUARE()
 {
-	
 	if(ITEMS_POSITION > BOOTFILE_ITEM) {
 		char diag_msg[512];
 		sprintf(diag_msg, "%s '%s' ?", STR_ASK_DEL, ITEMS[ITEMS_POSITION]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			char prx_path[128];
 			if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX) {
-				sprintf(prx_path, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
+				sprintf(prx_path, PLUGINS_PATH "/%s", ITEMS[ITEMS_POSITION]);
 			} else 
 			if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_TEXTBOX) {
 				strcpy(prx_path, ITEMS[ITEMS_POSITION]);
@@ -27512,7 +30427,7 @@ u8 PLUGINS_MANAGER_TRIANGLE()
 			if(strcmp(&strrchr(ITEMS[i], ' ')[1], STR_UNUSED)==0) {
 				char prx_path[128];
 				if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX) {
-					sprintf(prx_path, "/dev_hdd0/plugins/%s", ITEMS[ITEMS_POSITION]);
+					sprintf(prx_path, PLUGINS_PATH "/%s", ITEMS[ITEMS_POSITION]);
 				} else 
 				if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_TEXTBOX) {
 					strcpy(prx_path, ITEMS[ITEMS_POSITION]);
@@ -27530,6 +30445,19 @@ u8 PLUGINS_MANAGER_TRIANGLE()
 
 void input_PLUGINS_MANAGER()
 {
+	if(MENU==NO) return;
+	if(txt_viewer_activ) {
+		// if the user delete the file from txt_viewer
+		if(NewPad(BUTTON_SQUARE)) {
+			txt_viewer_activ=NO;				
+			FREE(txt_viewer_content);
+			FREE(txt_viewer_path);
+			MENU_LVL = LVL_ITEMS;
+			init_PLUGINS_MANAGER();
+		}
+		return;
+	}
+	
 	get_R2speed();
 	
 	if(MENU_TABLE_START < ITEMS_POSITION && ITEMS_POSITION <=MENU_TABLE_END) {
@@ -27542,7 +30470,7 @@ void input_PLUGINS_MANAGER()
 	}
 	
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
 			else ITEMS_POSITION--;
 		} else {
@@ -27551,7 +30479,7 @@ void input_PLUGINS_MANAGER()
 		}
 	} else
 	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
+		if(MENU_LVL == LVL_ITEMS) {
 			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
 			else ITEMS_POSITION++;
 		} else {
@@ -27559,34 +30487,46 @@ void input_PLUGINS_MANAGER()
 			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
 		}
 	} else
-	if(new_pad & BUTTON_CROSS) {
+	if(NewPad(BUTTON_CROSS)) {
 		if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX ) {
 			PLUGINS_MANAGER_CROSS();
 		} else
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1 ) {
-			IN_ITEMS_VALUE = YES;
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1 ) {
+			MENU_LVL = LVL_VALUE;
 		} else {
 			if(PLUGINS_MANAGER_CROSS() == BREAK) close_PLUGINS_MANAGER();
 		}
 	} else
-	if(new_pad & BUTTON_SQUARE) {
+	if(NewPad(BUTTON_SQUARE)) {
 		if(PLUGINS_MANAGER_SQUARE() == BREAK) close_PLUGINS_MANAGER();
 	} else
-	if(new_pad & BUTTON_TRIANGLE) {
+	if(NewPad(BUTTON_TRIANGLE)) {
 		if(PLUGINS_MANAGER_TRIANGLE() == BREAK) close_PLUGINS_MANAGER();
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO) close_PLUGINS_MANAGER();
+	if(NewPad(BUTTON_R1)) {
+		if( PLUGINS_MANAGER_R1() == BREAK) close_PLUGINS_MANAGER();
+	} else
+	if(NewPad(BUTTON_L1)) {
+		if( PLUGINS_MANAGER_L1() == BREAK) close_PLUGINS_MANAGER();
+	} else
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(MENU_LVL == LVL_ITEMS) close_PLUGINS_MANAGER();
 		else {
 			init_PLUGINS_MANAGER();
-			IN_ITEMS_VALUE = NO;
+			MENU_LVL = LVL_ITEMS;
 		}
 	}
+
 }
 
 void Draw_PLUGINS_MANAGER_input()
 {
 	if(MENU==NO) return;
+	if(txt_viewer_activ) return;
 	
 	float x=INPUT_X;
 	float y=INPUT_Y;
@@ -27597,13 +30537,17 @@ void Draw_PLUGINS_MANAGER_input()
 		x=DrawButton(x, y, STR_UNLOAD, BUTTON_CROSS);
 	} else
 	if(ITEMS_POSITION == BOOTFILE_ITEM) {
-		if(IN_ITEMS_VALUE == YES) {
-			x=DrawButton(x, y, STR_VIEW, BUTTON_CROSS);
-		} else
-		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
-			if(cobra || mamba)	x=DrawButton(x, y, STR_CREATE, BUTTON_CROSS);
-		} else {
-			x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+		if(MENU_LVL != LVL_VALUE) {
+			x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);			
+		}
+		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			x=DrawButton(x, y, STR_VIEW, BUTTON_R1);
+		}
+		if( cobra && !cobra_bootfile_exist ) {
+			x=DrawButton(x, y, STR_CREATE, BUTTON_L1);
+		} else 
+		if( mamba && !mamba_bootfile_exist) {
+			x=DrawButton(x, y, STR_CREATE, BUTTON_L1);
 		}
 	} else
 	if(ITEMS_POSITION > BOOTFILE_ITEM) {
@@ -27623,8 +30567,8 @@ void Draw_PLUGINS_MANAGER_input()
 
 u8 open_PLUGINS_MANAGER()
 {
-	if( path_info("/dev_hdd0/plugins") == _NOT_EXIST) {
-		if( DrawDialogYesNo(STR_ASK_PLUGINS) == YES) mkdir("/dev_hdd0/plugins", 0777);
+	if( path_info(PLUGINS_PATH) == _NOT_EXIST) {
+		if( DrawDialogYesNo(STR_ASK_PLUGINS) == YES) mkdir(PLUGINS_PATH, 0777);
 		else return CONTINUE;
 	}
 	
@@ -27632,13 +30576,15 @@ u8 open_PLUGINS_MANAGER()
 	
 	close_SETTINGS();
 	
+	USE_TITLE_MENU=NO;
+	MENU_SIDE = NO;
 	new_MENU();
 	
 	if(PEEKnPOKE) {
 		if(!cobra && !mamba) mamba = install_mamba();
 	}
 	init_PLUGINS_MANAGER();
-	MENU_SIDE = NO;
+	
 	Draw_MENU_input = &Draw_PLUGINS_MANAGER_input;
 	input_MENU = &input_PLUGINS_MANAGER;
 	
@@ -27724,7 +30670,9 @@ void Draw_AdjustScreen()
 
 			FontColor(BLACK);
 			FontSize(15);
-			if(Show_TVTEST != -1 && Load_GamePIC==NO) x=DrawButton(x, INPUT_Y, STR_SHOWTV, BUTTON_CROSS);
+			
+			//if(Show_TVTEST != -1) x=DrawButton(x, INPUT_Y, STR_SHOWTV, BUTTON_CROSS);
+			if(Show_TVTEST != -1 && Load_GAMEPIC_busy==NO) x=DrawButton(x, INPUT_Y, STR_SHOWTV, BUTTON_CROSS);
 		} 
 		
 		x=DrawButton(x, INPUT_Y, STR_RESET, BUTTON_SQUARE);
@@ -27732,15 +30680,15 @@ void Draw_AdjustScreen()
 		
 		tiny3d_Flip();
 		ScreenShot();
-		
 		ps3pad_read();
 		
-		if(new_pad & BUTTON_SQUARE) {
+		if(NewPad(BUTTON_SQUARE)) {
 			videoscale_x = 0;
 			videoscale_y = 0;
 		}
-		if(Show_TVTEST != -1 && Load_GamePIC==NO) {
-			if(new_pad & BUTTON_CROSS) {
+		if(Show_TVTEST != -1 && Load_GAMEPIC_busy==NO) {
+		//if(Show_TVTEST != -1) {
+			if(NewPad(BUTTON_CROSS)) {
 				if(Show_TVTEST==NO) {
 					memset(TMP_PIC_path, 0, sizeof(TMP_PIC_path));
 					strcpy(TMP_PIC_path, TVTEST);
@@ -27749,133 +30697,167 @@ void Draw_AdjustScreen()
 				} else {
 					Show_TVTEST=NO;
 					TMP_PIC_offset=0;
+					memset(TMP_PIC_path, 0, sizeof(TMP_PIC_path));
 				}
 			}
 		}
-		if(new_pad & BUTTON_DOWN) {if(videoscale_y > -120) videoscale_y-=10;}
-		if(new_pad & BUTTON_UP) {if(videoscale_y < 120) videoscale_y+=10;}
-		if(new_pad & BUTTON_RIGHT) {if(videoscale_x > -120) videoscale_x-=10;}
-		if(new_pad & BUTTON_LEFT) {if(videoscale_x < 120) videoscale_x+=10;}
-		if(new_pad & BUTTON_CIRCLE) {
-			write_setting(); 
+		if(NewPad(BUTTON_DOWN)) {if(videoscale_y > -120) videoscale_y-=10;}
+		if(NewPad(BUTTON_UP)) {if(videoscale_y < 120) videoscale_y+=10;}
+		if(NewPad(BUTTON_RIGHT)) {if(videoscale_x > -120) videoscale_x-=10;}
+		if(NewPad(BUTTON_LEFT)) {if(videoscale_x < 120) videoscale_x+=10;}
+		if(NewPad(BUTTON_CIRCLE)) {
+			if(Show_TVTEST==YES) {
+				TMP_PIC_offset=0;
+				memset(TMP_PIC_path, 0, sizeof(TMP_PIC_path));
+			}
+			write_setting();
 			LoopBreak=0;
 			return;
 		}
 	}
 }
 
-u8 C_pos=0;
+#define FLAG_COLOR_1		1
+#define FLAG_COLOR_2		2
+#define FLAG_COLOR_3		3
+#define FLAG_COLOR_4		4
+#define FLAG_WAVES_COLOR	5
+#define FLAG_COLOR_NOTIF	6
+#define FLAG_COLOR_BOXHEAD	7
+#define FLAG_COLOR_BOXBODY	8
+#define FLAG_COLOR_SIDEBAR	9
+#define FLAG_COLOR_BGS		10
+#define FLAG_COLOR_BG		11
 
+u8 C_pos=0;
 void Draw_RGBA_box(int n)
 {
 	u32 COLOR=0;
-	if(n==1) COLOR = COLOR_1; else
-	if(n==2) COLOR = COLOR_2; else
-	if(n==3) COLOR = COLOR_3; else
-	if(n==4) COLOR = COLOR_4; else
-	if(n==5) COLOR = WAVES_COLOR;
+	if(n==FLAG_COLOR_1) COLOR = COLOR_1; else
+	if(n==FLAG_COLOR_2) COLOR = COLOR_2; else
+	if(n==FLAG_COLOR_3) COLOR = COLOR_3; else
+	if(n==FLAG_COLOR_4) COLOR = COLOR_4; else
+	if(n==FLAG_WAVES_COLOR) COLOR = WAVES_COLOR; else
+	if(n==FLAG_COLOR_NOTIF) COLOR = COLOR_NOTIF; else
+	if(n==FLAG_COLOR_BOXHEAD) COLOR = COLOR_BOXHEAD; else
+	if(n==FLAG_COLOR_BOXBODY) COLOR = COLOR_BOXBODY; else
+	if(n==FLAG_COLOR_SIDEBAR) COLOR = COLOR_SIDEBAR; else
+	if(n==FLAG_COLOR_BGS) COLOR = COLOR_BGS; else
+	if(n==FLAG_COLOR_BG) COLOR = COLOR_BG;
 	
 	float h_COLOR = 5+20*4+5;
-	float w_COLOR = h_COLOR + 10+10+10+128+10;
+	float w_COLOR = h_COLOR + 10+10+128+10 + 50;
 	
-	if(x_COLOR + w_COLOR > X_MAX) x_COLOR -= w_COLOR-16;
-	if(y_COLOR + h_COLOR > Y_MAX) y_COLOR -= h_COLOR-10;
+	if(current_x + w_COLOR > X_MAX) current_x -= w_COLOR-16;
+	if(current_y + h_COLOR > Y_MAX) current_y -= h_COLOR-10;
 	
-	Draw_Box(x_COLOR, y_COLOR, 0, 0, w_COLOR, h_COLOR, 0x888888FF, NO);
+	// CurrentColor
+	Draw_Box(current_x, current_y, 0, 0, w_COLOR, h_COLOR, 0x888888FF, NO); // Background
+	Draw_Box(current_x+10, current_y+10, 0, 0, h_COLOR-20, h_COLOR-20, COLOR, NO); //CurrentColor
 	
-	Draw_Box(x_COLOR+10, y_COLOR+10, 0, 0, h_COLOR-20, h_COLOR-20, COLOR, NO);
+	// Bar
+	Draw_Box(current_x+h_COLOR+10+10, current_y+5+9			, 0, 0, 128, 2, 0x444444FF, NO);
+	Draw_Box(current_x+h_COLOR+10+10, current_y+5+20+9		, 0, 0, 128, 2, 0x444444FF, NO);
+	Draw_Box(current_x+h_COLOR+10+10, current_y+5+20+20+9	, 0, 0, 128, 2, 0x444444FF, NO);
+	Draw_Box(current_x+h_COLOR+10+10, current_y+5+20+20+20+9	, 0, 0, 128, 2, 0x444444FF, NO);
 	
-	Draw_Box(x_COLOR+h_COLOR+10+10+10, y_COLOR+5+9			, 0, 0, 128, 2, 0x444444FF, NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10, y_COLOR+5+20+9		, 0, 0, 128, 2, 0x444444FF, NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10, y_COLOR+5+20+20+9	, 0, 0, 128, 2, 0x444444FF, NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10, y_COLOR+5+20+20+20+9	, 0, 0, 128, 2, 0x444444FF, NO);
-	
-	u32 curs_color;
+	FontSize(10);
+	SetFontZ(0);
+	FontColor(WHITE);
+		
+	u32 curs_color=WHITE;
 	float e;
 	
 	if(C_pos == 0) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_COLOR+h_COLOR+10+5-e/2, y_COLOR+5+10-e/2, 0, 0, e, e, RED, NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10 + GetRED(COLOR)/2 - 2, y_COLOR+5+10-4, 0, 0, 4, 8, curs_color, NO);
+	Draw_Box(current_x+h_COLOR+5-e/2, current_y+5+10-e/2, 0, 0, e, e, RED, NO);
+	Draw_Box(current_x+h_COLOR+10+10 + GetRED(COLOR)/2 - 2, current_y+5+10-4, 0, 0, 4, 8, curs_color, NO);
+	FontColor(curs_color);
+	DrawFormatString(current_x+w_COLOR-50, current_y+5+10-4, "%03d", (int) GetRED(COLOR));
+	DrawFormatString(current_x+w_COLOR-30, current_y+5+10-4, "0x%02X", (int) GetRED(COLOR));
 	
 	if(C_pos == 1) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_COLOR+h_COLOR+10+5-e/2, y_COLOR+5+20+10-e/2, 0, 0, e, e, GREEN, NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10 + GetGREEN(COLOR)/2 - 2, y_COLOR+5+20+10-4, 0, 0, 4, 8, curs_color, NO);
+	Draw_Box(current_x+h_COLOR+5-e/2, current_y+5+20+10-e/2, 0, 0, e, e, GREEN, NO);
+	Draw_Box(current_x+h_COLOR+10+10 + GetGREEN(COLOR)/2 - 2, current_y+5+20+10-4, 0, 0, 4, 8, curs_color, NO);
+	FontColor(curs_color);
+	DrawFormatString(current_x+w_COLOR-50, current_y+5+20+10-4, "%03d", (int) GetGREEN(COLOR));
+	DrawFormatString(current_x+w_COLOR-30, current_y+5+20+10-4, "0x%02X", (int) GetGREEN(COLOR));
 	
 	if(C_pos == 2) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_COLOR+h_COLOR+10+5-e/2, y_COLOR+5+20+20+10-e/2, 0, 0, e, e, BLUE, NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10 + GetBLUE(COLOR)/2 - 2, y_COLOR+5+20+20+10-4, 0, 0, 4, 8, curs_color, NO);
+	
+	Draw_Box(current_x+h_COLOR+5-e/2, current_y+5+20+20+10-e/2, 0, 0, e, e, BLUE, NO);
+	Draw_Box(current_x+h_COLOR+10+10 + GetBLUE(COLOR)/2 - 2, current_y+5+20+20+10-4, 0, 0, 4, 8, curs_color, NO);
+	FontColor(curs_color);
+	DrawFormatString(current_x+w_COLOR-50, current_y+5+20+20+10-4, "%03d", (int) GetBLUE(COLOR));
+	DrawFormatString(current_x+w_COLOR-30, current_y+5+20+20+10-4, "0x%02X", (int) GetBLUE(COLOR));
 	
 	if(C_pos == 3) {curs_color = WHITE; e=12;} else {curs_color = 0x666666FF; e=8;}
-	Draw_Box(x_COLOR+h_COLOR+10+5-e/2, y_COLOR+5+20+20+20+10-e/2, 0, 0, e, e, BLACK-0xFF+GetALPHA(COLOR), NO);
-	Draw_Box(x_COLOR+h_COLOR+10+10+10 + GetALPHA(COLOR)/2 - 2, y_COLOR+5+20+20+20+10-4, 0, 0, 4, 8, curs_color, NO);	
+	Draw_Box(current_x+h_COLOR+5-e/2, current_y+5+20+20+20+10-e/2, 0, 0, e, e, BLACK-0xFF+GetALPHA(COLOR), NO);
+	Draw_Box(current_x+h_COLOR+10+10 + GetALPHA(COLOR)/2 - 2, current_y+5+20+20+20+10-4, 0, 0, 4, 8, curs_color, NO);
+	FontColor(curs_color);
+	DrawFormatString(current_x+w_COLOR-50, current_y+5+20+20+20+10-4, "%03d", (int) GetALPHA(COLOR));
+	DrawFormatString(current_x+w_COLOR-30, current_y+5+20+20+20+10-4, "0x%02X", (int) GetALPHA(COLOR));
+	
+	FontSize(20);
+}
+
+u8 GetSpeed(u64 delay)
+{
+	u64 i;
+	for(i=4; 0 < i; i--) {
+		if(n_s(i)<delay) return i;
+	}
+	return 1;
 }
 
 u8 input_COLOR(int n)
 {
 	u32 COLOR=0;
-	if(n==1) COLOR = COLOR_1; else
-	if(n==2) COLOR = COLOR_2; else
-	if(n==3) COLOR = COLOR_3; else
-	if(n==4) COLOR = COLOR_4; else
-	if(n==5) COLOR = WAVES_COLOR;
+	if(n==FLAG_COLOR_1) COLOR = COLOR_1; else
+	if(n==FLAG_COLOR_2) COLOR = COLOR_2; else
+	if(n==FLAG_COLOR_3) COLOR = COLOR_3; else
+	if(n==FLAG_COLOR_4) COLOR = COLOR_4; else
+	if(n==FLAG_WAVES_COLOR) COLOR = WAVES_COLOR; else
+	if(n==FLAG_COLOR_NOTIF) COLOR = COLOR_NOTIF; else
+	if(n==FLAG_COLOR_BOXHEAD) COLOR = COLOR_BOXHEAD; else
+	if(n==FLAG_COLOR_BOXBODY) COLOR = COLOR_BOXBODY; else
+	if(n==FLAG_COLOR_SIDEBAR) COLOR = COLOR_SIDEBAR; else
+	if(n==FLAG_COLOR_BGS) COLOR = COLOR_BGS; else
+	if(n==FLAG_COLOR_BG) COLOR = COLOR_BG;
 	
 	get_R2speed();
 	
-	if(new_pad & BUTTON_UP || (old_pad & BUTTON_UP && slow_it==0)) {
+	u8 red_inc = 0;
+	u8 green_inc = 0;
+	u8 blue_inc = 0;
+	u8 alpha_inc = 0;
+	
+	u64 delay=0;
+	
+	if(NewPad(BUTTON_UP)) {
 		if(C_pos==0) C_pos=3;
 		else C_pos--;
-	}
-	
-	if(new_pad & BUTTON_DOWN || (old_pad & BUTTON_DOWN && slow_it==0)) {
+	} else
+	if(NewPad(BUTTON_DOWN)) {
 		if(C_pos==3) C_pos=0;
 		else C_pos++;
+	} else
+	if(NewPad(BUTTON_LEFT) || (delay=OldPadDelay(BUTTON_LEFT, n_ms(300))) ) {
+		if(C_pos == 0) red_inc = -GetSpeed(delay);
+		if(C_pos == 1) green_inc = -GetSpeed(delay);
+		if(C_pos == 2) blue_inc = -GetSpeed(delay);
+		if(C_pos == 3) alpha_inc = -GetSpeed(delay);
+	} else
+	if(NewPad(BUTTON_RIGHT) || (delay=OldPadDelay(BUTTON_RIGHT, n_ms(300))) ) {
+		if(C_pos == 0) red_inc = GetSpeed(delay);
+		if(C_pos == 1) green_inc = GetSpeed(delay);
+		if(C_pos == 2) blue_inc = GetSpeed(delay);
+		if(C_pos == 3) alpha_inc = GetSpeed(delay);
 	}
 	
-	if(new_pad & BUTTON_LEFT  || (old_pad & BUTTON_LEFT  && slow_it==0)) {
-		if(C_pos == 0) {
-			if(GetRED(COLOR) > 0) {
-				COLOR = SetRED(GetRED(COLOR)-5, COLOR);
-			}
-		} else
-		if(C_pos == 1) {
-			if(GetGREEN(COLOR) > 0) {
-				COLOR = SetGREEN(GetGREEN(COLOR)-5, COLOR);
-			}
-		} else
-		if(C_pos == 2) {
-			if(GetBLUE(COLOR) > 0) {
-				COLOR = SetBLUE(GetBLUE(COLOR)-5, COLOR);
-			}
-		} else
-		if(C_pos == 3) {
-			if(GetALPHA(COLOR) > 0) {
-				COLOR = SetALPHA(GetALPHA(COLOR)-5, COLOR);
-			}
-		}
-	}
-		
-	if(new_pad & BUTTON_RIGHT || (old_pad & BUTTON_RIGHT && slow_it==0)) {
-		if(C_pos == 0) {
-			if(GetRED((u32) COLOR) < 0xFF) {
-				COLOR = SetRED(GetRED(COLOR)+5, COLOR);
-			}
-		} else
-		if(C_pos == 1) {
-			if(GetGREEN((u32) COLOR) < 0xFF) {
-				COLOR = SetGREEN(GetGREEN(COLOR)+5, COLOR);
-			}
-		} else
-		if(C_pos == 2) {
-			if(GetBLUE((u32) COLOR) < 0xFF) {
-				COLOR = SetBLUE(GetBLUE(COLOR)+5, COLOR);
-			}
-		} else
-		if(C_pos == 3) {
-			if(GetALPHA((u32) COLOR) < 0xFF) {
-				COLOR = SetALPHA(GetALPHA(COLOR)+5, COLOR);
-			}
-		}
-	}
+	if(C_pos == 0 && red_inc != 0) COLOR = SetRED(GetRED(COLOR) + red_inc, COLOR); else
+	if(C_pos == 1 && green_inc != 0) COLOR = SetGREEN(GetGREEN(COLOR) + green_inc, COLOR);
+	if(C_pos == 2 && blue_inc != 0) COLOR = SetBLUE(GetBLUE(COLOR) + blue_inc, COLOR);
+	if(C_pos == 3 && alpha_inc != 0) COLOR = SetALPHA(GetALPHA(COLOR) + alpha_inc, COLOR);
 		
 	if(n==1) COLOR_1 = COLOR; else
 	if(n==2) COLOR_2 = COLOR; else
@@ -27883,7 +30865,20 @@ u8 input_COLOR(int n)
 	if(n==4) COLOR_4 = COLOR; else
 	if(n==5) WAVES_COLOR = COLOR;
 		
-	if(new_pad & BUTTON_CIRCLE) {
+		
+	if(n==FLAG_COLOR_1) COLOR_1 = COLOR; else
+	if(n==FLAG_COLOR_2) COLOR_2 = COLOR; else
+	if(n==FLAG_COLOR_3) COLOR_3 = COLOR; else
+	if(n==FLAG_COLOR_4) COLOR_4 = COLOR; else
+	if(n==FLAG_WAVES_COLOR) WAVES_COLOR = COLOR; else
+	if(n==FLAG_COLOR_NOTIF) COLOR_NOTIF = COLOR; else
+	if(n==FLAG_COLOR_BOXHEAD) COLOR_BOXHEAD = COLOR; else
+	if(n==FLAG_COLOR_BOXBODY) COLOR_BOXBODY = COLOR; else
+	if(n==FLAG_COLOR_SIDEBAR) COLOR_SIDEBAR = COLOR; else
+	if(n==FLAG_COLOR_BGS) COLOR_BGS = COLOR; else
+	if(n==FLAG_COLOR_BG) COLOR_BG = COLOR;
+		
+	if(NewPad(BUTTON_CIRCLE)) {
 		return BREAK;
 	}
 	
@@ -27904,28 +30899,90 @@ void Draw_COLOR_input()
 void Draw_ChooseColor(u8 n)
 {
 	u8 LoopBreak=1;
+	
+	u32 old_BGS_offset=PICTURE_offset[BGS];
+	u8 old_FILTER_BGS= FILTER_BGS;
+	
 	while(LoopBreak)
 	{
 		cls();
 		Draw_scene();
 		
 		Draw_RGBA_box(n);
+		if( n == FLAG_COLOR_NOTIF) {
+			time_not = 0;
+			show_msg("0123456789");
+			Draw_Notification();
+		} else
+		if( n == FLAG_COLOR_BOXHEAD || n == FLAG_COLOR_BOXBODY) {
+			filter=YES;
+			Draw_filter();
+		} else
+		if( n == FLAG_COLOR_SIDEBAR) {
+			Draw_SIDEBAR(593);
+		} else 
+		if( n == FLAG_COLOR_BG) {
+			PICTURE_offset[BGS]=0;
+			FILTER_BGS=DISABLED;
+		}
 		Draw_COLOR_input();
 		
 		tiny3d_Flip();
 		ScreenShot();
-		
 		ps3pad_read();
-				
+					
 		if(input_COLOR(n) == BREAK) {
+			PICTURE_offset[BGS]=old_BGS_offset;
+			FILTER_BGS=old_FILTER_BGS;
 			LoopBreak=0;
+			time_not = 101;
+			filter = NO;
 			return;
 		}
 	}
 }
 
+u8 REC_UI_position=0;
+u8 REC_Show_COVER=0;
+u8 REC_Show_ICON0=0;
+u8 REC_FLOW_3D=0;
 void close_SETTINGS()
 {
+	if(REC_UI_position!=UI_position) {
+		start_loading();
+		print_load("Reloading Theme...");
+		if(REC_UI_position == XMB ) {
+			if(Show_it(position) == NO) {
+				int i;
+				int old_position = position;
+				for(i=0; i<=game_number; i++) {
+					if(position-i<0 && game_number<position+i) break;
+					if(Show_it(position+i) == YES) {position+=i; break;}
+					if(Show_it(position-i) == YES) {position-=i; break;}
+				}
+				if(old_position == position && 0 <= position) position = -1;
+			}
+		} else 
+		if( UI_position == XMB ) {
+			if( position < 0 ) {
+				int i;
+				position=0;
+				for(i=0; i<=game_number; i++) {
+					if(Show_it(i)==YES) {position=i; break;}
+				}
+			}
+		}
+		Load_Theme();
+		init_Load_GAMEPIC();
+		end_loading();
+	} else {
+		if(REC_Show_COVER!=Show_COVER 
+		|| REC_Show_ICON0!=Show_ICON0
+		|| REC_FLOW_3D!=FLOW_3D) {
+			init_Load_GAMEPIC();
+		}
+	}
+	
 	FreeFont();
 	write_setting();
 	Draw_MENU_input = &EmptyFunc;
@@ -27934,12 +30991,243 @@ void close_SETTINGS()
 	free_MENU();
 }
 
+char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo)
+{
+	if(str_format==NULL) return NULL;
+	
+	char Row[255];	
+	
+	u8 format = FM_GetFormat(str_format);
+	u8 NTFS = is_ntfs(MountPoint);			
+	
+	switch(format)
+	{
+		case FM_FORMAT_EMPTY:
+		{
+			return NULL;
+			break;
+		}
+		case FM_FORMAT_MEMORY:
+		{
+			char *Total_str = get_unit(DeviceInfo.TotalSpace);
+			char *Free_str = get_unit(DeviceInfo.FreeSpace);
+			sprintf(Row, "%s %s %s", Free_str, STR_FREEOF, Total_str);
+			free(Total_str);
+			free(Free_str);
+			
+			break;
+		}
+		case FM_FORMAT_FILESYSTEM:
+		{
+			int t;
+			if( NTFS ) sscanf(MountPoint, "ntfs%d" , &t);
+					
+			if( strncmp(DeviceInfo.FileSystem, "CELL_FS_", 8) == 0) {
+				if( NTFS ) sprintf(Row, "%s (%d)", &DeviceInfo.FileSystem[8], t);
+				else strcpy(Row, &DeviceInfo.FileSystem[8]);
+			} else {
+				if( NTFS ) sprintf(Row, "%s (%d)", DeviceInfo.FileSystem, t);
+				else strcpy(Row, DeviceInfo.FileSystem);
+			}
+			break;
+		}
+		case FM_FORMAT_LABEL:
+		{
+			if(DeviceInfo.Label[0] != 0) {
+				strcpy(Row, DeviceInfo.Label);
+			} else {
+				strcpy(Row, MountPoint);
+			}
+			break;
+		}
+		case FM_FORMAT_DEVICE:
+		{
+			if( NTFS ) {
+				sprintf(Row, "dev_usb%03d", NTFS_Test_Device(MountPoint));
+			} else {
+				strcpy(Row, MountPoint);
+			}
+			break;
+		}
+		case FM_FORMAT_DEVICE_MOUNTPOINT:
+		{
+			if( NTFS ) {
+				sprintf(Row, "dev_usb%03d:%s", NTFS_Test_Device(MountPoint), MountPoint);
+			} else {
+				strcpy(Row, MountPoint);
+			}
+			break;
+		}
+		case FM_FORMAT_LABEL_MOUNTPOINT:
+		{
+			if(DeviceInfo.Label[0] != 0) {
+				sprintf(Row, "%s (%s)", DeviceInfo.Label, MountPoint);
+			} else {
+				strcpy(Row, MountPoint);
+			}
+			break;
+		}
+		case FM_FORMAT_LABEL_DEVICE_MOUNTPOINT:
+		{
+			if(DeviceInfo.Label[0] != 0) {
+				if( NTFS ) {
+					sprintf(Row, "%s (dev_usb%03d:%s)", DeviceInfo.Label, NTFS_Test_Device(MountPoint), MountPoint);
+				} else {
+					sprintf(Row, "%s (%s)", DeviceInfo.Label, MountPoint);
+				}
+			}
+			else {
+				if( NTFS ) {
+					sprintf(Row, "dev_usb%03d:%s", NTFS_Test_Device(MountPoint), MountPoint);
+				} else {
+					strcpy(Row, MountPoint);
+				}
+			}
+			break;
+		}
+		case FM_FORMAT_MOUNTPOINT:
+		default:
+		{
+			strcpy(Row, MountPoint);
+			break;
+		}
+	}
+	
+	return strcpy_malloc(Row);
+}
+
+u8 FM_GetFormat(char *str)
+{
+	if(str[0]==0) return FM_FORMAT_INIT;
+	
+	if( strcmp(str, STR_FM_EMPTY) == 0) {
+		return FM_FORMAT_EMPTY;
+	} else
+	if( strcmp(str, STR_FM_MOUNTPOINT) == 0) {
+		return FM_FORMAT_MOUNTPOINT;
+	} else
+	if( strcmp(str, STR_FM_FILESYSTEM) == 0) {
+		return FM_FORMAT_FILESYSTEM;
+	} else
+	if( strcmp(str, STR_FM_MEMORY) == 0) {
+		return FM_FORMAT_MEMORY;
+	} else
+	if( strcmp(str, STR_FM_LABEL) == 0) {
+		return FM_FORMAT_LABEL;
+	} else
+	if( strcmp(str, STR_FM_CAPACITY) == 0) {
+		return FM_FORMAT_CAPACITY;
+	} else
+	if( strcmp(str, STR_FM_DEVICE) == 0) {
+		return FM_FORMAT_DEVICE;
+	} else {
+		char format[255];
+		sprintf(format, "%s + %s", STR_FM_CAPACITY, STR_FM_MEMINSIDE);
+		if( strcmp(str, format) == 0 ) return FM_FORMAT_CAPACITY_MEMINSIDE;
+		sprintf(format, "%s + %s", STR_FM_CAPACITY, STR_FM_MEMOUTSIDE);
+		if( strcmp(str, format) == 0 ) return FM_FORMAT_CAPACITY_MEMOUTSIDE;
+		sprintf(format, "%s : %s", STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+		if( strcmp(str, format) == 0 ) return FM_FORMAT_DEVICE_MOUNTPOINT;
+		sprintf(format, "%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT);
+		if( strcmp(str, format) == 0 ) return FM_FORMAT_LABEL_MOUNTPOINT;
+		sprintf(format, "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+		if( strcmp(str, format) == 0 ) return FM_FORMAT_LABEL_DEVICE_MOUNTPOINT;
+	}
+	
+	return FM_FORMAT_MOUNTPOINT;
+}
+
+
+char *FM_SetFormat(u8 format_id)
+{
+	switch(format_id)
+	{
+		case FM_FORMAT_EMPTY:
+		{
+			return strcpy_malloc(STR_FM_EMPTY);
+		}
+		break;
+		case FM_FORMAT_MOUNTPOINT:
+		{
+			return strcpy_malloc(STR_FM_MOUNTPOINT);
+		}
+		break;
+		case FM_FORMAT_FILESYSTEM:
+		{
+			return strcpy_malloc(STR_FM_FILESYSTEM);
+		}
+		break;
+		case FM_FORMAT_MEMORY:
+		{
+			return strcpy_malloc(STR_FM_MEMORY);
+		}
+		break;
+		case FM_FORMAT_LABEL:
+		{
+			return strcpy_malloc(STR_FM_LABEL);
+		}
+		break;
+		case FM_FORMAT_CAPACITY:
+		{
+			return strcpy_malloc(STR_FM_CAPACITY);
+		}
+		break;
+		case FM_FORMAT_DEVICE:
+		{
+			return strcpy_malloc(STR_FM_DEVICE);
+		}
+		break;
+		case FM_FORMAT_CAPACITY_MEMINSIDE:
+		{
+			return sprintf_malloc("%s + %s", STR_FM_CAPACITY, STR_FM_MEMINSIDE);
+		}
+		break;
+		case FM_FORMAT_CAPACITY_MEMOUTSIDE:
+		{
+			return sprintf_malloc("%s + %s", STR_FM_CAPACITY, STR_FM_MEMOUTSIDE);
+		}
+		break;
+		case FM_FORMAT_DEVICE_MOUNTPOINT:
+		{
+			return sprintf_malloc("%s : %s", STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+		}
+		break;
+		case FM_FORMAT_LABEL_MOUNTPOINT:
+		{
+			return sprintf_malloc("%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT);
+		}
+		break;
+		case FM_FORMAT_LABEL_DEVICE_MOUNTPOINT:
+		{
+			return sprintf_malloc("%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT);
+		}
+		break;
+		default:
+		{
+			return strcpy_malloc(STR_FM_MOUNTPOINT);
+		}
+		break;
+	}
+	
+	return NULL;
+}
+
+u8 FM_GetFormatPosition(int row)
+{
+	int i;
+	for(i=0; i<=ITEMS_VALUE_NUMBER[ITEMS_NUMBER]; i++) {
+		if( strcmp( ITEMS_VALUE[ITEMS_NUMBER][i], fm_Format[row] ) == 0) return i;
+	}
+	return 0;
+}
+
 void init_SETTINGS()
 {
 	int i;
 	
 	init_MENU();
 	
+// GLOBAL SETTINGS
 	add_title_MENU(STR_GLOB_SETTINGS);
 	
 	add_item_MENU(STR_ADJUST, ITEM_TEXTBOX);
@@ -27951,7 +31239,7 @@ void init_SETTINGS()
 	add_item_MENU(STR_PLUGIN_MANAGER, ITEM_TEXTBOX);
 	
 #ifndef FILEMANAGER
-	add_item_MENU(STR_UPD_MGZ, ITEM_TEXTBOX);
+	//add_item_MENU(STR_UPD_MGZ, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_GAME_PATHS, ITEM_TEXTBOX);
 	for(i=0; i <= scan_dir_number; i++) {
@@ -27966,18 +31254,100 @@ void init_SETTINGS()
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = lang;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU(STR_XMB_PRIO, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
+	add_item_MENU(STR_XMB_PRIO, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = XMB_priority;
+	
+	add_item_MENU(STR_HELP, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_Help;
+
+// UI SETTINGS
+#ifndef FILEMANAGER
+	add_title_MENU(STR_UI_SETTINGS);
+	
+	add_item_MENU(STR_UI, ITEM_TEXTBOX);
+	for(i=0; i < 4; i++) {
+		add_item_value_MENU(UI[i]);
+	}
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = UI_position;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU(STR_HELP, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_Help;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	add_item_MENU(STR_SIDE_MENU, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Use_SideMenu;
+	
+	add_item_MENU(STR_SHOW_PIC1, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_PIC1;
+	
+	if(UI_position==LIST) {
+		add_item_MENU(STR_SHOW_ICON0, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_ICON0;
+	} else
+	if(UI_position==GRID) {
+		add_item_MENU(STR_GRID_TYPE, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_GRID_SCROLL);
+		add_item_value_MENU(STR_PAGE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_TYPE;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		
+		add_item_MENU(STR_DIRECTION, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_VERTICAL);
+		add_item_value_MENU(STR_HORIZONTAL);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_DIRECTION;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU(STR_ANIMATED, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_ANIMATED;
+		
+		add_item_MENU(STR_KEEP_PROP, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_KEEP_PROP;
+		
+		add_item_MENU(STR_NB_COL, ITEM_TEXTBOX);
+		for(i=0; i < 16; i++) {
+			char tmp[3];
+			sprintf(tmp, "%d", i);
+			add_item_value_MENU(tmp);
+		}
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_NB_COLUMNS;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		if(GRID_KEEP_PROP==NO) {
+			add_item_MENU(STR_NB_LINE, ITEM_TEXTBOX);
+			for(i=0; i < 16; i++) {
+				char tmp[3];
+				sprintf(tmp, "%d", i);
+				add_item_value_MENU(tmp);
+			}
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_NB_LINES;
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		}
+	} else
+	if(UI_position==FLOW) {
+		add_item_MENU(STR_INVERSE, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_inverse_button;
+		
+		add_item_MENU(STR_3D, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_3D;
+	}
+	
+	if((UI_position==FLOW && FLOW_3D == NO)
+	||	UI_position==XMB
+	||  UI_position==LIST ) 
+	{
+		add_item_MENU(STR_SHOW_COVER, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_COVER;
+		
+		if(Show_COVER==YES) {
+			add_item_MENU(STR_SHOW_GAMECASE, ITEM_TOGGLE);
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_GameCase;
+		}
+	}
+	
+	if(UI_position==FLOW || UI_position==XMB) {
+		add_item_MENU(STR_SHOW_WAVES, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_Waves;
+	}
+#endif
+	
+// THEME SETTINGS	
 	add_title_MENU(STR_THM_SETTINGS);
 	
 	add_item_MENU(STR_THM, ITEM_TEXTBOX);
@@ -27986,10 +31356,13 @@ void init_SETTINGS()
 	}
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Themes_position[UI_position];
 	
+	add_item_MENU(STR_CURRENT, ITEM_LOCKED);
+	add_item_value_MENU(Themes[UI_position]);
+	
 	FILE *f;
 	char ColorSetPath[128];
 	sprintf(ColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
-	f = fopen(ColorSetPath, "rb");
+	f = fopen(ColorSetPath, "r");
 	if(f!=NULL) {
 		char *ColorSetName = NextColorSetName(f);
 		if(ColorSetName) {
@@ -28002,10 +31375,16 @@ void init_SETTINGS()
 				add_item_value_MENU(ColorSetName);
 				FREE(ColorSetName);
 			}
+			if(ITEMS_VALUE_NUMBER[ITEMS_NUMBER] < ITEMS_VALUE_POSITION[ITEMS_NUMBER]) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=0;
 		}
 		fclose(f);
 	}
-
+	
+	add_item_MENU(STR_CURRENT, ITEM_LOCKED);
+	char *CurColSet = GetCurrentColorSet();
+	add_item_value_MENU(CurColSet);
+	FREE(CurColSet);
+	
 	add_item_MENU(STR_FONT, ITEM_TEXTBOX);
 	for(i=0; i<=FontNumber; i++) {
 		add_item_value_MENU(FontName[i]);
@@ -28033,120 +31412,7 @@ void init_SETTINGS()
 	ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
 	memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_4, 4);	
 	
-#ifndef FILEMANAGER
-	add_title_MENU(STR_UI_SETTINGS);
-	
-	add_item_MENU(STR_UI, ITEM_TEXTBOX);
-	for(i=0; i < 4; i++) {
-		add_item_value_MENU(UI[i]);
-	}
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = UI_position;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	add_item_MENU(STR_SIDE_MENU, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Use_SideMenu;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	add_item_MENU(STR_SHOW_PIC1, ITEM_TEXTBOX);
-	add_item_value_MENU(STR_NO);
-	add_item_value_MENU(STR_YES);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_PIC1;
-	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	
-	if(UI_position==LIST) {
-		add_item_MENU(STR_SHOW_ICON0, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LIST_Show_ICON0;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	} else
-	if(UI_position==GRID) {
-		add_item_MENU(STR_GRID_TYPE, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_GRID_SCROLL);
-		add_item_value_MENU(STR_PAGE);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_TYPE;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		add_item_MENU(STR_DIRECTION, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_VERTICAL);
-		add_item_value_MENU(STR_HORIZONTAL);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_DIRECTION;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		add_item_MENU(STR_ANIMATED, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_ANIMATED;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		add_item_MENU(STR_KEEP_PROP, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_KEEP_PROP;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		add_item_MENU(STR_NB_COL, ITEM_TEXTBOX);
-		for(i=0; i < 16; i++) {
-			char tmp[3];
-			sprintf(tmp, "%d", i);
-			add_item_value_MENU(tmp);
-		}
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_NB_COLUMNS;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		if(GRID_KEEP_PROP==NO) {
-			add_item_MENU(STR_NB_LINE, ITEM_TEXTBOX);
-			for(i=0; i < 16; i++) {
-				char tmp[3];
-				sprintf(tmp, "%d", i);
-				add_item_value_MENU(tmp);
-			}
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = GRID_NB_LINES;
-			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		}
-	} else
-	if(UI_position==FLOW) {
-		add_item_MENU(STR_INVERSE, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_inverse_button;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		add_item_MENU(STR_3D, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FLOW_3D;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-	}
-	
-	if((UI_position==FLOW && FLOW_3D == NO)
-	||	UI_position==XMB
-	||  UI_position==LIST ) 
-	{
-		add_item_MENU(STR_SHOW_COVER, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_COVER;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
-		if(Show_COVER==YES) {
-			add_item_MENU(STR_SHOW_GAMECASE, ITEM_TEXTBOX);
-			add_item_value_MENU(STR_NO);
-			add_item_value_MENU(STR_YES);
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_GameCase;
-			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		}
-	}
-	
 	if(UI_position==FLOW || UI_position==XMB) {
-		add_item_MENU(STR_SHOW_WAVES, ITEM_TEXTBOX);
-		add_item_value_MENU(STR_NO);
-		add_item_value_MENU(STR_YES);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_Waves;
-		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
 		if(Show_Waves) {
 			add_item_MENU(STR_WAVES_COLOR, ITEM_COLORBOX);
 			FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
@@ -28154,141 +31420,570 @@ void init_SETTINGS()
 			memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &WAVES_COLOR, 4);	
 		}
 	}
-#endif
+	
+	if(FILTER_NOTIF) {
+		add_item_MENU(STR_COLOR_NOTIF, ITEM_COLORBOX);
+		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
+		ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
+		memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_NOTIF, 4);	
+	}
+	
+	if(FILTER_BOXHEAD) {
+		add_item_MENU(STR_COLOR_BOXHEAD, ITEM_COLORBOX);
+		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
+		ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
+		memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_BOXHEAD, 4);	
+	}
+	
+	if(FILTER_BOXBODY) {
+		add_item_MENU(STR_COLOR_BOXBODY, ITEM_COLORBOX);
+		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
+		ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
+		memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_BOXHEAD, 4);
+	}
+	
+	if(FILTER_SIDEBAR) {
+		add_item_MENU(STR_COLOR_SIDEBAR, ITEM_COLORBOX);
+		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
+		ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
+		memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_SIDEBAR, 4);
+	}
+	
+	if(FILTER_BGS) {
+		add_item_MENU(STR_COLOR_BGS, ITEM_COLORBOX);
+		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
+		ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
+		memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_BGS, 4);
+	}
+	
+	if(FILTER_BG) {
+		add_item_MENU(STR_COLOR_BG, ITEM_COLORBOX);
+		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
+		ITEMS_VALUE[ITEMS_NUMBER][0] = malloc(4);
+		memcpy(ITEMS_VALUE[ITEMS_NUMBER][0], &COLOR_BG, 4);
+	}
+	
+	
+// COLOR FILTERS
+	add_title_MENU(STR_COLOR_FILTER);
+	
+	add_item_MENU(STR_COLOR_NOTIF, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_NOTIF;
+	
+	add_item_MENU(STR_COLOR_BOXHEAD, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_BOXHEAD;
+			
+	add_item_MENU(STR_COLOR_BOXBODY, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_BOXBODY;
+		
+	add_item_MENU(STR_COLOR_SIDEBAR, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_SIDEBAR;
+	
+	add_item_MENU(STR_COLOR_BGS, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_BGS;
 
+	add_item_MENU(STR_COLOR_BG, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_BG;
+	
+// ROOT DISPLAY
+
+	add_title_MENU(STR_ROOT_DISPLAY);
+	
+	add_item_MENU(STR_STYLE, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_STYLE_CUSTOM);
+	add_item_value_MENU(STR_STYLE1);
+	add_item_value_MENU(STR_STYLE2);
+	add_item_value_MENU(STR_STYLE3);
+	add_item_value_MENU(STR_STYLE4);
+	add_item_value_MENU(STR_STYLE5);
+	add_item_value_MENU(STR_STYLE6);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = root_display;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	if(root_display==STYLE_CUSTOM) {
+	
+		add_item_MENU(STR_FM_ICON, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_FM_FILEFOLDER);
+		add_item_value_MENU(STR_FM_CUSTOM);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = fm_CustomIcons;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		add_item_MENU(STR_FM_ICONSIZE, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_FM_SMALL);
+		add_item_value_MENU(STR_FM_BIG);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = fm_LineSize;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		
+		if( fm_LineSize == BIG ) {
+			
+		// ********** ROW NUMBER
+			add_item_MENU(STR_FM_ROWNUMBER, ITEM_TEXTBOX);
+			add_item_value_MENU("1");
+			add_item_value_MENU("2");
+			add_item_value_MENU("3");
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = fm_RowNumber;
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+			
+			u8 capacity = NO;
+			char tp[128];
+			int i, j;
+			for(i=0; i<=fm_RowNumber; i++) {
+				
+		// ********** ROW SIZE
+				sprintf(tp, "#%d. %s", i+1, STR_FM_ROWSIZE); add_item_MENU(tp, ITEM_TEXTBOX);
+				add_item_value_MENU("0");
+				for(j=7; j<=32; j++) {
+					sprintf(tp, "%d", j);
+					add_item_value_MENU(tp);
+				}
+				if(fm_FontRowSize[i]==0) ITEMS_VALUE_POSITION[ITEMS_NUMBER]=0;
+				else ITEMS_VALUE_POSITION[ITEMS_NUMBER] = fm_FontRowSize[i]-6;
+				ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+				
+		// ********** LEFT
+				sprintf(tp, "#%d. %s", i+1, STR_FM_LEFT_CONTENT); add_item_MENU(tp, ITEM_TEXTBOX);
+				
+				add_item_value_MENU(STR_FM_EMPTY);	
+				add_item_value_MENU(STR_FM_MOUNTPOINT);
+				add_item_value_MENU(STR_FM_DEVICE);
+				sprintf(tp, "%s : %s", STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+				add_item_value_MENU(STR_FM_LABEL);
+				sprintf(tp, "%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+				sprintf(tp, "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+				add_item_value_MENU(STR_FM_FILESYSTEM);
+				add_item_value_MENU(STR_FM_MEMORY);
+				if(capacity==NO) {
+					add_item_value_MENU(STR_FM_CAPACITY); 
+					sprintf(tp, "%s + %s", STR_FM_CAPACITY, STR_FM_MEMINSIDE); add_item_value_MENU(tp);
+					sprintf(tp, "%s + %s", STR_FM_CAPACITY, STR_FM_MEMOUTSIDE); add_item_value_MENU(tp);
+				}
+							
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FM_GetFormatPosition(i*2);
+				ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+									
+				if( strncmp(ITEMS_VALUE[ITEMS_NUMBER][ITEMS_VALUE_POSITION[ITEMS_NUMBER]], STR_FM_CAPACITY, strlen(STR_FM_CAPACITY)) == 0) {
+					capacity = YES;
+					
+		// ********* CAPACITY WIDTH
+					add_item_MENU(STR_FM_CB_WIDTH, ITEM_TEXTBOX);
+					add_item_value_MENU(STR_FM_CB_FILL);
+					for(j=0; j<=20; j++) {
+						sprintf(tp, "%d", 10*j+200);
+						add_item_value_MENU(tp);
+					}
+					
+					if(fm_CapacityBarWidth != 0) ITEMS_VALUE_POSITION[ITEMS_NUMBER] = (fm_CapacityBarWidth - 200)/10 + 1;
+					else ITEMS_VALUE_POSITION[ITEMS_NUMBER] = fm_CapacityBarWidth;
+					ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+				}
+				else {
+		// ********** RIGHT	
+					sprintf(tp, "#%d. %s", i+1, STR_FM_RIGHT_CONTENT); add_item_MENU(tp, ITEM_TEXTBOX);
+					
+					add_item_value_MENU(STR_FM_EMPTY);
+					add_item_value_MENU(STR_FM_MOUNTPOINT);
+					add_item_value_MENU(STR_FM_DEVICE);
+					sprintf(tp, "%s : %s", STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+					add_item_value_MENU(STR_FM_LABEL);
+					sprintf(tp, "%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+					sprintf(tp, "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+					add_item_value_MENU(STR_FM_FILESYSTEM);
+					add_item_value_MENU(STR_FM_MEMORY);
+					
+					ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FM_GetFormatPosition(i*2+1);
+					ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+				}	
+			}
+		}
+		else {
+			
+			char tp[128];
+	// ************* LEFT
+			add_item_MENU(STR_FM_LEFT_CONTENT, ITEM_TEXTBOX);
+			
+			add_item_value_MENU(STR_FM_MOUNTPOINT);
+			add_item_value_MENU(STR_FM_DEVICE);	
+			sprintf(tp, "%s : %s", STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+			add_item_value_MENU(STR_FM_LABEL);
+			sprintf(tp, "%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+			sprintf(tp, "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+			
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FM_GetFormatPosition(0);
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+			
+	// ************ RIGHT
+			add_item_MENU(STR_FM_RIGHT_CONTENT, ITEM_TEXTBOX);
+					
+			add_item_value_MENU(STR_FM_EMPTY);
+			add_item_value_MENU(STR_FM_MOUNTPOINT);
+			add_item_value_MENU(STR_FM_DEVICE);
+			sprintf(tp, "%s : %s", STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+			add_item_value_MENU(STR_FM_LABEL);
+			sprintf(tp, "%s (%s)", STR_FM_LABEL, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+			sprintf(tp, "%s (%s : %s)", STR_FM_LABEL, STR_FM_DEVICE, STR_FM_MOUNTPOINT); add_item_value_MENU(tp);
+			add_item_value_MENU(STR_FM_FILESYSTEM);
+			add_item_value_MENU(STR_FM_MEMORY);
+			
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FM_GetFormatPosition(1);
+			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		}
+	}
+	else { // NOT CUSTOM
+				
+		add_item_MENU(STR_FM_ICON, ITEM_LOCKED);
+		if(fm_CustomIcons==0) add_item_value_MENU(STR_FM_FILEFOLDER);
+		if(fm_CustomIcons==1) add_item_value_MENU(STR_FM_CUSTOM);
+				
+		add_item_MENU(STR_FM_ICONSIZE, ITEM_LOCKED);
+		if(fm_LineSize==0) add_item_value_MENU(STR_FM_SMALL);
+		if(fm_LineSize==1) add_item_value_MENU(STR_FM_BIG);
+		
+		
+		if( fm_LineSize == BIG ) {
+			char tp[128];
+			
+		// ********** ROW NUMBER
+			add_item_MENU(STR_FM_ROWNUMBER, ITEM_LOCKED);
+			
+			sprintf(tp, "%d", fm_RowNumber+1); add_item_value_MENU(tp);
+			
+			u8 capacity = NO;
+			
+			int i;
+			for(i=0; i<=fm_RowNumber; i++) {
+				
+		// ********** ROW SIZE
+				sprintf(tp, "#%d. %s", i+1, STR_FM_ROWSIZE); add_item_MENU(tp, ITEM_LOCKED);
+				sprintf(tp, "%d", fm_FontRowSize[i]); add_item_value_MENU(tp);
+				
+				
+		// ********** LEFT
+				sprintf(tp, "#%d. %s", i+1, STR_FM_LEFT_CONTENT); add_item_MENU(tp, ITEM_LOCKED);
+				add_item_value_MENU(fm_Format[ LEFTROW(i) ]);
+				
+									
+				if( strncmp(ITEMS_VALUE[ITEMS_NUMBER][ITEMS_VALUE_POSITION[ITEMS_NUMBER]], STR_FM_CAPACITY, strlen(STR_FM_CAPACITY)) == 0) {
+					capacity = YES;
+					
+		// ********* CAPACITY WIDTH
+					add_item_MENU(STR_FM_CB_WIDTH, ITEM_LOCKED);
+					if(fm_CapacityBarWidth==0) add_item_value_MENU(STR_FM_CB_FILL);
+					else {
+						sprintf(tp, "%d", (int) fm_CapacityBarWidth); 
+						add_item_value_MENU(tp);
+					}
+				}
+				else {
+		// ********** RIGHT	
+					sprintf(tp, "#%d. %s", i+1, STR_FM_RIGHT_CONTENT); add_item_MENU(tp, ITEM_LOCKED);
+					add_item_value_MENU(fm_Format[ RIGHTROW(i) ]);
+				}	
+			}
+		}
+		else {
+			
+	// ************* LEFT
+			add_item_MENU(STR_FM_LEFT_CONTENT, ITEM_LOCKED);
+			add_item_value_MENU(fm_Format[ LEFTROW(0) ]);
+			
+	// ************ RIGHT
+			add_item_MENU(STR_FM_RIGHT_CONTENT, ITEM_LOCKED);
+			add_item_value_MENU(fm_Format[ RIGHTROW(0) ]);
+		}
+	}
+	
 }
+
 
 void update_SETTINGS()
 {
 	if(item_is(STR_FONT)) {
 		if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-			if(Load_GamePIC) show_msg("Try Later");
+			if(Load_GAMEPIC_busy) show_msg("Try Later");
 			else {
-				start_loading();
-				strcpy(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				//start_loading();
+				strcpy(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);				
 				LoadFont();
-				end_loading();
+				//end_loading();
 			}
 		}
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_LANG) == 0) {
+	if(item_is(STR_LANG)) {
 		lang = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-		lang_code = (uint8_t) STR_LANGCODE[lang][0];
+		lang_code = LANGCODE[lang];
 		if(lang_code != lang_code_loaded) {
+			start_loading();
+			print_load("Loading language : %s", STR_LANGUAGE[lang]);
 			update_lang();
+			update_RootDisplay();
 			init_SETTINGS();
+			end_loading();
 		}
+		
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_HELP) == 0) {
+	if(item_is(STR_HELP)) {
 		Show_Help = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_XMB_PRIO) == 0) {
+	if(item_is(STR_XMB_PRIO)) {
 		XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_SIDE_MENU) == 0) {
+	if(item_is(STR_SIDE_MENU)) {
 		Use_SideMenu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_UI) == 0) {
-		if(UI_position != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			if(Load_GamePIC) {
-				ITEMS_VALUE_POSITION[ITEMS_POSITION] = UI_position;
-				show_msg("Try Later");
-			} else {
-				start_loading();
-				print_head("Loading Theme...");
-				UI_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-				Load_Theme();
-				init_SETTINGS();
-				end_loading();
-			}
+	if(item_is(STR_UI)) {
+		if( UI_position != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			UI_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			init_SETTINGS();
 		}
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
+	if(item_is(STR_THM)) {
 		Themes_position[UI_position] = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_COVER) == 0) {
+	if(item_is(STR_SHOW_COVER)) {
 		if( Show_COVER != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 			Show_COVER = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 			init_SETTINGS();
 		}
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_GAMECASE) == 0) {
+	if(item_is(STR_SHOW_GAMECASE)) {
 		Show_GameCase = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_PIC1) == 0) {
+	if(item_is(STR_SHOW_PIC1)) {
 		Show_PIC1 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_WAVES) == 0) {
+	if(item_is(STR_SHOW_WAVES)) {
 		if( Show_Waves != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 			Show_Waves = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 			init_SETTINGS();
 		}
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_SHOW_ICON0) == 0) {
-		LIST_Show_ICON0 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	if(item_is(STR_SHOW_ICON0)) {
+		Show_ICON0 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_GRID_TYPE) == 0) {
+	if(item_is(STR_GRID_TYPE)) {
 		GRID_TYPE = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_DIRECTION) == 0) {
+	if(item_is(STR_DIRECTION)) {
 		GRID_DIRECTION = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_ANIMATED) == 0) {
+	if(item_is(STR_ANIMATED)) {
 		GRID_ANIMATED = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_KEEP_PROP) == 0) {
+	if(item_is(STR_KEEP_PROP)) {
 		if( GRID_KEEP_PROP != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
 			GRID_KEEP_PROP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 			init_SETTINGS();
 		}
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_NB_COL) == 0) {
+	if(item_is(STR_NB_COL)) {
 		GRID_NB_COLUMNS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_NB_LINE) == 0) {
+	if(item_is(STR_NB_LINE)) {
 		GRID_NB_LINES = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_INVERSE) == 0) {
+	if(item_is(STR_INVERSE)) {
 		FLOW_inverse_button = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_3D) == 0) {
+	if(item_is(STR_3D)) {
 		if( FLOW_3D != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 			FLOW_3D = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 			init_SETTINGS();
 		}
+	} else
+	if(item_is(STR_STYLE)) {
+		if( root_display != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			root_display = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			update_RootDisplay();
+			init_SETTINGS();
+		}
+	} else
+	if(item_is(STR_COLOR_NOTIF) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+		if(FILTER_NOTIF != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			FILTER_NOTIF = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			ReloadTheme(NOTIF);
+			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+			if(FILTER_NOTIF) ITEMS_POSITION++;
+			else ITEMS_POSITION--;
+			init_SETTINGS();
+		}
+	} else 
+	if(item_is(STR_COLOR_BOXHEAD) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+		if(FILTER_BOXHEAD != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			FILTER_BOXHEAD = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			ReloadTheme(BOXHEAD);
+			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+			if(FILTER_BOXHEAD) ITEMS_POSITION++;
+			else ITEMS_POSITION--;
+			init_SETTINGS();
+		}
+	} else 
+	if(item_is(STR_COLOR_BOXBODY) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+		if(FILTER_BOXBODY != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			FILTER_BOXBODY = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			ReloadTheme(BOXBODY);
+			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+			if(FILTER_BOXBODY) ITEMS_POSITION++;
+			else ITEMS_POSITION--;
+			init_SETTINGS();
+		}	
+	} else 
+	if(item_is(STR_COLOR_SIDEBAR) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+		if(FILTER_SIDEBAR != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			FILTER_SIDEBAR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			ReloadTheme(SIDEBAR);
+			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+			if(FILTER_SIDEBAR) ITEMS_POSITION++;
+			else ITEMS_POSITION--;
+			init_SETTINGS();
+		}
+	} else 
+	if(item_is(STR_COLOR_BGS) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+		if(FILTER_BGS != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			FILTER_BGS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			ReloadTheme(BGS);
+			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+			if(FILTER_BGS) ITEMS_POSITION++;
+			else ITEMS_POSITION--;
+			init_SETTINGS();
+		}	
+	} else 
+	if(item_is(STR_COLOR_BG) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+		if(FILTER_BG != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+			FILTER_BG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			ReloadTheme(_BG_);
+			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+			if(FILTER_BG) ITEMS_POSITION++;
+			else ITEMS_POSITION--;
+			init_SETTINGS();
+		}	
+	} else
+	if(root_display == STYLE_CUSTOM) {
+		if(item_is(STR_FM_ICONSIZE)) {
+			if( fm_LineSize != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				fm_LineSize = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_FM_ROWNUMBER)) {
+			if( fm_RowNumber != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
+				fm_RowNumber = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_FM_ICON)) {
+			if( fm_CustomIcons != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
+				fm_CustomIcons = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_FM_CB_WIDTH)) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] != 0) fm_CapacityBarWidth = 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10;
+			else fm_CapacityBarWidth=0;
+		} else
+		if( strcmp(STR_FM_ROWSIZE, &ITEMS[ITEMS_POSITION][4]) == 0) {
+			int row=0;
+			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) fm_FontRowSize[row] = 0;
+			else fm_FontRowSize[row] = ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6;
+		} else 
+		if( strcmp(STR_FM_LEFT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
+			int row=0;
+			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
+			if( strcmp(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+				memset(fm_Format[row*2], 0, sizeof(fm_Format[row*2]));
+				strcpy(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_FM_LEFT_CONTENT)) {
+			if( strcmp(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+				memset(fm_Format[0], 0, sizeof(fm_Format[0]));
+				strcpy(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				init_SETTINGS();
+			}
+		} else 
+		if( strcmp(STR_FM_RIGHT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
+			int row=0;
+			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
+			if( strcmp(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+				memset(fm_Format[row*2+1], 0, sizeof(fm_Format[row*2+1]));
+				strcpy(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_FM_RIGHT_CONTENT)) {
+			if( strcmp(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+				memset(fm_Format[1], 0, sizeof(fm_Format[1]));
+				strcpy(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				init_SETTINGS();
+			}
+		}
 	}
+}
+
+u8 SETTING_R1()
+{
+	if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {	
+		if(item_is(STR_SHOW_WAVES) && Show_Waves) {
+			Draw_ChooseColor(FLAG_WAVES_COLOR);
+		} else
+		if(item_is(STR_COLOR_NOTIF) && FILTER_NOTIF) {
+			Draw_ChooseColor(FLAG_COLOR_NOTIF);
+		} else
+		if(item_is(STR_COLOR_BOXHEAD) && FILTER_BOXHEAD) {
+			Draw_ChooseColor(FLAG_COLOR_BOXHEAD);
+		} else
+		if(item_is(STR_COLOR_BOXBODY) && FILTER_BOXBODY) {
+			Draw_ChooseColor(FLAG_COLOR_BOXBODY);
+		} else
+		if(item_is(STR_COLOR_SIDEBAR) && FILTER_SIDEBAR) {
+			Draw_ChooseColor(FLAG_COLOR_SIDEBAR);
+		} else
+		if(item_is(STR_COLOR_BGS) && FILTER_BGS) {
+			Draw_ChooseColor(FLAG_COLOR_BGS);
+		} else
+		if(item_is(STR_COLOR_BG) && FILTER_BG) {
+			Draw_ChooseColor(FLAG_COLOR_BG);
+		}
+	}
+	
+	return SUCCESS;
 }
 
 u8 SETTINGS_CROSS()
 {
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_ADJUST) == 0) {
+	if(item_is(STR_ADJUST)) {
 		Draw_AdjustScreen();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_DL_COVER) == 0) {
+	if(item_is(STR_DL_COVER)) {
 		start_loading();
-		Download_covers();
+		if( 0 < Download_covers() ) init_Load_GAMEPIC();
 		end_loading();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
+	if(item_is(STR_GAME_PATHS)) {
 		char tmpName[128];
 		memset(tmpName, 0, sizeof(tmpName));
 		if(Get_OSK_String(STR_NEWFOLDER, tmpName, 128) == SUCCESS) {
 			if(tmpName[0]!=0) {
+				start_loading();
 				scan_dir_number++;
 				strcpy(scan_dir[scan_dir_number], tmpName);
 				write_scan_dir();
+				add_SCANDIR(scan_dir[scan_dir_number]);
+				init_Load_GAMEPIC();
+				end_loading();
 			}
 		}
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_PLUGIN_MANAGER) == 0) {
+	if(item_is(STR_PLUGIN_MANAGER)) {
 		return open_PLUGINS_MANAGER();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_UPD_MGZ) == 0) {
+	if(item_is(STR_UPD_MGZ)) {
 		show_msg("To Fix");
 		//update_MGZ();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
-		if(Load_GamePIC) show_msg("Try Later");
+	if(item_is(STR_THM)) {
+		if(Load_GAMEPIC_busy) show_msg("Try Later");
 		else {
 			start_loading();
 			print_load("Loading theme...");
@@ -28302,24 +31997,46 @@ u8 SETTINGS_CROSS()
 			end_loading();
 		}
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_1) == 0) {
-		Draw_ChooseColor(1);
-	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_2) == 0) {
-		Draw_ChooseColor(2);
-	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_3) == 0) {
-		Draw_ChooseColor(3);
-	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_4) == 0) {
-		Draw_ChooseColor(4);
-	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_WAVES_COLOR)==0) {
-		Draw_ChooseColor(5);
-	} else
 	if(item_is(STR_COLORSET)) {
+		start_loading();
 		LoadColorSet(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		end_loading();
 	} else
+	if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_COLORBOX) {
+		if(item_is(STR_COLOR_1)) {
+			Draw_ChooseColor(FLAG_COLOR_1);
+		} else 
+		if(item_is(STR_COLOR_2)) {
+			Draw_ChooseColor(FLAG_COLOR_2);
+		} else 
+		if(item_is(STR_COLOR_3)) {
+			Draw_ChooseColor(FLAG_COLOR_3);
+		} else 
+		if(item_is(STR_COLOR_4)) {
+			Draw_ChooseColor(FLAG_COLOR_4);
+		} else
+		if(item_is(STR_WAVES_COLOR) && Show_Waves) {
+			Draw_ChooseColor(FLAG_WAVES_COLOR);
+		} else
+		if(item_is(STR_COLOR_NOTIF) && FILTER_NOTIF) {
+			Draw_ChooseColor(FLAG_COLOR_NOTIF);
+		} else
+		if(item_is(STR_COLOR_BOXHEAD) && FILTER_BOXHEAD) {
+			Draw_ChooseColor(FLAG_COLOR_BOXHEAD);
+		} else
+		if(item_is(STR_COLOR_BOXBODY) && FILTER_BOXBODY) {
+			Draw_ChooseColor(FLAG_COLOR_BOXBODY);
+		} else
+		if(item_is(STR_COLOR_SIDEBAR) && FILTER_SIDEBAR) {
+			Draw_ChooseColor(FLAG_COLOR_SIDEBAR);
+		} else
+		if(item_is(STR_COLOR_BGS) && FILTER_BGS) {
+			Draw_ChooseColor(FLAG_COLOR_BGS);
+		} else
+		if(item_is(STR_COLOR_BG) && FILTER_BG) {
+			Draw_ChooseColor(FLAG_COLOR_BG);
+		}
+	} else 
 		return CONTINUE;
 	
 	update_SETTINGS();
@@ -28330,22 +32047,22 @@ u8 SETTINGS_CROSS()
 
 u8 SETTINGS_SQUARE()
 {
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_1) == 0) {
+	if(item_is(STR_COLOR_1)) {
 		COLOR_1 = WHITE;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_2) == 0) {
+	if(item_is(STR_COLOR_2)) {
 		COLOR_2 = GREEN;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_3) == 0) {
+	if(item_is(STR_COLOR_3)) {
 		COLOR_3 = ORANGE;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_COLOR_4) == 0) {
+	if(item_is(STR_COLOR_4)) {
 		COLOR_4 = RED;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_WAVES_COLOR) == 0) {
+	if(item_is(STR_WAVES_COLOR)) {
 		WAVES_COLOR = WHITE-0xFF+0x20;
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_THM) == 0) {
+	if(item_is(STR_THM)) {
 		u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 		if(ThemeType == MGZ) {
 			char tmpName[128];
@@ -28362,9 +32079,21 @@ u8 SETTINGS_SQUARE()
 		}
 	} else 
 	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
-		if(Get_OSK_String(STR_RENAME, scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]], 128) == SUCCESS) {
-			if(scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]][0] != 0) {
-				write_scan_dir();
+		char temp[512];
+		strcpy(temp, scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		
+		if(Get_OSK_String(STR_RENAME, temp, 128) == SUCCESS) {
+			if(temp[0] != 0) {
+			
+				if(strcmp(scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]], temp) != 0) {
+					start_loading();
+					remove_SCANDIR(scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+					strcpy(scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]], temp);
+					write_scan_dir();
+					add_SCANDIR(scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+					init_Load_GAMEPIC();
+					end_loading();
+				}
 			}
 		}
 	} else
@@ -28400,17 +32129,20 @@ u8 SETTINGS_TRIANGLE()
 		
 		end_loading();
 	} else 
-	if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
+	if(item_is(STR_GAME_PATHS)) {
 		if(scan_dir_number>0) {
+			remove_SCANDIR(scan_dir[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+			
 			int i;
 			for(i=ITEMS_VALUE_POSITION[ITEMS_POSITION]; i < scan_dir_number; i++) {
 				strcpy(scan_dir[i], scan_dir[i+1]);
 			}
 			memset(scan_dir[scan_dir_number], 0, sizeof(scan_dir[scan_dir_number]));
-			
 			if(scan_dir_number==ITEMS_VALUE_POSITION[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
 			scan_dir_number--;
 			write_scan_dir();
+			
+			init_Load_GAMEPIC();
 		}
 	} else
 	if(item_is(STR_COLORSET)) {
@@ -28427,39 +32159,113 @@ u8 SETTINGS_TRIANGLE()
 	init_SETTINGS();
 
 	return CONTINUE;
-}
+} 
 
 void input_SETTINGS()
 {
-	get_R2speed();
+	int i;
 		
+	get_R2speed();
+	
 	if(R2pad(BUTTON_UP)) {
-		if(IN_ITEMS_VALUE == NO) {
-			if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
-			else ITEMS_POSITION--;
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				u8 twice=NO;
+				if(TITLES[ITEMS_POSITION]==NULL) twice=YES;
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos = ITEMS_POSITION-i;
+					if( i_pos < 0 ) i_pos+=ITEMS_NUMBER+1;
+					if(TITLES[i_pos] != NULL) {
+						if(twice==NO) {
+							ITEMS_POSITION = i_pos;
+							break;
+						} else twice=NO;
+					}
+				}
+			} else if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION==TITLE_MENU_FIRST_ITEM) ITEMS_POSITION=TITLE_MENU_LAST_ITEM;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
 		} else {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
 		}
 	} else
 	if(R2pad(BUTTON_DOWN)) {
-		if(IN_ITEMS_VALUE == NO) {
-			if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
-			else ITEMS_POSITION++;
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL==LVL_TITLE) {
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos=ITEMS_POSITION+i;
+					if(ITEMS_NUMBER<i_pos) i_pos-=ITEMS_NUMBER+1;
+					if(TITLES[i_pos]!=NULL) {
+						ITEMS_POSITION=i_pos;
+						break;
+					}
+				}
+			} else
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION == TITLE_MENU_LAST_ITEM) ITEMS_POSITION = TITLE_MENU_FIRST_ITEM;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}				
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
 		} else {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
 		}
 	} else
-	if(new_pad & BUTTON_CROSS) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
-			IN_ITEMS_VALUE = YES;
+	if(NewPad(BUTTON_CROSS)) {
+		if(MENU_LVL == LVL_TITLE) {
+			MENU_LVL = LVL_ITEMS;
+		} else 
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			MENU_LVL = LVL_VALUE;
 		} else {
 			if(SETTINGS_CROSS() == BREAK) return;
 		}
 	} else
-	if(new_pad & BUTTON_SQUARE) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+	if(NewPad(BUTTON_SQUARE)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
@@ -28468,8 +32274,15 @@ void input_SETTINGS()
 			if(SETTINGS_SQUARE() == BREAK) return;
 		}
 	} else
-	if(new_pad & BUTTON_TRIANGLE) {
-		if(IN_ITEMS_VALUE == NO && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+	if(NewPad(BUTTON_TRIANGLE)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
@@ -28478,15 +32291,39 @@ void input_SETTINGS()
 			if(SETTINGS_TRIANGLE() == BREAK) return;
 		}
 	} else
-	if(new_pad & BUTTON_CIRCLE) {
-		if(IN_ITEMS_VALUE == NO) {close_SETTINGS(); return;}
-		else {
-			init_SETTINGS();
-			IN_ITEMS_VALUE = NO;
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				close_SETTINGS(); 
+				return;
+			} else 
+			if(MENU_LVL == LVL_ITEMS) {
+				MENU_LVL = LVL_TITLE;
+				//init_SETTINGS();
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				MENU_LVL = LVL_ITEMS;
+				//init_SETTINGS();
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {close_SETTINGS(); return;}
+			else {
+				MENU_LVL = LVL_ITEMS;
+				init_SETTINGS();
+			}
 		}
+	} else 
+	if(NewPad(BUTTON_R1)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else {
+			SETTING_R1();
+		}
+		
+		
 	}
 	
-	update_SETTINGS();
+	if(new_pad != 0) update_SETTINGS();
 }
 
 void Draw_SETTINGS_input()
@@ -28496,7 +32333,7 @@ void Draw_SETTINGS_input()
 	FontColor(COLOR_1);
 	SetFontZ(0);
 	
-	if(IN_ITEMS_VALUE == YES) {
+	if(MENU_LVL == LVL_VALUE) {
 		if(strcmp(ITEMS[ITEMS_POSITION], STR_GAME_PATHS) == 0) {
 			x=DrawButton(x, y, STR_ADD, BUTTON_CROSS);
 			if(scan_dir_number>0) {
@@ -28520,7 +32357,7 @@ void Draw_SETTINGS_input()
 			}
 		}
 		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
-	} else {
+	} else if(MENU_LVL == LVL_ITEMS) {
 		x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
 		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
@@ -28531,21 +32368,43 @@ void Draw_SETTINGS_input()
 		if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_COLORBOX) {
 			x=DrawButton(x, y, STR_RESET, BUTTON_SQUARE);
 		}
+	} else if(MENU_LVL == LVL_TITLE) {
+		x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	}
-
+	
+	if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+		if( ( item_is(STR_COLOR_NOTIF) && FILTER_NOTIF==ENABLED )
+		||  ( item_is(STR_COLOR_BOXHEAD) && FILTER_BOXHEAD==ENABLED )
+		||  ( item_is(STR_COLOR_BOXBODY) && FILTER_BOXBODY==ENABLED )
+		||  ( item_is(STR_COLOR_SIDEBAR) && FILTER_SIDEBAR==ENABLED )
+		||  ( item_is(STR_COLOR_BGS) && FILTER_BGS==ENABLED )
+		||  ( item_is(STR_COLOR_BG) && FILTER_BG==ENABLED )
+		||  ( item_is(STR_SHOW_WAVES) && Show_Waves==YES)
+		){
+			x=DrawButton(x, y, STR_SET_COLOR, BUTTON_R1);
+		}
+	}
 }
 
 void open_SETTINGS()
 {
 	start_loading();
+	MENU_SIDE=NO;
+	USE_TITLE_MENU=YES;
 	new_MENU();
 #ifndef FILEMANAGER
 	read_scan_dir();
 #endif
 	read_setting();
+	
+	REC_UI_position=UI_position;
+	REC_Show_COVER=Show_COVER;
+	REC_Show_ICON0=Show_ICON0;
+	REC_FLOW_3D=FLOW_3D;
+	
 	GetFont();
 	init_SETTINGS();
-	MENU_SIDE=NO;
 	Draw_MENU_input = &Draw_SETTINGS_input;
 	input_MENU = &input_SETTINGS;
 	end_loading();
@@ -28580,12 +32439,15 @@ void AutoMount()
 
 	if(read_AutoMount_setting()==FAILED) {
 		print_load("Error : Failed to read AutoMount file");
+		sleep(4);
 		exit(0);
 	}
 	
 	print_load("AutoMount = %s", list_game_path[0]);
 	
 	game_number=0;
+	position=0;
+	
 	GetParamSFO("TITLE", list_game_title[0], 0, NULL);
 	list_game_platform[0] = get_ext(list_game_path[0]);
 	iso = is_iso(list_game_path[0]);
@@ -28593,38 +32455,23 @@ void AutoMount()
 	
 	u8 Path_exist=NO;
 	
-	MountNTFS();
+	strcpy(GamPath, list_game_path[0]);
 	
 	//check GamPath
 	if(path_info(GamPath)==_NOT_EXIST) {
 		print_load("Warning : Game path not exist.");
-		print_load("Searching in other ports");
-		memset(temp_buffer, 0, sizeof(temp_buffer));
-		if(strstr(GamPath, "/ntfs") != NULL) {
-			strcpy(temp_buffer, &GamPath[5]);
-			int i;
-			for(i=0; i<8; i++) {
-				sprintf(GamPath, "/ntfs%c:%s", 48+i, temp_buffer);
-				if(path_info(GamPath)!=_NOT_EXIST) {
-					print_load("Game found !");
-					Path_exist=YES;
-					break;
-				}
-			}
-		}
-		else {
-			if(strstr(GamPath, "/dev_usb") != NULL) {
-				strcpy(temp_buffer, &GamPath[11]);
-			} else strcpy(temp_buffer, &GamPath[9]);
-			int device;
-			for(device=0; device<=10; device++) {
-				if(device!=10) sprintf(GamPath, "/dev_usb00%c%s", 48+device, temp_buffer); else
-				sprintf(GamPath, "/dev_hdd0%s", temp_buffer);
-				if(path_info(GamPath) != _NOT_EXIST) {
-					print_load("Game found !");
-					Path_exist=YES;
-					break;
-				}
+		print_load("Searching in other devices...");
+		
+		int n = 1, i; 
+		while(GamPath[n] != '/' && GamPath[n] != 0) n++;
+		strcpy(temp_buffer, &GamPath[n]);
+		
+		for(i=0; i<=device_number; i++) {
+			sprintf(GamPath, "/%s%s", list_device[i], temp_buffer);
+			if(path_info(GamPath) != _NOT_EXIST) {
+				print_load("Game found !");
+				Path_exist=YES;
+				break;
 			}
 		}
 	} else Path_exist=YES;
@@ -28650,14 +32497,13 @@ void AutoMount()
 			FontColor(COLOR_1);
 			SetFontZ(0);			
 			
-			DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
+			DrawButton(x, y, STR_EXIT, BUTTON_CIRCLE);
 		
 			tiny3d_Flip();
 			ScreenShot();
-			
 			ps3pad_read();
 			
-			if(new_pad & BUTTON_CIRCLE) {
+			if(NewPad(BUTTON_CIRCLE)) {
 				ioPadEnd();
 				LoopBreak=0;
 				exit(0);
@@ -28678,20 +32524,20 @@ void AutoMount()
 			Draw_MENU();
 			Draw_MENU_input();
 		
-			check_device();
+			//AutoRefresh_GAMELIST();
 		
 			tiny3d_Flip();
 			ScreenShot();
 		
 			ps3pad_read();
-
+			
 			input_MENU();
 		}
 		
 		write_AutoMount_setting(GamPath);
 	}
 	
-	MountGame(list_game_path[0]);	
+	MountGame(GamPath);	
 	
 	end_loading();
 	
@@ -28702,9 +32548,6 @@ void AutoMount()
 //*******************************************************
 // Filter
 //*******************************************************
-
-u8 filter=NO;
-u8 filter_position=0;
 
 void open_filter()
 {
@@ -28722,7 +32565,7 @@ void input_filter()
 {
 	if(filter==NO) return;
 	
-	if(new_pad & BUTTON_CROSS) {
+	if(NewPad(BUTTON_CROSS)) {
 		if(filter_position==0) {
 			if(Only_FAV==YES) Only_FAV=NO;
 			else Only_FAV=YES;
@@ -28743,22 +32586,40 @@ void input_filter()
 			if(Show_PSP==YES) Show_PSP=NO;
 			else Show_PSP=YES;
 		}
+		
+		if( UI_position == XMB) {
+			if(XMB_H_position==XMB_COLUMN_PSP && !Show_PSP) { XMB_H_position--; }
+			if(XMB_H_position==XMB_COLUMN_PS1 && !Show_PS1) { XMB_H_position--; }
+			if(XMB_H_position==XMB_COLUMN_PS2 && !Show_PS2) { XMB_H_position--; }
+			if(XMB_H_position==XMB_COLUMN_PS3 && !Show_PS3) { XMB_H_position--; }
+			if(XMB_H_position==XMB_COLUMN_FAVORITES && !Only_FAV) { XMB_H_position--; }
+		} else
+		if(Show_it(position) == NO) {
+			int i;
+			int old_position = position;
+			for(i=0; i<=game_number; i++) {
+				if(position-i<0 && game_number<position+i) break;
+				if(Show_it(position+i) == YES) {position+=i; break;}
+				if(Show_it(position-i) == YES) {position-=i; break;}
+			}
+			if(old_position == position && 0 <= position) position = -1;
+		}
 	}
 	
 	filter_x += R2JoyStick_X(BUTTON_L);
 	filter_y += R2JoyStick_Y(BUTTON_L);
 	
-	if(new_pad & BUTTON_UP) {
+	if(NewPad(BUTTON_UP)) {
 		if(filter_position==0) filter_position=4;
 		else filter_position--;
 	}
 	
-	if(new_pad & BUTTON_DOWN) {
+	if(NewPad(BUTTON_DOWN)) {
 		if(filter_position==4) filter_position=0;
 		else filter_position++;
 	}
 	
-	if(new_pad & BUTTON_CIRCLE) {
+	if(NewPad(BUTTON_CIRCLE)) {
 		close_filter();
 	}
 }
@@ -28801,22 +32662,38 @@ void Draw_filter()
 	if(filter==NO) return;
 	
 	SetFontZ(0);
-	u32 color=0;
 	float x=filter_x;
 	float y=filter_y;
 	
+	u32 color = COLOR_BOXBODY_DEFAULT;
+	
 	if(PICTURE_offset[BOXBODY]) {
+		if(FILTER_BOXBODY == ENABLED) color = COLOR_BOXBODY;
+		else color = WHITE;
+		
 		tiny3d_SetTexture(0, PICTURE_offset[BOXBODY], PICTURE[BOXBODY].width, PICTURE[BOXBODY].height, PICTURE[BOXBODY].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, 0, 0, 100, 115, WHITE, YES);
+		Draw_Box(x, y, 0, 0, 100, 115, color, YES);
 	} else {
-		Draw_Box(x, y, 0, 0, 100, 115, 0xC0C0C0FF, NO);
-		Draw_Box(x+2, y+2, 0, 0, 100-4, 115-4, GREY, NO);
+		if(FILTER_BOXBODY == ENABLED) {
+			Draw_Box(x, y, 0, 0, 100, 115, COLOR_BOXBODY, NO);
+		} else {
+			Draw_Box(x, y, 0, 0, 100, 115, COLOR_BOXBODY_DEFAULT, NO);
+		}
+		
 	}
 	if(PICTURE_offset[BOXHEAD]) {
+		if(FILTER_BOXHEAD == ENABLED) color = COLOR_BOXHEAD;
+		else color = WHITE;
+		
 		tiny3d_SetTexture(0, PICTURE_offset[BOXHEAD], PICTURE[BOXHEAD].width, PICTURE[BOXHEAD].height, PICTURE[BOXHEAD].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, 0, 0, 100, 25, WHITE, YES);
+		Draw_Box(x, y, 0, 0, 100, 25, color, YES);
 	} else {
-		Draw_BoxGradiant(VERTICAL, x+2, y+2, 0, 100-4, 25,  0x505050FF, 0x101010FF, NO);
+		if(FILTER_BOXHEAD == ENABLED) {
+			Draw_Box(x, y, 0, 0, 100, 25, COLOR_BOXHEAD, NO);
+		} else {
+			Draw_BoxGradiant(VERTICAL, x, y, 0, 100, 25,  COLOR_BOXHEAD_DEFAULT, 0x101010FF, NO);
+		}
+		
 	}
 	
 	FontSize(18);
@@ -28826,31 +32703,17 @@ void Draw_filter()
 	FontSize(15);
 	x+=8;
 	y+=30;
-	if(filter_position==0) color = COLOR_2; else color = COLOR_1;
-	Draw_checkbox(Only_FAV, x+5, y, STR_FAVORITE, color);
+	Draw_checkbox(x+5, y, 0, STR_FAVORITE, Only_FAV, filter_position==0);
 	y+=15;
-	if(filter_position==1) color = COLOR_2; else color = COLOR_1;
-	Draw_checkbox(Show_PS3, x+5, y, "PS3", color);
+	Draw_checkbox(x+5, y, 0, "PS3", Show_PS3, filter_position==1);
 	y+=15;
-	if(filter_position==2) color = COLOR_2; else color = COLOR_1;
-	Draw_checkbox(Show_PS2, x+5, y, "PS2", color);
+	Draw_checkbox(x+5, y, 0, "PS2", Show_PS2, filter_position==2);
 	y+=15;
-	if(filter_position==3) color = COLOR_2; else color = COLOR_1;
-	Draw_checkbox(Show_PS1, x+5, y, "PS1", color);
+	Draw_checkbox(x+5, y, 0, "PS1", Show_PS1, filter_position==3);
 	y+=15;
-	if(filter_position==4) color = COLOR_2; else color = COLOR_1;
-	Draw_checkbox(Show_PSP, x+5, y, "PSP", color);
+	Draw_checkbox(x+5, y, 0, "PSP", Show_PSP, filter_position==4);
 	
 	FontColor(COLOR_1);
-	
-	if(Show_it(position) == NO) {
-		int i;
-		for(i=0; i<=game_number; i++) {
-			if(position-i<0 && game_number<position+i) break;
-			if(Show_it(position+i) == YES) {position+=i; break;}
-			if(Show_it(position-i) == YES) {position-=i; break;}
-		}
-	}	
 }
 
 //*******************************************************
@@ -28859,6 +32722,8 @@ void Draw_filter()
 
 void TranslateTo(float *value, float target)
 {
+	if( *value == target) return;
+	
 	float local;
 	float TranslateSpeed = 1; 
 	memcpy(&local, value, sizeof(float));
@@ -28872,16 +32737,22 @@ void TranslateTo(float *value, float target)
 			TranslateSpeed=TranslateSpeed*2;
 	}
 	
-	if((local - TranslateSpeed < target && target < local + TranslateSpeed) || MOVE_init==NO) {
+	if(MOVE_animated==NO) {
 		*value = target;
 	} else
-	if(local > target) {
-		local -= TranslateSpeed;
-		*value = local;
+	if(target < local) {
+		if(local - TranslateSpeed < target) *value = target;
+		else {
+			local -= TranslateSpeed;
+			*value = local;
+		}
 	} else
 	if(local < target) {
-		local += TranslateSpeed;
-		*value = local;
+		if( target < local + TranslateSpeed) *value = target;
+		else {
+			local += TranslateSpeed;
+			*value = local;
+		}
 	}
 }
 
@@ -28900,7 +32771,7 @@ void RotateTo(float *value, float target)
 			RotateSpeed=RotateSpeed*2;
 	}
 	
-	if((local - RotateSpeed < target && target < local + RotateSpeed) || MOVE_init==NO) {
+	if((local - RotateSpeed < target && target < local + RotateSpeed) || MOVE_animated==NO) {
 		*value = target;
 	} else
 	if(local > target) {
@@ -28918,6 +32789,84 @@ float FLOW_FakeZoom(float z)
     return 2-(z-10)/90;
 }
 
+//*******************************************************
+// LIST
+//*******************************************************
+
+void Draw_LIST()
+{
+	if(position == -1) return;
+	
+	if(Show_ICON0) {
+		Draw_GAMEPIC(position, GAMEPIC_ICON0, 630, 30, 100, 141.3, 0, NO, WHITE);
+	}
+	if(Show_COVER) {
+		int slot;
+		if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
+			Draw_GAMEPIC(position, GAMEPIC_COVER2D,  630, 150, 100, 141.3, 0, NO, WHITE);
+		} else {
+			Draw_COVER(position, 630, 150, 100, 141.3, 0, COVER_offset, COVER, NO, WHITE);
+		}
+	}
+	
+	float x=50, y=40;
+	
+	FontColor(COLOR_1);
+	FontSize(LIST_SizeFont);
+	
+	nb_line = (460 - y - LIST_SizeFont) / LIST_SizeFont;
+	
+	int j=0, i=0;
+		
+	if(position<=first_line) {
+		first_line=position;
+		j=0;
+		for(i=first_line; j<=nb_line; i++) {
+			if(game_number < first_line + i) break;
+			if(Show_it(i) == NO) continue;
+			j++;
+		}
+		last_line=i-1;
+	}
+	if(last_line<=position) {
+		last_line=position;
+		j=0;
+		for(i=last_line;  j<=nb_line; i--) {
+			if(game_number < last_line - i) break;
+			if(Show_it(i) == NO) continue;
+			j++;
+		}
+		first_line=i+1;
+	}
+	
+	SetFontZ(105);
+	
+	j=0;
+	for(i=first_line;  j <= nb_line; i++) {
+		if(i>game_number) break;
+		if(Show_it(i) == NO) continue;
+		
+		j++;
+		
+		if(i==position) FontColor(COLOR_2);
+		else FontColor(COLOR_1);
+		
+		DrawFormatString(x, y, "%s", list_game_title[i]);
+		y+=LIST_SizeFont;
+	}
+	SetFontZ(10);
+	last_line=i-1;
+	
+	if(j < nb_line) {
+		j=0;
+		for(i=last_line;  j<=nb_line; i--) {
+			if(game_number < last_line - i) break;
+			if(Show_it(i) == NO) continue;
+			j++;
+		}
+		first_line=i+1;
+	}
+}
 
 //*******************************************************
 // FLOW 3D
@@ -29030,6 +32979,50 @@ void Draw_PS3COVER_3D()
 	
 	tiny3d_End();
 	
+}
+
+void Draw_ICON03D(float w, float e, float r)
+{
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
+	
+	x-=0.1; // pour avoir la jaquette autour de la boite
+		
+	float w_icon0 = w-r ;
+	
+	float h_icon0 = w_icon0 * 176.0 / 320.0;
+	
+	y=-h_icon0/2;
+	x=-w/2+r;
+	z=-e/2;
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+	tiny3d_VertexPos(x, y+h_icon0 , z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+	
+	tiny3d_VertexPos(x, y , z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x+w_icon0, y+h_icon0	, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(1.0f, 0.0f);
+	 
+	tiny3d_VertexPos(x+w_icon0, y	, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(1.0f, 1.0f);
+	
+	tiny3d_End();
+}
+
+void Draw_PS3ICON0()
+{
+	float w=129; // largeur de la jaquette de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+	
+	Draw_ICON03D(w, e, r);
 }
 
 void Draw_PS3COVER()
@@ -29548,6 +33541,16 @@ void Draw_PS3GAMECASE_3D()
 	tiny3d_End();
 */
 
+}
+
+void Draw_PS2ICON0()
+{
+	
+	float w=130; // largeur de la jaquette de face
+	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+	
+	Draw_ICON03D(w, e, r);
 }
 
 void Draw_PS2COVER()
@@ -30085,6 +34088,18 @@ void Draw_PS2GAMECASE_3D()
 	
 }
 
+#define PS1_e 15.0f
+
+void Draw_PS1ICON0()
+{	
+	float wb = 140; // largeur de la boite
+	float e=PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float w=126; // largeur de la jaquette de face
+	float l=wb-w; // largeur de la marge noire à gauche
+	
+	Draw_ICON03D(w, e, l);
+}
+
 void Draw_PS1COVER_FRONT()
 {
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
@@ -30093,7 +34108,7 @@ void Draw_PS1COVER_FRONT()
 	float hb = 130; // hauteur de la boite
 	
 	float w=126; // largeur de la jaquette de face
-	float e=15+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
 	float l=wb-r-w; // largeur de la marge noire à gauche
@@ -30131,7 +34146,7 @@ void Draw_PS1COVER_BACK()
 	float wb = 140+0.2; // largeur de la boite
 	float hb = 130; // hauteur de la boite
 	
-	float e=15+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
 // x,y,z : superieur bas gauche
@@ -30139,23 +34154,25 @@ void Draw_PS1COVER_BACK()
 	y = -hb/2;
 	z = -e/2;
 	
-	float l_tot = wb-2*r + 2*(e-r) + PI*r;
+	float gap = 2;
+	
+	float l_tot = wb-2*r + 2*(e-r) + PI*r - gap*2;
 	
 	float SW=0; // longueur de la texture
 	
 	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
 		
-	tiny3d_VertexPos(x+wb, y+hb-r , z+r);  
+	tiny3d_VertexPos(x+wb, y+hb-r , z+r+gap);  
 	tiny3d_Normal(1, 0, 0);
 	tiny3d_VertexTexture(0.0f, 0.0f);
 
-	tiny3d_VertexPos(x+wb, y+r , z+r); 
+	tiny3d_VertexPos(x+wb, y+r , z+r+gap); 
 	tiny3d_Normal(1, 0, 0);
 	tiny3d_VertexTexture(0.0f, 1.0f);
 	
 	tiny3d_VertexPos(x+wb, y+hb-r , z+e-r); 
 	tiny3d_Normal(1, 0, 0);
-	SW+=e-r;
+	SW+=e-r-gap;
 	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
 
 	tiny3d_VertexPos(x+wb, y+r , z+e-r); 
@@ -30196,12 +34213,12 @@ void Draw_PS1COVER_BACK()
 		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
 	}
 	
-	SW += e-r;
-	tiny3d_VertexPos(x, y+hb-r, z+r);
+	SW += e-r-gap;
+	tiny3d_VertexPos(x, y+hb-r, z+r+gap);
 	tiny3d_Normal(-1, 0, 0);
 	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
 	
-	tiny3d_VertexPos(x, y+r, z+r);
+	tiny3d_VertexPos(x, y+r, z+r+gap);
 	tiny3d_Normal(-1, 0, 0);
 	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
 	
@@ -30216,7 +34233,7 @@ void Draw_PS1GAMECASE_3D()
 	
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume
 	
-	float e=15; // epaisseur de la boite 
+	float e=PS1_e; // epaisseur de la boite 
 	float wb=140; // largeur de la boite
 	float hb=130; // hauteur de la boite
 	
@@ -30246,7 +34263,6 @@ void Draw_PS1GAMECASE_3D()
 		tiny3d_Normal(0, 0, -1);
 	}
 	tiny3d_End();
-	
 	
 // arrondie superieur bas
 	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
@@ -30572,6 +34588,15 @@ void Draw_PS1GAMECASE_3D()
 	}
 }
 
+void Draw_PSPICON0()
+{	
+	float w=92; // largeur de la jaquette de face
+	float e=15.0+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+	
+	Draw_ICON03D(w, e, r);
+}
+
 void Draw_PSPCOVER()
 {
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
@@ -30580,7 +34605,7 @@ void Draw_PSPCOVER()
 
 	float w=92; // largeur de la jaquette de face
 	float h=158; // hauteur de la jaquettte de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=15.0+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 
 	float l_tot = w-r + PI*r/2 ;
@@ -30716,6 +34741,7 @@ void Draw_PSPCOVER_3D()
 
 void Draw_PSPGAMECASE_3D()
 {
+
 	//float l;
 	int t,i;
 	
@@ -31100,10 +35126,13 @@ void Draw_PSPGAMECASE_3D()
 
 void update_3DFLOW()
 {
+
+	if( position == -1) return;
+	
 	float e=0;
 	int i;
 	
-	if(ITEM_moveZ[position]==0) MOVE_init=NO;
+	if(ITEM_moveZ[position]==0) MOVE_animated=NO;
 	
 	int previous=-1;
 	int next=-1;
@@ -31155,11 +35184,113 @@ void update_3DFLOW()
 	}	
 	RotateTo(&ITEM_angleZ[position], 0.0);
 	
-	MOVE_init=YES;
+	MOVE_animated=YES;
+}
+
+void Draw_FLOW_SCROLL(float x, float y, float z, float w)
+{	
+	if(position == -1) return;
+	
+	if( OldPad(BUTTON_LEFT) == NO && OldPad(BUTTON_RIGHT) == NO) {
+		return;
+	} else
+	if( R2speed == 6 ) {
+		if(OldPadDelay(BUTTON_LEFT, n_s(2)) == NO && OldPadDelay(BUTTON_RIGHT, n_s(2)) == NO ) return;
+	} else
+	if( 3 < R2speed ) return;
+	
+	FontSize(15);
+	SetFontZ(z);
+	
+	float xc1 = 0;
+	float xc2 = 0;
+	float xc = 0;
+	float xp = 0;
+	int cc = upit(list_game_title[position][0]);
+	int c = 0;
+	int cp = 0;
+	float x_gpos = 0;
+	int i;
+	
+	int displayed_game_number = -1;
+	for(i=0; i<=game_number; i++) {
+		if(Show_it(i)) displayed_game_number++;
+	}
+	
+	if(displayed_game_number == -1) return;
+	
+	float wg = w / (displayed_game_number + 1);
+	
+	Draw_Box(x, y-1, z, 0, w, 2, COLOR_1, NO);
+	
+	for(i=0; i<=game_number; i++) {
+		if(Show_it(i) == NO) continue;
+		
+		x_gpos = i*wg;
+				
+		if(c < upit(list_game_title[i][0]) || i == game_number) {
+		
+			cp = c;
+			c = upit(list_game_title[i][0]);
+			
+			xp = xc;
+			xc = x + x_gpos;
+			
+			if( xp == 0 || cp == 0) continue; // first
+			
+here:
+			if(cp == cc) {
+				Draw_Box(xp, y-2, z, 0, xc-xp, 2, COLOR_2, NO);
+				FontColor(COLOR_2);
+			} else {
+				FontColor(COLOR_1);
+			}
+			
+			char str[2]={0};
+			str[0]=cp;
+			
+			float xt = xp + (xc-xp)/2 - WidthFromStr(str)/2;
+					
+			if( xc1 < xt ) {
+				xc1 = DrawFormatString(xt, y-4-15, "%c", cp);
+			} else
+			if( xc2 < xt ) {
+				xc2 = DrawFormatString(xt, y+8, "%c", cp);
+			} else
+			if(xc1 < xc2) {
+				xc1 = DrawFormatString(xc1, y-4-15, "%c", cp);
+			} else {
+				xc2 = DrawFormatString(xc2, y+8, "%c", cp);
+			}
+			
+			if(i==game_number) {
+				cp=c;
+				xp=xc;
+				xc=x+w;
+				i++;
+				goto here;
+			}
+		}
+	}
+	
+	x_gpos = position*wg;
+	
+	Draw_Box(x+x_gpos, y, z, 0, wg, 2, COLOR_3, NO);
+	
+	Draw_TriangleGradiant(x+x_gpos + wg/2    , y+2,
+						  x+x_gpos + wg/2 - 6, y+2+12,
+						  x+x_gpos + wg/2 + 6, y+2+12,
+						  0,  
+						  COLOR_4, 
+						  SetALPHA(GetALPHA(COLOR_4)/16, COLOR_4),
+						  SetALPHA(GetALPHA(COLOR_4)/16, COLOR_4));
+						  
 }
 
 void Draw_FLOW_3D()
 {
+	if(position == -1) return;
+
 	MATRIX tmp;
 	
     // fix Perspective Projection Matrix 
@@ -31213,6 +35344,12 @@ void Draw_FLOW_3D()
 		matrix = MatrixMultiply(m_axis, tmp);
 		
 		tiny3d_SetMatrixModelView(&matrix);
+	
+		int TextSlot = VRAM_GetSlot(i);
+		
+		u8 PICType = GAMEPIC_COVER_UNK;
+		
+		if(0<=TextSlot) PICType = Get_PICType(GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height);
 		
 		if( list_game_platform[i] == _ISO_PS3 || list_game_platform[i] == _JB_PS3 ) {
 			// texture
@@ -31227,33 +35364,26 @@ void Draw_FLOW_3D()
 			// Object
 			Draw_PS3GAMECASE_3D();
 			
-			if(COVER3D_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-				
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
-				
-				// Object
-				Draw_PS3COVER_3D();
-				
-			} else
-			if(COVER_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-				
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
-				
-				// Object
-				Draw_PS3COVER();
-			}
+			if(0<=TextSlot) {
+				if(GAMEPIC_offset[TextSlot]) {
+					// texture
+					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+					
+					// material
+					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					
+					// Object
+					if(PICType == GAMEPIC_COVER3D)
+						Draw_PS3COVER_3D();
+					else if(PICType == GAMEPIC_COVER2D)
+						Draw_PS3COVER();
+					else if(PICType == GAMEPIC_ICON0) 
+						Draw_PS3ICON0();
+				}
+			}		
 		
 		} else
 		if( list_game_platform[i] == _ISO_PS2 || list_game_platform[i] == _JB_PS2 ) {
@@ -31266,34 +35396,26 @@ void Draw_FLOW_3D()
 			// Object
 			Draw_PS2GAMECASE_3D();
 			
-			if(COVER3D_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-				
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
-				
-				// Object
-				Draw_PS2COVER_3D();
-				
-			} else
-			if(COVER_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-				
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
-				
-				// Object
-				Draw_PS2COVER();
+			if(0<=TextSlot) {
+				if(GAMEPIC_offset[TextSlot]) {
+					// texture
+					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+					
+					// material
+					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					
+					// Object
+					if(PICType == GAMEPIC_COVER3D)
+						Draw_PS2COVER_3D();
+					else if(PICType == GAMEPIC_COVER2D)
+						Draw_PS2COVER();
+					else if(PICType == GAMEPIC_ICON0)
+						Draw_PS2ICON0();
+				}
 			}
-			
 		} else
 		if( list_game_platform[i] == _ISO_PS1 || list_game_platform[i] == _JB_PS1 ) {
 			
@@ -31308,35 +35430,39 @@ void Draw_FLOW_3D()
 			
 			// Object
 			Draw_PS1GAMECASE_3D();
-						
-			if(COVER_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+			if(0<=TextSlot) {
+				if(GAMEPIC_offset[TextSlot]) {
+					// texture
+					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 				
-				// Object
-				Draw_PS1COVER_FRONT();
-			}
-			
-			if(COVER3D_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					// material
+					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					
+					// Object
+					if(PICType == GAMEPIC_ICON0)
+						Draw_PS1ICON0();
+					else
+						Draw_PS1COVER_FRONT(); 
+				}
 				
-				// Object
-				Draw_PS1COVER_BACK();
+				if(PS1BACK_offset[TextSlot]) {
+					// texture
+					tiny3d_SetTexture(0, PS1BACK_offset[TextSlot], PS1BACK[TextSlot].width, PS1BACK[TextSlot].height, PS1BACK[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+				
+					// material
+					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					
+					// Object
+					Draw_PS1COVER_BACK();
+				}
 			}
-		
 		} else
 		if( list_game_platform[i] == _ISO_PSP || list_game_platform[i] == _JB_PSP ) {
 			// material
@@ -31348,32 +35474,25 @@ void Draw_FLOW_3D()
 			// Object
 			Draw_PSPGAMECASE_3D();
 			
-			if(COVER3D_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER3D_offset[i], COVER3D[i].width, COVER3D[i].height, COVER3D[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-				
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
-				
-				// Object
-				Draw_PSPCOVER_3D();
-				
-			} else
-			if(COVER_offset[i]) {
-				// texture
-				tiny3d_SetTexture(0, COVER_offset[i], COVER[i].width, COVER[i].height, COVER[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-				
-				// material
-				tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-				tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-				tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-				tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
-				
-				// Object
-				Draw_PSPCOVER();
+			if(0<=TextSlot) {
+				if(GAMEPIC_offset[TextSlot]) {
+					// texture
+					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+					
+					// material
+					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
+					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					
+					// Object
+					if(PICType == GAMEPIC_COVER3D)
+						Draw_PSPCOVER_3D();
+					else if(PICType == GAMEPIC_COVER2D)
+						Draw_PSPCOVER();
+					else if(PICType == GAMEPIC_ICON0)
+						Draw_PSPICON0();	
+				}
 			}
 		}
 	}
@@ -31381,13 +35500,15 @@ void Draw_FLOW_3D()
 
 void update_FLOW()
 {
+	if( position == -1) return;
+	
 	int i;
 	float x=848/2;
 	float y=512/2;
 	float e;
 	
 	// Init
-	if(ITEM_moveX[position]==0 && ITEM_moveY[position]==0) MOVE_init=NO;
+	if(ITEM_moveX[position]==0 && ITEM_moveY[position]==0) MOVE_animated=NO;
 	
 	TranslateTo(&ITEM_moveX[position], x);
 	TranslateTo(&ITEM_moveY[position], y);
@@ -31411,32 +35532,26 @@ void update_FLOW()
 		e-=FLOW_W * FLOW_FakeZoom(ITEM_moveZ[i]) + 10;
 	}
 	
-	MOVE_init=YES;
+	MOVE_animated=YES;
 }
 
 void Draw_FLOW()
 {
+	if(position == -1) return;
+	
 	int i;
 	for(i=0; i<=game_number; i++) {
 		if(Show_it(i)==NO) continue;
 		
-		if( ITEM_moveX[i] < - FLOW_W) continue;
-		if( X_MAX < ITEM_moveX[i] - FLOW_W ) continue;
-		
 		float w_3D = FLOW_W * FLOW_FakeZoom(ITEM_moveZ[i]);
-		float h_3D = FLOW_H * FLOW_FakeZoom(ITEM_moveZ[i]);
+		//float h_3D = FLOW_H * FLOW_FakeZoom(ITEM_moveZ[i]);
 		
 		if(ITEM_moveX[i] < -w_3D) continue;
 		if(X_MAX + w_3D < ITEM_moveX[i]) break;
 		
-		if(Show_COVER == YES && COVER_offset[i] != 0) {
-			Draw_CoverFromCenter(i, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w_3D, 0);
-		}
-		else {
-			Draw_ICON0(i, ITEM_moveX[i]-w_3D/2, ITEM_moveY[i]-h_3D/2, ITEM_moveZ[i], w_3D, h_3D);
-		}
+		Draw_GAMEPIC(i, GAMEPIC_COVER2D | GAMEPIC_ICON0 | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w_3D, 0, YES, WHITE);
+		
 	}
-
 }
 
 //*******************************************************
@@ -31451,35 +35566,33 @@ void Draw_FLOW()
 
 void init_XMB()
 {
-	if(XMB_H_position != XMB_COLUMN_SETTINGS) {
-
-		XMB_nb_line=-1;
-		memset(XMB_value_line, 0, sizeof(XMB_value_line));
+	XMB_nb_line=-1;
+	memset(XMB_value_line, 0, sizeof(XMB_value_line));
+	
+	int i;
+	for(i = 0 ; i <= game_number ; i++) {
+		if(XMB_H_position==XMB_COLUMN_SETTINGS) continue;
 		
-		int i;
-		for(i = 0 ; i <= game_number ; i++) {
-			if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] !=_ISO_PS3 && list_game_platform[i] !=_JB_PS3)) continue;
-			if(XMB_H_position==XMB_COLUMN_PS2 && (list_game_platform[i] !=_ISO_PS2 && list_game_platform[i] !=_JB_PS2)) continue;
-			if(XMB_H_position==XMB_COLUMN_PS1 && (list_game_platform[i] !=_ISO_PS1 && list_game_platform[i] !=_JB_PS1)) continue;
-			if(XMB_H_position==XMB_COLUMN_PSP && (list_game_platform[i] !=_ISO_PSP && list_game_platform[i] !=_JB_PSP)) continue;
-			if(XMB_H_position==XMB_COLUMN_FAVORITES && is_favorite(list_game_path[i]) == NO) continue;
-			
-			XMB_nb_line++;
-			XMB_value_line[XMB_nb_line]=i;
-			
-			if(XMB_V_position[XMB_H_position]==XMB_nb_line) position=i;
-		}
+		if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] !=_ISO_PS3 && list_game_platform[i] !=_JB_PS3)) continue;
+		if(XMB_H_position==XMB_COLUMN_PS2 && (list_game_platform[i] !=_ISO_PS2 && list_game_platform[i] !=_JB_PS2)) continue;
+		if(XMB_H_position==XMB_COLUMN_PS1 && (list_game_platform[i] !=_ISO_PS1 && list_game_platform[i] !=_JB_PS1)) continue;
+		if(XMB_H_position==XMB_COLUMN_PSP && (list_game_platform[i] !=_ISO_PSP && list_game_platform[i] !=_JB_PSP)) continue;
+		if(XMB_H_position==XMB_COLUMN_FAVORITES && is_favorite(list_game_path[i]) == NO) continue;
 		
-		if(XMB_V_position[XMB_H_position]>XMB_nb_line) XMB_V_position[XMB_H_position] = XMB_nb_line;
-		if(XMB_nb_line==-1) Game_stuff=NO;
+		XMB_nb_line++;
+		XMB_value_line[XMB_nb_line]=i;
 		
+		if(XMB_V_position[XMB_H_position]==XMB_nb_line) position=i;
 	}
+	
+	if(XMB_V_position[XMB_H_position]>XMB_nb_line) XMB_V_position[XMB_H_position] = XMB_nb_line;
+	if(XMB_nb_line==-1) Game_stuff=NO;
 }
 
 float XMB_FakeZoom(float z)
 {
 	if(10<=z && z<=100) return 2 - (z-10)/90; else
-	if(0<=z && z<10) return 4 - 3*(z/10); else
+	if(0<=z && z<10) return 3 - (z/10); else
 	return 1;
 }
 
@@ -31488,14 +35601,22 @@ void Draw_XMB_COLUMNS()
 	int i;
 	
 	for(i=0; i<XMB_COLUMN_NUMBER; i++) {
+		if(i==XMB_COLUMN_FAVORITES && !Only_FAV) continue;
+		if(i==XMB_COLUMN_PS3 && !Show_PS3) continue;
+		if(i==XMB_COLUMN_PS2 && !Show_PS2) continue;
+		if(i==XMB_COLUMN_PS1 && !Show_PS1) continue;
+		if(i==XMB_COLUMN_PSP && !Show_PSP) continue;
 		
-		float l = 85.0 - XMB_columnZ[i];
+		float l = 85 - XMB_columnZ[i];
 		
 		SetFontZ(XMB_columnZ[i]);
 		
+		u32 color = WHITE;
+		if(MENU && i!=XMB_H_position) color = WHITE - 0xA0;
+		
 		if(XMB_Col_offset[i] != 0) {
 			tiny3d_SetTexture(0, XMB_Col_offset[i], XMB_Col[i].width, XMB_Col[i].height, XMB_Col[i].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(XMB_columnX[i]-l/2, XMB_columnY[i]-l, XMB_columnZ[i], 0, l, l, WHITE, YES);
+			Draw_Box(XMB_columnX[i]-l/2, XMB_columnY[i]-l, XMB_columnZ[i], 0, l, l, color, YES);
 		} else
 		if(XMB_MMTHM_XMB_offset != 0 && XMB_MMTHM_XMB2_offset != 0) { 
 			u8 ico=6;
@@ -31505,7 +35626,7 @@ void Draw_XMB_COLUMNS()
 			if(i==3) ico=29;else
 			if(i==4) ico=28;else
 			if(i==5) ico=30;
-			Draw_MMTHM_XMB(XMB_columnX[i]-l/2, XMB_columnY[i]-l, XMB_columnZ[i], l, l,  ico);
+			Draw_MMTHM_XMB(XMB_columnX[i]-l/2, XMB_columnY[i]-l, XMB_columnZ[i], l, l, ico);
 		} 
 		else {
 			FontSize(l-30);
@@ -31513,20 +35634,21 @@ void Draw_XMB_COLUMNS()
 		}
 	}
 	
-	FontSize(12);
-	SetFontZ(100);
-	if(XMB_H_position==XMB_COLUMN_SETTINGS) {
-		DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, STR_SETTINGS);
-	} else 
-	if(XMB_H_position==XMB_COLUMN_FAVORITES) {
-		DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, STR_FAVORITE);
-	} else {
-		DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, XMB_COLUMN_NAME[XMB_H_position]);
-	}
 	
-	FontSize(20);
-	SetFontZ(10);	
-
+	if(!MENU) {
+		FontSize(12);
+		SetFontZ(100);
+		if(XMB_H_position==XMB_COLUMN_SETTINGS) {
+			DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, STR_SETTINGS);
+		} else 
+		if(XMB_H_position==XMB_COLUMN_FAVORITES) {
+			DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, STR_FAVORITE);
+		} else {
+			DrawStringFromCenterX(XMB_X_COLUMN, XMB_Y_COLUMN, XMB_COLUMN_NAME[XMB_H_position]);
+		}
+		FontSize(20);
+		SetFontZ(10);	
+	}
 }
 
 void Draw_XMB_LINES()
@@ -31536,22 +35658,42 @@ void Draw_XMB_LINES()
 	
 	SetFontZ(10);
 	FontSize(20);
+	
+	u32 color = WHITE;
+	if(MENU) color = WHITE - 0xA0;
+	//if(MENU) Draw_Box(0, 0, 110, 0, 848, 512, 0x00000040, NO); // Dark
+	
 	if(XMB_H_position != XMB_COLUMN_SETTINGS && Game_stuff) {
 		
 		for(i=XMB_V_position[XMB_H_position]-6; i<=XMB_V_position[XMB_H_position]+6; i++) {
 			if(i < 0) continue;
+			if(i==XMB_V_position[XMB_H_position]) continue;
 			if(i > XMB_nb_line) break;
 			
 			w = XMB_W * XMB_FakeZoom(ITEM_moveZ[i]);
 			h = XMB_H * XMB_FakeZoom(ITEM_moveZ[i]);
-			DrawFromCenter_ICON0(XMB_value_line[i], ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w, h);			
+			Draw_GAMEPIC(XMB_value_line[i], GAMEPIC_ICON0 | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], w, h, YES, color);			
 		}
 		
-		if(Show_COVER == YES) Draw_COVER(position, 30, 200, 10, 130, 0);
+		if(Show_COVER) {
+			int slot;
+			if(Get_GAMEPIC_TYPE(position, &slot) == GAMEPIC_COVER2D) {
+				Draw_GAMEPIC(position, GAMEPIC_COVER2D, 30, 200, 10, 130, 0, NO, WHITE);
+			} else {
+				Draw_COVER(position, 30, 200, 10, 130, 0, COVER_offset, COVER, NO, WHITE);
+			}
+		}
 		
-		if(MENU) w = XMB_W * 4;
-		else w = XMB_W * 2;
-		DrawString(XMB_X_LINE+w/2+20, XMB_Y_LINE, list_game_title[position]);
+		w = XMB_W * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
+		h = XMB_H * XMB_FakeZoom(ITEM_moveZ[XMB_V_position[XMB_H_position]]);
+		Draw_GAMEPIC(XMB_value_line[XMB_V_position[XMB_H_position]], GAMEPIC_ICON0 | GAMEPIC_ICON0_DEFAULT,
+					ITEM_moveX[XMB_V_position[XMB_H_position]], 
+					ITEM_moveY[XMB_V_position[XMB_H_position]], 
+					ITEM_moveZ[XMB_V_position[XMB_H_position]],
+					w, h, YES, WHITE);
+		
+		if(w<XMB_W*2) w = XMB_W*2;
+		DrawString(XMB_X_LINE+w/2+20, XMB_Y_LINE - 20, list_game_title[position]);
 	}
 
 }
@@ -31563,10 +35705,12 @@ void update_XMB_COLUMNS()
 	float y=XMB_Y_COLUMN;
 	float e;
 	float e2=95.0;
+	if(MENU) e2=85.0;
 	
 	// Init
-	if(XMB_columnY[XMB_H_position] != y) MOVE_init=NO;
-	else MOVE_init=YES;
+	if(XMB_columnY[XMB_H_position] != y) MOVE_animated=NO; 
+	
+	//if(XMB_columnX[XMB_H_position] == x) return;
 	
 	TranslateTo(&XMB_columnX[XMB_H_position], x);
 	TranslateTo(&XMB_columnY[XMB_H_position], y);
@@ -31574,6 +35718,12 @@ void update_XMB_COLUMNS()
 	
 	e=x+e2;
 	for(i=XMB_H_position+1; i<XMB_COLUMN_NUMBER; i++) {
+		if(i==XMB_COLUMN_FAVORITES && !Only_FAV) continue;
+		if(i==XMB_COLUMN_PS3 && !Show_PS3) continue;
+		if(i==XMB_COLUMN_PS2 && !Show_PS2) continue;
+		if(i==XMB_COLUMN_PS1 && !Show_PS1) continue;
+		if(i==XMB_COLUMN_PSP && !Show_PSP) continue;
+		
 		TranslateTo(&XMB_columnX[i], e);
 		TranslateTo(&XMB_columnY[i], y);
 		TranslateTo(&XMB_columnZ[i], 35.0);
@@ -31582,14 +35732,22 @@ void update_XMB_COLUMNS()
 	}
 	
 	e2=95.0;
+	if(MENU) e2=85.0;
 	e=x-e2;
 	for(i=XMB_H_position-1; i>=0; i--) {
+		if(i==XMB_COLUMN_FAVORITES && !Only_FAV) continue;
+		if(i==XMB_COLUMN_PS3 && !Show_PS3) continue;
+		if(i==XMB_COLUMN_PS2 && !Show_PS2) continue;
+		if(i==XMB_COLUMN_PS1 && !Show_PS1) continue;
+		if(i==XMB_COLUMN_PSP && !Show_PSP) continue;
+		
 		TranslateTo(&XMB_columnX[i], e);
 		TranslateTo(&XMB_columnY[i], y);
 		TranslateTo(&XMB_columnZ[i], 35.0);
 		e2-=5;
 		e-=e2;
 	}
+
 }
 
 void update_XMB_LINES()
@@ -31602,10 +35760,11 @@ void update_XMB_LINES()
 	if(Game_stuff==NO) return;
 	
 	// Init
-	if(ITEM_moveX[XMB_V_position[XMB_H_position]] != x) MOVE_init=NO;
+	if(ITEM_moveX[XMB_V_position[XMB_H_position]] != x) MOVE_animated=NO;
 	
 	TranslateTo(&ITEM_moveX[XMB_V_position[XMB_H_position]], x);
 	TranslateTo(&ITEM_moveY[XMB_V_position[XMB_H_position]], y);
+	
 	if(MENU) 
 		TranslateTo(&ITEM_moveZ[XMB_V_position[XMB_H_position]], 0.0);
 	else 
@@ -31627,8 +35786,7 @@ void update_XMB_LINES()
 		e-=XMB_H+2;
 	}
 	
-	MOVE_init=YES;
-	
+	MOVE_animated=YES;
 }
 
 //*******************************************************
@@ -31671,20 +35829,22 @@ void init_GRID()
 		GRID_LAST_ICON=i;
 		if(j==GRID_NB_ICON0) break;
 	}
+	MOVE_animated = NO;
 }
 
 void Draw_GRID()
 {
+	if(position == -1) return;
+	
 	int i;
 	for(i = GRID_FIRST_ICON-GRID_NB_ICON0 ; i<=GRID_LAST_ICON+GRID_NB_ICON0 ; i++) {
 		if(i<0) continue;
 		if(i>game_number) break;
 		if(Show_it(i)==NO) continue;
 		
-		Draw_ICON0(i, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], GRID_W_ICON0, GRID_H_ICON0);
+		Draw_GAMEPIC(i, GAMEPIC_ICON0 | GAMEPIC_COVER2D | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], GRID_W_ICON0, GRID_H_ICON0, NO, WHITE);
 		if(i==position) {
-			Draw_Box(ITEM_moveX[i]-5, ITEM_moveY[i]-5, ITEM_moveZ[i]+1, 0, GRID_W_ICON0+10, GRID_H_ICON0+10, WHITE, NO);
-			Draw_Box(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i]+1, 0, GRID_W_ICON0, GRID_H_ICON0, BLACK, NO);
+			Draw_LineBox(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], 5, GRID_W_ICON0, GRID_H_ICON0, WHITE);
 		} else {
 			Draw_Box(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i]-1, 0, GRID_W_ICON0, GRID_H_ICON0, 0xFFFFFF80, NO); 
 		}
@@ -31693,8 +35853,10 @@ void Draw_GRID()
 
 void update_GRID()
 {
+	if(position==-1) return;
+	
 	// Init
-	if(ITEM_moveZ[position]!=100.0 || GRID_ANIMATED == NO) MOVE_init=NO;
+	if(ITEM_moveZ[position]!=100.0 || GRID_ANIMATED == NO) MOVE_animated=NO;
 	
 	float x, y, x1, y1;
 	int i, k=0;
@@ -31780,7 +35942,7 @@ void update_GRID()
 		}
 	}
 	
-	MOVE_init=YES;
+	MOVE_animated=YES;
 }
 
 //*******************************************************
@@ -31794,131 +35956,132 @@ void input_MAIN()
 	if(txt_viewer_activ == YES) return;
 	
 	int i,j,k;
-	
-	u8 old_x = x_L;
-	u8 old_y = y_L;
-	
-	x_L = (paddata.button[6] - 128);
-	y_L = (paddata.button[7] - 128);
-	
-	if (y_L < -28) {
-		if(old_y == 0) new_pad |= BUTTON_UP; else
-		{
-			old_pad |= BUTTON_UP;
-			R2speed = 6 + y_L/20;
-		}
-	} else 
-	if (28 < y_L) {
-		if(old_y == 0) new_pad |= BUTTON_DOWN; else
-		{
-			old_pad |= BUTTON_DOWN;
-			R2speed = 6 - y_L/20;
-		}
-	} else 
-	if (x_L < -28) {
-		if(old_x == 0) new_pad |= BUTTON_LEFT; else
-		{
-			old_pad |= BUTTON_LEFT;
-			R2speed = 6 + x_L/20 ;
-		}
-	} else 
-	if (28 < x_L) {
-		if(old_x == 0) new_pad |= BUTTON_RIGHT; else
-		{
-			old_pad |= BUTTON_RIGHT;
-			R2speed = 6 - x_L/20;
-		}
-	} else { 
-		x_L=0; y_L=0;
-		if(old_pad & BUTTON_R2) {
-			R2speed = 6 - paddata.PRE_R2/50;
-		} else R2speed=6;
-	}
-	
-	if((old_pad & BUTTON_LEFT) || (old_pad & BUTTON_RIGHT) || (old_pad & BUTTON_UP) || (old_pad & BUTTON_DOWN)) {
-		hold_it++;
-		if(hold_it>30) {
-			slow_it++;
-			if(slow_it>R2speed) slow_it=0;
-		}
-	} else {slow_it=1; hold_it=0;}
-	
-	if(new_pad & BUTTON_CIRCLE) {
-		while(hold_CIRCLE%30!=0) hold_CIRCLE++;
-		hold_CIRCLE+=15;
-	} else
-	if(old_pad & BUTTON_CIRCLE) {
-		hold_CIRCLE++;
-	} else {
-		if(hold_CIRCLE%30==0) hold_CIRCLE=0;
-		else hold_CIRCLE--;
-	}
-
-	if(hold_CIRCLE>90) {
-		if(Load_GamePIC==YES) end_Load_GamePIC();
-		end_load_PIC1();
-		end_checking();
+		
+	R2_SyncLeftJoystick();
+		
+	if(HoldCircleDelay()) {
+		end_Load_GAMEPIC();
+		end_load_CURPIC();
 		sysModuleUnload(SYSMODULE_PNGDEC);
 		sysModuleUnload(SYSMODULE_JPGDEC);
 		ioPadEnd();
 		exit(0);
 	}
 	
-	if((old_pad & BUTTON_L3) && (old_pad & BUTTON_R3)) {
+	if(ComboNewPad(BUTTON_L3, BUTTON_R3)) {
 		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
 	}	
 	
-	if(old_pad & BUTTON_R1) Display_PIC1=YES;
+	if(OldPad(BUTTON_R1)) Display_PIC1=YES;
 	else Display_PIC1=NO;
 	
-	if(new_pad & BUTTON_CROSS && Game_stuff == YES) {
+	
+	if(OldPad(BUTTON_L1)) {
+		if(NewPad(BUTTON_LEFT)) {
+			start_MemMonitor();
+		} else 
+		if(NewPad(BUTTON_RIGHT)) {
+			end_MemMonitor();
+		}
+	}
+	
+	if(NewPad(BUTTON_CROSS) && Game_stuff == YES) {
 		
-		if( list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3
-		||	list_game_platform[position] == _ISO_PS2 
-		||	list_game_platform[position] == _ISO_PS1
-		||	list_game_platform[position] == _ISO_PSP			
-		) {
-#ifndef RPCS3
-			if(Load_GamePIC==YES) end_Load_GamePIC();
-			end_load_PIC1();
-			end_checking();
-#endif
-
+		if(can_be_mounted(list_game_platform[position]) ){
 			start_loading();	
 			
-			read_game_setting(list_game_title[position]);
+			read_game_setting(position);
 			
 			u8 mounted = MountGame(list_game_path[position]);
 			
 			end_loading();
+			
 #ifdef RPCS3
 			if(mounted) show_msg("EXIT !");
+			else show_msg("FAILED : EXIT !");
 #else
 			if(mounted) {
+				end_Load_GAMEPIC();
+				end_load_CURPIC();
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
 				ioPadEnd();
 				exit(0);
-			} else {
-				start_load_PIC1();
-				start_checking();
 			}
 #endif
-	
-		} else show_msg("TODO");
+		} else {
+			show_msg("TODO");
+		}
 	} else
-	if(new_pad & BUTTON_TRIANGLE && Game_stuff == YES) {
+	
+	if(NewPad(BUTTON_TRIANGLE) && Game_stuff) {
 		open_GameMenu();
 	} else
-	if(new_pad & BUTTON_SELECT) {
-		Draw_FileExplorer(NULL);
+	if(NewPad(BUTTON_SELECT)) {
+		Draw_FileExplorer();
 	} else
-	if(new_pad & BUTTON_SQUARE && UI_position!=XMB) {
+	if(NewPad(BUTTON_SQUARE)) {
 		open_filter();
 	} else
-	if(new_pad & BUTTON_START) {
+	if(NewPad(BUTTON_START)) {
 		open_SETTINGS();
 	}
+	
+	
+	if(UI_position==XMB) {
+		if(R2pad(BUTTON_LEFT) ) {
+			if(XMB_H_position > 0) {
+				XMB_H_position--;
+				if(XMB_H_position==XMB_COLUMN_PSP && !Show_PSP) XMB_H_position--;
+				if(XMB_H_position==XMB_COLUMN_PS1 && !Show_PS1) XMB_H_position--;
+				if(XMB_H_position==XMB_COLUMN_PS2 && !Show_PS2) XMB_H_position--;
+				if(XMB_H_position==XMB_COLUMN_PS3 && !Show_PS3) XMB_H_position--;	
+				if(XMB_H_position==XMB_COLUMN_FAVORITES && !Only_FAV) XMB_H_position--;
+				
+				MOVE_animated=NO; 
+				init_XMB(); 
+				update_XMB_LINES();
+				position_CURPIC = -1;
+				MOVE_animated=YES; 
+			}
+		} else
+		if(R2pad(BUTTON_RIGHT)) {
+			if(XMB_H_position < 5) {	
+				u8 old_XMB_H_position = XMB_H_position;
+				XMB_H_position++;
+				if(XMB_H_position==XMB_COLUMN_FAVORITES && !Only_FAV) XMB_H_position++;
+				if(XMB_H_position==XMB_COLUMN_PS3 && !Show_PS3) XMB_H_position++;
+				if(XMB_H_position==XMB_COLUMN_PS2 && !Show_PS2) XMB_H_position++;
+				if(XMB_H_position==XMB_COLUMN_PS1 && !Show_PS1) XMB_H_position++;
+				if(XMB_H_position==XMB_COLUMN_PSP && !Show_PSP) XMB_H_position=old_XMB_H_position;
+				
+				if( old_XMB_H_position != XMB_H_position ) {
+					MOVE_animated=NO;
+					init_XMB();
+					update_XMB_LINES();
+					position_CURPIC = -1;
+					MOVE_animated=YES;
+				}
+			}
+		} else
+		if(R2pad(BUTTON_UP)) {
+			if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_line != 0) {
+				XMB_V_position[XMB_H_position] = XMB_nb_line;
+				MOVE_animated=NO;
+			} 
+			else if(XMB_V_position[XMB_H_position] > 0) XMB_V_position[XMB_H_position]--;
+			COVER_offset=0;
+		} else
+		if(R2pad(BUTTON_DOWN)) {
+			if(XMB_V_position[XMB_H_position] == XMB_nb_line && XMB_nb_line != 0) {
+				XMB_V_position[XMB_H_position] = 0;
+				MOVE_animated=NO;
+			} else if(XMB_V_position[XMB_H_position] < XMB_nb_line) XMB_V_position[XMB_H_position]++;
+			COVER_offset=0;
+		}
+	}
+	
+	if(position < 0) return;
 	
 	if(UI_position==LIST) {
 		if(R2pad(BUTTON_UP)) {
@@ -31927,49 +36090,15 @@ void input_MAIN()
 				if(position<0) position=game_number;
 				if(Show_it(position) == YES) break;
 			}
-			if(position>last_line) {
-				last_line=position;
-				j=0;
-				for(i=last_line;  j<=nb_line; i--) {
-					if(Show_it(i) == NO) continue;
-					j++;
-				}
-				first_line=i+1;
-			} else
-			if(position<first_line) {
-				first_line=position;
-				j=0;
-				for(i=first_line; j<=nb_line; i++) {
-					if(Show_it(i) == NO) continue;
-					j++;
-				}
-				last_line=i-1;
-			}
-		}
+			COVER_offset=0;
+		} else
 		if(R2pad(BUTTON_DOWN)) {
 			for(i=0; i<=game_number;i++) {
 				position++;
 				if(position>game_number) position=0;
 				if(Show_it(position) == YES) break;
 			}
-			if(position>last_line) {
-				last_line=position;
-				j=0;
-				for(i=last_line;  j<=nb_line; i--) {
-					if(Show_it(i) == NO) continue;
-					j++;
-				}
-				first_line=i+1;
-			} else
-			if(position<first_line) {
-				first_line=position;
-				j=0;
-				for(i=first_line; j<=nb_line; i++) {
-					if(Show_it(i) == NO) continue;
-					j++;
-				}
-				last_line=i-1;
-			}	
+			COVER_offset=0;
 		}
 	} else
 	if(UI_position==GRID) {
@@ -32020,27 +36149,6 @@ void input_MAIN()
 			}
 		}
 	} else
-	if(UI_position==XMB) {
-		if(R2pad(BUTTON_LEFT) ) {
-			if(XMB_H_position > 0) { XMB_H_position--; MOVE_init=NO; }
-		} else
-		if(R2pad(BUTTON_RIGHT)) {
-			if(XMB_H_position < 5) { XMB_H_position++; MOVE_init=NO; }
-		} else
-		if(R2pad(BUTTON_UP)) {
-			if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_line != 0) {
-				XMB_V_position[XMB_H_position] = XMB_nb_line;
-				MOVE_init=NO;
-			} 
-			else if(XMB_V_position[XMB_H_position] > 0) XMB_V_position[XMB_H_position]--;
-		} else
-		if(R2pad(BUTTON_DOWN)) {
-			if(XMB_V_position[XMB_H_position] == XMB_nb_line && XMB_nb_line != 0) {
-				XMB_V_position[XMB_H_position] = 0;
-				MOVE_init=NO;
-			} else if(XMB_V_position[XMB_H_position] < XMB_nb_line) XMB_V_position[XMB_H_position]++;
-		}
-	} else
 	if(UI_position==FLOW) {
 		if( (FLOW_inverse_button==NO  && R2pad(BUTTON_RIGHT)) ||
 			(FLOW_inverse_button==YES && R2pad(BUTTON_LEFT))   ) 
@@ -32052,7 +36160,7 @@ void input_MAIN()
 					for(k=game_number; k>=0; k--) {
 						if(Show_it(k) == NO) continue;
 						position=k;
-						MOVE_init=NO;
+						MOVE_animated=NO;
 						break;
 					}
 				}
@@ -32069,23 +36177,24 @@ void input_MAIN()
 					for(k=0; k<=game_number; k++) {
 						if(Show_it(k) == NO) continue;
 						position=k;
-						MOVE_init=NO;
+						MOVE_animated=NO;
 						break;
 					}
 				}
 				if(Show_it(position) == YES) break;
 			}
 		}
-		if( (new_pad & BUTTON_R3) &&  FLOW_3D) {
+		if( NewPad(BUTTON_R3) && FLOW_3D) {
 			if(FLOW_ShowBack==YES) FLOW_ShowBack=NO;
 			else FLOW_ShowBack=YES;
 		}
-		if( (new_pad & BUTTON_L3) &&  FLOW_3D) {
+		if( NewPad(BUTTON_L3) && FLOW_3D) {
 			if(FLOW_Zoom==YES) FLOW_Zoom=NO;
 			else FLOW_Zoom=YES;
 		}
 		
 	}
+
 }
 
 float DrawTAG(float x, float y, float z, float min_width, float font_height, char *str)
@@ -32093,7 +36202,7 @@ float DrawTAG(float x, float y, float z, float min_width, float font_height, cha
 
 	float w = min_width;
 	
-	float w_str = GetWidth(str) + 8.0;
+	float w_str = WidthFromStr(str) + 8.0;
 	
 	while( w_str > w ) w += 4.0;
 	
@@ -32110,8 +36219,6 @@ float DrawTAG(float x, float y, float z, float min_width, float font_height, cha
 	return x+w+1;
 }
 
-#define INPUT_TAG_WIDTH_MIN 
-
 void Draw_MAIN_input()
 {
 	if(MENU==YES) return;
@@ -32123,31 +36230,24 @@ void Draw_MAIN_input()
 	float y=INPUT_Y;
 	FontColor(COLOR_1);
 	SetFontZ(0);
-	
+
 	x=DrawButton(x, y, STR_SETTINGS, BUTTON_START);
-	if(Game_stuff==YES) {
+	x=DrawButton(x, y, STR_FILTER, BUTTON_SQUARE);
+	
+	if(Game_stuff) {
 		x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
-		x=DrawButton(x, y, STR_MOUNTGAME, BUTTON_CROSS);
-	}
-	if(UI_position!=XMB) {
-		x=DrawButton(x, y, STR_FILTER, BUTTON_SQUARE);
+		if(can_be_mounted(list_game_platform[position])) {
+			x=DrawButton(x, y, STR_MOUNTGAME, BUTTON_CROSS);
+		}
 	}
 	x=DrawButton(x, y, STR_FILEMANAGER, BUTTON_SELECT);
-		
-	//FontColor(COLOR_4);
-	//x=DrawFormatString( x+10, y, "%s", STR_HOLD);
-	FontColor(COLOR_1); 
-	if(hold_CIRCLE) {
-		DrawProgRing(x+7, y+7.5, 20, ((hold_CIRCLE%30)*100)/30, COLOR_3);
-		FontColor(COLOR_3);
-		DrawFormatString(x+10, y-12, "%d", (90 - hold_CIRCLE)/30);
-		FontColor(COLOR_1);
-	}
-	x=DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
 	
+	x=DrawSpam(x, y);
+	x=DrawButton(x, y, STR_EXIT, BUTTON_CIRCLE);
+
 	x=X_MAX-10-4*tagbox_min_width;
 	y=INPUT_Y;
-	if(Game_stuff == YES) {
+	if(Game_stuff) {
 		char tag_str[20];
 		int t;
 		
@@ -32213,10 +36313,9 @@ void Draw_MAIN_input()
 			sscanf(list_game_path[position], "/dev_usb%d%*s" , &t);
 			sprintf(tag_str, "USB%d", t);
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
-
 		} else
 		if(is_ntfs(list_game_path[position]) == YES) {
-					
+			
 			sscanf(list_game_path[position], "/ntfs%d%*s" , &t);
 			sprintf(tag_str, "NTFS%d", t);
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
@@ -32225,88 +36324,67 @@ void Draw_MAIN_input()
 			sprintf(dev, "ntfs%d", t);
 			sprintf(tag_str, "USB%d", NTFS_Test_Device(dev));
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
-
 		} else 
+		if( strstr(list_game_path[position], "/dev_sd") != NULL) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "FAT32");
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "SD");
+		} else
+		if( strstr(list_game_path[position], "/dev_cf") != NULL) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "FAT32");
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "CF");
+		} else
+		if( strstr(list_game_path[position], "/dev_ms") != NULL) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "FAT32");
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "MS");
+		} else
 		if( strstr(list_game_path[position], "/dev_hdd0") != NULL) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "UFS2");
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "HDD0");
 		}
-		
 	}
+	
 }
 
 void Draw_MAIN()
 {
 	if(MENU==YES && MENU_SIDE == NO) return;
-	
+		
 	SetFontZ(10);
+		
+	if(position < 0) {
+		Game_stuff = NO;
+		DrawFormatString(50, 40, "%s", STR_FILTER_NOGAME);
+		return;
+	}
 	
-	int x, y, i;
-
 	iso = is_iso(list_game_path[position]);
 	usb = is_usb(list_game_path[position]);
 	
 	Game_stuff = YES;	
 	
-	if(UI_position==LIST) {
+	if(UI_position==XMB) {
 		
-		if(LIST_Show_ICON0 == YES) {
-			Draw_ICON0(position, 630, 30, 100, 141.3, 75.9);
-		}
-		if(Show_COVER == YES) {
-			Draw_COVER(position, 630, 150, 100, 141.3, 0);
-		}
-		
-		x=50, y=40;
-		FontColor(COLOR_1);
-		FontSize(LIST_SizeFont);
-		
-	
-		nb_line = (460 - y - LIST_SizeFont) / LIST_SizeFont;
-		
-		SetFontZ(105);
-				
-		int j=0;
-		
-		for(i=first_line;  j <= nb_line; i++) {
-			if(i>game_number) break;
-			if(Show_it(i) == NO) continue;
-			
-			j++;
-			
-			if(i==position) FontColor(COLOR_2);
-			else FontColor(COLOR_1);
-			
-			DrawFormatString(x, y, "%s", list_game_title[i]);
-			y+=LIST_SizeFont;
-		}
-		SetFontZ(10);
-		last_line=i-1;
-		
-		if(position<first_line) position = first_line;
-		if(last_line<position) position = last_line;
-	}
-	else if (UI_position==GRID) {
-	
-		init_GRID();
-		update_GRID();
-		Draw_GRID();
-	
-	}
-	else if (UI_position==XMB) {
-		
-		if(XMB_H_position == XMB_COLUMN_SETTINGS) Game_stuff = NO; else Game_stuff = YES;
+		if(XMB_H_position == XMB_COLUMN_SETTINGS) Game_stuff = NO; 
+		else Game_stuff = YES;
 		
 		init_XMB();
-		
-		Draw_XMB_LINES();
-		update_XMB_LINES();
 		
 		Draw_XMB_COLUMNS();
 		update_XMB_COLUMNS();
 		
-	}
-	else if (UI_position==FLOW) {
+		Draw_XMB_LINES();
+		update_XMB_LINES();
+		
+	} else
+	if(UI_position==LIST) {
+		Draw_LIST();
+	} else
+	if(UI_position==GRID) {
+		init_GRID();
+		update_GRID();
+		Draw_GRID();
+	} else
+	if(UI_position==FLOW) {
 		if(FLOW_3D) {
 			FontSize(20);
 			DrawStringFromCenterX(424, 50, list_game_title[position]);
@@ -32321,7 +36399,8 @@ void Draw_MAIN()
 			
 			tiny3d_SetMatrixModelView(NULL);
 		
-		} else {
+		}
+		else {
 			FontSize(20);
 			DrawStringFromCenterX(424, 75, list_game_title[position]);
 			
@@ -32329,6 +36408,8 @@ void Draw_MAIN()
 			
 			Draw_FLOW();
 		}
+		
+		Draw_FLOW_SCROLL(30, 400, 0, X_MAX-30*2);
 	}
 
 }
@@ -32342,15 +36423,15 @@ u8 Show_it(int pos)
 	if(	Show_PS1==NO && (list_game_platform[pos]==_ISO_PS1 || list_game_platform[pos]==_JB_PS1)) return NO;
 	if(	Show_PSP==NO && (list_game_platform[pos]==_ISO_PSP || list_game_platform[pos]==_JB_PSP)) return NO;
 	
-	if( UI_position != XMB && Only_FAV==YES && is_favorite(list_game_path[pos])==NO) return NO;
+	if( UI_position != XMB) {
+		if( Only_FAV && is_favorite(list_game_path[pos])==NO) return NO;
+	}
 	
 	return YES;
 }
 
 int main(void)
 {
-	int i, j;
-	char scan_path[128];
 	u8 LoopBreak=1;
 
 	NTFS_init_system_io();
@@ -32365,20 +36446,22 @@ int main(void)
 	ioPadSetPressMode(0,1);
 	SetCurrentFont(-1);
 	
+	
 #ifdef RPCS3
 #ifdef FILEMANAGER
 	strcpy(ManaGunZ_id, "FILEMANAG");
 #else
 	strcpy(ManaGunZ_id, "MANAGUNZ0");
-#endif
+#endif //  FILEMANAGER
 	cobra = NO;
 	mamba = NO;
+	HEN = YES;
 	device_number++;
 	strcpy(list_device[device_number], "dev_hdd0");
-	device_number++;
-	strcpy(list_device[device_number], "dev_usb000");
+	//device_number++;
+	//strcpy(list_device[device_number], "dev_usb000");
 #endif // RPCS3
-	
+
 	read_setting(); //Need ManaGunZ_id
 	
 	LoadFont();
@@ -32386,14 +36469,14 @@ int main(void)
 	load_lang();
 
 	start_loading();
-
+	
 	u64 test_peek = lv2peek(0x8000000000003000ULL);
 	if( test_peek == 0xFFFFFFFF80010003ULL || test_peek == 0 ) // rpcs3 return 0
 		PEEKnPOKE = NO;
 	else
 		PEEKnPOKE = YES;
 
-	print_load("Initialisation");
+	print_load("Initialization");
 	if(PEEKnPOKE) {
 		if(init_fw() == NOK) {
 			//This firmware isn't supported
@@ -32407,7 +36490,7 @@ int main(void)
 	getDevices();
 	cobra = is_cobra();
 	mamba = is_mamba();
-#endif
+#endif // RPCS3
 
 	print_load(STR_ADJUST);
 	adjust_screen();
@@ -32432,8 +36515,7 @@ int main(void)
 		end_loading();
 		LoopBreak=1;
 		while(LoopBreak) {
-			cls();
-			ps3pad_read();
+			cls();		
 			
 			FontSize(20);
 			FontColor(RED);
@@ -32444,12 +36526,13 @@ int main(void)
 			FontColor(COLOR_1);
 			SetFontZ(0);
 
-			DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
+			DrawButton(x, y, STR_EXIT, BUTTON_CIRCLE);
 			
 			tiny3d_Flip();
 			ScreenShot();
+			ps3pad_read();
 			
-			if(new_pad & BUTTON_CIRCLE) {
+			if(NewPad(BUTTON_CIRCLE)) {
 				ioPadEnd();
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
@@ -32461,8 +36544,6 @@ int main(void)
 #endif	
 		
 	if(AutoM) AutoMount();	
-
-	start_checking();
 
 	print_load(STR_ADJUST);
 	adjust_screen();
@@ -32476,10 +36557,10 @@ int main(void)
 		LoopBreak=1;
 		while(LoopBreak) 
 		{
-			cls();
-			ps3pad_read();
+			cls();		
 			
-			Draw_BGS();		
+			Draw_BGS();
+			Draw_MemMonitor();
 			
 			FontSize(20);
 			FontColor(RED);
@@ -32490,13 +36571,13 @@ int main(void)
 			FontColor(COLOR_1);
 			SetFontZ(0);
 			
-			DrawButton(x, y, STR_BACKTOXMB, BUTTON_CIRCLE);
+			DrawButton(x, y, STR_EXIT, BUTTON_CIRCLE);
 			
 			tiny3d_Flip();
 			ScreenShot();
+			ps3pad_read();
 			
-			if(new_pad & BUTTON_CIRCLE) {
-				end_checking();
+			if(NewPad(BUTTON_CIRCLE)) {
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
 				ioPadEnd();
@@ -32505,42 +36586,32 @@ int main(void)
 			}
 		}
 	}
-
-	//get game list
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			sprintf(scan_path, "/%s/%s", list_device[i], scan_dir[j]);
-			
-			get_GAMELIST(scan_path);
-		}
-	}
 	
-	sort_GAMELIST();
-	
-	start_Load_GamePIC();
+	Load_GAMELIST();
 	
 	print_load("Get Favorite game list");
 	read_fav();
 
-	position=0;
-	for(position=0; position<=game_number; position++) {
-		if(Show_it(position)==YES) break;
+	position=-1;
+	int i;
+	for(i=0; i<=game_number; i++) {
+		if(Show_it(i)==YES) {position=i; break;}
 	}
 	
 	end_loading();
-
-	start_load_PIC1();
+	
+	start_Load_GAMEPIC();
 	
 	LoopBreak=1;
 	while(LoopBreak) {
 
 		while(game_number < 0) {
-			cls();
-			ps3pad_read();
+			cls();		
 			
 			Draw_BGS();
+			Draw_MemMonitor();
 			
-			check_device();
+			AutoRefresh_GAMELIST();
 			
 			FontSize(20);
 			FontColor(RED);
@@ -32551,16 +36622,16 @@ int main(void)
 			FontColor(COLOR_1);
 			SetFontZ(0);
 			
-			x=DrawButton(x, y, STR_BACKTOXMB , BUTTON_CIRCLE);
+			x=DrawButton(x, y, STR_EXIT , BUTTON_CIRCLE);
 			x=DrawButton(x, y, STR_FILEMANAGER, BUTTON_SELECT);
 			
 			tiny3d_Flip();	
 			ScreenShot();
+			ps3pad_read();
 			
-			if(new_pad & BUTTON_SELECT) Draw_FileExplorer();
+			if(NewPad(BUTTON_SELECT)) Draw_FileExplorer();
 			
-			if(new_pad & BUTTON_CIRCLE) {
-				end_checking();
+			if(NewPad(BUTTON_CIRCLE)) {
 				sysModuleUnload(SYSMODULE_PNGDEC);
 				sysModuleUnload(SYSMODULE_JPGDEC);
 				ioPadEnd();
@@ -32573,11 +36644,12 @@ int main(void)
 		cls();
 		
 		Draw_BG();
-
-		Draw_PIC1();
+		Draw_MemMonitor();
+		
+		Draw_CURPIC();
 		Draw_MAIN();
 		Draw_MAIN_input();
-		Draw_Load_GamePIC();
+		Draw_Load_GAMEPIC();
 		
 		Draw_filter();
 		Draw_filter_input();
@@ -32593,11 +36665,10 @@ int main(void)
 		
 		Draw_Notification();
 		
-		check_device();
+		AutoRefresh_GAMELIST();
 		
 		tiny3d_Flip();
 		ScreenShot();
-		
 		ps3pad_read();
 		
 		input_MAIN();
@@ -32615,6 +36686,7 @@ void Draw_scene()
 	if(scene == SCENE_FILEMANAGER) 
 	{
 		Draw_BGS();
+		Draw_MemMonitor();
 		Draw_window();
 		Draw_option();
 		Draw_properties();
@@ -32627,8 +36699,9 @@ void Draw_scene()
 	if(scene == SCENE_MAIN) 
 	{
 		Draw_BG();
+		Draw_MemMonitor();
 		Draw_MAIN();
 		Draw_filter();
-		Draw_MENU();
+		Draw_MENU();	
 	}
 }

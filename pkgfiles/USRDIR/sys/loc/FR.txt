@@ -27,7 +27,7 @@ STR_FILTER					{Filtre}
 STR_FAVORITE				{Favoris}
 STR_FILEMANAGER				{Explorateur de fichier}
 STR_HOLD					{Maintenir}
-STR_BACKTOXMB				{Retour au XMB}
+STR_EXIT					{Quitter}
 STR_GAME_PROP				{Propriétés du jeu}
 STR_GAME_TITLE				{Titre}
 STR_GAME_PATH				{Emplacement}
@@ -312,5 +312,48 @@ STR_LIMG_DESC				{Cela peux faire fonctionner certains jeux.}
 STR_FONT					{Police}
 STR_FONT_DESC				{Changer la police.}
 STR_MOVE					{Deplacer}
-STR_JOIN					{Join}
-STR_JOIN_DESC				{Merge .666XX files.}
+STR_JOIN					{Joindre}
+STR_JOIN_DESC				{Joindre les fichiers *.666XX.}
+STR_COLOR_FILTER			{Filtres de couleur}
+STR_COLOR_NOTIF				{Notification}
+STR_COLOR_BOXHEAD			{L'en-tête}
+STR_COLOR_BOXBODY			{Le corps}
+STR_COLOR_SIDEBAR			{Barre latérale}
+STR_COLOR_BGS				{Arrière-plan des paramètres}
+STR_COLOR_BG				{Arrière-plan}
+
+STR_ROOT_DISPLAY			{Affichage racine}
+STR_ROOT_DISPLAY_DESC		{Changer le type d'affichage de l'explorateur de fichiers.}
+STR_STYLE					{Style}
+STR_STYLE_CUSTOM			{Style personnalisé}
+STR_STYLE1					{Style 1}
+STR_STYLE2					{Style 2}
+STR_STYLE3					{Style 3}
+STR_STYLE4					{Style 4}
+STR_STYLE5					{Style 5}
+STR_STYLE6					{Style 6}
+STR_FREEOF					{libre sur}
+STR_ROOTLABEL				{Racine}
+STR_FM_ICONSIZE				{Taille de l'icône}
+STR_FM_BIG					{Grande}
+STR_FM_SMALL				{Petite}
+STR_FM_ROWNUMBER			{Nombre de ligne}
+STR_FM_ROWSIZE				{Taille de la ligne}
+STR_FM_LEFT_CONTENT			{Contenu de la ligne [GAUCHE]}
+STR_FM_RIGHT_CONTENT		{Contenu de la ligne [DROITE]}
+STR_FM_EMPTY				{Vide}
+STR_FM_MOUNTPOINT			{Point de montage}
+STR_FM_DEVICE				{Périphérique}
+STR_FM_LABEL				{Nom de volume}
+STR_FM_CAPACITY				{Barre de remplissage}
+STR_FM_MEMINSIDE			{Mémoire à l'intérieur}
+STR_FM_MEMOUTSIDE			{Mémoire à l'exterieur}
+STR_FM_FILESYSTEM			{Système de fichiers}
+STR_FM_CB_WIDTH				{Longueur de la barre}
+STR_FM_MEMORY				{Mémoire}
+STR_FM_ICON					{Icônes}
+STR_FM_FILEFOLDER			{Fichiers et dossiers}
+STR_FM_CUSTOM				{Icônes personalisées}
+STR_FM_CB_FILL				{Remplir}
+STR_EDIT_IDPS				{Modifier l'IDPS}
+STR_FILTER_NOGAME			{Aucun jeux. Veuillez changer votre filtrage de jeux.}

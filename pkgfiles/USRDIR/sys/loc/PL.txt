@@ -271,7 +271,7 @@ STR_SET_COLOR				{Ustaw kolor}
 STR_HIDETV					{Wyłącz test ekranu telewizora}
 STR_SHOWTV					{Włącz test ekranu telewizora}
 STR_MOVE_TO_PLUGINS			{Przejdź do /dev_hdd0/plugins}
-STR_ASK_PLUGINS				{Aby użyć menedżera wtyczek, wtyczki muszą znajdować się w "/dev_hdd0/plugins". Dozwolone jest użycie tego folderu?}
+STR_ASK_PLUGINS				{Aby użyć menedżera wtyczek, wtyczki muszą znajdować się w "/dev_hdd0/plugins".\nDozwolone jest użycie tego folderu?}
 STR_CHANGE_VALUE			{Zmień wartość}
 STR_LOAD_IDPS_LV2			{Załaduj IDPS z LV2}
 STR_LOAD_IDPS_EID5			{Załaduj IDPS z EID5}
@@ -314,3 +314,46 @@ STR_FONT_DESC				{Zmień czcionkę.}
 STR_MOVE					{Przenieś}
 STR_JOIN					{Połącz}
 STR_JOIN_DESC				{Połącz pliki .666XX.}
+STR_COLOR_FILTER			{Filtry kolorów}
+STR_COLOR_NOTIF				{Powiadomienie}
+STR_COLOR_BOXHEAD			{Nagłówek}
+STR_COLOR_BOXBODY			{Skrzynka}
+STR_COLOR_SIDEBAR			{Boczny panel }
+STR_COLOR_BGS				{Ustawianie tła}
+STR_COLOR_BG				{Tło}
+
+STR_ROOT_DISPLAY			{Główny wyświetlacz}
+STR_ROOT_DISPLAY_DESC		{Zmień wyświetlanie katalogu głównego w FileManager.}
+STR_STYLE					{Style}
+STR_STYLE_CUSTOM			{Niestandardowy styl}
+STR_STYLE1					{Styl 1}
+STR_STYLE2					{Styl 2}
+STR_STYLE3					{Styl 3}
+STR_STYLE4					{Styl 4}
+STR_STYLE5					{Styl 5}
+STR_STYLE6					{Styl 6}
+STR_FREEOF					{wolny od}
+STR_ROOTLABEL				{Źródło}
+STR_FM_ICONSIZE				{Rozmiar Ikony}
+STR_FM_BIG					{Duży}
+STR_FM_SMALL				{Mały}
+STR_FM_ROWNUMBER			{Numer wiersza tekstu}
+STR_FM_ROWSIZE				{Rozmiar wiersza}
+STR_FM_LEFT_CONTENT			{Treść wiersza [LEWO]}
+STR_FM_RIGHT_CONTENT		{Treść wiersza [PRAWO]}
+STR_FM_EMPTY				{Pusty}
+STR_FM_MOUNTPOINT			{Punkt montowania}
+STR_FM_DEVICE				{Urządzenie}
+STR_FM_LABEL				{Etykieta}
+STR_FM_CAPACITY				{Pasek pojemności}
+STR_FM_MEMINSIDE			{Pamięć wewnętrzna}
+STR_FM_MEMOUTSIDE			{Pamięć zewnętrzna}
+STR_FM_FILESYSTEM			{System plików}
+STR_FM_CB_WIDTH				{Szerokość paska pojemności}
+STR_FM_MEMORY				{Pamięć}
+STR_FM_ICON					{Ikony}
+STR_FM_FILEFOLDER			{Plik i folder}
+STR_FM_CUSTOM				{Niestandardowe ikony}
+STR_FM_CB_FILL				{Wypełnienie}
+STR_EDIT_IDPS				{Edit IDPS}
+STR_FILTER_NOGAME			{No games found. Adjust your filter.}

@@ -34,5 +34,9 @@ extern float Z_ttf;
 
 int display_ttf_string(int posx, int posy, char *string, u32 color, u32 bkcolor, int sw, int sh);
 
+// It display the string from the line.
+// With line -1 don´t display and refrest/calculate the total number of lines.
+
+int display_ttf_line(int line, int posx, int posy, char *string, u32 color, u32 bkcolor, int sw, int sh);
 
 #endif

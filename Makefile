@@ -16,7 +16,7 @@ include $(PSL1GHT)/ppu_rules
 # FileManger : "FILEMANAGER=1 make pkg"
 # FileManager for rpcs3 : "FILEMANAGER=1 RPCS3=1 make pkg"
 # 
-# Note : RPCS3 doesn't support "opendir" on the system root
+# Note : RPCS3 doesn't support "opendir" on system root : "/"
 #---------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ PKGFILES1	:=	$(CURDIR)/pkgfiles
 PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.35
+VERSION		:=  1.36
 
 ifeq ($(FILEMANAGER), 1)
 PKGFILES	:=	$(PKGFILES2)
@@ -147,29 +147,7 @@ $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 ifeq ($(FILEMANAGER), 1)
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/ALL.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/CIRCLE.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/CROSS.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/DOWN.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/FILES.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/FOLDER.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L1.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R1.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L2.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R2.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/L3.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/R3.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/LEFT.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/NOT.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/RIGHT.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/SELECT.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/SQUARE.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/START.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/TRIANGLE.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/TVTEST.PNG $(PKGFILES2)/USRDIR/GUI/common
-	@cp -fr $(PKGFILES1)/USRDIR/GUI/common/UP.PNG $(PKGFILES2)/USRDIR/GUI/common
+	@cp -fr $(PKGFILES1)/USRDIR/GUI/common $(PKGFILES2)/USRDIR/GUI
 	@cp -fr $(PKGFILES1)/USRDIR/GUI/colorset.ini $(PKGFILES2)/USRDIR/GUI
 	@cp -fr $(PKGFILES1)/USRDIR/sys/data $(PKGFILES2)/USRDIR/sys
 	@cp -fr $(PKGFILES1)/USRDIR/sys/loc $(PKGFILES2)/USRDIR/sys
@@ -189,7 +167,6 @@ small_clean:
 	@rm -fr MGZ/build/main.o
 
 #---------------------------------------------------------------------------------
-	
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) *.elf *.self *.pkg
@@ -201,27 +178,26 @@ clean:
 	@$(MAKE) clean -C MGZ/lib/libiconv --no-print-directory
 	@$(MAKE) clean -C MGZ/lib/libntfs_ext --no-print-directory
 	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
+	@$(MAKE) clean -C payloads/PS2_EMU --no-print-directory
+	@$(MAKE) clean -C payloads/rawseciso --no-print-directory
 	@rm -fr $(PKGFILES1)/USRDIR/$(TARGET).self
-	@rm -fr $(PKGFILES2)/USRDIR/$(TARGET).self
 	@rm -fr $(PKGFILES2)/USRDIR
 	
 #---------------------------------------------------------------------------------
-payload:
-	cd OffsetFinder; ./OffsetFinder.exe	
-	@cp -f OffsetFinder/firmware_symbols.h payloads/SKY/firmware_symbols.h;
-	@cp -f OffsetFinder/common.h MGZ/source/common.h
-	@cp -f OffsetFinder/symbols.h payloads/MAMBA/lv2/include/lv2/symbols.h
+update:
+	cd OffsetFinder; ./OffsetFinder.exe	search
+	cd OffsetFinder; ./OffsetFinder.exe	move
 	@$(MAKE) -C payloads/SKY --no-print-directory
 	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
 	@$(MAKE) all -C payloads/MAMBA --no-print-directory
 	@$(MAKE) loader -C payloads/MAMBA --no-print-directory
-	mv -f payloads/MAMBA/mamba_*.lz.bin  MGZ/data
-	mv -f payloads/MAMBA/mamba_loader_*.bin  MGZ/data
+	@mv -f payloads/MAMBA/mamba_*.lz.bin  MGZ/data
+	@mv -f payloads/MAMBA/mamba_loader_*.bin  MGZ/data
+	@$(MAKE) all -C payloads/PS2_EMU --no-print-directory
+	@mv -f payloads/PS2_EMU/BIN/*.bin  MGZ/data
+	@$(MAKE) -C payloads/rawseciso --no-print-directory
+	@mv -f payloads/rawseciso/rawseciso.sprx $(PKGFILES)/USRDIR/sys/sprx_iso
 	
-#---------------------------------------------------------------------------------
-sprx_iso:
-	$(MAKE) -C payloads/rawseciso --no-print-directory
-	@cp -f payloads/rawseciso/rawseciso.sprx $(PKGFILES)/USRDIR/sys/sprx_iso
 #---------------------------------------------------------------------------------
 lib:
 	$(MAKE) -C MGZ/lib/cobra --no-print-directory

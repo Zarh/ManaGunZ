@@ -1,5 +1,5 @@
 STR_LANGUAGE			{Chinese}
-STR_LANGCODE			{\x01}
+STR_LANGCODE			{\0x0B}
 
 STR_LANG					{Language}
 STR_LANG_DESC				{选择你的语言.}
@@ -314,7 +314,7 @@ STR_FONT_DESC				{更改字体.}
 STR_MOVE					{移动}
 STR_JOIN					{加入}
 STR_JOIN_DESC				{合并.666xx文件.}
-			{引导文件}
+
 STR_CURRENT					{当前}
 STR_NET						{Net}
 STR_SOFT					{软件}
@@ -326,4 +326,66 @@ STR_WIDESCREEN				{宽屏}
 STR_480P					{480P}
 STR_YFIX					{YFIX}
 STR_FMV						{跳帧}
-STR_SIM
+STR_SIMPLE					{Simple}
+STR_ADVANCED				{Advanced}
+STR_INSTALL_MGZ				{Do you want to install ManaGunZ ?} 
+STR_UP2DATE					{It's up to date}
+STR_SHOW_WAVES				{Show waves}
+STR_SHOW_WAVES_DESC			{Display waves in background.}
+STR_WAVES_COLOR				{Waves color}
+STR_WAVES_COLOR_DESC		{Change the color of the waves.}
+STR_USE_CONFIG				{You are not using a PS2 configuration file '*.CONFIG'.}
+STR_COLORSET				{ColorSet}
+STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
+STR_GRID_SCROLL				{Scroll}
+STR_ADD_LIMG				{Add LIMG}
+STR_REMOVE_LIMG				{Remove LIMG}
+STR_LIMG_DESC				{It may fix few games.}
+STR_FONT					{Font}
+STR_FONT_DESC				{Change the font.}
+STR_MOVE					{Move}
+STR_JOIN					{Join}
+STR_JOIN_DESC				{Merge .666XX files.}
+STR_COLOR_FILTER			{Color Filters}
+STR_COLOR_NOTIF				{Notification}
+STR_COLOR_BOXHEAD			{Box header}
+STR_COLOR_BOXBODY			{Box body}
+STR_COLOR_SIDEBAR			{Sidebar }
+STR_COLOR_BGS				{Setting background}
+STR_COLOR_BG				{Background}
+
+STR_ROOT_DISPLAY			{Root display}
+STR_ROOT_DISPLAY_DESC		{Change the display of the root in FileManager.}
+STR_STYLE					{Style}
+STR_STYLE_CUSTOM			{Custom style}
+STR_STYLE1					{Style 1}
+STR_STYLE2					{Style 2}
+STR_STYLE3					{Style 3}
+STR_STYLE4					{Style 4}
+STR_STYLE5					{Style 5}
+STR_STYLE6					{Style 6}
+STR_FREEOF					{free of}
+STR_ROOTLABEL				{Root}
+STR_FM_ICONSIZE				{Icon size}
+STR_FM_BIG					{Big}
+STR_FM_SMALL				{Small}
+STR_FM_ROWNUMBER			{Text row number}
+STR_FM_ROWSIZE				{Row size}
+STR_FM_LEFT_CONTENT			{Row content [LEFT]}
+STR_FM_RIGHT_CONTENT		{Row content [RIGHT]}
+STR_FM_EMPTY				{Empty}
+STR_FM_MOUNTPOINT			{Mount point}
+STR_FM_DEVICE				{Device}
+STR_FM_LABEL				{Label}
+STR_FM_CAPACITY				{Capacity bar}
+STR_FM_MEMINSIDE			{Inside memory}
+STR_FM_MEMOUTSIDE			{Outside memory}
+STR_FM_FILESYSTEM			{Files system}
+STR_FM_CB_WIDTH				{Capacity bar width}
+STR_FM_MEMORY				{Memory}
+STR_FM_ICON					{Icons}
+STR_FM_FILEFOLDER			{File and Folder}
+STR_FM_CUSTOM				{Custom icons}
+STR_FM_CB_FILL				{Fill}
+STR_EDIT_IDPS				{Edit IDPS}
+STR_FILTER_NOGAME			{No game found. Adjust your filters.}

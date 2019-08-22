@@ -304,11 +304,21 @@ static void DrawTextBox_ttf(float x, float y, float z, float w, float h, u32 rgb
 }
 
 
+//todo
+// else if(txt_viewer_content[i] == '\t') {
+	// for(j=TXT_X; j < TXT_X+TXT_W; j+=30) {
+		// if(j>xt) {
+			// xt=j;
+			// break;
+		// }
+	// }
+	// continue;
+// }
+
 #define UX 30
 #define UY 24
 
-
-int display_ttf_string(int posx, int posy, char *string, u32 color, u32 bkcolor, int sw, int sh)
+int display_ttf_line(int line, int posx, int posy, char *string, u32 color, u32 bkcolor, int sw, int sh)
 {
     int l,n, m, ww, ww2;
     u8 colorc;
@@ -317,11 +327,13 @@ int display_ttf_string(int posx, int posy, char *string, u32 color, u32 bkcolor,
 
     int lenx = 0;
 
+	int c_line = 0;
+	
     while(*ustring) {
 
-        if(posy >= Win_H_ttf) break;
+        if(Win_H_ttf <= posy && line!=-1) break;
 
-        if(*ustring == 32 || *ustring == 9) {posx += sw>>1; ustring++; continue;}
+        if(*ustring == 32) {posx += sw>>1; ustring++; continue;} //space
 
         if(*ustring & 128) {
             m = 1;
@@ -353,15 +365,22 @@ int display_ttf_string(int posx, int posy, char *string, u32 color, u32 bkcolor,
         } else {
             if(Win_flag & WIN_DOUBLE_LF) {
                 if(ttf_char == '\r') {if(posx > lenx) lenx = posx; posx = 0;continue;}
-                if(ttf_char == '\n') {posy += sh;continue;}
+                if(ttf_char == '\n') {if(line<=c_line) posy += sh; c_line++; continue;}
             } else {
-                if(ttf_char == '\n') {if(posx > lenx) lenx = posx; posx = 0;posy += sh;continue;}
-            }
+				if(ttf_char == '\r') continue;
+                if(ttf_char == '\n') {if(posx > lenx) lenx = posx; posx = 0; if(line<=c_line) posy += sh; c_line++; continue;}
+				if(ttf_char == '\t') {
+					float j;
+					for(j=0; j < Win_W_ttf; j+=30) {
+						if(posx<j) {posx=j; break;}
+					}
+					if(Win_W_ttf<j) { posx=0; if(line<=c_line) posy += sh; c_line++; }
+					continue;
+				}
+			}
         }
 
-        if(ttf_char < 32) ttf_char='?';
-
-        
+        if(ttf_char < 32) ttf_char='?';     
 
         // search ttf_char
         if(ttf_char < 128) n= ttf_char;
@@ -453,43 +472,58 @@ int display_ttf_string(int posx, int posy, char *string, u32 color, u32 bkcolor,
         // displaying the character
         ttf_font_datas[l].flags |= 2; // in use
         ttf_font_datas[l].r_use = r_use;
-
-        tiny3d_SetTextureWrap(0, tiny3d_TextureOffset(bitmap), 32, 
-                32, 32 * 2, 
-                TINY3D_TEX_FORMAT_A4R4G4B4,  TEXTWRAP_CLAMP, TEXTWRAP_CLAMP,1);
-
-        //DrawTextBox_ttf((float) posx, (float) posy/* + ((float) ttf_font_datas[l].y_start * sh) * 0.03125f*/, 0.0f, (float) sw, (float) sh, color,
-        //    0.0309375f * (float) ttf_font_datas[l].width, 0.0309375f * (float) ttf_font_datas[l].height);
-
-        
-        if((Win_flag & WIN_AUTO_LF) && (posx + (ttf_font_datas[l].width * sw / 32) + 1) > Win_W_ttf) {
-            posx = 0;
-            posy += sh;
-        }
-
+       
         u32 ccolor = color;
         u32 cx =(ttf_font_datas[l].width * sw / 32) + 1;
-
+		
+		if(line==-1) ccolor=0; else
+		if(c_line<line) ccolor=0;
+		
+		if(color != 0 
+		&& posy+sh==Win_H_ttf && Win_H_ttf==sh 
+		&& Win_W_ttf <= (posx + cx) && posx < Win_W_ttf 
+		&& line != -1) {
+			if( strcmp(string, "...") == 0) return posx;
+			Win_W_ttf+=10;
+			posx += display_ttf_line(0, posx, posy, "...", color, bkcolor, sw, sh);
+			Win_W_ttf-=10;
+			break;
+		}
+		
+        if((Win_flag & WIN_AUTO_LF) && Win_W_ttf <= (posx + cx)) {
+            posx = 0;
+			if(line<=c_line) posy += sh;
+			c_line++;
+			if(line<=c_line) ccolor = color;	
+        }
+		
         // skip if out of window
-        if((posx + cx) > Win_W_ttf || (posy + sh) > Win_H_ttf ) ccolor = 0;
-
-        if(ccolor)
+        if(Win_W_ttf <= (posx + cx) || Win_H_ttf <= posy) ccolor=0;
+		
+        if(ccolor) {
+			 tiny3d_SetTextureWrap(0, tiny3d_TextureOffset(bitmap), 32, 
+                32, 32 * 2, 
+                TINY3D_TEX_FORMAT_A4R4G4B4,  TEXTWRAP_CLAMP, TEXTWRAP_CLAMP,1);
+				
             DrawBox_ttf((float) (Win_X_ttf + posx), (float) (Win_Y_ttf + posy) + ((float) ttf_font_datas[l].y_start * sh) * 0.03125f,
             Z_ttf, (float) sw, (float) sh, bkcolor);
             DrawTextBox_ttf((float) (Win_X_ttf + posx), (float) (Win_Y_ttf + posy) + ((float) ttf_font_datas[l].y_start * sh) * 0.03125f,
             Z_ttf, (float) sw, (float) sh, color,
             0.99f, 0.99f);
-
+		}
+		
         posx+= cx;
-
-
     }
 
-   
-
     Y_ttf = (float) posy + sh;
+	
+	if(posx < lenx) posx = lenx;
+	if(line==-1) return c_line;
+	
+	return posx;
+}
 
-    if(posx < lenx) posx = lenx;
-    return posx;
-
+int display_ttf_string(int posx, int posy, char *string, u32 color, u32 bkcolor, int sw, int sh)
+{
+	return display_ttf_line(0, posx, posy, string, color, bkcolor, sw, sh);
 }

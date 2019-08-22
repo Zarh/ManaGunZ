@@ -1,0 +1,17 @@
+include ../../../FIRMWARES
+
+PS3DEV2:=$(PS3SDK)/ps3dev2
+
+CC			:= $(PS3DEV2)/ppu/bin/ppu-gcc
+STRIP		:= $(PS3DEV2)/ppu/bin/ppu-strip
+OBJCOPY		:= $(PS3DEV2)/ppu/bin/ppu-objcopy
+
+CFLAGS = -ffunction-sections -fdata-sections -Os -m64 -fno-builtin -fno-exceptions \
+			   -Wall -Wno-strict-aliasing $(foreach dir,$(INCLUDE),-I$(dir)) \
+			   -DPS2EMU
+CFLAGS += --std=gnu99
+LDFLAGS= -T ldscript.ld -nostartfiles -nostdlib -nodefaultlibs -Wl,-static -Wl,-s -L. $(foreach dir,$(LIBSDIR),-L$(dir)) $(LIBS) \
+	-Wl,--gc-sections -Wl,-Map=
+
+INCLUDE		= ../common ../../ps2emu/include ../../lv1/include
+INCLUDE		+= $(PS3DEV2)/ppu/ppu/include

@@ -114,6 +114,10 @@ float GetFontHeight();
 
 float GetFontWidth();
 
+// Get Width of a string
+
+float WidthFromStr(char* str);
+
 // function to draw one character
 
 void DrawChar(float x, float y, float z, u8 chr);

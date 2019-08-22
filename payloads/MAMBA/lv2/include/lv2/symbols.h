@@ -206,7 +206,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD5B4
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000E71CF
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3C54A00057710
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001D89E
@@ -652,7 +652,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD5B4
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000EC258
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3CB3900057221
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001DD6F
@@ -1550,7 +1550,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD5B4
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ED19E
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3CAF10005734A
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001DE56
@@ -1996,7 +1996,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD5B4
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ED168
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3CAFD000572DD
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001DE6B
@@ -4006,7 +4006,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ED047
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB337A200056FAD
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E7C3
@@ -4452,7 +4452,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECCEB
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE1
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E733
@@ -4898,7 +4898,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECCF7
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE1
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E6E8
@@ -5344,7 +5344,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECCF8
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE1
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E6E8
@@ -5790,7 +5790,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECCFD
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE1
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E6E8
@@ -6236,7 +6236,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECC8A
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE9
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E5DB
@@ -6682,7 +6682,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECC8F
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE9
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E5D3
@@ -7128,7 +7128,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECC91
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE9
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E5D3
@@ -7778,7 +7778,7 @@
 	/* libfs */
 	#define aio_copy_root_offset                        0xD658
 
-	/* rebug */
+	/* DEX */
 	#define EXPLORE_PLUGIN_REBUG_HASH                   0xACF4AF2B000ECC91
 	#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x9CB3396E00056CE9
 	#define GAME_EXT_PLUGIN_REBUG_HASH                  0xE274AF7B0001E5D3
@@ -7924,9 +7924,9 @@
 	#define shutdown_copy_params_call                        0xAB4C
 
 	/* hash */
-	#define EXPLORE_PLUGIN_HASH                         0xACF4AF2B000ECC91
+	#define EXPLORE_PLUGIN_HASH                         0xACF4AF2B000ECC92
 	#define EXPLORE_CATEGORY_GAME_HASH                  0x9CB3396E00056CE9
-	#define GAME_EXT_PLUGIN_HASH                        0xE274AF7B0001E5D3
+	#define GAME_EXT_PLUGIN_HASH                        0xE274AF7B0001E5D4
 	#define LIBFS_EXTERNAL_HASH                         0x5BC7BCE800006477
 	#define PSP_EMULATOR_HASH                           0x7BE641F500023794
 	#define PEMUCORELIB_HASH                            0xF349A563000C0D66
@@ -7936,7 +7936,7 @@
 	#define LIBSYSUTIL_SAVEDATA_PSP_HASH                0x57BBC3B800003212
 
 	/* lv1 */
-	#define vsh_pos_in_ram                              0x510000
+	#define vsh_pos_in_ram                              0x910000
 
 	/* vsh */
 	#define ps2tonet_patch                              0xCA380

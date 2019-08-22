@@ -27,13 +27,19 @@ endif
 
 CLEANFILES = $(PRX_DIR)/$(PPU_SPRX_TARGET)
 
+SCETOOL_FLAGS := --sce-type=SELF --compress-data=TRUE --key-revision=0004 --self-auth-id=1070000052000001 
+SCETOOL_FLAGS += --self-vendor-id=01000002 --self-type=APP --self-app-version=0003004000000000 
+SCETOOL_FLAGS += --self-ctrl-flags=4000000000000000000000000000000000000000000000000000000000000000 
+SCETOOL_FLAGS += --self-cap-flags=00000000000000000000000000000000000000000000007B0000000100020000 
+
 all:
 	$(MAKE) $(PPU_OBJS_DEPENDS)
 	$(PPU_PRX_STRIP) --strip-debug --strip-section-header $(PPU_PRX_TARGET)
-	$(MAKE_FSELF) $(PPU_PRX_TARGET) $(PPU_SPRX_TARGET)
-
+	scetool $(SCETOOL_FLAGS) --encrypt $(PPU_PRX_TARGET) $(PPU_SPRX_TARGET)
+	
 include $(CELL_MK_DIR)/sdk.target.mk
 
-
+clean:
+	rm -f objs *.prx *.sym *.sprx 
 
 

@@ -1,6 +1,6 @@
 CC=gcc 
 CFLAGS= -std=c99 -Wall
-LDFLAGS=
+LDFLAGS= -lz
 SOURCES= main.c
 EXECUTABLE=OffsetFinder
 all:

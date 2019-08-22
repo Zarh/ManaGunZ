@@ -333,14 +333,19 @@ void SetFontScreenLimits(float width, float height)
     font_datas.screen_h = height;
 }
 
-static int WidthFromStr(u8 * str)
+float WidthFromStr(char *str)
 {
-    int w = 0;
-
-    while(*str) {
-        w += font_datas.sx * font_datas.fonts[font_datas.current_font].fw[*str++] / font_datas.fonts[font_datas.current_font].w;
-    }
-
+	if( str ==NULL) return 0;
+	
+    float w = 0;
+	
+	u8 *ustr = (u8 *) str;
+	
+	while(*ustr)
+		w += font_datas.sx * font_datas.fonts[font_datas.current_font].fw[*(ustr++)] / font_datas.fonts[font_datas.current_font].w;
+	
+	if(w==0) return (float) display_ttf_string(0, 0, str, 0, 0, font_datas.sx, font_datas.sy);
+	
     return w;
 }
 
@@ -492,7 +497,8 @@ static int i_must_break_line(char *str, float x)
 
 float DrawString(float x, float y, char *str)
 {
-
+	if(y<0) return x;
+	
     if(font_datas.current_font == 8) {
         int len;
 
@@ -538,7 +544,7 @@ float DrawString(float x, float y, char *str)
 
     if(font_datas.autocenter) {
     
-        x= (font_datas.screen_w - WidthFromStr((u8 *) str)) / 2;
+        x= (font_datas.screen_w - WidthFromStr(str)) / 2;
 
     }
 
@@ -570,6 +576,8 @@ static char buff[4096];
 
 float DrawFormatString(float x, float y, char *format, ...)
 {
+	if(y<0) return x;
+	
     char *str = (char *) buff;
     va_list	opt;
 	
@@ -622,7 +630,7 @@ float DrawFormatString(float x, float y, char *format, ...)
 
     if(font_datas.autocenter) {
     
-        x = (font_datas.screen_w - WidthFromStr((u8 *) str)) / 2;
+        x = (font_datas.screen_w - WidthFromStr(str)) / 2;
 
     }
 

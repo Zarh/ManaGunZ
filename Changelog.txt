@@ -1,48 +1,70 @@
-TODO
-_ NETISO
-_ group PKG
-_ Add : PFD extractor
-_ Add : Speed Start / Speed Scan
-_ UI XMB : Use setting column
-_ debug EBOOT
-_ shortcut pkg : keep only usefull files in pkg.
-_ TXT edit
-_ Hexa edit
-_ Audio
-_ system info
-_ create backup from disk
-_ Fan control plugin standalone?
-_ game list supports / shows installed PKG games (PS3, PS2, PS1, PSP)
-_ PS2 guitar hero EUR not in real xmb : e51e79bf3ca4b49be51656e0fdc912e1
-_ setting : install  mamba autoloader
-_ toggle
-_ timestamps and permissions : Inside the window, at right of the "size" can be added a new column for timestamps and another for permissions
-_ Controller setting
-_ global setting tabs
-_ copy/convert/extract : ETA/timer
-_ verifier si il y a de la place avant de faire un copie de fichier
-_ update_mgz
-_ double click
-_ load only displayed pic ...
-_ rebuild DB
-_ goto recovery
-_ MAX_GAME = infinite
-_ whitelist.cfg & blacklist.cfg files in /dev_hdd0/tmp
-_ font sizes / Y / shadow ?
-_ text viewer = fix scroll
-_ GameList SCAN in Background thread
-_ New Filemanager Root interface
-_ real BDVD dump : lv1 ? read_storage ?
+v1.36
+Add : Support PS3HEN. I removed every feature unsupported by the HEN (tested on HEN 2.3.1).
+Add : Updated widescreen db from pcsx2 github.
+Add : If you don't use R2 to manage speed, the speed is increased when you hold a button.
+Add : For UI FLOW, a scroll bar appears when you browse quickly your backups list.
+Add : Changed VRAM mapping to manage more backups. See notes(1).
+Add : Show RGBA values when you edit a color.
+Change : When you hold circle to quit, there is only one loading ring instead of 3.
+Add : You can add a color filter on some pictures. See notes (2).
+Add : Settings menu is splitted in 3 level instead of 2.
+Add : Platform filter for UI XMB.
+Fix : It scan dev_cf (compact flash) instead of dev_cd.
+Add : 'Yes/No' settings are remplaced by a toggle.
+Add : New theme icons for the toggle.
+Fix : Rawseciso isn't a fself anymore. It fix issue with iso from ntfs with a PS3HEN.
+Fix : Issue with ps2 elf crc. It fix several issues with iso patching options like when 'disable widescreen' was unavailble.
+Fix : Pnach wasn't properly translated to .CONFIG, wrong endianness in replacement opcode.
+Fix : To avoid issues with some characters, the name of game settings files use title_id instead of title.
+Remove :  I removed "Shortcut pkg" option because it's broken. I'll fix it later.
+Add FileManager : More informations of devices : capacity, file system, name, label, writable.
+ADd FileManager : Several predefined root display is available. Also, you can custumize your own display in settings.
+Add FileManager : Specifics options are available if you select several files with the same extention. For example, you can extract 3 pkg in a row.
+Add FileManager : Make shortcut PKG.
+Add FileManager : New theme icons used for the closebox, the dockbox and the cursor.
+Add FileManager : Support UTF8 filename and also their content with the TXTviewer.
+Add offsetfinder : It generate every files to update managunz to a new firmware. Type 'make update'.
 
+Notes :
+(1) Every game pictures are stored in a 512KB slot memory in bitmap format.
+For Flow3D, it's stored in 2MB slots, there is less slots.
+The dimention of the game pictures is limited.
+We can calculate its size = Width * Height * Pitch
+I use ARGB texture -> the pitch is 4.
+The picture size must repect : 
+-           Width*Height < 0x20000    =   (512*1024)    /4
+- Flow3D    Width*Height < 0x80000    =   (2*1024*1024) /4
+To not have any memory issue, I suggest you to use the following dimensions:
+ICON0           320*176            = 0x0DC00
+COVER PS1       250*250            = 0x0F424
+COVER PS2       250*350            = 0x155CC
+COVER PS3       260*300            = 0x130B0
+COVER PSP       200*340            = 0x109A0
+COVER3D PS1     450*450 + 450*600  = 0x735B4
+COVER3D PS2		850*570            = 0x76494
+COVER3D PS3     950*525            = 0x79C3E
+COVER3D PSP		800*640		       = 0x7D000
+
+(2) You can choose the color filter with (R1) in settings.
+It's available for BG, BGS, SIDEBAR, BOXBODY, BOXHEAD and NOTIF pictures.
+You can add these colors in colorset.ini file too.
+They are named COLOR_BG, COLOR_BGS, COLOR_SIDEBAR, COLOR_BOXBODY, COLOR_BOXHEAD and COLOR_NOTIF.
+If you don't write a colors in colorset.ini it will be disabled.
+
+v1.35
+Add : Support 4.84C & 4.84D
+Fix : fixed Mamba payloads for D-REX not properly loading modules hashes
+
+Note : update by littlebalup, thank you.
 
 v1.34
+Add : 4.83C support.
 Add : New loading icon.
 Add : Scan to /dev_sd, /dev_ms/ and /dev_cd.
-Fix : Apply pnatch (bug introduced in previous update)
+Fix : Apply pnatch (bug introduced in previous update).
 Add offsetfinder : IDPSet & ERK_dumper offsets.
-Add : Definitions files from RCOmageMOD
-Add : Game TAGS
-
+Add : Definitions files from RCOmageMOD.
+Add : Game TAGS.
 
 v1.33
 Fix : reading issue with splitted iso.

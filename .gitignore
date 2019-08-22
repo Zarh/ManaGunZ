@@ -16,6 +16,7 @@
 OffsetFinder/*
 !OffsetFinder/main.c
 !OffsetFinder/makefile
+!OffsetFinder/GetFlash.exe
 
 !/MGZ/data/*.bin
 

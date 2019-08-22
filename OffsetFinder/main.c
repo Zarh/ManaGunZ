@@ -9,6 +9,11 @@
 #define SWAP16(x) ((((u16)(x))>>8) | ((x) << 8))
 #define SWAP32(x) ((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) & 0xff0000) >> 8) | (((x) >> 24) & 0xff))
 
+#define warning(x) "## Warning: "x"\n"
+#define error(x) "## Error: "x"\n"
+
+char *PWD;
+
 typedef uint8_t		u8;
 typedef uint16_t 	u16;
 typedef uint32_t	u32;
@@ -113,6 +118,13 @@ static uint64_t swap64(uint64_t data)
 	return ret;
 }
 
+void Extract(char *self_path)
+{
+	char temp[512];
+	sprintf(temp, "scetool -d %s/%s %s/temp_dec", PWD, self_path, PWD);
+	system(temp);
+}
+
 uint64_t hash(char *self_path, uint8_t section, uint8_t mode)
 {
 	FILE *f;
@@ -134,9 +146,7 @@ uint64_t hash(char *self_path, uint8_t section, uint8_t mode)
 	fread(self_buf, 1, 256*1024, f);
 	fclose(f);
 	
-	char sce_decrypt[255];
-	sprintf(sce_decrypt, "scetool -d %s temp_dec", self_path);
-	system(sce_decrypt);
+	Extract(self_path);
 	
 	f = fopen("temp_dec", "rb");
 	if (!f)
@@ -239,9 +249,907 @@ uint8_t compare(u8 ignore, char *mem, char *flag, u32 size)
 	return 1;
 }
 
-int main()
-{	
+int PS2_CRC()
+{
+	char temp[255];
+	char str[255];
 	
+	u32 memsize=0x1000;
+	
+	DIR *d;
+	struct dirent* ent = NULL;
+	
+	FILE *ps2crc = fopen("ps2crc.h", "w");
+	if(ps2crc==NULL) return 0;
+	
+	fputs("#ifndef __PS2CRC_H__\n", ps2crc);
+	fputs("#define __PS2CRC_H__\n\n", ps2crc);
+	
+	sprintf(temp, "/* CRC32 of the 0x%X first bytes */\n\n", memsize); fputs(temp, ps2crc); 
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory flash not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		//sprintf(temp, "../payloads/PS2_EMU/BIN/ps2hwemu_stage2_%s.bin", ent->d_name);
+		//if(exist(temp)==0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_emu.self", ent->d_name);
+		
+		FILE *self = fopen(temp, "rb");
+		u8 *mem = (u8*) malloc(memsize);
+		fread(mem, memsize, 1, self);
+		fclose(self);
+		
+		u32 crc = crc32(0L, Z_NULL, 0);
+		crc = crc32(crc, (const unsigned char*) mem, memsize);
+		sprintf(str, "#define CRC32HWEMU_%s        0x%08lX\n", ent->d_name, crc); fputs(str, ps2crc);
+		free(mem);
+	}
+	closedir(d);
+	
+	fputs("\n", ps2crc);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory flash not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		//sprintf(temp, "../payloads/PS2_EMU/BIN/ps2gxemu_stage2_%s.bin", ent->d_name);
+		//if(exist(temp)==0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_gxemu.self", ent->d_name);
+		
+		FILE *self = fopen(temp, "rb");
+		u8 *mem = (u8*) malloc(memsize);
+		fread(mem, memsize, 1, self);
+		fclose(self);
+		
+		u32 crc = crc32(0L, Z_NULL, 0);
+		crc = crc32(crc, (const unsigned char*) mem, memsize);
+		sprintf(str, "#define CRC32GXEMU_%s        0x%08lX\n", ent->d_name, crc); fputs(str, ps2crc);
+		free(mem);
+	}
+	closedir(d);
+	
+	fputs("\n", ps2crc);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory flash not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_netemu.self", ent->d_name);
+		
+		FILE *self = fopen(temp, "rb");
+		u8 *mem = (u8*) malloc(memsize);
+		fread(mem, memsize, 1, self);
+		fclose(self);
+		
+		u32 crc = crc32(0L, Z_NULL, 0);
+		crc = crc32(crc, (const unsigned char*) mem, memsize);
+		sprintf(str, "#define CRC32NETEMU_%s        0x%08lX\n", ent->d_name, crc); fputs(str, ps2crc);
+		free(mem);
+	}
+	closedir(d);
+	
+	fputs("\n#endif /* __PS2CRC_H__ */\n", ps2crc);
+	
+	fclose(ps2crc);
+	
+	return 0;
+}
+
+int PS2_SearchOffsets()
+{	
+	char temp[2048];
+	char str[2048];
+	FILE *elf;
+	FILE *sym;
+	FILE *fw;
+	FILE *ps2vers;
+	FILE *ps2data;
+	
+	DIR *d;
+	struct dirent* ent = NULL;
+	
+	ps2data = fopen("ps2data.h", "w");
+	sym = fopen("ps2symbols.h", "wb");
+	ps2vers = fopen("ps2vers.c", "w");
+	fw = fopen("FIRMWARES", "a");
+	
+	fputs("\n\
+#include \"ps2vers.h\"\n\
+\n\
+#define SUCCESS 1\n\
+#define FAILED  0\n\
+\n\
+u8 get_hwemu(u32 crc, u8 **stage1, u32 *stage1_size, u8 **stage2, u32 *stage2_size)\n\
+{\n", ps2vers);
+	
+	
+	fputs("\nPS2_PAYLOADS := ", fw);
+	
+	fputs("#ifndef __PS2EMU_SYMBOLS_H_S__\n", sym);
+	fputs("#define __PS2EMU_SYMBOLS_H_S__\n\n", sym);
+	
+	fputs("#ifndef __PS2DATA_H__\n", ps2data);
+	fputs("#define __PS2DATA_H__\n\n", ps2data);
+	fputs("#include <ppu-types.h>\n\n", ps2data);
+	
+// ps2_emu
+	
+	fputs("#ifdef PS2HWEMU\n\n", sym);
+	
+	fputs("\t#define DATA_TOC_OFFSET              -0x7358\n", sym);
+	fputs("\t#define DATA_SUBTOC_OFFSET           0x20\n", sym);
+	fputs("\t#define LPAR_SUBTOC_OFFSET           0x18\n", sym);
+	fputs("\t#define FILESZ_TOC_OFFSET            -0x63E0\n", sym);
+	
+	fputs("\n", sym);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory ps2emu not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		
+		sprintf(str, "%s ", ent->d_name); fputs(str, fw);
+		
+		sprintf(temp, "#include \"ps2hwemu_stage1_%s_bin.h\"\n", ent->d_name); fputs(temp, ps2data);
+		sprintf(temp, "#include \"ps2hwemu_stage2_%s_bin.h\"\n", ent->d_name); fputs(temp, ps2data);
+		sprintf(temp, "#include \"ps2gxemu_stage1_%s_bin.h\"\n", ent->d_name); fputs(temp, ps2data);
+		sprintf(temp, "#include \"ps2gxemu_stage2_%s_bin.h\"\n", ent->d_name); fputs(temp, ps2data);
+		sprintf(temp, "#include \"ps2netemu_stage2_%s_bin.h\"\n\n", ent->d_name); fputs(temp, ps2data);
+	
+		
+		sprintf(str, "\n\
+	if(crc == CRC32HWEMU_%s) {\n\
+		*stage1_size = (uint32_t) ps2hwemu_stage1_%s_bin_size;\n\
+		*stage1 = (uint8_t *) ps2hwemu_stage1_%s_bin;\n\
+		*stage2_size = (uint32_t) ps2hwemu_stage2_%s_bin_size;\n\
+		*stage2 = (uint8_t *) ps2hwemu_stage2_%s_bin;\n\
+	} else ", ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
+		fputs(str, ps2vers);
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_emu.self", ent->d_name);
+		Extract(temp);
+
+		u32 elf_size = 0;
+		
+		elf = fopen("temp_dec", "rb");
+		if(elf==NULL) {
+			printf(error("cannot open ps2_emu.elf %s\n"), ent->d_name);
+			continue;
+		}
+		fseek (elf , 0 , SEEK_END);
+		elf_size = ftell(elf);
+		fseek(elf, 0, SEEK_SET);
+				
+		char *elf_data = (char*) malloc (sizeof(char)*elf_size);
+		if (elf_data == NULL) {
+			printf(error("cannot malloc ps2_emu.self %s\n"), ent->d_name);
+			fclose(elf);
+			continue;
+		}
+		fread(elf_data,1,elf_size, elf);			
+		fclose(elf);
+			
+		system("del temp_dec");
+		
+		sprintf(str, "\t#ifdef FIRMWARE_%s\n", ent->d_name); fputs(str, sym);
+		
+		u64 DISC_SIZE_OFFSET=0;
+		u64 DISC_TYPE_OFFSET=0;
+		
+		u64 TOC=0;
+
+		u64 cdvd_send_atapi_command_symbol=0;
+
+		u64 ufs_open_symbol=0;
+		u64 ufs_close_symbol=0;
+		u64 ufs_read_symbol=0;
+		u64 ufs_write_symbol=0;
+		u64 ufs_fstat_symbol=0;
+
+		u64 zeroalloc_symbol=0;
+		u64 malloc_symbol=0;
+		u64 free_symbol=0;
+		
+		u64 memcpy_symbol=0;
+		u64 memset_symbol=0;
+		u64 strcpy_symbol=0;
+		u64 strcat_symbol=0;
+		u64 strlen_symbol=0;
+				
+		u64 vuart_read_symbol=0;
+		u64 vuart_write_symbol=0;
+
+		u64 ps2_disc_auth_symbol=0;
+		u64 ps2_disc_auth_caller_symbol=0;
+
+		u64 overwritten_symbol=0;
+		
+		u8 DISC_SIZE_OFFSET_FLAG[0x10] = {0xE8, 0xFD, 0x00, 0x20, 0x83, 0xA7, 0x00, 0x00, 0x39, 0x5D, 0x00, 0x01, 0x91, 0x56, 0x00, 0x00};
+		u8 DISC_TYPE_OFFSET_FLAG[0x10] = {0x38, 0x00, 0x00, 0x2B, 0x9B, 0x81, 0x00, 0x93, 0x7B, 0xEB, 0x46, 0x02, 0x9A, 0xE1, 0x00, 0x94};
+		
+		u8 cdvd_send_atapi_command_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x51, 0x7D, 0x68, 0x02, 0xA6, 0xFB, 0x61, 0x00, 0x88, 0x7C, 0x9B, 0x23, 0x78};
+
+		u8 ufs_open_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x31, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x01, 0x00, 0x90, 0x7C, 0x98, 0x23, 0x78};
+		u8 ufs_close_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xA1, 0x00, 0x78, 0x7C, 0x6B, 0x1B, 0x78};
+		u8 ufs_read_symbol_FLAG[0x20] = {0x00, 0x09, 0x00, 0x01, 0x80, 0x08, 0x00, 0x00, 0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0x7C, 0x8A, 0x23, 0x78, 0xFB, 0xE1, 0x00, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x7C, 0x6B, 0x1B, 0x78}; //+8
+		u8 ufs_write_symbol_FLAG[0x20] = {0x00, 0x09, 0x00, 0x01, 0x80, 0x01, 0x00, 0x00, 0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0x7C, 0x8A, 0x23, 0x78, 0xFB, 0xE1, 0x00, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x7C, 0x6B, 0x1B, 0x78}; //+8
+		u8 ufs_fstat_symbol_FLAG[0x10] = {0x7C, 0x88, 0x23, 0x78, 0xE9, 0x22, 0x9C, 0x18, 0x7C, 0x6A, 0x1B, 0x78, 0x38, 0x80, 0x00, 0x40};
+
+		u8 zeroalloc_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0x70, 0xFB, 0xA1, 0x00, 0x78, 0xF8, 0x01, 0x00, 0xA0, 0x7C, 0x7D, 0x1B, 0x78, 0x4B, 0xFF, 0xFF, 0x01, 0x7C, 0x7C, 0x1B, 0x78};
+		u8 malloc_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xE1, 0x00, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x7C, 0x7F, 0x1B, 0x78, 0xE9, 0x22, 0xCD, 0x40, 0xE8, 0x09, 0x00, 0x00, 0x2F, 0xA0, 0x00, 0x00};
+		u8 free_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x91, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x01, 0x00, 0x80, 0x48, 0x00, 0x1B, 0xD5};
+		
+		u8 memcpy_symbol_FLAG[0x10] = {0x7F, 0xA3, 0x20, 0x00, 0x7C, 0x8A, 0x23, 0x78, 0x4D, 0x9E, 0x00, 0x20, 0x7C, 0x24, 0x18, 0x40};
+		u8 memset_symbol_FLAG[0x10] = {0x2B, 0xA5, 0x00, 0x07, 0x78, 0x84, 0x06, 0x20, 0x7C, 0x69, 0x1B, 0x78, 0x7C, 0xC3, 0x2A, 0x14};
+		u8 strcpy_symbol_FLAG[0x10] = {0x7C, 0x69, 0x1B, 0x78, 0x88, 0x04, 0x00, 0x00, 0x38, 0x84, 0x00, 0x01, 0x2F, 0xA0, 0x00, 0x00};
+		u8 strcat_symbol_FLAG[0x10] = {0x7C, 0x69, 0x1B, 0x78, 0x88, 0x03, 0x00, 0x00, 0x48, 0x00, 0x00, 0x08, 0x8C, 0x09, 0x00, 0x01};
+		u8 strlen_symbol_FLAG[0x10] = {0x7C, 0x69, 0x1B, 0x78, 0x88, 0x09, 0x00, 0x00, 0x48, 0x00, 0x00, 0x08, 0x8C, 0x03, 0x00, 0x01};
+		
+		u8 vuart_read_symbol_FLAG[0x20] = {0x00, 0x09, 0x00, 0x01, 0x80, 0x03, 0x00, 0x00, 0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xA1, 0x00, 0x78, 0x7C, 0x7D, 0x1B, 0x78, 0xFB, 0xE1, 0x00, 0x88, 0x7C, 0x83, 0x23, 0x78}; //+8
+		u8 vuart_write_symbol_FLAG[0x20] = {0x00, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xA1, 0x00, 0x78, 0x7C, 0x7D, 0x1B, 0x78, 0xFB, 0xE1, 0x00, 0x88, 0x7C, 0x83, 0x23, 0x78}; //+8
+
+		u8 ps2_disc_auth_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFE, 0xE1, 0x7C, 0xE8, 0x02, 0xA6, 0xFB, 0x21, 0x00, 0xE8, 0x7C, 0x79, 0x1B, 0x78};
+		u8 ps2_disc_auth_caller_symbol_FLAG[0x10] = {0x38, 0xC0, 0xFF, 0xFF, 0x7C, 0xE8, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x81, 0x78, 0xC5, 0x00, 0x20};
+
+		u8 overwritten_symbol_FLAG[0x10] = {0x7D, 0x80, 0x00, 0x26, 0xE8, 0x62, 0x8D, 0x68, 0xF8, 0x21, 0xFE, 0xE1, 0xFA, 0xA1, 0x00, 0xC8};
+		
+		u64 n, i;
+		
+		for(n=0; n < elf_size ; n++) {
+			
+			u64 value = 0;
+			
+			memcpy(&value, &elf_data[n], 8);
+			value = reverse64(value);
+			
+			if(TOC==0)
+			if( 0 < value && value < elf_size) {
+				for(i=0; i<=30; i++) {
+					if(!memcmp((char *) &elf_data[n], (char *) &elf_data[n+0x18*i], 8)) 
+					{
+						if(i==30) TOC = value;
+					} else break;
+				}
+			}
+			
+			if(DISC_SIZE_OFFSET==0)
+			if(!memcmp((char *) &elf_data[n], (char *) DISC_SIZE_OFFSET_FLAG, 0x10)) {
+				DISC_SIZE_OFFSET = n - 0x10000;
+			}
+			if(DISC_TYPE_OFFSET==0)
+			if(!memcmp((char *) &elf_data[n], (char *) DISC_TYPE_OFFSET_FLAG, 0x10)) {
+				DISC_TYPE_OFFSET = n - 0x10000;
+			}
+			if(cdvd_send_atapi_command_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) cdvd_send_atapi_command_symbol_FLAG, 0x10)) {
+				cdvd_send_atapi_command_symbol = n - 0x10000;
+			}
+			if(ufs_open_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_open_symbol_FLAG, 0x10)) {
+				ufs_open_symbol = n - 0x10000;
+			}
+			if(ufs_close_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_close_symbol_FLAG, 0x10)) {
+				ufs_close_symbol = n - 0x10000;
+			}
+			if(ufs_read_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_read_symbol_FLAG, 0x20)) {
+				ufs_read_symbol = n + 8 - 0x10000;
+			}
+			if(ufs_write_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_write_symbol_FLAG, 0x20)) {
+				ufs_write_symbol = n + 8 - 0x10000;
+			}
+			if(ufs_fstat_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_fstat_symbol_FLAG, 0x10)) {
+				ufs_fstat_symbol = n - 0x10000;
+			}
+			if(zeroalloc_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) zeroalloc_symbol_FLAG, 0x20)) {
+				zeroalloc_symbol = n - 0x10000;
+			}
+			if(malloc_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) malloc_symbol_FLAG, 0x20)) {
+				malloc_symbol = n - 0x10000;
+			}
+			if(free_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) free_symbol_FLAG, 0x10)) {
+				free_symbol = n - 0x10000;
+			}
+			if(memcpy_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) memcpy_symbol_FLAG, 0x10)) {
+				memcpy_symbol = n - 0x10000;
+			}
+			if(memset_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) memset_symbol_FLAG, 0x10)) {
+				memset_symbol = n - 0x10000;
+			}
+			if(strcpy_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) strcpy_symbol_FLAG, 0x10)) {
+				strcpy_symbol = n - 0x10000;
+			}
+			if(strcat_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) strcat_symbol_FLAG, 0x10)) {
+				strcat_symbol = n - 0x10000;
+			}
+			if(strlen_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) strlen_symbol_FLAG, 0x10)) {
+				strlen_symbol = n - 0x10000;
+			}
+			if(vuart_read_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) vuart_read_symbol_FLAG, 0x20)) {
+				vuart_read_symbol = n + 8 - 0x10000;
+			}
+			if(vuart_write_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) vuart_write_symbol_FLAG, 0x20)) {
+				vuart_write_symbol = n + 8 - 0x10000;
+			}
+			if(ps2_disc_auth_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ps2_disc_auth_symbol_FLAG, 0x10)) {
+				ps2_disc_auth_symbol = n - 0x10000;
+			}
+			if(ps2_disc_auth_caller_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ps2_disc_auth_caller_symbol_FLAG, 0x10)) {
+				ps2_disc_auth_caller_symbol = n - 0x10000;
+			}
+			if(overwritten_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) overwritten_symbol_FLAG, 0x10)) {
+				overwritten_symbol = n - 0x10000;
+			}
+			
+			if(TOC)
+			if(DISC_SIZE_OFFSET)
+			if(DISC_TYPE_OFFSET)
+			if(cdvd_send_atapi_command_symbol)
+			if(ufs_open_symbol)
+			if(ufs_close_symbol)
+			if(ufs_read_symbol)
+			if(ufs_write_symbol)
+			if(ufs_fstat_symbol)
+			if(zeroalloc_symbol)
+			if(malloc_symbol)
+			if(free_symbol)
+			if(memcpy_symbol)
+			if(memset_symbol)
+			if(strcpy_symbol)
+			if(strcat_symbol)
+			if(strlen_symbol)
+			if(vuart_read_symbol)
+			if(vuart_write_symbol)
+			if(ps2_disc_auth_symbol)
+			if(ps2_disc_auth_caller_symbol)
+			if(overwritten_symbol)
+			break;
+			
+		}
+		
+		sprintf(str, "\t\t#define TOC                                      0x%llX\n", TOC); fputs(str, sym);
+		sprintf(str, "\t\t#define DISC_SIZE_OFFSET                         0x%llX\n", DISC_SIZE_OFFSET); fputs(str, sym);
+		sprintf(str, "\t\t#define DISC_TYPE_OFFSET                         0x%llX\n", DISC_TYPE_OFFSET); fputs(str, sym);
+		sprintf(str, "\t\t#define cdvd_send_atapi_command_symbol           0x%llX\n", cdvd_send_atapi_command_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_open_symbol                          0x%llX\n", ufs_open_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_close_symbol                         0x%llX\n", ufs_close_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_read_symbol                          0x%llX\n", ufs_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_write_symbol                         0x%llX\n", ufs_write_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_fstat_symbol                         0x%llX\n", ufs_fstat_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define zeroalloc_symbol                         0x%llX\n", zeroalloc_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define malloc_symbol                            0x%llX\n", malloc_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define free_symbol                              0x%llX\n", free_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define memcpy_symbol                            0x%llX\n", memcpy_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define memset_symbol                            0x%llX\n", memset_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strcpy_symbol                            0x%llX\n", strcpy_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strcat_symbol                            0x%llX\n", strcat_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strlen_symbol                            0x%llX\n", strlen_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define vuart_read_symbol                        0x%llX\n", vuart_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define vuart_write_symbol                       0x%llX\n", vuart_write_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ps2_disc_auth_symbol                     0x%llX\n", ps2_disc_auth_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ps2_disc_auth_caller_symbol              0x%llX\n", ps2_disc_auth_caller_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define overwritten_symbol                       0x%llX\n", overwritten_symbol); fputs(str, sym);
+		
+		fputs("\t\t#define stage1_addr                              overwritten_symbol\n", sym);
+		fputs("\t\t#define stage2_addr                              0x021f0000\n", sym);
+		
+		fputs("\t#endif /* FIRMWARE */\n\n", sym);
+		
+		free(elf_data);
+	}
+	closedir(d);
+	
+	fputs("\n", fw);
+	fclose(fw);
+	
+	fputs(" return FAILED;\n\
+\n\
+	return SUCCESS;\n\
+}\n\
+\n\
+u8 get_gxemu(u32 crc, u8 **stage1, u32 *stage1_size, u8 **stage2, u32 *stage2_size)\n\
+{\n", ps2vers);
+	
+	fputs("#endif /* PS2HWEMU */\n\n", sym);
+	
+// ps2_gxemu
+	
+	fputs("#ifdef PS2GXEMU\n\n", sym);
+	
+	fputs("\t#define DATA_TOC_OFFSET             -0x5B00\n", sym);
+	fputs("\t#define LPAR_TOC_OFFSET            -0x5BC8\n", sym);
+	fputs("\t#define FILESZ_TOC_OFFSET           -0xE68\n\n", sym);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory ps2emu not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		
+		sprintf(str, "\n\
+	if(crc == CRC32GXEMU_%s) {\n\
+		*stage1_size = (uint32_t) ps2gxemu_stage1_%s_bin_size;\n\
+		*stage1 = (uint8_t *) ps2gxemu_stage1_%s_bin;\n\
+		*stage2_size = (uint32_t) ps2gxemu_stage2_%s_bin_size;\n\
+		*stage2 = (uint8_t *) ps2gxemu_stage2_%s_bin;\n\
+	} else ", ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
+		fputs(str, ps2vers);
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_gxemu.self", ent->d_name);
+		Extract(temp);
+		
+		u32 elf_size = 0;
+		
+		elf = fopen("temp_dec", "rb");
+		if(elf==NULL) {
+			printf(error("cannot open ps2_gxemu.elf %s\n"), ent->d_name);
+			continue;
+		}
+		fseek (elf , 0 , SEEK_END);
+		elf_size = ftell (elf);
+		fseek(elf, 0, SEEK_SET);
+				
+		char *elf_data = (char*) malloc (sizeof(char)*elf_size);
+		if (elf_data == NULL) {
+			printf(error("cannot malloc ps2_gxemu.self %s\n"), ent->d_name);
+			fclose(elf);
+			continue;
+		}
+		fread(elf_data,1,elf_size, elf);			
+		fclose(elf);
+			
+		system("del temp_dec");
+		
+		sprintf(str, "\t#ifdef FIRMWARE_%s\n", ent->d_name); fputs(str, sym);
+		
+		u64 TOC=0;
+		u64 cdvd_read_symbol=0;
+		u64 cdvd_send_atapi_command_symbol=0;
+		u64 cdvd_send_device_command_symbol=0;
+		u64 ufs_open_symbol=0;
+		u64 ufs_close_symbol=0;
+		u64 ufs_read_symbol=0;
+		u64 ufs_write_symbol=0;
+		u64 ufs_fstat_symbol=0;
+		u64 zeroalloc_symbol=0;
+		u64 malloc_symbol=0;
+		u64 free_symbol=0;
+		u64 memcpy_symbol=0;
+		u64 memset_symbol=0;
+		u64 strcpy_symbol=0;
+		u64 strcat_symbol=0;
+		u64 strlen_symbol=0;
+		u64 vuart_read_symbol=0;
+		u64 vuart_write_symbol=0;
+		u64 ps2_disc_auth_symbol=0;
+		u64 ps2_disc_auth_caller_symbol=0;
+		u64 overwritten_symbol=0;
+		u64 stage2_addr=0;
+		
+		u8 cdvd_read_symbol_FLAG[0x10] = {0x2B, 0x84, 0xFF, 0xFF, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x71, 0xFB, 0xA1, 0x00, 0x78};
+		u8 cdvd_send_atapi_command_symbol_FLAG[0x20] = {0x2C, 0x23, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x81, 0xFB, 0xE1, 0x00, 0x78, 0x7C, 0xBF, 0x2B, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x41, 0xC2, 0x01, 0x6C, 0xE9, 0x62, 0xA4, 0xA8};
+		u8 cdvd_send_device_command_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xE1, 0x00, 0x78, 0x7C, 0x64, 0x1B, 0x78};
+		u8 ufs_open_symbol_FLAG[0x10] = {0x7D, 0x80, 0x00, 0x26, 0xF8, 0x21, 0xFF, 0x41, 0xFA, 0xC1, 0x00, 0x70, 0x7C, 0x96, 0x23, 0x78};
+		u8 ufs_close_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xE1, 0x00, 0x78, 0x7C, 0x7F, 0x1B, 0x78, 0xFB, 0xC1, 0x00, 0x70, 0xF8, 0x01, 0x00, 0x90, 0x7D, 0x60, 0x00, 0xA6, 0x79, 0x60, 0x80, 0x42};
+		u8 ufs_read_symbol_FLAG[0x10] = {0x7D, 0x20, 0x01, 0x64, 0x4E, 0x80, 0x00, 0x20, 0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6}; // +8
+		u8 ufs_write_symbol_FLAG[0x20] = {0x38, 0x21, 0x00, 0x90, 0x4E, 0x80, 0x00, 0x20, 0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0x70, 0x7C, 0xDC, 0x33, 0x78, 0xFB, 0xA1, 0x00, 0x78, 0x7C, 0xBD, 0x2B, 0x78}; // +8
+		u8 ufs_fstat_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xC1, 0x00, 0x70, 0x7C, 0x7E, 0x1B, 0x78, 0xFB, 0xE1, 0x00, 0x78, 0x7C, 0x9F, 0x23, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x7D, 0x60, 0x00, 0xA6};
+		u8 zeroalloc_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0x70, 0xFB, 0xA1, 0x00, 0x78, 0xF8, 0x01, 0x00, 0xA0, 0x7C, 0x7D, 0x1B, 0x78, 0x4B, 0xFF, 0xFF, 0x89, 0x7C, 0x7C, 0x1B, 0x78};
+		u8 malloc_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xE1, 0x00, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x7C, 0x7F, 0x1B, 0x78, 0xE9, 0x62, 0xE0, 0xB0, 0xE8, 0x0B, 0x00, 0x00, 0x2F, 0xA0, 0x00, 0x00};
+		u8 free_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x91, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x01, 0x00, 0x80, 0x48, 0x00, 0x32, 0x51};
+		u8 memcpy_symbol_FLAG[0x20] = {0x2C, 0x25, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x91, 0xF8, 0x01, 0x00, 0x80, 0x41, 0x82, 0x00, 0x0C, 0x2F, 0xA3, 0x00, 0x00, 0x41, 0xDE, 0x00, 0x48, 0x38, 0x05, 0xFF, 0xFF};
+		u8 memset_symbol_FLAG[0x20] = {0x2C, 0x25, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x91, 0xF8, 0x01, 0x00, 0x80, 0x41, 0x82, 0x00, 0x0C, 0x2F, 0xA3, 0x00, 0x00, 0x41, 0xDE, 0x00, 0x40, 0x38, 0x05, 0xFF, 0xFF};
+		u8 strcpy_symbol_FLAG[0x10] = {0x88, 0x04, 0x00, 0x00, 0x7C, 0x69, 0x1B, 0x78, 0x2F, 0xA0, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x18};
+		u8 strcat_symbol_FLAG[0x10] = {0x88, 0x03, 0x00, 0x00, 0x7C, 0x69, 0x1B, 0x78, 0x2F, 0x80, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x10};
+		u8 strlen_symbol_FLAG[0x10] = {0x88, 0x03, 0x00, 0x00, 0x39, 0x20, 0x00, 0x00, 0x39, 0x63, 0x00, 0x01, 0x2F, 0x80, 0x00, 0x00};
+		u8 vuart_read_symbol_FLAG[0x10] = {0x7D, 0x80, 0x00, 0x26, 0xF8, 0x21, 0xFF, 0x81, 0xFB, 0xE1, 0x00, 0x78, 0x39, 0x60, 0x00, 0xA2};
+		u8 vuart_write_symbol_FLAG[0x10] = {0x7D, 0x80, 0x00, 0x26, 0xF8, 0x21, 0xFF, 0x71, 0xFB, 0xA1, 0x00, 0x78, 0x7C, 0x7D, 0x1B, 0x78};
+		u8 ps2_disc_auth_symbol_FLAG[0x10] = {0xF8, 0x21, 0xFF, 0x51, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xA1, 0x00, 0x98, 0xEB, 0xA2, 0xA6, 0x28};
+		u8 ps2_disc_auth_caller_symbol_FLAG[0x10] = {0x7C, 0x69, 0x18, 0xF8, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x91, 0x7D, 0x2B, 0xFE, 0x70};
+		u8 overwritten_symbol_FLAG[0x20] = {0xF8, 0x21, 0xFF, 0x81, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xC1, 0x00, 0x70, 0x7C, 0x7E, 0x1B, 0x78, 0xF8, 0x01, 0x00, 0x90, 0x80, 0x03, 0x00, 0x04, 0xFB, 0xE1, 0x00, 0x78, 0x2F, 0x80, 0x00, 0x00};
+		
+		memcpy(&TOC, &elf_data[0x101C0], 8);
+		TOC = reverse64(TOC);
+		
+		memcpy(&stage2_addr, &elf_data[0x68], 8);
+		stage2_addr = reverse64(stage2_addr);
+		
+		u64 n;
+		
+		for(n=0; n < elf_size ; n++) {
+			
+			if(cdvd_read_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) cdvd_read_symbol_FLAG, 0x10)) {
+				cdvd_read_symbol = n - 0x10000;
+			}
+			if(cdvd_send_atapi_command_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) cdvd_send_atapi_command_symbol_FLAG, 0x20)) {
+				cdvd_send_atapi_command_symbol = n - 0x10000;
+			}
+			if(cdvd_send_device_command_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) cdvd_send_device_command_symbol_FLAG, 0x10)) {
+				cdvd_send_device_command_symbol = n - 0x10000;
+			}
+			if(ufs_open_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_open_symbol_FLAG, 0x10)) {
+				ufs_open_symbol = n - 0x10000;
+			}
+			if(ufs_close_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_close_symbol_FLAG, 0x20)) {
+				ufs_close_symbol = n - 0x10000;
+			}
+			if(ufs_read_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_read_symbol_FLAG, 0x10)) {
+				ufs_read_symbol = n + 8 - 0x10000;
+			}
+			if(ufs_write_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_write_symbol_FLAG, 0x20)) {
+				ufs_write_symbol = n + 8 - 0x10000;
+			}
+			if(ufs_fstat_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_fstat_symbol_FLAG, 0x20)) {
+				ufs_fstat_symbol = n - 0x10000;
+			}
+			if(zeroalloc_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) zeroalloc_symbol_FLAG, 0x20)) {
+				zeroalloc_symbol = n - 0x10000;
+			}
+			if(malloc_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) malloc_symbol_FLAG, 0x20)) {
+				malloc_symbol = n - 0x10000;
+			}
+			if(free_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) free_symbol_FLAG, 0x10)) {
+				free_symbol = n - 0x10000;
+			}
+			if(memcpy_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) memcpy_symbol_FLAG, 0x20)) {
+				memcpy_symbol = n - 0x10000;
+			}
+			if(memset_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) memset_symbol_FLAG, 0x20)) {
+				memset_symbol = n - 0x10000;
+			}
+			if(strcpy_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) strcpy_symbol_FLAG, 0x10)) {
+				strcpy_symbol = n - 0x10000;
+			}
+			if(strcat_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) strcat_symbol_FLAG, 0x10)) {
+				strcat_symbol = n - 0x10000;
+			}
+			if(strlen_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) strlen_symbol_FLAG, 0x10)) {
+				strlen_symbol = n - 0x10000;
+			}
+			if(vuart_read_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) vuart_read_symbol_FLAG, 0x10)) {
+				vuart_read_symbol = n - 0x10000;
+			}
+			if(vuart_write_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) vuart_write_symbol_FLAG, 0x10)) {
+				vuart_write_symbol = n - 0x10000;
+			}
+			if(ps2_disc_auth_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ps2_disc_auth_symbol_FLAG, 0x10)) {
+				ps2_disc_auth_symbol = n - 0x10000;
+			}
+			if(ps2_disc_auth_caller_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) ps2_disc_auth_caller_symbol_FLAG, 0x10)) {
+				ps2_disc_auth_caller_symbol = n - 0x10000;
+			}
+			if(overwritten_symbol==0)
+			if(!memcmp((char *) &elf_data[n], (char *) overwritten_symbol_FLAG, 0x20)) {
+				overwritten_symbol = n - 0x10000;
+			}
+			
+			if(cdvd_read_symbol)
+			if(cdvd_send_atapi_command_symbol)
+			if(cdvd_send_device_command_symbol)
+			if(ufs_open_symbol)
+			if(ufs_close_symbol)
+			if(ufs_read_symbol)
+			if(ufs_write_symbol)
+			if(ufs_fstat_symbol)
+			if(zeroalloc_symbol)
+			if(malloc_symbol)
+			if(free_symbol)
+			if(memcpy_symbol)
+			if(memset_symbol)
+			if(strcpy_symbol)
+			if(strcat_symbol)
+			if(strlen_symbol)
+			if(vuart_read_symbol)
+			if(vuart_write_symbol)
+			if(ps2_disc_auth_symbol)
+			if(ps2_disc_auth_caller_symbol)
+			if(overwritten_symbol)
+			break;
+			
+		}
+		
+		sprintf(str, "\t\t#define TOC                                      0x%llX\n", TOC); fputs(str, sym);
+		sprintf(str, "\t\t#define cdvd_read_symbol                         0x%llX\n", cdvd_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define cdvd_send_atapi_command_symbol           0x%llX\n", cdvd_send_atapi_command_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define cdvd_send_device_command_symbol          0x%llX\n", cdvd_send_device_command_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_open_symbol                          0x%llX\n", ufs_open_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_close_symbol                         0x%llX\n", ufs_close_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_read_symbol                          0x%llX\n", ufs_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_write_symbol                         0x%llX\n", ufs_write_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_fstat_symbol                         0x%llX\n", ufs_fstat_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define zeroalloc_symbol                         0x%llX\n", zeroalloc_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define malloc_symbol                            0x%llX\n", malloc_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define free_symbol                              0x%llX\n", free_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define memcpy_symbol                            0x%llX\n", memcpy_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define memset_symbol                            0x%llX\n", memset_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strcpy_symbol                            0x%llX\n", strcpy_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strcat_symbol                            0x%llX\n", strcat_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strlen_symbol                            0x%llX\n", strlen_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define vuart_read_symbol                        0x%llX\n", vuart_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define vuart_write_symbol                       0x%llX\n", vuart_write_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ps2_disc_auth_symbol                     0x%llX\n", ps2_disc_auth_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ps2_disc_auth_caller_symbol              0x%llX\n", ps2_disc_auth_caller_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define overwritten_symbol                       0x%llX\n", overwritten_symbol); fputs(str, sym);
+		fputs("\t\t#define stage1_addr                              overwritten_symbol\n", sym);
+		sprintf(str, "\t\t#define stage2_addr                              0x%llX\n", stage2_addr); fputs(str, sym);
+		
+		fputs("\t#endif /* FIRMWARE */\n\n", sym);
+		
+		free(elf_data);
+	}
+	closedir(d);
+	
+	fputs("#endif /* PS2GXEMU */\n\n", sym);
+
+	fputs(" return FAILED;\n\
+	\n\
+	return SUCCESS;\n\
+	\n\
+}\n\
+\n\
+u8 get_netemu(u32 crc, u8 **stage2, u32 *stage2_size)\n\
+{\n", ps2vers);
+	
+//ps2netemu
+
+	fputs("#ifdef PS2NETEMU\n\n", sym);
+	
+	fputs("\t#define EXTENDED_DATA	(0x821000+0x2953478)\n\n", sym);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory ps2emu not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		
+		sprintf(str, "\n\
+	if(crc == CRC32NETEMU_%s) {\n\
+		*stage2_size = (uint32_t) ps2netemu_stage2_%s_bin_size;\n\
+		*stage2 = (uint8_t *) ps2netemu_stage2_%s_bin;\n\
+	} else ", ent->d_name, ent->d_name, ent->d_name);
+		fputs(str, ps2vers);
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_netemu.self", ent->d_name);
+		Extract(temp);
+		
+		u32 elf_size = 0;
+		
+		elf = fopen("temp_dec", "rb");
+		if(elf==NULL) {
+			printf(error("cannot open ps2_netemu.elf %s\n"), ent->d_name);
+			continue;
+		}
+		fseek (elf , 0 , SEEK_END);
+		elf_size = ftell (elf);
+		fseek(elf, 0, SEEK_SET);
+				
+		char *elf_data = (char*) malloc (sizeof(char)*elf_size);
+		if (elf_data == NULL) {
+			printf(error("cannot malloc ps2_netemu.self %s\n"), ent->d_name);
+			fclose(elf);
+			continue;
+		}
+		fread(elf_data,1,elf_size, elf);			
+		fclose(elf);
+			
+		system("del temp_dec");
+		
+		sprintf(str, "\t#ifdef FIRMWARE_%s\n", ent->d_name); fputs(str, sym);
+		
+		u64 TOC=0;
+		u64 cdvd_read_symbol=0;
+		u64 ufs_open_symbol=0;
+		u64 ufs_close_symbol=0;
+		u64 ufs_read_symbol=0;
+		u64 ufs_write_symbol=0;
+		u64 ufs_fstat_symbol=0;
+		u64 memcpy_symbol=0;
+		u64 memset_symbol=0;
+		u64 strcpy_symbol=0;
+		u64 strcat_symbol=0;
+		u64 strlen_symbol=0;
+		
+		u8 cdvd_read_symbol_FLAG[0x10] = {0x2F, 0x86, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFE, 0xF1, 0xF9, 0xC1, 0x00, 0x80};
+		
+		u8 ufs_open_symbol_FLAG[0x10] = {0x7D, 0x80, 0x00, 0x26, 0xF8, 0x21, 0xFF, 0x31, 0xFB, 0x01, 0x00, 0x90, 0xFB, 0x41, 0x00, 0xA0};
+		u8 ufs_close_symbol_FLAG[0x20] = {0x38, 0x60, 0xFF, 0xFB, 0x4B, 0xFF, 0xFF, 0x30, 0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0x70, 0xFB, 0xC1, 0x00, 0x80, 0xFB, 0xE1, 0x00, 0x88, 0x7C, 0x7E, 0x1B, 0x78}; //+8
+		u8 ufs_read_symbol_FLAG[0x20] = {0x4E, 0x80, 0x00, 0x20, 0xF8, 0x21, 0xFF, 0x51, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x21, 0x00, 0x78, 0xFB, 0x41, 0x00, 0x80, 0xFB, 0x61, 0x00, 0x88, 0xFB, 0x81, 0x00, 0x90, 0xFB, 0xC1, 0x00, 0xA0}; //+4
+		u8 ufs_write_symbol_FLAG[0x20] = {0x4B, 0xFF, 0xFE, 0xAC, 0xF8, 0x21, 0xFF, 0x51, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x21, 0x00, 0x78, 0xFB, 0x41, 0x00, 0x80, 0xFB, 0x61, 0x00, 0x88, 0xFB, 0x81, 0x00, 0x90, 0xFB, 0xC1, 0x00, 0xA0}; //+4
+		u8 ufs_fstat_symbol_FLAG[0x20] = {0x4B, 0xFF, 0xFF, 0x28, 0xF8, 0x21, 0xFF, 0x61, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x61, 0x00, 0x78, 0xFB, 0x81, 0x00, 0x80, 0xFB, 0xC1, 0x00, 0x90, 0xFB, 0xE1, 0x00, 0x98, 0x7C, 0x9C, 0x23, 0x78}; //+4
+		
+		u8 memcpy_symbol_FLAG[0x20] = {0x2F, 0x85, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x91, 0xF8, 0x01, 0x00, 0x80, 0x41, 0x9E, 0x00, 0x2C, 0x2F, 0xA3, 0x00, 0x00, 0x78, 0xA5, 0x00, 0x20, 0x7C, 0x69, 0x1B, 0x78};
+		u8 memset_symbol_FLAG[0x20] = {0x2F, 0x85, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFF, 0x91, 0xF8, 0x01, 0x00, 0x80, 0x41, 0x9E, 0x00, 0x28, 0x2F, 0xA3, 0x00, 0x00, 0x78, 0xA5, 0x00, 0x20, 0x7C, 0x69, 0x1B, 0x78};
+		
+		u8 strcpy_symbol_FLAG[0x10] = {0x88, 0x04, 0x00, 0x00, 0x7C, 0x69, 0x1B, 0x78, 0x2F, 0x80, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x1C};
+		u8 strcat_symbol_FLAG[0x10] = {0x88, 0x03, 0x00, 0x00, 0x7C, 0x69, 0x1B, 0x78, 0x2F, 0x80, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x14};
+		u8 strlen_symbol_FLAG[0x10] = {0x7C, 0x69, 0x1B, 0x78, 0x38, 0x60, 0x00, 0x00, 0x88, 0x09, 0x00, 0x00, 0x2F, 0x80, 0x00, 0x00};
+		
+		memcpy(&TOC, &elf_data[0x13008], 8);
+		TOC = reverse64(TOC);
+		
+		u64 n;
+		
+		for(n=0; n < elf_size ; n++) {
+		
+			if(cdvd_read_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) cdvd_read_symbol_FLAG, 0x10)) {
+				cdvd_read_symbol = n - 0x10000;
+			}
+			if(ufs_open_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_open_symbol_FLAG, 0x10)) {
+				ufs_open_symbol = n - 0x10000;
+			}
+			if(ufs_close_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_close_symbol_FLAG, 0x20)) {
+				ufs_close_symbol = n + 8 - 0x10000;
+			}
+			if(ufs_read_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_read_symbol_FLAG, 0x20)) {
+				ufs_read_symbol = n + 4 - 0x10000;
+			}
+			if(ufs_write_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_write_symbol_FLAG, 0x20)) {
+				ufs_write_symbol = n + 4 - 0x10000;
+			}
+			if(ufs_fstat_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) ufs_fstat_symbol_FLAG, 0x20)) {
+				ufs_fstat_symbol = n + 4 - 0x10000;
+			}
+			if(memcpy_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) memcpy_symbol_FLAG, 0x20)) {
+				memcpy_symbol = n - 0x10000;
+			}
+			if(memset_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) memset_symbol_FLAG, 0x20)) {
+				memset_symbol = n - 0x10000;
+			}
+			if(strcpy_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) strcpy_symbol_FLAG, 0x10)) {
+				strcpy_symbol = n - 0x10000;
+			}
+			if(strcat_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) strcat_symbol_FLAG, 0x10)) {
+				strcat_symbol = n - 0x10000;
+			}
+			if(strlen_symbol == 0)
+			if(!memcmp((char *) &elf_data[n], (char *) strlen_symbol_FLAG, 0x10)) {
+				strlen_symbol = n - 0x10000;
+			}
+			
+			if(cdvd_read_symbol)
+			if(ufs_open_symbol)
+			if(ufs_close_symbol)
+			if(ufs_read_symbol)
+			if(ufs_write_symbol)
+			if(ufs_fstat_symbol)
+			if(memcpy_symbol)
+			if(memset_symbol)
+			if(strcpy_symbol)
+			if(strcat_symbol)
+			if(strlen_symbol)
+			break;
+			
+			
+		}
+		
+		sprintf(str, "\t\t#define TOC                                      0x%llX\n", TOC); fputs(str, sym);
+		sprintf(str, "\t\t#define cdvd_read_symbol                         0x%llX\n", cdvd_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_open_symbol                          0x%llX\n", ufs_open_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_close_symbol                         0x%llX\n", ufs_close_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_read_symbol                          0x%llX\n", ufs_read_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_write_symbol                         0x%llX\n", ufs_write_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define ufs_fstat_symbol                         0x%llX\n", ufs_fstat_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define memcpy_symbol                            0x%llX\n", memcpy_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define memset_symbol                            0x%llX\n", memset_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strcpy_symbol                            0x%llX\n", strcpy_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strcat_symbol                            0x%llX\n", strcat_symbol); fputs(str, sym);
+		sprintf(str, "\t\t#define strlen_symbol                            0x%llX\n", strlen_symbol); fputs(str, sym);
+		       fputs("\t\t#define decrypt_symbol                           cdvd_read_symbol\n", sym);
+		fputs("\t#endif /* FIRMWARE */\n\n", sym);
+		
+		free(elf_data);
+	}
+	closedir(d);
+	
+	fputs("#endif /* PS2NETEMU */\n\n", sym);
+	
+	fputs("\n#endif /* __PS2EMU_SYMBOLS_H_S__ */\n", sym);
+	
+	fputs("\n#endif /* __PS2DATA_H__ */\n", ps2data);
+	
+	fputs(" return FAILED;\n\
+	\n\
+	return SUCCESS;\n\
+}\n", ps2vers);
+
+	fclose(ps2vers);
+	fclose(sym);
+	
+	return 0;
+}
+
+int SearchOffsets()
+{	
 	char dump[255];
 	FILE *f;
 	FILE *common;
@@ -249,8 +1157,12 @@ int main()
 	FILE *symbols;
 	FILE *IDPSet;
 	FILE *ERK;
-	char temp[255];
-	char temp2[255];	
+	FILE *fw;
+	FILE *data;
+	FILE *fwc;
+	
+	char temp[2048];
+	char temp2[2048];
 	
 	DIR *d;
 	struct dirent* ent = NULL;
@@ -260,6 +1172,15 @@ int main()
 	symbols = fopen("symbols.h", "w");
 	IDPSet = fopen("firmware.h", "w");
 	ERK = fopen("erk_symbols.h", "w");
+	fw = fopen("FIRMWARES", "w");
+	fwc = fopen("fw.c", "w");
+	data = fopen("data.h","w");
+	
+	fputs("#ifndef __DATA_H__\n", data);
+	fputs("#define __DATA_H__\n\n", data);
+	fputs("#include <ppu-types.h>\n\n", data);
+	
+	fputs("PAYLOADS     :=", fw);
 	
 	fputs("#ifndef __COMMON_H__\n", common);
 	fputs("#define __COMMON_H__\n\n", common);
@@ -277,7 +1198,6 @@ int main()
 	fputs("#define strncmp                     memset + 0x200\n", SKY);
 	fputs("#define free                        alloc + 0x43C\n", SKY);
 	
-
 	fputs("#ifndef __FIRMWARE_SYMBOLS_H_S__\n", symbols);
 	fputs("#define __FIRMWARE_SYMBOLS_H_S__\n\n", symbols);
 	
@@ -290,6 +1210,44 @@ int main()
 	fputs("#define __SYMBOLS_H__\n\n", ERK);
 	fputs("#define KERNEL_BASE 0x8000000000000000\n\n", ERK);
 	
+	fputs("\n\
+#include \"fw.h\"\n\
+\n\
+#define SUCCESS		1\n\
+#define FAILED 		0\n\
+\n\
+extern int firmware;\n\
+extern u64 SYSCALL_TABLE;\n\
+extern u64 HV_START_OFFSET;\n\
+extern u64 OFFSET_FIX;\n\
+extern u64 OFFSET_2_FIX;\n\
+extern u64 OFFSET_FIX_3C;\n\
+extern u64 OFFSET_FIX_2B17;\n\
+extern u64 OFFSET_FIX_LIC;\n\
+extern u64 OPEN_HOOK;\n\
+extern u64 BASE_ADDR;\n\
+extern u64 UMOUNT_SYSCALL_OFFSET;\n\
+extern u64 LV2MOUNTADDR;\n\
+extern u64 LV2MOUNTADDR_ESIZE;\n\
+extern u64 LV2MOUNTADDR_CSIZE;\n\
+extern u64 NEW_POKE_SYSCALL_ADDR;\n\
+extern u64 PAYLOAD_SKY;\n\
+extern size_t PAYLOAD_SKY_SIZE;\n\
+extern u64 UMOUNT;\n\
+extern size_t UMOUNT_SIZE;\n\
+extern u64 MAMBA;\n\
+extern size_t MAMBA_SIZE;\n\
+extern u64 *MAMBA_LOADER;\n\
+extern size_t MAMBA_LOADER_SIZE;\n\
+extern u64 OFFSET_1_IDPS;\n\
+extern u64 OFFSET_2_IDPS;\n\
+\n\
+extern void print_load(char *format, ...);\n\
+extern u64 lv2peek(u64 addr);\n\
+\n\
+u8 init_fw()\n\
+{", fwc);
+	
 	printf("Searching offsets...\n");
 	
 	d = opendir("LV2");
@@ -301,34 +1259,56 @@ int main()
 		if(strcmp(ent->d_name, ".") == 0) continue;
 		if(strcmp(ent->d_name, "..") == 0) continue;
 		
-		sprintf(dump, "LV2/%s", ent->d_name);
+		sprintf(temp, "%s ", ent->d_name); fputs(temp, fw);
+
+		sprintf(temp, "#include \"payload_sky_%s_bin.h\"\n", ent->d_name); fputs(temp, data);
+		sprintf(temp, "#include \"umount_%s_bin.h\"\n", ent->d_name); fputs(temp, data);
+		sprintf(temp, "#include \"mamba_%s_lz_bin.h\"\n", ent->d_name); fputs(temp, data);
+		sprintf(temp, "#include \"mamba_loader_%s_bin.h\"\n\n", ent->d_name); fputs(temp, data);
 		
-		f=fopen(dump, "rb");
-		if(f==NULL) {
-			printf("Error : cannot open the dump\n");
-			return 0;
-		}
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		u8 ps2payloads = 1;
+		if( exist(temp) ) ps2payloads = 0;
+
+				
+		sprintf(temp, "\n\
+	if(( lv2peek(FW_DATE_OFFSET_%s    )==FW_DATE_1_%s) &&\n\
+	   ( lv2peek(FW_DATE_OFFSET_%s + 8)==FW_DATE_2_%s) )\n\
+	{\n\
+		\n\
+		firmware = 0x%s;\n\
+		\n\
+		OFFSET_2_FIX = OFFSET_2_FIX_%s;\n\
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_%s;\n\
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_%s;\n\
+		OFFSET_FIX = OFFSET_FIX_%s;\n\
+		HV_START_OFFSET = HV_START_OFFSET_%s;\n\
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_%s;\n\
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_%s;\n\
+		OFFSET_FIX_3C = OFFSET_FIX_3C_%s;\n\
+		SYSCALL_TABLE = SYSCALL_TABLE_%s;\n\
+		LV2MOUNTADDR = LV2MOUNTADDR_%s;\n\
+		OPEN_HOOK = OPEN_HOOK_%s;\n\
+		BASE_ADDR = BASE_ADDR_%s;\n\
+		OFFSET_1_IDPS = OFFSET_1_IDPS_%s;\n\
+		OFFSET_2_IDPS = OFFSET_2_IDPS_%s;\n\
+		\n\
+		PAYLOAD_SKY_SIZE = payload_sky_%s_bin_size;\n\
+		PAYLOAD_SKY = (u64) payload_sky_%s_bin;\n\
+		UMOUNT_SIZE = umount_%s_bin_size;\n\
+		UMOUNT = (u64) umount_%s_bin;\n\
+		MAMBA_SIZE = mamba_%s_lz_bin_size;\n\
+		MAMBA = (u64) mamba_%s_lz_bin;\n\
+		MAMBA_LOADER_SIZE = mamba_loader_%s_bin_size;\n\
+		MAMBA_LOADER = (u64 *) mamba_loader_%s_bin;\n\
+		\n\
+	} else",
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
 		
-		fseek (f , 0 , SEEK_END);
-		u32 size = ftell (f);
-		fseek(f, 0, SEEK_SET);
+		fputs(temp, fwc);
 		
-		if(size != 0x800000) {
-			printf("Error : bad size of your dump\n");
-			fclose(f);
-			return 0;
-		}
-		
-		char *memLV2 = (char *) malloc(size);	
-		if(memLV2 == NULL) {
-			printf("Error : cannot malloc");
-			free(memLV2);
-			fclose(f);
-			return 0;
-		}
-		
-		fread(memLV2,size,1, f);
-		fclose (f);
 		
 		u64 SYSCALL_TABLE=0;
 		u64 OFFSET_FIX=0;
@@ -620,6 +1600,36 @@ int main()
 		u8 user_thread_prio_patch_flag[] = {0x3F, 0xE0, 0x80, 0x01, 0x2B, 0x80, 0x0E, 0x7F, 0x80, 0x01, 0x00, 0x94, 0x63, 0xFF, 0x00, 0x02}; // +0x10
 		u8 shutdown_patch_offset_flag[] = {0x41, 0x82, 0xFE, 0xFC, 0x7F, 0x83, 0xE3, 0x78, 0x7F, 0x64, 0xDB, 0x78, 0x7F, 0xC5, 0xF3, 0x78};
 		u8 shutdown_copy_params_call_flag[] = {0x2F, 0x83, 0x00, 0x00, 0x40, 0x9E, 0x00, 0x5C, 0x7F, 0xC6, 0xF3, 0x78, 0x7F, 0xA3, 0xEB, 0x78, 0x38, 0x80, 0x00, 0x01, 0x7F, 0x65, 0xDB, 0x78};		
+			
+// *************
+//	LV2
+// *************
+
+		sprintf(dump, "LV2/%s", ent->d_name);
+		f=fopen(dump, "rb");
+		if(f==NULL) {
+			printf(error("Cannot open the dump\n"));
+			return 0;
+		}
+		fseek (f , 0 , SEEK_END);
+		u32 size = ftell (f);
+		fseek(f, 0, SEEK_SET);
+		
+		if(size != 0x800000) {
+			printf(error("bad size of your dump\n"));
+			fclose(f);
+			return 0;
+		}
+		
+		char *memLV2 = (char *) malloc(size);	
+		if(memLV2 == NULL) {
+			printf(error("cannot malloc LV2"));
+			free(memLV2);
+			fclose(f);
+			return 0;
+		}
+		fread(memLV2,size,1, f);
+		fclose (f);
 		
 		memcpy(&TOC, &memLV2[0x3000], 8);
 		TOC = reverse64(TOC);
@@ -1079,7 +2089,11 @@ int main()
 			}
 			
 		}
+		free(memLV2);
 
+// *************
+//	LV1
+// *************
 		sprintf(dump, "LV1/%s", ent->d_name);
 		
 		f=fopen(dump, "r");
@@ -1089,13 +2103,13 @@ int main()
 			fseek(f, 0, SEEK_SET);
 			
 			if(size != 0x1000000) {
-				printf("Error : bad size of your dump\n");
+				printf(error("bad size of your LV1 dump\n"));
 				fclose(f);
 				return 0;
 			}
 			char *memLV1 = (char*) malloc (sizeof(char)*size);
 			if (memLV1 == NULL) {
-				printf("Error : cannot malloc");
+				printf(error("cannot malloc LV1"));
 				free(memLV1);
 				fclose(f);
 				return 0;
@@ -1140,7 +2154,7 @@ int main()
 			}
 			free(memLV1);
 			
-		} else printf("Warning : LV1 is missing, HV_START_OFFSET = unk \n");		
+		} else printf(warning("LV1 is missing, HV_START_OFFSET = unk \n"));		
 
 		if(SYSCALL_TABLE != 0) SYSCALL_TABLE = 0x8000000000000000ULL + SYSCALL_TABLE;
 		if(OPEN_HOOK != 0) OPEN_HOOK = 0x8000000000000000ULL + OPEN_HOOK;
@@ -1192,12 +2206,11 @@ int main()
 		sprintf(str, "#define LV2MOUNTADDR_%lld%c          0x%llXULL\n", FIRMWARE, D, LV2MOUNTADDR); fputs(str, common);
 		sprintf(str, "#define LV2MOUNTADDR_ESIZE_%lld%c    0x%llX\n", FIRMWARE, D, LV2MOUNTADDR_ESIZE); fputs(str, common);
 		sprintf(str, "#define LV2MOUNTADDR_CSIZE_%lld%c    0x%llX\n", FIRMWARE, D, LV2MOUNTADDR_CSIZE); fputs(str, common);
-		//sprintf(str, "#define FIRMWARE_OFFSET_%lld%c       0x%llXULL\n", FIRMWARE, D, FIRMWARE_OFFSET); fputs(str, common);
 		sprintf(str, "#define FW_DATE_OFFSET_%lld%c        0x%llXULL\n", FIRMWARE, D, FW_DATE_OFFSET); fputs(str, common);
 		sprintf(str, "#define FW_DATE_1_%lld%c             0x%llXULL\n", FIRMWARE, D, FW_DATE_1); fputs(str, common);
 		sprintf(str, "#define FW_DATE_2_%lld%c             0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, common);
 		sprintf(str, "#define OFFSET_1_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, common);
-		sprintf(str, "#define OFFSET_2_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, common);	
+		sprintf(str, "#define OFFSET_2_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, common);
 		
 		fputs("\n", SKY);
 		sprintf(str, "#ifdef CFW_%lld%c\n", FIRMWARE, D); fputs(str, SKY);
@@ -1360,6 +2373,9 @@ int main()
 		
 		fputs("\n", symbols);
 		
+// *************
+//	PLUGINS FOR MAMBA
+// *************
 		sprintf(temp2, "flash/%lld%c", FIRMWARE, D);
 		if(exist(temp2)) {
 			
@@ -1451,8 +2467,8 @@ int main()
 			u64 psp_extra_drm_patch=0;
 			u8 psp_extra_drm_patch_FLAG[0x10] = {0xEB, 0x81, 0x01, 0xE0, 0xEB, 0xA1, 0x01, 0xE8, 0x7C, 0x08, 0x03, 0xA6, 0xEB, 0xC1, 0x01, 0xF0};
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/vsh/module/vsh.self temp_dec", FIRMWARE, D);
-			system(temp2);
+			sprintf(temp2, "flash/%lld%c/dev_flash/vsh/module/vsh.self", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -1462,7 +2478,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc vsh"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1575,8 +2591,8 @@ int main()
 			u64 ps2_nonbw_offset=0;
 			u8 ps2_nonbw_offset_FLAG[0x10] = {0x7D, 0x2B, 0x02, 0x14, 0x80, 0x89, 0x00, 0x30, 0x48, 0x00, 0x00, 0x08, 0x38, 0xA0, 0x00, 0x00}; //+4
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/vsh/module/explore_plugin.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+			sprintf(temp2, "flash/%lld%c/dev_flash/vsh/module/explore_plugin.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -1586,7 +2602,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc explore_plugin"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1617,8 +2633,8 @@ int main()
 			u64 ps2_nonbw_offset2=0;
 			u8 ps2_nonbw_offset2_FLAG[0x10] = {0x7D, 0x2B, 0x02, 0x14, 0x80, 0x89, 0x00, 0x30, 0x48, 0x00, 0x00, 0x08, 0x38, 0xA0, 0x00, 0x00}; // +4
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/vsh/module/explore_category_game.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+			sprintf(temp2, "flash/%lld%c/dev_flash/vsh/module/explore_category_game.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -1628,7 +2644,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc explore_category_game"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1659,8 +2675,8 @@ int main()
 			u64 ps2_nonbw_offset3=0;
 			u8 ps2_nonbw_offset3_FLAG[0x10] = {0x38, 0x61, 0x00, 0x70, 0x2F, 0x9F, 0x00, 0x00, 0x41, 0x9C, 0x00, 0x58, 0x38, 0x00, 0x00, 0x70};
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/vsh/module/game_ext_plugin.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+			sprintf(temp2, "flash/%lld%c/dev_flash/vsh/module/game_ext_plugin.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -1670,7 +2686,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc game_ext_plugin"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1701,9 +2717,9 @@ int main()
 			u64 psp_set_psp_mode_offset=0;
 			u8 psp_set_psp_mode_offset_FLAG[0x10] = {0x38, 0x80, 0x00, 0x01, 0x38, 0x60, 0x00, 0x05, 0x78, 0x84, 0x07, 0xC6, 0x64, 0x84, 0x00, 0x01};
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/pspemu/psp_emulator.self temp_dec", FIRMWARE, D);
-			system(temp2);
-			
+			sprintf(temp2, "flash/%lld%c/dev_flash/pspemu/psp_emulator.self", FIRMWARE, D);
+			Extract(temp2);
+						
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
 				fseek (f , 0 , SEEK_END);
@@ -1712,7 +2728,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc psp_emulator"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1766,9 +2782,9 @@ int main()
 			
 			u64 psp_product_id_patch3=0;
 			u8 psp_product_id_patch3_FLAG[] = {0x7C, 0x7F, 0x1B, 0x78, 0x40, 0x92, 0x00, 0x18, 0xE8, 0x01, 0x00, 0x90, 0x2F, 0xA0, 0x00, 0x28};
-			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/pspemu/release/emulator_api.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+						
+			sprintf(temp2, "flash/%lld%c/dev_flash/pspemu/release/emulator_api.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -1778,7 +2794,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc emulator_api"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1875,9 +2891,9 @@ int main()
 			
 			u64 prx_patch_call_lr=0;
 			u8 prx_patch_call_lr_FLAG[0x10] = {0xA3, 0x5B, 0x00, 0x2C, 0x93, 0x5E, 0x00, 0xF8, 0x80, 0x1B, 0x00, 0x1C, 0x2F, 0x80, 0x00, 0x00};
-
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/pspemu/release/PEmuCoreLib.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+			
+			sprintf(temp2, "flash/%lld%c/dev_flash/pspemu/release/PEmuCoreLib.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -1887,7 +2903,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc PEmuCoreLib"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -1963,9 +2979,9 @@ int main()
 			u64 psp_drm_key_overwrite=0;
 			u8 psp_drm_key_overwrite_FLAG[4] = {0x00, 0x00, 0xBC, 0xC0};
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/pspemu/release/emulator_drm.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
-			
+			sprintf(temp2, "flash/%lld%c/dev_flash/pspemu/release/emulator_drm.sprx", FIRMWARE, D);
+			Extract(temp2);
+						
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
 				fseek (f , 0 , SEEK_END);
@@ -1974,7 +2990,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc emulator_drm"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -2029,8 +3045,8 @@ int main()
 			u64 psp_savedata_patch6=0;
 			u8 psp_savedata_patch6_FLAG[] = {0xEA, 0x21, 0x08, 0xB8, 0xEA, 0x41, 0x08, 0xC0, 0xEA, 0x61, 0x08, 0xC8, 0xEA, 0x81, 0x08, 0xD0};
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/sys/external/libsysutil_savedata_psp.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+			sprintf(temp2, "flash/%lld%c/dev_flash/sys/external/libsysutil_savedata_psp.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -2040,7 +3056,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc libsysutil_savedata_psp"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -2099,8 +3115,8 @@ int main()
 			u64 aio_copy_root_offset=0;
 			u8 aio_copy_root_offset_FLAG[] = {0x78, 0x84, 0x04, 0x20, 0x4B, 0xFF, 0xB1, 0x74, 0x38, 0x80, 0xFF, 0xFF, 0x38, 0x60, 0x00, 0x01};
 			
-			sprintf(temp2, "scetool -d flash/%lld%c/dev_flash/sys/external/libfs.sprx temp_dec", FIRMWARE, D);
-			system(temp2);
+			sprintf(temp2, "flash/%lld%c/dev_flash/sys/external/libfs.sprx", FIRMWARE, D);
+			Extract(temp2);
 			
 			f = fopen("temp_dec", "rb");
 			if(f!=NULL) {
@@ -2110,7 +3126,7 @@ int main()
 				
 				char *mem = (char*) malloc (sizeof(char)*size);
 				if (mem == NULL) {
-					printf("Error : cannot malloc vsh");
+					printf(error("cannot malloc libfs"));
 					free(mem);
 					fclose(f);
 					return 0;
@@ -2136,33 +3152,42 @@ int main()
 			sprintf(temp, "\t#define aio_copy_root_offset                        0x%X\n", aio_copy_root_offset); fputs(temp, symbols);
 			
 			char temp3[64];
-			sprintf(temp3, "flash/%lld%c/dev_flash_rebug", FIRMWARE, D);
-			if(exist(temp3)) {
-				fputs("\n\t/* rebug */\n", symbols);
-			} else {
-				if(D=='C') {
-					sprintf(temp3, "flash/%lldD/dev_flash", FIRMWARE);
-					if(exist(temp3)) fputs("\n\t/* DEX */\n", symbols);
-				} else
-				if(D=='D') {
-					sprintf(temp3, "flash/%lldC/dev_flash", FIRMWARE);
-					if(exist(temp3)) fputs("\n\t/* CEX */\n", symbols);
-				}
+			
+			if(D=='C') {
+				sprintf(temp3, "flash/%lldD/dev_flash", FIRMWARE);
+			} else
+			if(D=='D') {
+				sprintf(temp3, "flash/%lldC/dev_flash", FIRMWARE);
 			}
 			
 			if(exist(temp3)) {
+				// ONLY for CEX! because rebug use only DEX modules.
+				// https://www.psx-place.com/threads/4-84-cfw-homebrew-plugins-tools.22528/page-10#post-164287
 				if(D=='C') {
-					sprintf(temp2, "%s/vsh/module/explore_plugin.sprx", temp3);
-					sprintf(temp, "\t#define EXPLORE_PLUGIN_REBUG_HASH                   0x%016llX\n", hash(temp2, 0, 0));
-					fputs(temp, symbols);
+					fputs("\n\t/* DEX */\n", symbols);
 					
-					sprintf(temp2, "%s/vsh/module/explore_category_game.sprx", temp3);
-					sprintf(temp, "\t#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x%016llX\n", hash(temp2, 0, 0));
-					fputs(temp, symbols);
+					char temp_rebug[512];
+					sprintf(temp_rebug, "flash/%lld%c/dev_flash_rebug", FIRMWARE, D);
 					
-					sprintf(temp2, "%s/vsh/module/game_ext_plugin.sprx", temp3);
-					sprintf(temp, "\t#define GAME_EXT_PLUGIN_REBUG_HASH                  0x%016llX\n", hash(temp2, 0, 0));
-					fputs(temp, symbols);
+					if( !exist(temp_rebug) ) {
+						sprintf(temp_rebug, "flash/%lldD/dev_flash", FIRMWARE);
+					}
+					
+					if(exist(temp_rebug)) {
+						sprintf(temp2, "%s/vsh/module/explore_plugin.sprx", temp_rebug);
+						sprintf(temp, "\t#define EXPLORE_PLUGIN_REBUG_HASH                   0x%016llX\n", hash(temp2, 0, 0));
+						fputs(temp, symbols);
+						
+						sprintf(temp2, "%s/vsh/module/explore_category_game.sprx", temp_rebug);
+						sprintf(temp, "\t#define EXPLORE_CATEGORY_GAME_REBUG_HASH            0x%016llX\n", hash(temp2, 0, 0));
+						fputs(temp, symbols);
+						
+						sprintf(temp2, "%s/vsh/module/game_ext_plugin.sprx", temp_rebug);
+						sprintf(temp, "\t#define GAME_EXT_PLUGIN_REBUG_HASH                  0x%016llX\n", hash(temp2, 0, 0));
+						fputs(temp, symbols);
+					}
+				} else {
+					fputs("\n\t/* CEX */\n", symbols);
 				}
 				
 				ps2tonet_patch=0;
@@ -2180,9 +3205,9 @@ int main()
 				psp_drm_patchF=0;
 				psp_extra_drm_patch=0;
 				
-				sprintf(temp2, "scetool -d %s/vsh/module/vsh.self temp_dec", temp3);
-				system(temp2);
-				
+				sprintf(temp2, "%s/vsh/module/vsh.self", temp3);
+				Extract(temp2);
+							
 				f = fopen("temp_dec", "rb");
 				if(f!=NULL) {
 					fseek (f , 0 , SEEK_END);
@@ -2191,7 +3216,7 @@ int main()
 					
 					char *mem = (char*) malloc (sizeof(char)*size);
 					if (mem == NULL) {
-						printf("Error : cannot malloc vsh");
+						printf(error("cannot malloc vsh"));
 						free(mem);
 						fclose(f);
 						return 0;
@@ -2284,8 +3309,8 @@ int main()
 				}
 				
 				ps2_nonbw_offset=0;
-				sprintf(temp2, "scetool -d %s/vsh/module/explore_plugin.sprx temp_dec", temp3);
-				system(temp2);
+				sprintf(temp2, "%s/vsh/module/explore_plugin.sprx", temp3);
+				Extract(temp2);
 				
 				f = fopen("temp_dec", "rb");
 				if(f!=NULL) {
@@ -2295,7 +3320,7 @@ int main()
 					
 					char *mem = (char*) malloc (sizeof(char)*size);
 					if (mem == NULL) {
-						printf("Error : cannot malloc vsh");
+						printf(error("cannot malloc vsh"));
 						free(mem);
 						fclose(f);
 						return 0;
@@ -2323,9 +3348,9 @@ int main()
 
 				ps2_nonbw_offset2=0;
 				
-				sprintf(temp2, "scetool -d %s/vsh/module/explore_category_game.sprx temp_dec", temp3);
-				system(temp2);
-				
+				sprintf(temp2, "%s/vsh/module/explore_category_game.sprx", temp3);
+				Extract(temp2);
+								
 				f = fopen("temp_dec", "rb");
 				if(f!=NULL) {
 					fseek (f , 0 , SEEK_END);
@@ -2334,7 +3359,7 @@ int main()
 					
 					char *mem = (char*) malloc (sizeof(char)*size);
 					if (mem == NULL) {
-						printf("Error : cannot malloc vsh");
+						printf(error("cannot malloc explore_category_game"));
 						free(mem);
 						fclose(f);
 						return 0;
@@ -2361,9 +3386,8 @@ int main()
 				}
 				
 				ps2_nonbw_offset3=0;
-				
-				sprintf(temp2, "scetool -d %s/vsh/module/game_ext_plugin.sprx temp_dec", temp3);
-				system(temp2);
+				sprintf(temp2, "%s/vsh/module/game_ext_plugin.sprx", temp3);
+				Extract(temp2);
 				
 				f = fopen("temp_dec", "rb");
 				if(f!=NULL) {
@@ -2373,7 +3397,7 @@ int main()
 					
 					char *mem = (char*) malloc (sizeof(char)*size);
 					if (mem == NULL) {
-						printf("Error : cannot malloc vsh");
+						printf(error("cannot malloc game_ext_plugin"));
 						free(mem);
 						fclose(f);
 						return 0;
@@ -2442,20 +3466,432 @@ int main()
 		
 		fputs("#endif\n\n", symbols);
 		
-		free(memLV2);
-		
 	}
-	
+		
+	fputs(" {return FAILED;}\n\
+	\n\
+	NEW_POKE_SYSCALL_ADDR = lv2peek( lv2peek(SYSCALL_TABLE + NEW_POKE_SYSCALL*8) ) + 0ULL;\n\
+	UMOUNT_SYSCALL_OFFSET = lv2peek( lv2peek(SYSCALL_TABLE + 838*8) )  + 8ULL;\n\
+	\n\
+	return SUCCESS;\n\
+}\n", fwc);
+
 	fputs("\n#endif /* __FIRMWARE_SYMBOLS_H_S__ */\n", symbols);
 	fputs("\n#endif /* __COMMON_H__ */\n", common);	
 	fputs("\n#endif /* __FIRMWARE_H__ */\n", IDPSet);
 	fputs("\n#endif /* __SYMBOLS_H__ */\n", ERK);
+	fputs("\n#endif /* __DATA_H__ */\n", data);
 	
+	fputs("\n", fw);
+	
+	fclose(fwc);
+	fclose(data);
+	fclose(fw);
 	fclose(IDPSet);
 	fclose(common);
 	fclose(SKY);
 	fclose(symbols);
 	closedir(d);
+	
+	return 0;
+}
+
+void Extract_DevFlash(char *fw)
+{	
+	printf("Extracting %s dev_flash...\n", fw);
+
+	char PUP_path[512];
+	char target[512];
+	char cmd[512];
+	if(exist("GetFlash.exe") == 0) {
+		printf(error("GetFlash.exe is missing")); 
+		return;
+	}
+	
+	sprintf(target, "flash/%s", fw);
+	mkdir(target);
+	
+	int do_rebug=0;
+	
+rebug:
+	if(do_rebug) {
+		sprintf(PUP_path, "PUP/REBUG/%s.PUP", fw);
+		sprintf(target, "flash/%s/dev_flash_rebug", fw);
+	} else {
+		sprintf(PUP_path, "PUP/OFFICIAL/%s.PUP", fw);
+		sprintf(target, "flash/%s/dev_flash", fw);
+	}
+	
+	
+	if(exist(PUP_path) == 0) {
+		printf(warning("%s is missing"), PUP_path);
+		if(!do_rebug) {do_rebug=1; goto rebug;}
+		return;
+	}	
+	if(exist(target)) {
+		printf(warning("%s already exist"), target); 
+		if(!do_rebug) {do_rebug=1; goto rebug;}
+		return;
+	}
+	
+	sprintf(cmd, "GetFlash.exe %s", PUP_path);
+	system(cmd);
+	
+	rename("dev_flash", target);
+	
+	if(!do_rebug) {do_rebug=1; goto rebug;}
+}
+
+void ExtractAll_DevFlash()
+{
+	DIR *d;
+	struct dirent* ent = NULL;
+	
+	d = opendir("PUP/OFFICIAL");
+	if(d== NULL) {
+		printf(error("Directory PUP/OFFICIAL not found"));
+		return;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		if(strcmp(&ent->d_name[strlen(ent->d_name)-4], ".PUP")==0) {
+			char fw[512];
+			strcpy(fw, ent->d_name);
+			strtok(fw, ".");
+			Extract_DevFlash(fw);
+		}
+	}
+	closedir(d);
+	
+}
+
+char *LoadFile(char *path)
+{
+	struct stat s;
+	if(stat(path, &s) != 0) return NULL;  
+	if(S_ISDIR(s.st_mode)) return NULL;
+	int file_size = s.st_size;
+	FILE *f = fopen(path, "rb");
+	if(f==NULL) return NULL;
+	char *mem = malloc(file_size);
+	if(mem==NULL) return NULL;
+	fread(mem, file_size, 1, f);
+	fclose(f);
+	return mem;
+}
+
+#define HW	0
+#define GX	1
+#define NET	2
+
+#define SUCCESS 	1
+#define FAILED	 	0
+
+uint64_t cdvd_read_symbol;
+uint64_t read_iso_size_call;
+uint64_t fstat_iso_call;
+uint64_t open_iso_call1;
+uint64_t open_iso_call2;
+uint64_t read_config_size_call;
+uint64_t open_config_call;
+uint64_t decrypt_config_call;
+
+uint64_t payload_addr;
+FILE *info;
+
+int PS2_SearchOffset(char *elf_p, uint8_t type)
+{
+	Extract(elf_p);
+	
+	char temp[256];
+	FILE *elf = fopen("temp_dec", "rb");
+	
+	//FILE *elf = fopen(elf_p, "rb");
+	if (!elf)
+	{
+		printf("Error : Cannot open ELF");
+		return -1;
+	}
+	
+	fseek(elf, 0, SEEK_END);
+	int elf_size = ftell(elf);
+	fseek(elf, 0, SEEK_SET);
+	
+	uint8_t *elf_buf = malloc(elf_size);
+	if(elf_buf==NULL) {
+		fclose(elf);
+		printf("Error : Cannot MALLOC ELF %X", elf_size);
+		return -1;
+	}
+	
+	fread(elf_buf, 1, elf_size, elf);
+	fclose(elf);
+	
+	if(type == NET) {
+		
+		cdvd_read_symbol=0;
+		read_iso_size_call=0;
+		fstat_iso_call=0;
+		open_iso_call1=0;
+		open_iso_call2=0;
+		read_config_size_call=0;// -0x24
+		open_config_call=0; // -0x48
+		decrypt_config_call=0; // +0x10
+		
+		uint8_t CONFIG_FLAG[0x10] = {0x7F, 0x83, 0xE3, 0x78, 0x38, 0x80, 0x00, 0x00, 0x7F, 0xE5, 0xFB, 0x78, 0x7F, 0xA6, 0x07, 0xB4};
+		
+		uint8_t cdvd_read_symbol_FLAG[0x10] = {0x2F, 0x86, 0x00, 0x00, 0x7C, 0x08, 0x02, 0xA6, 0xF8, 0x21, 0xFE, 0xF1, 0xF9, 0xC1, 0x00, 0x80};
+		uint8_t read_iso_size_call_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x08, 0x41, 0x9E, 0x01, 0x34, 0xE8, 0x7F, 0x00, 0x58}; // -4
+		uint8_t fstat_iso_call_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x00, 0x7C, 0x60, 0x1B, 0x78, 0x41, 0x9C, 0x02, 0x14}; // -4
+		uint8_t open_iso_call1_FLAG[0x10] = {0x60, 0x00, 0x00, 0x00, 0x2F, 0x83, 0x00, 0x00, 0x7C, 0x7E, 0x1B, 0x78, 0x7C, 0x7D, 0x07, 0xB4}; // -4
+		uint8_t open_iso_call2_FLAG[0x20] = {0x60, 0x00, 0x00, 0x00, 0x39, 0x60, 0x00, 0x00, 0x90, 0x7E, 0x00, 0x04, 0x80, 0x1E, 0x00, 0x04}; // -4
+
+		int n;
+		int i=0;
+		for(n=0; n<elf_size ; n++) {
+			if(!memcmp((char *) &elf_buf[n], (char *) cdvd_read_symbol_FLAG, 0x10)) {
+				cdvd_read_symbol = n - 0x10000;
+				i++;
+				sprintf(temp, "cdvd_read_symbol %X ", (unsigned int) cdvd_read_symbol); fputs(temp, info);
+				//print_load("cdvd_read_symbol %X", (unsigned int) cdvd_read_symbol);
+			}
+			if(!memcmp((char *) &elf_buf[n], (char *) read_iso_size_call_FLAG, 0x10)) {
+				read_iso_size_call = n - 4 - 0x10000;
+				i++;
+				sprintf(temp, "read_iso_size_call %X ", (unsigned int) read_iso_size_call); fputs(temp, info);
+				//print_load("read_iso_size_call %X", (unsigned int) read_iso_size_call);
+			}
+			if(!memcmp((char *) &elf_buf[n], (char *) fstat_iso_call_FLAG, 0x10)) {
+				fstat_iso_call = n - 4 - 0x10000;
+				i++;
+				sprintf(temp, "fstat_iso_call %X ", (unsigned int) fstat_iso_call); fputs(temp, info);
+				//print_load("fstat_iso_call %X", (unsigned int) fstat_iso_call);
+			}
+			if(!memcmp((char *) &elf_buf[n], (char *) open_iso_call1_FLAG, 0x10)) {
+				open_iso_call1 = n - 4 - 0x10000;
+				i++;
+				sprintf(temp, "open_iso_call1 %X ", (unsigned int) open_iso_call1); fputs(temp, info);
+				
+				//print_load("open_iso_call1 %X", (unsigned int) open_iso_call1);
+			}
+			if(!memcmp((char *) &elf_buf[n], (char *) open_iso_call2_FLAG, 0x10)) {
+				open_iso_call2 = n - 4 - 0x10000;
+				i++;
+				sprintf(temp, "open_iso_call2 %X ", (unsigned int) open_iso_call2); fputs(temp, info);
+				//print_load("open_iso_call2 %X", (unsigned int) open_iso_call2);
+			}
+			if(!memcmp((char *) &elf_buf[n], (char *) CONFIG_FLAG, 0x10)) {
+				read_config_size_call = n - 0x24 - 0x10000;
+				open_config_call = n - 0x48 - 0x10000;
+				decrypt_config_call = n + 0x10 - 0x10000;
+				sprintf(temp, "decrypt_config_call %X ", (unsigned int) decrypt_config_call); fputs(temp, info);
+				i++;
+			}
+			if(i==6) {
+				fputs(" OK", info);
+				break;
+			}
+		}
+		
+		free(elf_buf);
+		
+		if(i!=6) return FAILED;
+		
+		payload_addr = 0x3940;
+
+		return SUCCESS;
+		
+	} else
+	if(type == GX) {
+		uint8_t payload_addr_FLAG[0x14] = {0x79, 0x29, 0x80, 0x00, 0x7D, 0x20, 0x01, 0x64, 0x55, 0x60, 0x06, 0x3C, 0x4B, 0xFF, 0xFF, 0x8C, 0x38, 0x60, 0x00, 0x01};
+		int n;
+		for(n=0x10000; n<elf_size ; n++) {
+			if(!memcmp((char *) &elf_buf[n], (char *) payload_addr_FLAG, 0x14)) {
+				payload_addr = n + 0x1C;
+				sprintf(temp, "payload_addr %X OK", (unsigned int) payload_addr); fputs(temp, info);
+				
+				//print_load("PAYLOAD ADDR : %X", payload_addr - 0x10000);
+				break;
+			}
+		}
+		
+		free(elf_buf);
+		
+		if(payload_addr == 0) return FAILED;
+		
+		return SUCCESS;
+	} 
+	if(type == HW) {
+		uint8_t payload_addr_FLAG[0x1C] = {0x7C, 0xFF, 0x30, 0x38, 0x2F, 0x9F, 0x00, 0x00, 0x40, 0x9E, 0xFD, 0x3C, 0x4B, 0xFF, 0xFE, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x03, 0x80, 0x0C, 0x00, 0x00};
+		int n;
+		for(n=0x10000; n<elf_size ; n++) {
+			if(!memcmp((char *) &elf_buf[n], (char *) payload_addr_FLAG, 0x1C)) {
+				payload_addr = n + 0x1C;
+				sprintf(temp, "payload_addr %X OK", (unsigned int) payload_addr); fputs(temp, info);
+				
+				//print_load("PAYLOAD ADDR : %X", payload_addr - 0x10000);
+				break;
+			}
+		}
+		
+		free(elf_buf);
+		
+		if(payload_addr == 0) return FAILED;
+		
+		return SUCCESS;
+	}
+	return FAILED;
+		
+}
+
+int ps2_info()
+{
+	info = fopen("ps2info.txt", "w");
+	
+	char temp[255];
+	DIR *d;
+	struct dirent* ent = NULL;
+	
+	fputs("HW\n", info);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory flash not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		sprintf(temp, "../payloads/PS2_EMU/BIN/ps2hwemu_stage2_%s.bin", ent->d_name);
+		if(exist(temp)==0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_emu.self", ent->d_name);
+		
+		fputs(ent->d_name, info);
+		fputs(" ", info);
+		PS2_SearchOffset(temp, HW);
+		fputs("\n", info);
+		
+	}
+	closedir(d);
+	
+	fputs("\nGX\n", info);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory flash not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		sprintf(temp, "../payloads/PS2_EMU/BIN/ps2gxemu_stage2_%s.bin", ent->d_name);
+		if(exist(temp)==0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_gxemu.self", ent->d_name);
+		
+		fputs(ent->d_name, info);
+		fputs(" ", info);
+		PS2_SearchOffset(temp, GX);
+		fputs("\n", info);
+	}
+	closedir(d);
+	
+	fputs("\nNET\n", info);
+	
+	d = opendir("flash");
+	if(d== NULL) {
+		printf("Directory flash not found\n");
+		return 0;
+	}
+	while ((ent = readdir(d)) != NULL) {
+		if(strcmp(ent->d_name, ".") == 0) continue;
+		if(strcmp(ent->d_name, "..") == 0) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
+		if(exist(temp)) continue;
+		
+		sprintf(temp, "flash/%s/dev_flash/ps2emu/ps2_netemu.self", ent->d_name);
+		
+		fputs(ent->d_name, info);
+		fputs(" ", info);
+		PS2_SearchOffset(temp, NET);
+		fputs("\n", info);
+	}
+	closedir(d);
+	
+	
+	fclose(info);
+	
+	return 0;
+}
+
+void print_help()
+{
+	printf("offsetfinder.exe [option]\n\n\
+	search\t\tsearch offsets and generate files\n\
+	move\t\tmove files to their directories\n\
+	extract\t\textract dev_flash from PUP\n");
+	exit(0);
+}
+
+void force_rename(char *old, char *new)
+{
+	if(exist(old)==0) {
+		printf("Error : %s doesn't exist\n", old);
+		exit(0);
+	}
+	remove(new);
+	rename(old, new);
+}
+
+int main(int argc, char **argv)
+{
+	PWD = getenv("PWD");
+	char *PS3ENV = getenv("PS3");
+	if(PS3ENV==NULL) {
+		printf("Environnement variable 'PS3' is missing.\nType : export PS3=$PS3DEV/bin/data\nscetool need it to load the keys.\n\n");
+		return 0;
+	}
+	
+	if(argc<2) print_help();
+	
+	if(strcmp(argv[1], "search")==0) {
+		SearchOffsets();
+		PS2_SearchOffsets();
+		PS2_CRC();
+	} else
+	if(strcmp(argv[1], "move")==0) {
+		force_rename("firmware_symbols.h", "../payloads/SKY/firmware_symbols.h");
+		force_rename("symbols.h", "../payloads/MAMBA/lv2/include/lv2/symbols.h");
+		force_rename("ps2symbols.h", "../payloads/PS2_EMU/ps2emu/include/ps2emu/symbols.h");
+		force_rename("common.h", "../MGZ/source/common.h");
+		force_rename("data.h", "../MGZ/source/data.h");
+		force_rename("ps2data.h", "../MGZ/source/ps2data.h");
+		force_rename("ps2crc.h", "../MGZ/source/ps2crc.h");
+		force_rename("ps2vers.c", "../MGZ/source/ps2vers.c");
+		force_rename("fw.c", "../MGZ/source/fw.c");
+		force_rename("FIRMWARES", "../payloads/FIRMWARES");
+	} else
+	if(strcmp(argv[1], "extract")==0) {
+		if(2<argc) {
+			int i;
+			for(i=2;i<argc;i++) Extract_DevFlash(argv[i]);
+		} else {
+			ExtractAll_DevFlash();
+		}
+	} else
+	if(strcmp(argv[1], "test")==0) {
+		//..
+	} else	print_help();
 	
 	printf("Done !\n");
 	
