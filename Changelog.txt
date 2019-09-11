@@ -1,3 +1,18 @@
+
+v1.37
+Add : Support the firmware 4.85C.
+Fix : Issue with syscall 35. It fix the function to mount JB backups with cobra or mamba, among others.
+Fix FileManager : Issue to open /dev_bdvd.
+Add FileManager : Symbolic links. See Notes (1).
+
+Notes :
+(1) It use cobra/mamba syscall 35.
+For example if you want to redirect app_home to dev_bdvd
+_ Select app_home (square)
+_ Option (triangle) then select "SymLink source" (cross)
+_ Select dev_bdvd (square)
+_ Option (triangle) then select "Symlink target" (cross)
+
 v1.36
 Add : Support PS3HEN. I removed every feature unsupported by the HEN (tested on HEN 2.3.1).
 Add : Updated widescreen db from pcsx2 github.
@@ -10,17 +25,16 @@ Add : You can add a color filter on some pictures. See notes (2).
 Add : Settings menu is splitted in 3 level instead of 2.
 Add : Platform filter for UI XMB.
 Fix : It scan dev_cf (compact flash) instead of dev_cd.
-Add : 'Yes/No' settings are remplaced by a toggle.
+Add : 'Yes/No' settings are replaced by a toggle.
 Add : New theme icons for the toggle.
 Fix : Rawseciso isn't a fself anymore. It fix issue with iso from ntfs with a PS3HEN.
-Fix : Issue with ps2 elf crc. It fix several issues with iso patching options like when 'disable widescreen' was unavailble.
+Fix : Issue with ps2 elf crc. It fix several issues with iso patching options like when 'disable widescreen' was unavailable.
 Fix : Pnach wasn't properly translated to .CONFIG, wrong endianness in replacement opcode.
 Fix : To avoid issues with some characters, the name of game settings files use title_id instead of title.
 Remove :  I removed "Shortcut pkg" option because it's broken. I'll fix it later.
 Add FileManager : More informations of devices : capacity, file system, name, label, writable.
-ADd FileManager : Several predefined root display is available. Also, you can custumize your own display in settings.
-Add FileManager : Specifics options are available if you select several files with the same extention. For example, you can extract 3 pkg in a row.
-Add FileManager : Make shortcut PKG.
+ADd FileManager : Several predefined root display is available. Also, you can customize your own display in settings.
+Add FileManager : Specifics options are available if you select several files with the same extension. For example, you can extract 3 pkg in a row.
 Add FileManager : New theme icons used for the closebox, the dockbox and the cursor.
 Add FileManager : Support UTF8 filename and also their content with the TXTviewer.
 Add offsetfinder : It generate every files to update managunz to a new firmware. Type 'make update'.
@@ -30,26 +44,29 @@ Notes :
 For Flow3D, it's stored in 2MB slots, there is less slots.
 The dimention of the game pictures is limited.
 We can calculate its size = Width * Height * Pitch
-I use ARGB texture -> the pitch is 4.
-The picture size must repect : 
--           Width*Height < 0x20000    =   (512*1024)    /4
-- Flow3D    Width*Height < 0x80000    =   (2*1024*1024) /4
+I use ARGB texture, the pitch is 4.
+The picture size must respect : 
+Width x Height < 0x20000 =  (512 x 1024)    /4
+And in Flow3D : 
+Width x Height < 0x80000 =  (2  x 1024 x 1024) /4
+
 To not have any memory issue, I suggest you to use the following dimensions:
-ICON0           320*176            = 0x0DC00
-COVER PS1       250*250            = 0x0F424
-COVER PS2       250*350            = 0x155CC
-COVER PS3       260*300            = 0x130B0
-COVER PSP       200*340            = 0x109A0
-COVER3D PS1     450*450 + 450*600  = 0x735B4
-COVER3D PS2		850*570            = 0x76494
-COVER3D PS3     950*525            = 0x79C3E
-COVER3D PSP		800*640		       = 0x7D000
+ICON0           320 x 176
+COVER PS1       250 x 250
+COVER PS2       250 x 350
+COVER PS3       260 x 300
+COVER PSP       200 x 340
+COVER3D PS1     450 x 450 + 450 x 600
+COVER3D PS2	    850 x 570
+COVER3D PS3     950 x 525
+COVER3D PSP	    800 x 640	
 
 (2) You can choose the color filter with (R1) in settings.
 It's available for BG, BGS, SIDEBAR, BOXBODY, BOXHEAD and NOTIF pictures.
 You can add these colors in colorset.ini file too.
 They are named COLOR_BG, COLOR_BGS, COLOR_SIDEBAR, COLOR_BOXBODY, COLOR_BOXHEAD and COLOR_NOTIF.
 If you don't write a colors in colorset.ini it will be disabled.
+
 
 v1.35
 Add : Support 4.84C & 4.84D

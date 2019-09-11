@@ -1,3 +1,5 @@
+*.sym
+*.prx
 *.elf
 *.self
 *.pkg

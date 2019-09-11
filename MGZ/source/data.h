@@ -183,5 +183,10 @@
 #include "mamba_484D_lz_bin.h"
 #include "mamba_loader_484D_bin.h"
 
+#include "payload_sky_485C_bin.h"
+#include "umount_485C_bin.h"
+#include "mamba_485C_lz_bin.h"
+#include "mamba_loader_485C_bin.h"
+
 
 #endif /* __DATA_H__ */

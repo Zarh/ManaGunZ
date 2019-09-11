@@ -410,3 +410,6 @@ STR_FM_CUSTOM				{Personalizados}
 STR_FM_CB_FILL				{Todo el ancho}
 STR_EDIT_IDPS				{Editar IDPS}
 STR_FILTER_NOGAME			{No se han encontrado juegos. Comprueba tus filtros y las rutas de juegos.}
+STR_SYMLINK_SRC				{SymLink source}
+STR_SYMLINK_TARGET			{SymLink target}
+STR_LOAD_MAMBA				{Load mamba}

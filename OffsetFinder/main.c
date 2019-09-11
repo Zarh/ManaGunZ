@@ -1155,8 +1155,10 @@ int SearchOffsets()
 	FILE *common;
 	FILE *SKY;
 	FILE *symbols;
-	FILE *IDPSet;
-	FILE *ERK;
+	FILE *IDPSET_firmware_h;
+	FILE *IDPSET_firmware_c;
+	FILE *IDPSET_symbols_h;
+	FILE *IDPSET_data_h;
 	FILE *fw;
 	FILE *data;
 	FILE *fwc;
@@ -1167,11 +1169,15 @@ int SearchOffsets()
 	DIR *d;
 	struct dirent* ent = NULL;
 	
+	IDPSET_firmware_h = fopen("IDPSET_firmware.h", "w");
+	IDPSET_data_h = fopen("IDPSET_data.h", "w");
+	IDPSET_symbols_h = fopen("IDPSET_symbols.h", "w");
+	IDPSET_firmware_c = fopen("IDPSET_firmware.c", "w");
+	
 	SKY = fopen("firmware_symbols.h", "w");
 	common = fopen("common.h", "w");
 	symbols = fopen("symbols.h", "w");
-	IDPSet = fopen("firmware.h", "w");
-	ERK = fopen("erk_symbols.h", "w");
+	
 	fw = fopen("FIRMWARES", "w");
 	fwc = fopen("fw.c", "w");
 	data = fopen("data.h","w");
@@ -1203,13 +1209,52 @@ int SearchOffsets()
 	
 	fputs("#define umd_mutex_offset (0x64480+0x38C)\n\n", symbols);
 
-	fputs("#ifndef __FIRMWARE_H__\n", IDPSet);
-	fputs("#define __FIRMWARE_H__\n\n", IDPSet);
 	
-	fputs("#ifndef __SYMBOLS_H__\n", ERK);
-	fputs("#define __SYMBOLS_H__\n\n", ERK);
-	fputs("#define KERNEL_BASE 0x8000000000000000\n\n", ERK);
+	fputs("#ifndef __SYMBOLS_H__\n", IDPSET_symbols_h);
+	fputs("#define __SYMBOLS_H__\n\n", IDPSET_symbols_h);
+	fputs("#define KERNEL_BASE 0x8000000000000000\n\n", IDPSET_symbols_h);
 	
+	fputs("#ifndef __DATA_H__\n", IDPSET_data_h);
+	fputs("#define __DATA_H__\n\n", IDPSET_data_h);
+
+	fputs("#ifndef __FIRMWARE_H__\n", IDPSET_firmware_h);
+	fputs("#define __FIRMWARE_H__\n", IDPSET_firmware_h);
+	fputs("\n\
+#include <ppu-types.h>\n\
+#include \"data.h\"\n\
+\n\
+int init_IDPSet();\n", IDPSET_firmware_h);
+	
+	fputs("\n\
+#include <sys/file.h>\n\
+#include \"firmware.h\"\n\
+\n\
+#define SUCCESS		1\n\
+#define FAILED 		0\n\
+\n\
+extern u8 rebug;\n\
+extern u64 *payload;\n\
+extern size_t payload_size;\n\
+extern u32 firmware;\n\
+extern u64 TOC_OFFSET;\n\
+extern u64 HV_START_OFFSET;\n\
+extern u64 HTAB_OFFSET;\n\
+extern u64 SYSCALL_TABLE_OFFSET;\n\
+extern u64 MMAP_OFFSET1;\n\
+extern u64 MMAP_OFFSET2;\n\
+extern u64 SPE_OFFSET;\n\
+extern u64 OFFSET_1_IDPS;\n\
+extern u64 OFFSET_2_IDPS;\n\
+\n\
+extern int fw_is_rebug();\n\
+extern u64 lv2peek(u64 addr);\n\
+\n\
+int init_IDPSet()\n\
+{\n\
+\n\
+	OFFSET_1_IDPS = 0;\n\
+	OFFSET_2_IDPS = 0;\n", IDPSET_firmware_c);
+
 	fputs("\n\
 #include \"fw.h\"\n\
 \n\
@@ -1266,10 +1311,36 @@ u8 init_fw()\n\
 		sprintf(temp, "#include \"mamba_%s_lz_bin.h\"\n", ent->d_name); fputs(temp, data);
 		sprintf(temp, "#include \"mamba_loader_%s_bin.h\"\n\n", ent->d_name); fputs(temp, data);
 		
+		sprintf(temp, "#include \"payload_%s_bin.h\"\n", ent->d_name); fputs(temp, IDPSET_data_h);
+		
+		
 		sprintf(temp, "flash/%s/dev_flash/rebug", ent->d_name);
 		u8 ps2payloads = 1;
 		if( exist(temp) ) ps2payloads = 0;
 
+		
+		sprintf(temp, "\n\
+	if(( lv2peek(FW_DATE_OFFSET_%s    )==FW_DATE_1_%s) &&\n\
+	( lv2peek(FW_DATE_OFFSET_%s + 8)==FW_DATE_2_%s) )\n\
+	{\n\
+		firmware = 0x%s;\n\
+		\n\
+		TOC_OFFSET = TOC_OFFSET_%s;\n\
+		HV_START_OFFSET = HV_START_OFFSET_%s;\n\
+		HTAB_OFFSET = HTAB_OFFSET_%s;\n\
+		SYSCALL_TABLE_OFFSET = SYSCALL_TABLE_%s;\n\
+		MMAP_OFFSET1 = MMAP_OFFSET1_%s;\n\
+		MMAP_OFFSET2 = MMAP_OFFSET2_%s;\n\
+		SPE_OFFSET = SPE_OFFSET_%s;\n\
+		OFFSET_1_IDPS = OFFSET_1_IDPS_%s;\n\
+		OFFSET_2_IDPS = OFFSET_2_IDPS_%s;\n\
+		\n\
+		payload_size = payload_%s_bin_size;\n\
+		payload = (u64 *) payload_%s_bin;\n\
+	} else", ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
+			 ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
+		
+		fputs(temp, IDPSET_firmware_c);
 				
 		sprintf(temp, "\n\
 	if(( lv2peek(FW_DATE_OFFSET_%s    )==FW_DATE_1_%s) &&\n\
@@ -1582,7 +1653,7 @@ u8 init_fw()\n\
 		u8 prx_get_module_list_symbol_flag[] = {0xF8, 0x21, 0xFF, 0x51, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x01, 0x00, 0x70, 0xFB, 0x21, 0x00, 0x78, 0xFB, 0x41, 0x00, 0x80, 0xFB, 0x61, 0x00, 0x88, 0xFB, 0x81, 0x00, 0x90, 0xFB, 0xA1, 0x00, 0x98, 0x7C, 0xF9, 0x3B, 0x78, 0x7D, 0x18, 0x43, 0x78, 0x7C, 0xDA, 0x33, 0x78, 0x7C, 0x7D, 0x1B, 0x78};
 		u8 extend_kstack_symbol_flag[] = {0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0x70, 0xF8, 0x01, 0x00, 0xA0, 0xFB, 0xA1, 0x00, 0x78, 0x7C, 0x7D, 0x1B, 0x78};
 		u8 get_pseudo_random_number_symbol_flag[] = {0x7C, 0x85, 0x23, 0x78, 0x7C, 0x04, 0x03, 0x78, 0x48, 0x00, 0x04, 0x04, 0x48, 0x00, 0x01, 0xE4, 0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0x70, 0xFB, 0xC1, 0x00, 0x80};
-		u8 syscall_call_offset_flag[] = {0x4E, 0x80, 0x00, 0x21, 0x38, 0x21, 0x00, 0x70, 0xF8, 0x21, 0xFF, 0xB1, 0xF8, 0x61, 0x00, 0x08, 0xF8, 0x81, 0x00, 0x10, 0xF8, 0xA1, 0x00, 0x18, 0xF8, 0xC1, 0x00, 0x20, 0xF8, 0xE1, 0x00, 0x28};
+		u8 syscall_call_offset_flag[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x38, 0x21, 0x00, 0x70, 0xF8, 0x21, 0xFF, 0xB1, 0xF8, 0x61, 0x00, 0x08, 0xF8, 0x81, 0x00, 0x10, 0xF8, 0xA1, 0x00, 0x18, 0xF8, 0xC1, 0x00, 0x20, 0xF8, 0xE1, 0x00, 0x28};
 		u8 read_bdvd0_symbol_flag[] = {0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x01, 0x01, 0x10, 0x7C, 0x78, 0x1B, 0x78, 0xF8, 0x01, 0x01, 0x60, 0xF9, 0xC1, 0x00, 0xC0, 0xFB, 0xC1, 0x01, 0x40, 0x7C, 0x8E, 0x23, 0x78};
 		u8 read_bdvd1_symbol_flag[] = {0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0xB0, 0xF8, 0x01, 0x00, 0xE0, 0xEB, 0x83, 0x00, 0x20, 0x7C, 0xA0, 0x2B, 0x78, 0xFA, 0xE1, 0x00, 0x88, 0x2F, 0xBC, 0x00, 0x00};
 		u8 read_bdvd2_symbol_flag[] = {0x7C, 0x08, 0x02, 0xA6, 0xFB, 0xE1, 0x00, 0xA8, 0xF8, 0x01, 0x00, 0xC0, 0x7C, 0x7F, 0x1B, 0x78, 0xE8, 0x63, 0x00, 0x90, 0xFB, 0x61, 0x00, 0x88, 0xFB, 0x81, 0x00, 0x90};
@@ -2169,29 +2240,29 @@ u8 init_fw()\n\
 		
 		char str[255];
 		
-		fputs("\n", IDPSet);
-		sprintf(str, "#define HTAB_OFFSET_%lld%c         0x%06llX\n", FIRMWARE, D, HTAB_OFFSET); fputs(str, IDPSet);
-		sprintf(str, "#define MMAP_OFFSET1_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET1); fputs(str, IDPSet);		
-		sprintf(str, "#define MMAP_OFFSET2_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, IDPSet);		
-		sprintf(str, "#define SPE_OFFSET_%lld%c          0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, IDPSet);
-		sprintf(str, "#define HV_START_OFFSET_%lld%c     0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, IDPSet);
-		sprintf(str, "#define TOC_OFFSET_%lld%c          0x%llXULL\n", FIRMWARE, D, 0x8000000000000000ULL + TOC); fputs(str, IDPSet);
-		sprintf(str, "#define SYSCALL_TABLE_%lld%c       0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, IDPSet);
-		sprintf(str, "#define FW_DATE_OFFSET_%lld%c      0x%llXULL\n", FIRMWARE, D, FW_DATE_OFFSET); fputs(str, IDPSet);
-		sprintf(str, "#define FW_DATE_1_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_1); fputs(str, IDPSet);
-		sprintf(str, "#define FW_DATE_2_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, IDPSet);
-		sprintf(str, "#define OFFSET_1_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, IDPSet);
-		sprintf(str, "#define OFFSET_2_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, IDPSet);	
+		fputs("\n", IDPSET_firmware_h);
+		sprintf(str, "#define HTAB_OFFSET_%lld%c         0x%06llX\n", FIRMWARE, D, HTAB_OFFSET); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define MMAP_OFFSET1_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET1); fputs(str, IDPSET_firmware_h);		
+		sprintf(str, "#define MMAP_OFFSET2_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, IDPSET_firmware_h);		
+		sprintf(str, "#define SPE_OFFSET_%lld%c          0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define HV_START_OFFSET_%lld%c     0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define TOC_OFFSET_%lld%c          0x%llXULL\n", FIRMWARE, D, 0x8000000000000000ULL + TOC); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define SYSCALL_TABLE_%lld%c       0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define FW_DATE_OFFSET_%lld%c      0x%llXULL\n", FIRMWARE, D, FW_DATE_OFFSET); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define FW_DATE_1_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_1); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define FW_DATE_2_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define OFFSET_1_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define OFFSET_2_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, IDPSET_firmware_h);	
 		
-		sprintf(str, "#ifdef FIRMWARE_%lld%c\n", FIRMWARE, D); fputs(str, ERK);
-		sprintf(str, "\t#define KERNEL_TOC			                 0x%06llX\n", TOC); fputs(str, ERK);
-		sprintf(str, "\t#define KERNEL_SYMBOL_EXTEND_KSTACK          0x%06llX\n", extend_kstack_symbol); fputs(str, ERK);
-		sprintf(str, "\t#define KERNEL_SYMBOL_COPY_TO_USER           0x%06llX\n", copy_to_user_symbol); fputs(str, ERK);
-		sprintf(str, "\t#define KERNEL_SYMBOL_MEMSET                 0x%06llX\n", memset_symbol); fputs(str, ERK);
-		sprintf(str, "\t#define KERNEL_SYMBOL_MEMCPY                 0x%06llX\n", memcpy_symbol); fputs(str, ERK);
-		sprintf(str, "\t#define GAMEOS_LPAR_BASE_PTR                 0x%llXULL\n", LPAR); fputs(str, ERK);
-		sprintf(str, "\t#define GAMEOS_LPAR_SIZE_PTR                 0x%llXULL\n", LPAR+8); fputs(str, ERK);
-		fputs("#endif\n\n", ERK);
+		sprintf(str, "#ifdef FIRMWARE_%lld%c\n", FIRMWARE, D); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define KERNEL_TOC			                 0x%06llX\n", TOC); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define KERNEL_SYMBOL_EXTEND_KSTACK          0x%06llX\n", extend_kstack_symbol); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define KERNEL_SYMBOL_COPY_TO_USER           0x%06llX\n", copy_to_user_symbol); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define KERNEL_SYMBOL_MEMSET                 0x%06llX\n", memset_symbol); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define KERNEL_SYMBOL_MEMCPY                 0x%06llX\n", memcpy_symbol); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define GAMEOS_LPAR_BASE_PTR                 0x%llXULL\n", LPAR); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define GAMEOS_LPAR_SIZE_PTR                 0x%llXULL\n", LPAR+8); fputs(str, IDPSET_symbols_h);
+		fputs("#endif\n\n", IDPSET_symbols_h);
 		
 		fputs("\n", common);
 		sprintf(str, "#define SYSCALL_TABLE_%lld%c         0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, common);
@@ -3467,7 +3538,7 @@ u8 init_fw()\n\
 		fputs("#endif\n\n", symbols);
 		
 	}
-		
+	
 	fputs(" {return FAILED;}\n\
 	\n\
 	NEW_POKE_SYSCALL_ADDR = lv2peek( lv2peek(SYSCALL_TABLE + NEW_POKE_SYSCALL*8) ) + 0ULL;\n\
@@ -3476,10 +3547,50 @@ u8 init_fw()\n\
 	return SUCCESS;\n\
 }\n", fwc);
 
+	fputs("\n\
+	{\n\
+		u64 n;\n\
+		for(n=0x350000; n<0x4A0000; n++) {\n\
+			u64 data = lv2peek(0x8000000000000000ULL + n);\n\
+			\n\
+			if(0x350000 < n && n <0x450000) {\n\
+				if(OFFSET_1_IDPS == 0) {\n\
+					if(0x0000000100800000 < data && data <0x0000000100900000)\n\
+					{\n\
+						OFFSET_1_IDPS = 0x8000000000000000ULL + n;\n\
+					}\n\
+				}\n\
+			}\n\
+			if(0x450000 < n && n <0x4A0000) {\n\
+				if(OFFSET_2_IDPS == 0) {\n\
+					if(0x0000000100800000 < data && data <0x0000000100900000)\n\
+					{\n\
+						OFFSET_2_IDPS = 0x8000000000000000ULL + n;\n\
+					}\n\
+				}\n\
+			}\n\
+			if(OFFSET_1_IDPS != 0)\n\
+			if(OFFSET_2_IDPS != 0) break;\n\
+		}\n\
+		if(OFFSET_1_IDPS == 0 || OFFSET_2_IDPS == 0) return FAILED;\n\
+	}\n\
+	\n\
+	rebug =  fw_is_rebug();\n\
+	\n\
+	sysFSStat st;\n\
+	if(sysLv2FsStat(\"/dev_hdd0/tmp\", &st) != 0) {\n\
+		sysLv2FsMkdir(\"/dev_hdd0/tmp\", 0777);\n\
+	}\n\
+	sysLv2FsChmod(\"/dev_hdd0/tmp\", 0777);\n\
+	\n\
+	return SUCCESS;\n\
+}\n", IDPSET_firmware_c);
+
 	fputs("\n#endif /* __FIRMWARE_SYMBOLS_H_S__ */\n", symbols);
 	fputs("\n#endif /* __COMMON_H__ */\n", common);	
-	fputs("\n#endif /* __FIRMWARE_H__ */\n", IDPSet);
-	fputs("\n#endif /* __SYMBOLS_H__ */\n", ERK);
+	fputs("\n#endif /* __FIRMWARE_H__ */\n", IDPSET_firmware_h);
+	fputs("\n#endif /* __SYMBOLS_H__ */\n", IDPSET_symbols_h);
+	fputs("\n#endif /* __DATA_H__ */\n", IDPSET_data_h);
 	fputs("\n#endif /* __DATA_H__ */\n", data);
 	
 	fputs("\n", fw);
@@ -3487,7 +3598,10 @@ u8 init_fw()\n\
 	fclose(fwc);
 	fclose(data);
 	fclose(fw);
-	fclose(IDPSet);
+	fclose(IDPSET_symbols_h);
+	fclose(IDPSET_firmware_h);
+	fclose(IDPSET_firmware_c);
+	fclose(IDPSET_data_h);
 	fclose(common);
 	fclose(SKY);
 	fclose(symbols);
@@ -3889,8 +4003,20 @@ int main(int argc, char **argv)
 			ExtractAll_DevFlash();
 		}
 	} else
+	if(strcmp(argv[1], "idpset")==0) {
+		SearchOffsets();
+		
+		if(exist("../../IDPSet")) {
+			force_rename("IDPSET_symbols.h", "../../IDPSet/payload/source/symbols.h");
+			force_rename("IDPSET_firmware.h", "../../IDPSet/source/firmware.h");
+			force_rename("IDPSET_firmware.c", "../../IDPSet/source/firmware.c");
+			force_rename("IDPSET_data.h", "../../IDPSet/source/data.h");
+			force_rename("FIRMWARES", "../../IDPSet/payload/source/FIRMWARES");
+		}
+		
+	} else
 	if(strcmp(argv[1], "test")==0) {
-		//..
+		//...
 	} else	print_help();
 	
 	printf("Done !\n");

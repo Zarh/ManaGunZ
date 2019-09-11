@@ -357,3 +357,6 @@ STR_FM_CUSTOM				{Niestandardowe ikony}
 STR_FM_CB_FILL				{Wypełnienie}
 STR_EDIT_IDPS				{Edit IDPS}
 STR_FILTER_NOGAME			{No games found. Adjust your filter.}
+STR_SYMLINK_SRC				{SymLink source}
+STR_SYMLINK_TARGET			{SymLink target}
+STR_LOAD_MAMBA				{Load mamba}
