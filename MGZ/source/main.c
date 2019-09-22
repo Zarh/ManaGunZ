@@ -26024,14 +26024,11 @@ u8 *LoadMEMfromISO(char *iso_file, u32 sector, u32 offset, u32 size)
 
 u8 PS2ELF_compare(u32 EE_offset, u8 *data, u32 data_size)
 {
-	u32 EntryPoint=0;
+	u32 VirtualProg=0;
 	u32 ProgOffset=0;
 	u16 ProgHeaderNumber=0;
 	u32 ProgType=0;
 	u32 filesz=0;
-	
-	memcpy(&EntryPoint, &PS2ELF_mem[0x18], 4);
-	EntryPoint = reverse32(EntryPoint);
 	
 	memcpy(&ProgHeaderNumber, &PS2ELF_mem[0x2C], 2);
 	ProgHeaderNumber = reverse16(ProgHeaderNumber);
@@ -26045,19 +26042,23 @@ u8 PS2ELF_compare(u32 EE_offset, u8 *data, u32 data_size)
 		filesz = reverse32(filesz);
 
 		if(ProgType==1 && filesz!=0) {
-			memcpy(&ProgOffset, &PS2ELF_mem[0x38+i*0x20], 4);
+			memcpy(&ProgOffset, &PS2ELF_mem[0x34 + 4 + i*0x20], 4);
 			ProgOffset = reverse32(ProgOffset);
+			
+			memcpy(&VirtualProg, &PS2ELF_mem[0x34 + 4 + 4 + i*0x20], 4);
+			VirtualProg = reverse32(VirtualProg);
+			
 			break;
 		}
 	}
 	
 	if(ProgType!=1 || filesz==0) {
-		print_load("Error : ProgOffset not found");
+		print_load("Error : ProgOffset and VirtualProg not found");
 		return NO;
 	}
 	
 	u32 elf_offset;
-	elf_offset = EE_offset - (EntryPoint - 8 - ProgOffset);
+	elf_offset = EE_offset - (VirtualProg - ProgOffset);
 	
 	print_load("elf_offset %X", elf_offset);
 	print_load("data %02X%02X%02X%02X", data[0], data[1], data[2], data[3]);
@@ -26506,16 +26507,13 @@ void CONFIG_check(char *IsoPath)
 
 }
 
-u32 GetEntryProg()
+u32 GetVirtualProg()
 {
-	u32 EntryPoint=0;
+	u32 VirtualAddr=0;
 	u32 ProgOffset=0;
 	u16 ProgHeaderNumber=0;
 	u32 ProgType=0;
 	u32 filesz=0;
-	
-	memcpy(&EntryPoint, &PS2ELF_mem[0x18], 4);
-	EntryPoint = reverse32(EntryPoint);
 		
 	memcpy(&ProgHeaderNumber, &PS2ELF_mem[0x2C], 2);
 	ProgHeaderNumber = reverse16(ProgHeaderNumber);
@@ -26524,23 +26522,27 @@ u32 GetEntryProg()
 	for(i=0; i < ProgHeaderNumber; i++) {
 		memcpy(&ProgType, &PS2ELF_mem[0x34+i*0x20], 4);
 		ProgType = reverse32(ProgType);
-	
+
 		memcpy(&filesz, &PS2ELF_mem[0x34+0x10+i*0x20], 4);
 		filesz = reverse32(filesz);
 
 		if(ProgType==1 && filesz!=0) {
-			memcpy(&ProgOffset, &PS2ELF_mem[0x38+i*0x20], 4);
+			memcpy(&ProgOffset, &PS2ELF_mem[0x34 + 4 + i*0x20], 4);
 			ProgOffset = reverse32(ProgOffset);
+			
+			memcpy(&VirtualAddr, &PS2ELF_mem[0x34 + 4 + 4 + i*0x20], 4);
+			VirtualAddr = reverse32(VirtualAddr);
+			
 			break;
 		}
 	}
 	
 	if(ProgType!=1 || filesz==0) {
-		print_load("Error : ProgOffset not found");
+		print_load("Error : ProgOffset and VirtualAddr not found");
 		return 0;
 	}
 	
-	return (EntryPoint - 8 - ProgOffset);
+	return (VirtualAddr - ProgOffset);
 
 }
 
@@ -26553,11 +26555,11 @@ u8 CONFIG_exist_PS2PATCH(u32 ELF_offset, u32 EE_offset)
 	EEoffset=EE_offset;
 	ELFoffset=ELF_offset;
 	
-	u32 EntryProg = GetEntryProg();
-	if(EntryProg==0) return NO;
+	u32 VirtualProg = GetVirtualProg();
+	if(VirtualProg==0) return NO;
 	
-	if(EEoffset==0) EEoffset = ELFoffset + EntryProg;
-	if(ELFoffset==0) ELFoffset = EEoffset - EntryProg;
+	if(EEoffset==0) EEoffset = ELFoffset + VirtualProg;
+	if(ELFoffset==0) ELFoffset = EEoffset - VirtualProg;
 	
 	if(ELFoffset > PS2ELF_mem_size) return NO;
 	
@@ -26648,11 +26650,11 @@ void CONFIG_remove_PS2PATCH(u32 ELF_offset, u32 EE_offset, u32 patch_size)
 	EEoffset=EE_offset;
 	ELFoffset=ELF_offset;
 	
-	u32 EntryProg = GetEntryProg();
-	if(EntryProg==0) return;
+	u32 VirtualProg = GetVirtualProg();
+	if(VirtualProg==0) return;
 	
-	if(EEoffset==0) EEoffset = ELFoffset + EntryProg;
-	if(ELFoffset==0) ELFoffset = EEoffset - EntryProg;
+	if(EEoffset==0) EEoffset = ELFoffset + VirtualProg;
+	if(ELFoffset==0) ELFoffset = EEoffset - VirtualProg;
 	
 	// don't know how to get the original data if it's not in the elf
 	if(ELFoffset+patch_size > PS2ELF_mem_size) return; 
@@ -26733,11 +26735,11 @@ void CONFIG_add_PS2PATCH(u32 ELF_offset, u32 EE_offset, u8 *patch, u32 patch_siz
 	EEoffset=EE_offset;
 	ELFoffset=ELF_offset;
 
-	u32 EntryProg = GetEntryProg();
-	if(EntryProg==0) return;
+	u32 VirtualProg = GetVirtualProg();
+	if(VirtualProg==0) return;
 	
-	if(EEoffset==0) EEoffset = ELFoffset + EntryProg;
-	if(ELFoffset==0) ELFoffset = EEoffset - EntryProg;
+	if(EEoffset==0) EEoffset = ELFoffset + VirtualProg;
+	if(ELFoffset==0) ELFoffset = EEoffset - VirtualProg;
 	
 	// don't know how to get the original data if it's not in the elf
 	if(ELFoffset+patch_size > PS2ELF_mem_size) return;
@@ -28164,15 +28166,11 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 		return FAILED;
 	}
 	
-	u32 EntryPoint;
+	u32 VirtualAddr;
 	u32 ProgOffset;
 	u16 ProgHeaderNumber;
 	u32 ProgType;
 	u32 filesz;
-	
-	fseek(fi, file_offset + 0x18, SEEK_SET);
-	fread(&EntryPoint, 4, 1, fi);
-	EntryPoint = reverse32(EntryPoint);
 	
 	fseek(fi, file_offset + 0x2C, SEEK_SET);
 	fread(&ProgHeaderNumber, 2, 1, fi);
@@ -28181,30 +28179,39 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 	
 	int i;
 	for(i=0; i < ProgHeaderNumber; i++) {
+		
+		filesz = 0;
+		ProgOffset = 0;
+		VirtualAddr = 0;
+		ProgType = 0;
+		
 		fseek(fi, file_offset + 0x34+i*0x20, SEEK_SET);
+		
 		fread(&ProgType, 4, 1, fi);
 		ProgType = reverse32(ProgType);
+		
+		fread(&ProgOffset, 4, 1, fi);
+		ProgOffset = reverse32(ProgOffset);
+		
+		fread(&VirtualAddr, 4, 1, fi);
+		VirtualAddr = reverse32(VirtualAddr);
 		
 		fseek(fi, file_offset + 0x34+0x10+i*0x20, SEEK_SET);
 		fread(&filesz, 4, 1, fi);
 		
 		if(ProgType==1 && filesz!=0) {
-			fseek(fi, file_offset + 0x38+i*0x20, SEEK_SET);
 			break;
 		}
 	}
 		
 	if(ProgType != 1 || filesz==0) {
-		print_load("Error : ProgOffset not found");
+		print_load("Error : ProgOffset and VirtualAddr not found");
 		fclose(fi);
 		fclose(fp); 
 		fclose(fr);
 		Delete(PnachRest);
 		return FAILED;
 	}
-	
-	fread(&ProgOffset, 4, 1, fi);
-	ProgOffset = reverse32(ProgOffset);
 	
 	while(fgets(line, 128, fp) != NULL) {
 		if( strstr(line, "patch") == NULL && strstr(line, "comment")==NULL && strstr(line, "gametitle")==NULL ) continue;
@@ -28230,18 +28237,19 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 			sscanf(token, "%8lX", &value);
 			new_data = reverse32(value);
 			
-			offset = offset - (EntryPoint - 8 - ProgOffset);
 			offset = offset - (offset >> 28)*0x10000000;
+			offset = offset - (VirtualAddr - ProgOffset);
 			
 			if(offset > size) { 
-				print_load("Error : offset %X > Elf_size %X", offset, size);
+				
+				print_load("Error : offset %X > Elf_size %X | VirtualAddr %X | ProgOffset %X", offset, size, VirtualAddr, ProgOffset);
+				
 				fclose(fr);
 				fclose(fi);
 				fclose(fp);
 				restore_pnach(PnachRest);
 				return FAILED;
 			}
-			
 			
 			fseek(fi, file_offset + offset, SEEK_SET);
 			fread(&old_data, 4, 1, fi);
