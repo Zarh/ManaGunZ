@@ -11393,7 +11393,7 @@ u8 CopyFile_ps3ntfs(char* src, char* dst)
 	char source[1024];
 	char destination[1024];
 	
-	u64 SPLITSIZE = 4000000000ULL;
+	u64 SPLITSIZE = 0xFFFFFFFFULL;
 	
 	strcpy(source, src);
 	strcpy(destination, dst);
@@ -11828,7 +11828,7 @@ u8 CopyJoin(char *src, char *dst)
 		strcpy(copy_file, tmp);
 		
 	// JOIN
-		if(is_usb(dst)==NO) {
+		if(is_FAT32(dst)==NO) {
 			if(is_666XX(src)==YES) return SUCCESS;
 			if(is_66600(src) && is_66600(dst)) dst[strlen(dst)-6]=0;
 		}
@@ -12149,7 +12149,7 @@ void Copy_Game(char *src, char *dst)
 	u8 split666 = is_66600(copy_src);		  
 	
 	if(split666) {
-		if(is_usb(copy_dst)==NO) { 
+		if(is_FAT32(copy_dst)==NO) { 
 			ret = CopyJoin(copy_src, copy_dst);
 			goto end;
 		}
@@ -17688,6 +17688,15 @@ u8 is_cobra(void)
 u8 is_usb(char *file_name)
 {
 	if(strstr(file_name, "/dev_usb")) return YES;
+	return NO;
+}
+
+u8 is_FAT32(char *file_name)
+{
+	if(strstr(file_name, "/dev_usb")) return YES;
+	if(strstr(file_name, "/dev_cf")) return YES;
+	if(strstr(file_name, "/dev_sd")) return YES;
+	if(strstr(file_name, "/dev_ms")) return YES;
 	return NO;
 }
 
@@ -23778,7 +23787,7 @@ void Option(char *item)
 			if(strstr(dst, ".iso.0") || strstr(dst, ".ISO.0")) dst[strlen(dst)-6]=0; 
 			else dst[strlen(dst)-4]=0;
 			
-			u8 ret = extractps3iso(option_sel[0], dst, is_usb(option_sel[0]));
+			u8 ret = extractps3iso(option_sel[0], dst, is_FAT32(option_sel[0]));
 			
 			if(ret==FAILED) show_msg(STR_FAILED); 
 			else show_msg(STR_DONE);
@@ -23799,7 +23808,7 @@ void Option(char *item)
 				sprintf(dst, "%s.ISO", option_sel[i]);
 			}
 			
-			u8 ret = makeps3iso(option_sel[i], dst, is_usb(option_sel[i]));
+			u8 ret = makeps3iso(option_sel[i], dst, is_FAT32(option_sel[i]));
 			
 			if(ret==FAILED) show_msg(STR_FAILED); 
 			else show_msg(STR_DONE);
@@ -29834,7 +29843,7 @@ void init_PS3_GAME_MENU()
 		}
 	}
 	
-	if(is_66600(list_game_path[position])==YES && is_usb(list_game_path[position])==NO) {
+	if(is_66600(list_game_path[position])==YES && is_FAT32(list_game_path[position])==NO) {
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 	
