@@ -1955,6 +1955,7 @@ u8 is_splitted_iso(char *file_name);
 u8 is_66600(char *file_name);
 u8 is_666XX(char *file_name);
 u8 is_usb(char *file_name);
+u8 is_FAT32(char *file_name);
 u64 get_size(char *path, u8 upd_data);
 void poke_IDPS();
 u8 WS_exist();
