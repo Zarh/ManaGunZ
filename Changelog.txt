@@ -58,7 +58,7 @@ COVER PS3       260 x 300
 COVER PSP       200 x 340
 COVER3D PS1     450 x 450 + 450 x 600
 COVER3D PS2	    850 x 570
-COVER3D PS3     950 x 525
+COVER3D PS3     950 x 550
 COVER3D PSP	    800 x 640	
 
 (2) You can choose the color filter with (R1) in settings.

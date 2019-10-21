@@ -3205,7 +3205,7 @@ u8 Get_PICType(u32 w, u32 h)
 	float ratio = (float) w / (float) h ;
 	float ratio_ICON0 = 320.0/176.0;
 	float e = fabs(ratio_ICON0 - ratio);
-	if( e < 0.1 ) return GAMEPIC_ICON0;
+	if( e < 0.02 ) return GAMEPIC_ICON0;
 
 	return GAMEPIC_COVER3D;
 }
