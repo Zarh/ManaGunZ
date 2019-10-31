@@ -1,0 +1,66 @@
+#ifndef __ERROR_H__
+#define __ERROR_H__
+
+#define EAGAIN       0x80010001
+#define EINVAL       0x80010002
+#define ENOSYS       0x80010003
+#define ENOMEM       0x80010004
+#define ESRCH        0x80010005
+#define ENOENT       0x80010006
+#define ENOEXEC      0x80010007
+#define EDEADLK      0x80010008
+#define EPERM        0x80010009
+#define EBUSY        0x8001000A
+#define ETIMEDOUT    0x8001000B
+#define EABORT       0x8001000C
+#define EFAULT       0x8001000D
+#define ESTAT        0x8001000F
+#define EALIGN       0x80010010
+#define EKRESOURCE   0x80010011
+#define EISDIR       0x80010012
+#define ECANCELED    0x80010013
+#define EEXIST       0x80010014
+#define EISCONN      0x80010015
+#define ENOTCONN     0x80010016
+#define EAUTHFAIL    0x80010017
+#define ENOTMSELF    0x80010018
+#define ESYSVER      0x80010019
+#define EAUTHFATAL   0x8001001A
+#define EDOM         0x8001001B
+#define ERANGE       0x8001001C
+#define EILSEQ       0x8001001D
+#define EFPOS        0x8001001E
+#define EINTR        0x8001001F
+#define EFBIG        0x80010020
+#define EMLINK       0x80010021
+#define ENFILE       0x80010022
+#define ENOSPC       0x80010023
+#define ENOTTY       0x80010024
+#define EPIPE        0x80010025
+#define EROFS        0x80010026
+#define ESPIPE       0x80010027
+#define E2BIG        0x80010028
+#define EACCES       0x80010029
+#define EBADF        0x8001002A
+#define EIO          0x8001002B
+#define EMFILE       0x8001002C
+#define ENODEV       0x8001002D
+#define ENOTDIR      0x8001002E
+#define ENXIO        0x8001002F
+#define EXDEV        0x80010030
+#define EBADMSG      0x80010031
+#define EINPROGRESS  0x80010032
+#define EMSGSIZE     0x80010033
+#define ENAMETOOLONG 0x80010034
+#define ENOLCK       0x80010035
+#define ENOTEMPTY    0x80010036
+#define ENOTSUP      0x80010037
+#define EFSSPECIFIC  0x80010038
+#define EOVERFLOW    0x80010039
+#define ENOTMOUNTED  0x8001003A
+#define ENOTSDATA    0x8001003B
+#define ESDKVER      0x8001003C
+#define ENOLICDISC   0x8001003D
+#define ENOLICENT    0x8001003E
+
+#endif

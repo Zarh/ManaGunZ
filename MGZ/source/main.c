@@ -77,6 +77,9 @@
 
 #include "xreg.h"
 
+#include "bd_keys/bd.h"
+#include "erk/dumper.h"
+
 #define NO_UID		-1
 #define SYSTEM_UID	0
 #define NO_GID		-1
@@ -276,9 +279,17 @@ SYS_PROCESS_PARAM(1200, 0x100000);
 
 //************ FIRMWARE	***************
 
+u8 eid_root_key[EID_ROOT_KEY_SIZE];
+
+u64 TOC;
 int firmware = 0;
 u64 SYSCALL_TABLE;
 u64 HV_START_OFFSET;
+u64 HV_START_OFFSET;
+u64 HTAB_OFFSET;
+u64 MMAP_OFFSET1;
+u64 MMAP_OFFSET2;
+u64 SPE_OFFSET;
 u64 OFFSET_FIX;
 u64 OFFSET_2_FIX;
 u64 OFFSET_FIX_3C;
@@ -299,6 +310,8 @@ u64 MAMBA;
 size_t MAMBA_SIZE;
 u64 *MAMBA_LOADER;
 size_t MAMBA_LOADER_SIZE;
+u64 *ERK_DUMPER;
+size_t ERK_DUMPER_SIZE;
 u64 OFFSET_1_IDPS;
 u64 OFFSET_2_IDPS;
 
@@ -451,6 +464,7 @@ static char *UI[4] = {"0", "0", "Win", "0"};
 static char *UI[4] = {"List", "Grid", "XMB", "Flow"};
 #endif //FILEMANAGER
 
+
 static u8 UI_position = XMB;
 static u8 XMB_priority = NO;
 static u8 Show_Help = YES;
@@ -470,6 +484,7 @@ static u32 WAVES_COLOR = WHITE-0xFF+0x20;
 static float filter_x = 700.0;
 static float filter_y = 300.0;
 static u8 root_display = 1;
+static u8 LOG = NO;
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -3200,6 +3215,22 @@ u8 GetInfo_PNG(char * path, u32 *w, u32 *h)
 
 u8 Get_PICType(u32 w, u32 h)
 {
+
+	if( w == 320.0 && h == 176.0 )  return GAMEPIC_ICON0;
+	
+	if( w == 250.0 && h == 250.0 )  return GAMEPIC_COVER2D; // PS1
+	if( w == 450.0 && h == 450.0 )  return GAMEPIC_COVER2D; // PS1 FRONT
+	if( w == 600.0 && h == 450.0 )  return GAMEPIC_COVER3D; // PS1 BACK
+	
+	if( w == 250.0 && h == 350.0 )  return GAMEPIC_COVER2D; // PS2
+	if( w == 850.0 && h == 570.0 )  return GAMEPIC_COVER3D; // PS2
+	
+	if( w == 260.0 && h == 300.0 )  return GAMEPIC_COVER2D; // PS3
+	if( w == 950.0 && h == 550.0 )  return GAMEPIC_COVER3D; // PS3
+	
+	if( w == 200.0 && h == 340.0 )  return GAMEPIC_COVER2D; // PSP
+	if( w == 800.0 && h == 640.0 )  return GAMEPIC_COVER3D; // PSP
+	
 	if( w <= h) return GAMEPIC_COVER2D;
 	
 	float ratio = (float) w / (float) h ;
@@ -19943,6 +19974,7 @@ void read_setting()
 		fread(&FILTER_BG, sizeof(u8), 1, fp);
 		fread(&COLOR_BG, sizeof(u32), 1, fp);
 		fread(&root_display, sizeof(u8), 1, fp);
+		fread(&LOG, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 	}
@@ -20012,6 +20044,7 @@ void write_setting()
 		fwrite(&FILTER_BG, sizeof(u8), 1, fp);
 		fwrite(&COLOR_BG, sizeof(u32), 1, fp);
 		fwrite(&root_display, sizeof(u8), 1, fp);
+		fwrite(&LOG, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 		SetFilePerms(setPath);
@@ -23338,7 +23371,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		sleep(10);
+		//
 		end_loading();
 	} else
 	if(strcmp(item, STR_SYMLINK_SRC) == 0) {
@@ -31915,11 +31948,30 @@ void init_SETTINGS()
 		}
 	}
 	
+	add_title_MENU("System");
+	
+	add_item_MENU("Logging", ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LOG;
+	
+	add_item_MENU("Dump eid_root_key", ITEM_TEXTBOX);
+	
+	add_item_MENU("Dump BD keys", ITEM_TEXTBOX);
+	
+	add_item_MENU("Dump 3Dump.bin", ITEM_TEXTBOX);
+	
+	add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
+	
+	add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
+	
+	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
+	
 }
-
 
 void update_SETTINGS()
 {
+	if(item_is("Logging")) {
+		LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
 	if(item_is(STR_FONT)) {
 		if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
 			if(Load_GAMEPIC_busy) show_msg("Try Later");
@@ -32141,7 +32193,8 @@ void update_SETTINGS()
 				init_SETTINGS();
 			}
 		}
-	}
+	} 
+	
 }
 
 u8 SETTING_R1()
@@ -32172,9 +32225,38 @@ u8 SETTING_R1()
 	
 	return SUCCESS;
 }
-
+		
 u8 SETTINGS_CROSS()
 {
+	if(item_is(STR_DUMP_LV1)) {
+		start_loading();
+		dump_lv1("/dev_hdd0/LV1.BIN");
+		end_loading();
+	} else 
+	if(item_is(STR_DUMP_LV2)) {
+		start_loading();
+		dump_lv2("/dev_hdd0/LV2.BIN");
+		end_loading();
+	} else 
+	if(item_is(STR_DUMP_FLASH)) {
+		start_loading();
+		dump_flash("/dev_hdd0/FLASH.BIN");
+		end_loading();
+	} else 
+	if(item_is("Dump BD keys")) {
+		start_loading();
+		Dump_BD_keys();
+		end_loading();
+	} else 
+	if(item_is("Dump eid_root_key")) {
+		start_loading();
+		mkdir("/dev_hdd0/tmp", 0777);
+		dump_eid_root_key("/dev_hdd0/tmp/eid_root_key");
+		end_loading();
+	} else 
+	if(item_is("Dump 3Dump.bin")) {
+		show_msg("todo");
+	} else 
 	if(item_is(STR_ADJUST)) {
 		Draw_AdjustScreen();
 	} else 

@@ -1262,8 +1262,13 @@ int init_IDPSet()\n\
 #define FAILED 		0\n\
 \n\
 extern int firmware;\n\
+extern u64 TOC;\n\
 extern u64 SYSCALL_TABLE;\n\
 extern u64 HV_START_OFFSET;\n\
+extern u64 HTAB_OFFSET;\n\
+extern u64 MMAP_OFFSET1;\n\
+extern u64 MMAP_OFFSET2;\n\
+extern u64 SPE_OFFSET;\n\
 extern u64 OFFSET_FIX;\n\
 extern u64 OFFSET_2_FIX;\n\
 extern u64 OFFSET_FIX_3C;\n\
@@ -1284,6 +1289,8 @@ extern u64 MAMBA;\n\
 extern size_t MAMBA_SIZE;\n\
 extern u64 *MAMBA_LOADER;\n\
 extern size_t MAMBA_LOADER_SIZE;\n\
+extern u64 *ERK_DUMPER;\n\
+extern size_t ERK_DUMPER_SIZE;\n\
 extern u64 OFFSET_1_IDPS;\n\
 extern u64 OFFSET_2_IDPS;\n\
 \n\
@@ -1306,6 +1313,7 @@ u8 init_fw()\n\
 		
 		sprintf(temp, "%s ", ent->d_name); fputs(temp, fw);
 
+		sprintf(temp, "#include \"erk_dumper_%s_bin.h\"\n", ent->d_name); fputs(temp, data);
 		sprintf(temp, "#include \"payload_sky_%s_bin.h\"\n", ent->d_name); fputs(temp, data);
 		sprintf(temp, "#include \"umount_%s_bin.h\"\n", ent->d_name); fputs(temp, data);
 		sprintf(temp, "#include \"mamba_%s_lz_bin.h\"\n", ent->d_name); fputs(temp, data);
@@ -1357,7 +1365,12 @@ u8 init_fw()\n\
 		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_%s;\n\
 		OFFSET_FIX_LIC = OFFSET_FIX_LIC_%s;\n\
 		OFFSET_FIX_3C = OFFSET_FIX_3C_%s;\n\
+		TOC = TOC_%s;\n\
 		SYSCALL_TABLE = SYSCALL_TABLE_%s;\n\
+		HTAB_OFFSET = HTAB_OFFSET_%s;\n\
+		MMAP_OFFSET1 = MMAP_OFFSET1_%s;\n\
+		MMAP_OFFSET2 = MMAP_OFFSET2_%s;\n\
+		SPE_OFFSET = SPE_OFFSET_%s;\n\
 		LV2MOUNTADDR = LV2MOUNTADDR_%s;\n\
 		OPEN_HOOK = OPEN_HOOK_%s;\n\
 		BASE_ADDR = BASE_ADDR_%s;\n\
@@ -1372,11 +1385,14 @@ u8 init_fw()\n\
 		MAMBA = (u64) mamba_%s_lz_bin;\n\
 		MAMBA_LOADER_SIZE = mamba_loader_%s_bin_size;\n\
 		MAMBA_LOADER = (u64 *) mamba_loader_%s_bin;\n\
+		ERK_DUMPER_SIZE = mamba_loader_%s_bin_size;\n\
+		ERK_DUMPER = (u64 *) erk_dumper_%s_bin;\n\
 		\n\
 	} else",
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
-		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
 		
 		fputs(temp, fwc);
 		
@@ -1704,7 +1720,6 @@ u8 init_fw()\n\
 		
 		memcpy(&TOC, &memLV2[0x3000], 8);
 		TOC = reverse64(TOC);
-		TOC = TOC - 0x8000000000000000ULL; 
 		
 		char D='C';
 		u64 n;
@@ -2246,7 +2261,7 @@ u8 init_fw()\n\
 		sprintf(str, "#define MMAP_OFFSET2_%lld%c        0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, IDPSET_firmware_h);		
 		sprintf(str, "#define SPE_OFFSET_%lld%c          0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, IDPSET_firmware_h);
 		sprintf(str, "#define HV_START_OFFSET_%lld%c     0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, IDPSET_firmware_h);
-		sprintf(str, "#define TOC_OFFSET_%lld%c          0x%llXULL\n", FIRMWARE, D, 0x8000000000000000ULL + TOC); fputs(str, IDPSET_firmware_h);
+		sprintf(str, "#define TOC_OFFSET_%lld%c          0x%llXULL\n", FIRMWARE, D, TOC); fputs(str, IDPSET_firmware_h);
 		sprintf(str, "#define SYSCALL_TABLE_%lld%c       0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, IDPSET_firmware_h);
 		sprintf(str, "#define FW_DATE_OFFSET_%lld%c      0x%llXULL\n", FIRMWARE, D, FW_DATE_OFFSET); fputs(str, IDPSET_firmware_h);
 		sprintf(str, "#define FW_DATE_1_%lld%c           0x%llXULL\n", FIRMWARE, D, FW_DATE_1); fputs(str, IDPSET_firmware_h);
@@ -2255,7 +2270,7 @@ u8 init_fw()\n\
 		sprintf(str, "#define OFFSET_2_IDPS_%lld%c       0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, IDPSET_firmware_h);	
 		
 		sprintf(str, "#ifdef FIRMWARE_%lld%c\n", FIRMWARE, D); fputs(str, IDPSET_symbols_h);
-		sprintf(str, "\t#define KERNEL_TOC			                 0x%06llX\n", TOC); fputs(str, IDPSET_symbols_h);
+		sprintf(str, "\t#define KERNEL_TOC			                 0x%06llX\n", TOC - 0x8000000000000000ULL); fputs(str, IDPSET_symbols_h);
 		sprintf(str, "\t#define KERNEL_SYMBOL_EXTEND_KSTACK          0x%06llX\n", extend_kstack_symbol); fputs(str, IDPSET_symbols_h);
 		sprintf(str, "\t#define KERNEL_SYMBOL_COPY_TO_USER           0x%06llX\n", copy_to_user_symbol); fputs(str, IDPSET_symbols_h);
 		sprintf(str, "\t#define KERNEL_SYMBOL_MEMSET                 0x%06llX\n", memset_symbol); fputs(str, IDPSET_symbols_h);
@@ -2265,8 +2280,13 @@ u8 init_fw()\n\
 		fputs("#endif\n\n", IDPSET_symbols_h);
 		
 		fputs("\n", common);
+		sprintf(str, "#define TOC_%lld%c                   0x%llXULL\n", FIRMWARE, D, TOC); fputs(str, common);
 		sprintf(str, "#define SYSCALL_TABLE_%lld%c         0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, common);
 		sprintf(str, "#define HV_START_OFFSET_%lld%c       0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, common);
+		sprintf(str, "#define HTAB_OFFSET_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_OFFSET); fputs(str, common);
+		sprintf(str, "#define MMAP_OFFSET1_%lld%c          0x%06llX\n", FIRMWARE, D, MMAP_OFFSET1); fputs(str, common);		
+		sprintf(str, "#define MMAP_OFFSET2_%lld%c          0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, common);		
+		sprintf(str, "#define SPE_OFFSET_%lld%c            0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, common);
 		sprintf(str, "#define OFFSET_FIX_%lld%c            0x%06llX\n", FIRMWARE, D, OFFSET_FIX); fputs(str, common);
 		sprintf(str, "#define OFFSET_2_FIX_%lld%c          0x%06llX\n", FIRMWARE, D, OFFSET_2_FIX); fputs(str, common);
 		sprintf(str, "#define OFFSET_FIX_2B17_%lld%c       0x%06llX\n", FIRMWARE, D, OFFSET_FIX_2B17); fputs(str, common);
@@ -3987,6 +4007,7 @@ int main(int argc, char **argv)
 		force_rename("firmware_symbols.h", "../payloads/SKY/firmware_symbols.h");
 		force_rename("symbols.h", "../payloads/MAMBA/lv2/include/lv2/symbols.h");
 		force_rename("ps2symbols.h", "../payloads/PS2_EMU/ps2emu/include/ps2emu/symbols.h");
+		force_rename("IDPSET_symbols.h", "../payloads/erk_dumper/source/symbols.h");
 		force_rename("common.h", "../MGZ/source/common.h");
 		force_rename("data.h", "../MGZ/source/data.h");
 		force_rename("ps2data.h", "../MGZ/source/ps2data.h");

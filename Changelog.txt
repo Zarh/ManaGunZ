@@ -1,4 +1,7 @@
 
+v1.38
+
+
 v1.37
 Add : Support the firmware 4.85C.
 Fix : Issue with syscall 35. It fix the function to mount JB backups with cobra or mamba, among others.

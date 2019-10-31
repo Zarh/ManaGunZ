@@ -197,6 +197,9 @@ update:
 	@mv -f payloads/PS2_EMU/BIN/*.bin  MGZ/data
 	@$(MAKE) -C payloads/rawseciso --no-print-directory
 	@mv -f payloads/rawseciso/rawseciso.sprx $(PKGFILES)/USRDIR/sys/sprx_iso
+	@$(MAKE) -C payloads/erk_dumper/spu --no-print-directory
+	@$(MAKE) -C payloads/erk_dumper/source --no-print-directory
+	@mv -f payloads/erk_dumper/bin/*.bin  MGZ/data
 	
 #---------------------------------------------------------------------------------
 lib:
@@ -204,6 +207,9 @@ lib:
 	@mv -f MGZ/lib/cobra/libcobra.a MGZ/lib/libcobra.a
 	$(MAKE) -C MGZ/lib/libntfs_ext --no-print-directory
 	@mv -f MGZ/lib/libntfs_ext/libntfs_ext.a MGZ/lib/libntfs_ext.a
+	$(MAKE) -C MGZ/lib/OpenSSL --no-print-directory
+	@mv -f MGZ/lib/OpenSSL/libcrypto.a MGZ/lib/libcrypto.a
+	@mv -f MGZ/lib/OpenSSL/libssl.a MGZ/lib/libssl.a
 #---------------------------------------------------------------------------------
 run:
 	ps3load $(OUTPUT).self

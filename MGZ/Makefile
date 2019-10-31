@@ -17,9 +17,9 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/RCO source/RCO/7z source/cxml
+SOURCES		:=	source source/RCO source/RCO/7z source/cxml source/erk source/bd_keys
 DATA		:=	data
-INCLUDES	:=	include lib/libgtfconv/source lib/libapputil/source lib/ImageMagick 
+INCLUDES	:=	include lib/libgtfconv/source lib/libapputil/source lib/ImageMagick lib/OpenSSL/include
 PKGFILES	:=	$(CURDIR)/pkgfiles
 
 ifeq ($(RPCS3), 1)
@@ -50,7 +50,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
 LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
-			../lib/libMagickWand.a ../lib/libMagickCore.a \
+			../lib/libMagickWand.a ../lib/libMagickCore.a ../lib/libcrypto.a \
 			-ltiny3d -lsysmodule -lgcm_sys -lrsx -lsysutil -lio -lm -lfreetype -lz -lhttputil \
 			-lhttp -lssl -lnet -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
 			
