@@ -40,3 +40,6 @@ MGZ/lib/*
 !/MGZ/lib/configure_libiconv
 !/MGZ/lib/configure_ImageMagick
 !/MGZ/lib/*.a
+
+!/MGZ/lib/OpenSSL/
+!/MGZ/lib/configure_OpenSSL
