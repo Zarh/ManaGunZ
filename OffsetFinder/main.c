@@ -1385,7 +1385,7 @@ u8 init_fw()\n\
 		MAMBA = (u64) mamba_%s_lz_bin;\n\
 		MAMBA_LOADER_SIZE = mamba_loader_%s_bin_size;\n\
 		MAMBA_LOADER = (u64 *) mamba_loader_%s_bin;\n\
-		ERK_DUMPER_SIZE = mamba_loader_%s_bin_size;\n\
+		ERK_DUMPER_SIZE = erk_dumper_%s_bin_size;\n\
 		ERK_DUMPER = (u64 *) erk_dumper_%s_bin;\n\
 		\n\
 	} else",

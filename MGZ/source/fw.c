@@ -76,7 +76,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_421C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_421C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_421C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_421C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_421C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_421C_bin;
 		
 	} else
@@ -114,7 +114,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_421D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_421D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_421D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_421D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_421D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_421D_bin;
 		
 	} else
@@ -152,7 +152,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_430C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_430C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_430C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_430C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_430C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_430C_bin;
 		
 	} else
@@ -190,7 +190,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_430D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_430D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_430D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_430D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_430D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_430D_bin;
 		
 	} else
@@ -228,7 +228,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_431C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_431C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_431C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_431C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_431C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_431C_bin;
 		
 	} else
@@ -266,7 +266,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_440C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_440C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_440C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_440C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_440C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_440C_bin;
 		
 	} else
@@ -304,7 +304,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_441C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_441C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_441C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_441C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_441C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_441C_bin;
 		
 	} else
@@ -342,7 +342,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_441D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_441D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_441D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_441D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_441D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_441D_bin;
 		
 	} else
@@ -380,7 +380,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_446C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_446C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_446C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_446C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_446C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_446C_bin;
 		
 	} else
@@ -418,7 +418,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_446D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_446D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_446D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_446D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_446D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_446D_bin;
 		
 	} else
@@ -456,7 +456,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_450C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_450C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_450C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_450C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_450C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_450C_bin;
 		
 	} else
@@ -494,7 +494,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_450D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_450D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_450D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_450D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_450D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_450D_bin;
 		
 	} else
@@ -532,7 +532,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_453C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_453C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_453C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_453C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_453C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_453C_bin;
 		
 	} else
@@ -570,7 +570,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_453D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_453D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_453D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_453D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_453D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_453D_bin;
 		
 	} else
@@ -608,7 +608,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_455C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_455C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_455C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_455C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_455C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_455C_bin;
 		
 	} else
@@ -646,7 +646,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_455D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_455D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_455D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_455D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_455D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_455D_bin;
 		
 	} else
@@ -684,7 +684,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_460C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_460C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_460C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_460C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_460C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_460C_bin;
 		
 	} else
@@ -722,7 +722,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_465C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_465C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_465C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_465C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_465C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_465C_bin;
 		
 	} else
@@ -760,7 +760,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_465D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_465D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_465D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_465D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_465D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_465D_bin;
 		
 	} else
@@ -798,7 +798,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_470C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_470C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_470C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_470C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_470C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_470C_bin;
 		
 	} else
@@ -836,7 +836,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_470D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_470D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_470D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_470D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_470D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_470D_bin;
 		
 	} else
@@ -874,7 +874,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_475C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_475C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_475C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_475C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_475C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_475C_bin;
 		
 	} else
@@ -912,7 +912,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_475D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_475D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_475D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_475D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_475D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_475D_bin;
 		
 	} else
@@ -950,7 +950,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_476C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_476C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_476C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_476C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_476C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_476C_bin;
 		
 	} else
@@ -988,7 +988,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_476D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_476D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_476D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_476D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_476D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_476D_bin;
 		
 	} else
@@ -1026,7 +1026,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_478C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_478C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_478C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_478C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_478C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_478C_bin;
 		
 	} else
@@ -1064,7 +1064,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_478D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_478D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_478D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_478D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_478D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_478D_bin;
 		
 	} else
@@ -1102,7 +1102,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_480C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_480C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_480C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_480C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_480C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_480C_bin;
 		
 	} else
@@ -1140,7 +1140,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_480D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_480D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_480D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_480D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_480D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_480D_bin;
 		
 	} else
@@ -1178,7 +1178,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_481C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_481C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_481C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_481C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_481C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_481C_bin;
 		
 	} else
@@ -1216,7 +1216,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_481D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_481D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_481D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_481D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_481D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_481D_bin;
 		
 	} else
@@ -1254,7 +1254,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_482C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_482C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_482C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_482C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_482C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_482C_bin;
 		
 	} else
@@ -1292,7 +1292,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_482D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_482D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_482D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_482D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_482D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_482D_bin;
 		
 	} else
@@ -1330,7 +1330,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_483C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_483C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_483C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_483C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_483C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_483C_bin;
 		
 	} else
@@ -1368,7 +1368,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_484C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_484C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_484C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_484C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_484C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_484C_bin;
 		
 	} else
@@ -1406,7 +1406,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_484D_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_484D_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_484D_bin;
-		ERK_DUMPER_SIZE = mamba_loader_484D_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_484D_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_484D_bin;
 		
 	} else
@@ -1444,7 +1444,7 @@ u8 init_fw()
 		MAMBA = (u64) mamba_485C_lz_bin;
 		MAMBA_LOADER_SIZE = mamba_loader_485C_bin_size;
 		MAMBA_LOADER = (u64 *) mamba_loader_485C_bin;
-		ERK_DUMPER_SIZE = mamba_loader_485C_bin_size;
+		ERK_DUMPER_SIZE = erk_dumper_485C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_485C_bin;
 		
 	} else {return FAILED;}
