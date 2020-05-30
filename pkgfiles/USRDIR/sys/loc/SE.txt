@@ -12,8 +12,7 @@ STR_DIRS					{Kataloger}
 STR_UNKNOWN					{Okänd}
 STR_FILE					{Fil}
 STR_CANCEL					{Avbryt}
-STR_TURNOFF_YES				{Stäng AV = JA}
-STR_TURNOFF_NO				{Stäng AV = NEJ}
+STR_TURNOFF					{Stäng AV}
 STR_CANCELLED				{Avbrutet}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Total storlek}

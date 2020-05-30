@@ -12,8 +12,7 @@ STR_DIRS					{Dossiers}
 STR_UNKNOWN					{Inconnue}
 STR_FILE					{Fichier}
 STR_CANCEL					{Annuler}
-STR_TURNOFF_YES				{Éteindre = OUI}
-STR_TURNOFF_NO				{Éteindre = NON}
+STR_TURNOFF					{Éteindre}
 STR_CANCELLED				{Annulé}
 STR_UNIT					{octets}
 STR_TOTALSIZE				{Taille totale}

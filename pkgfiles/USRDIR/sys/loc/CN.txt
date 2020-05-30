@@ -1,5 +1,5 @@
-STR_LANGUAGE			{Chinese}
-STR_LANGCODE			{\0x0B}
+STR_LANGUAGE				{Chinese}
+STR_LANGCODE				{\x0B}
 
 STR_LANG					{Language}
 STR_LANG_DESC				{选择你的语言.}
@@ -12,8 +12,7 @@ STR_DIRS					{目录}
 STR_UNKNOWN					{未知}
 STR_FILE					{文件}
 STR_CANCEL					{取消}
-STR_TURNOFF_YES				{旋转 OFF = YES}
-STR_TURNOFF_NO				{旋转 OFF = NO}
+STR_TURNOFF					{关闭}
 STR_CANCELLED				{注销}
 STR_UNIT					{字节}
 STR_TOTALSIZE				{总 大小}

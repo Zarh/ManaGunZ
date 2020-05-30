@@ -12,8 +12,7 @@ STR_DIRS					{Directories}
 STR_UNKNOWN					{Sconosciuto}
 STR_FILE					{File}
 STR_CANCEL					{Cancella}
-STR_TURNOFF_YES				{Spegni = SI}
-STR_TURNOFF_NO				{Spegni = NO}
+STR_TURNOFF					{Spegni}
 STR_CANCELLED				{Cancellato}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Dimensione totale}

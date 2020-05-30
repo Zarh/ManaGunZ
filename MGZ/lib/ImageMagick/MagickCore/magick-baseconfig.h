@@ -18,7 +18,9 @@
 /* #undef BZLIB_DELEGATE */
 
 /* Define if you have CAIRO library */
-/* #undef CAIRO_DELEGATE */
+#ifndef MAGICKCORE_CAIRO_DELEGATE
+#define MAGICKCORE_CAIRO_DELEGATE 1
+#endif
 
 /* permit enciphering and deciphering image pixels */
 #ifndef MAGICKCORE_CIPHER_SUPPORT
@@ -83,7 +85,9 @@
 /* #undef FPX_DELEGATE */
 
 /* Define if you have FREETYPE library */
-/* #undef FREETYPE_DELEGATE */
+#ifndef MAGICKCORE_FREETYPE_DELEGATE
+#define MAGICKCORE_FREETYPE_DELEGATE 1
+#endif
 
 /* Define if you have Ghostscript library or framework */
 /* #undef GS_DELEGATE */
@@ -1135,7 +1139,7 @@
 
 /* Number of bits in a pixel Quantum (8/16/32/64) */
 #ifndef MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H
-#define MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H 8
+#define MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H 16
 #endif
 
 /* Define if you have RAQM library */
@@ -1348,7 +1352,7 @@
 
 /* Location of X11 configure files */
 #ifndef MAGICKCORE_X11_CONFIGURE_PATH
-#define MAGICKCORE_X11_CONFIGURE_PATH "/home/Zar/managunz/MGZ/lib/ImageMagick/winpath.sh: path "=" is not mounted"
+#define MAGICKCORE_X11_CONFIGURE_PATH "/home/Zar/managunz/mgz/lib/ImageMagick/winpath.sh: path "=" is not mounted"
 #endif
 
 /* Define if you have X11 library */

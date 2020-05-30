@@ -11,19 +11,25 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#include <lv2/sysfs.h>
+#include <getopt.h>
+
 #include <sys/file.h>
+#include <sys/memory.h>
+#include <sys/thread.h>
 #include <sys/process.h>
+#include <sys/systime.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include <lv2/sysfs.h>
 #include <lv2/process.h>
 #include <ppu-lv2.h>
 #include <ppu-types.h>
 #include <io/pad.h>
 #include <tiny3d.h>
-#include <sys/memory.h>
 #include <ft2build.h>
 #include <freetype/freetype.h> 
 #include <freetype/ftglyph.h>
-#include <sys/thread.h>
 #include <pngdec/pngdec.h>
 #include <jpgdec/jpgdec.h>
 #include <sysmodule/sysmodule.h>
@@ -35,14 +41,30 @@
 
 #include <zip.h>
 
-#include <sys/systime.h>
-
 #include <net/net.h>
 #include <http/http.h>
 #include <http/https.h>
 #include <ssl/ssl.h>
 
+#include "types.h"
+#include "config.h"
+#include "aes.h"
+#include "util.h"
+#include "keys.h"
+#include "sce.h"
+#include "np.h"
+#include "self.h"
+#include "rvk.h"
+#include "frontend.h"
+
 #include <MagickWand/MagickWand.h>
+
+#include <webp/decode.h>
+#include <tiffio.h>
+
+#include "tga_reader.h"
+#include "dds_reader.h"
+#include "makepng.h"
 
 #include "cobra.h"
 #include "ntfs.h"
@@ -77,7 +99,7 @@
 
 #include "xreg.h"
 
-#include "bd_keys/bd.h"
+#include "bd/bd.h"
 #include "erk/dumper.h"
 
 #define NO_UID		-1
@@ -96,8 +118,6 @@
 #define OFF			0
 #define FOUND		1
 #define NOT_FOUND	0
-#define UP			1
-#define LOW			0
 #define VERTICAL	0
 #define HORIZONTAL	1
 #define STATIC		0
@@ -115,58 +135,64 @@
 #define IRIS		1
 #define MM			2
 
-#define _EXIST		1
-#define _NOT_EXIST	0
-#define _FILE		1
-#define _DIRECTORY	2
-#define _PNG		3
-#define _JPG		4
-#define _SELF		5
-#define _ELF		6
-#define _EBOOT_BIN	7
-#define _EBOOT_ELF	8
-#define _SPRX		9
-#define _PRX		10
-#define _XML		11
-#define _PKG		12
-#define _IRD		13
-#define _P3T		14
-#define _THM		15
-#define	_RIF		16
-#define _RAP		17
-#define _EDAT		18
-#define _PFD		19
-#define _MP4		20
-#define _SFO		21
-#define _TXT		22
-#define _TRP		23
-#define _RCO		24
-#define _CSO		25
-#define _ISO		26
-#define _ISO_PS3	27
-#define _ISO_PS2	28
-#define _ISO_PS1	29
-#define _ISO_PSP	30
-#define _JB_PS3		31
-#define _JB_PS2		32
-#define _JB_PS1		33
-#define _JB_PSP		34
-#define _GTF		35
-#define _DDS		36
-#define _RAF		37
-#define _JSX		38
-#define _QRC		39
-#define _VAG		40
-#define _JS			41
-#define _LOG		42
-#define _INI		43
-#define _NFO		44
-#define _MD5		45
-#define _SHA1		46
-#define _XREG		47
-#define _ZIP		48
-#define _66600		49
-#define _TTF		50
+#define _NOT_EXIST		0
+#define	_EXIST			1
+#define _FILE			1
+#define _DIRECTORY		2
+
+#define UNK				0
+#define JB_PS3			1
+#define JB_PS2			2
+#define	JB_PS1			3
+#define	JB_PSP			4				
+#define	ISO_PS3			5
+#define	ISO_PS2			6
+#define	ISO_PS1			7
+#define	ISO_PSP			8
+
+
+#define _SDIR			".mgz_sdir"	 // simple directory
+#define _SFILE			".mgz_sfile" // simple file (without extension)
+#define _JB_PS3			".mgz_jbps3"
+#define _JB_PS2			".mgz_jbps2"
+#define	_JB_PS1			".mgz_jbps1"
+#define	_JB_PSP			".mgz_jbps2"
+#define	_ISO			".mgz_iso"
+#define	_ISO_PS3		".mgz_isops3"
+#define	_ISO_PS2		".mgz_isops2"
+#define	_ISO_PS1		".mgz_isops1"
+#define	_ISO_PSP		".mgz_isopsp"
+
+#define	_EBOOT_BIN		"eboot.bin"
+#define	_EBOOT_ELF		"eboot.elf"
+#define	_XREG			"xRegistry.sys"
+
+
+char *TXTViewerSupport[] = {".txt", ".xml", ".js", ".md5", ".sha1", ".log", ".ini", ".nfo"};
+
+char *PictureViewerSupport[] = {
+								".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi",
+								".png",
+								".gif",
+								".dds", ".gtf", ".gim",
+								".bmp", ".dib",
+								".webp",
+								".tif", ".tiff",
+								"tga",
+								".raw", ".arw", ".cr2", ".nrw", ".k25",
+								//".jp2", "jpc", ".j2k", ".jpf", ".jpx", ".jpm", ".mj2",
+								//".svg", ".svgz",
+								".psd",
+								//".pspimage", ".psp"
+								//".ico", ".cur",
+								//".lbm", ".eps",
+								//".ttf",
+								//".pam",
+								".rgba", ".rgb",
+								".pcx", ".pgm", ".pbm", ".pnm", ".dcm", ".icon", ".ppm", ".xpm"
+};
+
+#define ArrayCount(x) (sizeof(x)/sizeof(x[0]))
 
 #define NONE		0
 #define BDMIRROR	1
@@ -277,6 +303,39 @@ typedef struct
 
 SYS_PROCESS_PARAM(1200, 0x100000);
 
+//************ SCETOOL ****************
+
+#define ARG_NULL no_argument
+#define ARG_NONE no_argument
+#define ARG_REQ required_argument
+#define ARG_OPT optional_argument
+
+BOOL _verbose = FALSE;
+BOOL _raw = FALSE;
+static BOOL _decrypt_file = FALSE;
+static BOOL _encrypt_file = FALSE;
+char *_template = NULL;
+char *_file_type = NULL;
+char *_compress_data = NULL;
+char *_skip_sections = NULL;
+char *_key_rev = NULL;
+char *_meta_info = NULL;
+char *_keyset = NULL;
+char *_auth_id = NULL;
+char *_vendor_id = NULL;
+char *_self_type = NULL;
+char *_app_version = NULL;
+char *_fw_version = NULL;
+char *_add_shdrs = NULL;
+char *_ctrl_flags = NULL;
+char *_cap_flags = NULL;
+char *_license_type = NULL;
+char *_app_type = NULL;
+char *_content_id = NULL;
+char *_klicensee = NULL;
+char *_real_fname = NULL;
+char *_add_sig = NULL;
+
 //************ FIRMWARE	***************
 
 u8 eid_root_key[EID_ROOT_KEY_SIZE];
@@ -340,7 +399,7 @@ static u8 max_mapped=0;
 
 //****** Thread Loading *************
 
-static u8 loading = NO;
+static s8 loading = NO;
 static char loading_log[20][255];
 static char head_title[128];
 int64_t prog_bar1_value=-1;
@@ -485,6 +544,7 @@ static float filter_x = 700.0;
 static float filter_y = 300.0;
 static u8 root_display = 1;
 static u8 LOG = NO;
+static u8 DEBUG = NO;
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -582,15 +642,6 @@ static u8 gui_called = NO;
 
 //************** PICTURE ******************************
 
-typedef struct
-{
-	void *bmp_out;
-
-	u32 pitch;
-	u32 width;
-	u32 height;
-} imgData; // pngData = jpgData = imgData
-
 imgData COVER;
 static u32 COVER_offset;
 
@@ -600,84 +651,87 @@ char TMP_PIC_path[255];
 
 // *************** PICTURE ***************************
 
-#define ALL				0
-#define UP				1
-#define LEFT			2
-#define DOWN			3
-#define RIGHT			4
-#define SELECT			5
-#define START			6
-#define SQUARE			7
-#define CROSS			8
-#define CIRCLE			9
-#define TRIANGLE		10
-#define NOT				11
-#define L1				12
-#define L2				13
-#define L3				14
-#define L				15
-#define R1				16
-#define R2				17
-#define R3				18
-#define R				19
-#define DEFAULT			20
-#define DEFAULT_ISO		21
-#define DEFAULT_JB		22
-#define TAG				23
-#define PS1_CASE		24
-#define PS2_CASE		25
-#define PS3_CASE		26
-#define PSP_CASE		27
-#define FOLDER			28
-#define FILES			29
-#define GAME			30
-#define DISC			31
-#define DISC_PS1		32
-#define DISC_PS2		33
-#define DISC_PS3		34
-#define DISC_PSP		35
-#define DISC_VIDEO		36
-#define DISC_DATA		37
-#define CF				38
-#define FLASH			39
-#define HDD				40
-#define MS				41
-#define SD				42
-#define USB				43
-#define VIRTUAL			44
-#define LOCK			45
-#define BR_LOGO			46
-#define PS_LOGO			47
-#define TOGGLE_ON		48
-#define TOGGLE_OFF		49
-#define CHECKBOX_FALSE  50
-#define CHECKBOX_TRUE	51
-#define CLOSE			52
-#define MAXIMIZE		53
-#define MINIMIZE		54
-#define FRAME			55
-#define HEADER			56
-#define COLUMN_HEADER	57
-#define CONTENT			58
-#define CURSOR			59
-#define CURSOR_D1		60
-#define CURSOR_D2		61
-#define CURSOR_H		62
-#define CURSOR_V		63
-#define APP_HOME		64
-#define HOST_ROOT		65
+enum 
+{
+	ALL,
+	UP,
+	LEFT,
+	DOWN,
+	RIGHT,
+	SELECT,
+	START,
+	SQUARE,
+	CROSS,
+	CIRCLE,
+	TRIANGLE,
+	NOT,
+	L1,
+	L2,
+	L3,
+	L,
+	R1,
+	R2,
+	R3,
+	R,
+	DEFAULT,
+	DEFAULT_ISO,
+	DEFAULT_JB,
+	TAG,
+	PS1_CASE,
+	PS2_CASE,
+	PS3_CASE,
+	PSP_CASE,
+	FOLDER,
+	FILES,
+	GAME,
+	DISC,
+	DISC_PS1,
+	DISC_PS2,
+	DISC_PS3,
+	DISC_PSP,
+	DISC_VIDEO,
+	DISC_DATA,
+	CF,
+	FLASH,
+	HDD,
+	MS,
+	SD,
+	USB,
+	VIRTUAL,
+	LOCK,
+	BR_LOGO,
+	PS_LOGO,
+	TOGGLE_ON,
+	TOGGLE_OFF,
+	CHECKBOX_FALSE,
+	CHECKBOX_TRUE,
+	CLOSE,
+	MAXIMIZE,
+	MINIMIZE,
+	FRAME,
+	HEADER,
+	COLUMN_HEADER,
+	CONTENT,
+	CURSOR,
+	CURSOR_D1,
+	CURSOR_D2,
+	CURSOR_H,
+	CURSOR_V,
+	APP_HOME,
+	HOST_ROOT,
 
 // with color filter
-#define NOTIF			66
-#define BOXHEAD			67
-#define	BOXBODY			68
-#define SIDEBAR			69
-#define BGS				70
-#define BGF				71
+	NOTIF,
+	BOXHEAD,
+	BOXBODY,
+	SIDEBAR,
+	BGS,
+	BGF,
 
-#define PICTURE_NUMBER	72
+	PICTURE_NUMBER,
+};
 
-#define _BG_			100
+#define _BG_			255
 
 char *PICTURE_NAME[PICTURE_NUMBER] = { "ALL", 
 										"UP", "LEFT", "DOWN", "RIGHT",
@@ -902,7 +956,7 @@ static char **window_path=NULL;
 static char **window_lastpath=NULL;
 static char ***window_content_Name=NULL;
 static u64 **window_content_Size=NULL;
-static u8 **window_content_Type=NULL;
+static char ***window_content_Type=NULL;
 static u8 **window_content_Selected=NULL;
 static u8 *window_sort=NULL;
 static float *window_w_col_size=NULL;
@@ -1014,22 +1068,22 @@ char *txt_viewer_path=NULL;
 
 //************************ COPY ************************
 
-static char copy_log[10][128];
 static char copy_file[128];
 static char copy_src[128];
 static char copy_dst[128];
 
 static u64 copy_current_size;
-static u64 total_size;
-static u64 file_copy_prog_bar;
-static u8 gathering;
-
-static int nb_file = 0;
-static int nb_directory = 0;
-
+static u64 copy_file_prog_bar;
 static u8 copy_flag=NO;
 static u8 copy_cancel=NO;
+
+
+static u8 gathering=NO;
+static s64 gathering_nb_file = 0;
+static s64 gathering_nb_directory = 0;
 static u8 gathering_cancel=NO;
+static u64 gathering_total_size;
+
 
 //************************** PAD ************************
 
@@ -1056,6 +1110,7 @@ u8 filter_position=0;
 
 // ************** FILE MANAGER : Picture Viewer ***************
 
+//char picture_viewer_info[2048];
 static u8 picture_viewer_activ = NO;
 
 //***************** MENU *************************************
@@ -1231,10 +1286,8 @@ static char *STR_FILE=NULL;
 #define STR_FILE_DEFAULT					"File"
 static char *STR_CANCEL=NULL;
 #define STR_CANCEL_DEFAULT					"Cancel"
-static char *STR_TURNOFF_YES=NULL;
-#define STR_TURNOFF_YES_DEFAULT				"Turn OFF = YES"
-static char *STR_TURNOFF_NO=NULL;
-#define STR_TURNOFF_NO_DEFAULT				"Turn OFF = NO"
+static char *STR_TURNOFF=NULL;
+#define STR_TURNOFF_DEFAULT					"Turn OFF"
 static char *STR_CANCELLED=NULL;
 #define STR_CANCELLED_DEFAULT				"Cancelled"
 static char *STR_UNIT=NULL;
@@ -1950,7 +2003,8 @@ void open_SFO_viewer(char *path);
 void Draw_FileExplorer();
 void show_msg(char *str);
 char *LoadFileFromISO(u8 prog, char *path, char *filename, int *size);
-u8 get_ext(char *file);
+char *get_ext(char *file);
+u8 get_platform(char *file);
 void read_fav();
 int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color);
 u32 Get_PS2CRC();
@@ -1971,7 +2025,7 @@ u8 is_66600(char *file_name);
 u8 is_666XX(char *file_name);
 u8 is_usb(char *file_name);
 u8 is_FAT32(char *file_name);
-u64 get_size(char *path, u8 upd_data);
+u64 get_size(char *path);
 void poke_IDPS();
 u8 WS_exist();
 u8 Pnach_exist();
@@ -2010,7 +2064,10 @@ u8 GetBLUE(u32 rgba);
 u8 GetALPHA(u32 rgba);
 u8 is_float_window();
 int move_bdemubackup_to_origin(char *device_path);
-
+s8 bmpLoadFromBuffer(const void *buffer, int file_size, imgData *data);
+s8 MagickLoadFromBuffer(const void *buffer, int file_size, imgData *data);
+u8 make_png(char *outfile, imgData data);
+char *GetTimeStr(u64 secTime);
 
 void Draw_MENU();
 
@@ -2205,9 +2262,8 @@ void Init_Graph()
 		(float) ((sy - sy * psy) / 2.0), 
 		(float) ((sx * psx) / X_MAX),	// 2D scale
 		(float) ((sy * psy) / Y_MAX),
-		(float) ((sx / X_MAX) * psx),  // 3D scale
-		
-		(float) ((sy / Y_MAX) * psy));
+		(float) ((sx * psx) / X_MAX),  // 3D scale
+		(float) ((sy * psy) / Y_MAX));
 }
 
 void adjust_screen()
@@ -2222,8 +2278,8 @@ void adjust_screen()
 		(float) ((sy - sy * psy) / 2.0), 
 		(float) ((sx * psx) / X_MAX),	// 2D scale
 		(float) ((sy * psy) / Y_MAX),
-		(float) ((sx / X_MAX) * psx),  // 3D scale
-		(float) ((sy / Y_MAX) * psy));
+		(float) ((sx * psx) / X_MAX),  // 3D scale
+		(float) ((sy * psy) / Y_MAX));
 }
 
 //*******************************************************
@@ -2371,7 +2427,7 @@ void ScanFont(char *directory)
 		if(dir->d_type & DT_DIR) {
 			ScanFont(temp);
 		}
-		if(get_ext(temp) != _TTF) continue;	
+		if(strcasecmp(get_ext(temp), ".ttf")) continue;	
 				
 		FontNumber++;
 		FontName[FontNumber] = get_ttf_name(temp);
@@ -2711,8 +2767,7 @@ u8 can_opendir(char *path)
 	return YES;
 }
 
-
-char *GetExtention(char *path)
+char *GetExtension(char *path)
 {
     int n = strlen(path);
     int m = n;
@@ -2729,18 +2784,364 @@ char *GetExtention(char *path)
     return &path[n];
 }
 
-void RemoveExtention(char *path)
+void RemoveExtension(char *path)
 {
-    char *extention = GetExtention(path);
+    char *extension = GetExtension(path);
 	
-    int le = strlen(extention);
+    int le = strlen(extension);
     int lp = strlen(path);
     
     while(le>0) {path[lp-le]=0; le--;}
 }
 
+s8 ddsLoadFromBuffer(const void *buffer, int file_size, imgData *data)
+{
+	print_load("ddsRead");
+	(*data).bmp_out = ddsRead(buffer, DDS_READER_ARGB, 0);
+	if( (*data).bmp_out == NULL) return -1;
+	
+	print_load("ddsGetWidth");
+	(*data).width = ddsGetWidth(buffer);
+	print_load("ddsGetHeight");
+	(*data).height = ddsGetHeight(buffer);
+	print_load("ddsGetPitch");
+	(*data).pitch = ddsGetWidth(buffer)*4;
+	
+	return 0;
+}
+
+s8 ddsLoadFromFile(char *imgPath, imgData *data)
+{
+	int file_size;
+
+	u8 *buffer = (u8 *) LoadFile(imgPath, &file_size);
+	if( buffer == NULL) return -1;
+	
+	int ret = ddsLoadFromBuffer((const void *) buffer, file_size, data);
+	
+	free(buffer);
+	
+	return ret;
+}
+
+s8 tgaLoadFromBuffer(const void *buffer, int file_size, imgData *data)
+{
+	print_load("tgaRead");
+	(*data).bmp_out = tgaRead(buffer, TGA_READER_ARGB);
+	if( (*data).bmp_out == NULL) return -1;
+	
+	print_load("tgaGetWidth");
+	(*data).width = tgaGetWidth(buffer);
+	print_load("tgaGetHeight");
+	(*data).height = tgaGetHeight(buffer);
+	print_load("tgaGetPitch");
+	(*data).pitch = tgaGetWidth(buffer)*4;
+	
+	return 0;
+}
+
+
+s8 tgaLoadFromFile(char *imgPath, imgData *data)
+{
+	int file_size;
+
+	u8 *buffer = (u8 *) LoadFile(imgPath, &file_size);
+	if( buffer == NULL) return -1;
+	
+	int ret = tgaLoadFromBuffer((const void *) buffer, file_size, data);
+	
+	free(buffer);
+	
+	return ret;
+}
+
+s8 gtfLoadFromBuffer(const void *buffer, int file_size, imgData *data)
+{
+	
+	uint8_t *dds_buffer=NULL;
+	uint32_t dds_size=0;
+	
+	gtf2ddsFromBuffer((uint8_t *) buffer, (uint32_t) file_size, &dds_buffer, &dds_size,  0, 0);
+	
+	if( dds_size == 0 || dds_buffer == NULL ) return -1;
+	
+	int ret = ddsLoadFromBuffer((const void *) dds_buffer, dds_size, data);
+	
+	free(dds_buffer);
+	
+	return ret;
+}
+
+// (https://www.psdevwiki.com/ps3/Graphic_Image_Map_(GIM))
+typedef struct      
+{
+	u32 signature; // PS3 : ".GIM"
+	u32 version;
+	u32 format_style;
+	u32 unk;  
+} gim_file_header;
+
+
+// block_id
+#define GIM_BLOCK_ROOT     2
+#define GIM_BLOCK_PICTURE  3
+#define GIM_BLOCK_IMAGE    4
+#define GIM_BLOCK_PALETTE  5
+#define GIM_BLOCK_FILEINFO 0xFF
+
+typedef struct
+{
+	u16 id;
+	u16 unk;
+	u32 size;       
+	u32	header_next;       
+	u32 data_offset;     
+} gim_block_header;
+ 
+#define GIM_IMAGE_FORMAT_RGBA5650 		0x00 	//(16 bit no alpha)
+#define GIM_IMAGE_FORMAT_RGBA5551 		0x01 	//(16 bit sharp alpha)
+#define GIM_IMAGE_FORMAT_RGBA4444 		0x02 	//(16 bit gradient alpha)
+#define GIM_IMAGE_FORMAT_RGBA8888 		0x03 	//(32 bit gradient alpha)
+#define GIM_IMAGE_FORMAT_INDEX4 		0x04 	//(16 colors)
+#define GIM_IMAGE_FORMAT_INDEX8 		0x05 	//(256 colors)
+#define GIM_IMAGE_FORMAT_INDEX16 		0x06 	//(16 colors with alpha ?)
+#define GIM_IMAGE_FORMAT_INDEX32 		0x07 	//(256 colors with alpha ?)
+#define GIM_IMAGE_FORMAT_DXT1 			0x08 	//(no alpha)
+#define GIM_IMAGE_FORMAT_DXT3 			0x09 	//(sharp alpha)
+#define GIM_IMAGE_FORMAT_DXT5 			0x0A 	//(gradient alpha)
+#define GIM_IMAGE_FORMAT_DXT1EXT	    0x108
+#define GIM_IMAGE_FORMAT_DXT3EXT	    0x109
+#define GIM_IMAGE_FORMAT_DXT5EXT		0x10A
+
+#define GIM_PIXEL_ORDER_NORMAL			0x0
+#define GIM_PIXEL_ORDER_FAST			0x1
+
+typedef struct
+{
+	u16 data_lenght;
+	u16 b45_unk1;
+	u16 image_format;       
+	u16	pixel_order;       
+	u16 width;
+	u16 height;
+	u16 bpp;
+	u16 pitch_align;
+	u16 height_align;
+	u16 b45_unk2;
+	u32 b45_unk3;
+	u32 index_start; // relative offset of block_image_index
+	u32 pixels_start;
+	u32 pixels_end;
+	u32 plane_mask;
+	u16 level_type;
+	u16 level_count;
+	u16 frame_type;
+	u16 frame_count;
+} gim_block_image_data;
+
+u8 get_pad(u32 align, u32 size)
+{
+	return (~size + 1) & (align - 1);
+}
+
+s8 gimLoadFromBuffer(const void *buffer, int file_size, imgData *data)
+{
+	u8 *buff = (u8 *) buffer;
+	
+	//print_load("gim signature");
+	gim_file_header file_header;
+	memcpy(&file_header, buff, sizeof(gim_file_header));
+	if(file_header.signature != 0x2E47494D ) {
+		//print_load("bad magic gimLoadFromBuffer");
+		return -1;
+	}
+	
+	gim_block_header block;
+	
+	u32 pos = sizeof(gim_file_header);
+	
+	//print_load("Search GIM_BLOCK_IMAGE");
+		
+	while(1) {	
+		memcpy(&block, buff + pos, sizeof(gim_block_header));
+		
+		//print_load("* block offset 0x%X, block.id 0x%X", pos, block.id);
+		if( block.id == GIM_BLOCK_IMAGE ) {
+			pos += block.data_offset;
+			break;
+		}
+		pos += block.header_next;
+		
+		if( pos > file_size) {
+			//print_load("GIM_BLOCK_IMAGE not found");
+			return -1;
+		}
+	}
+	
+	gim_block_image_data image_data;
+	memcpy(&image_data, buff + pos, sizeof(gim_block_image_data));
+	
+	if( image_data.image_format != GIM_IMAGE_FORMAT_RGBA8888) {
+		//print_load("Unsupported format %X", image_data.image_format);
+		return -1;
+	}
+	/*
+	if( DEBUG ) {
+		sprintf(picture_viewer_info,
+		"data_lenght   0x%02X\n"
+		"b45_unk1      0x%04X\n"
+		"image_format; 0x%04X\n"
+		"pixel_order;  0x%04X\n"     
+		"width;        0x%04X\n"
+		"height;       0x%04X\n"
+		"bpp           0x%04X\n"
+		"pitch_align;  0x%04X\n"
+		"height_align; 0x%04X\n"
+		"b45_unk2      0x%04X\n"
+		"b45_unk3      0x%08X\n"
+		"index_start;  0x%08X\n"
+		"pixels_start; 0x%08X\n"
+		"pixels_end;   0x%08X\n"
+		"plane_mask;   0x%08X\n"
+		"level_type;   0x%04X\n"
+		"level_count;  0x%04X\n"
+		"frame_type;   0x%04X\n"
+		"frame_count;  0x%04X\n",
+		image_data.data_lenght,
+		image_data.b45_unk1,
+		image_data.image_format,
+		image_data.pixel_order,
+		image_data.width,   
+		image_data.height,     
+		image_data.bpp,        
+		image_data.pitch_align,
+		image_data.height_align,
+		image_data.b45_unk2,
+		image_data.b45_unk3,
+		image_data.index_start,
+		image_data.pixels_start,
+		image_data.pixels_end, 
+		image_data.plane_mask, 
+		image_data.level_type, 
+		image_data.level_count,
+		image_data.frame_type,
+		image_data.frame_count);
+	}
+	*/
+	
+	u8 *rgba = buff + pos + image_data.pixels_start;
+		
+	(*data).width=image_data.width;
+	(*data).height=image_data.height;
+	(*data).pitch=(*data).width*4;
+	
+	(*data).bmp_out = (u8 *) malloc((*data).pitch * (*data).height);
+	if( (*data).bmp_out == NULL) {
+		print_load("malloc gimLoadFromBuffer");
+		return -1;
+	}
+	
+	u8 pad = get_pad(image_data.pitch_align, image_data.width * image_data.bpp/8);
+	
+	s64 i = 0;
+	s64 k = 0;
+	s64 j = 0;
+	for (i = 0; i<(*data).height ; i++) {
+		k=i*(*data).width;
+		for (j=k; j < k+(*data).width; j++) {	
+			u8 ARGB[4]={0};
+			ARGB[0] = rgba[j*4 + i*pad + 3];
+			ARGB[1] = rgba[j*4 + i*pad   ];
+			ARGB[2] = rgba[j*4 + i*pad + 1];
+			ARGB[3] = rgba[j*4 + i*pad + 2];
+			memcpy((*data).bmp_out + j*4, ARGB, 4);
+		}
+	}
+	
+	return 0;
+}
+
+
+s8 webpLoadFromBuffer(const void *buffer, int file_size, imgData *data)
+{
+
+	int height, width;
+	(*data).bmp_out = WebPDecodeARGB((const uint8_t*) buffer, (size_t) file_size, &width, &height);
+	if((*data).bmp_out==NULL) return -1;
+
+	
+	(*data).width = width;
+	(*data).height= height;
+	(*data).pitch = width*4;
+	
+	
+	return 0;
+}
+
+s8 tiffLoadFromFile(char *file, imgData *data)
+{
+	print_load("TIFFOpen");
+	TIFF* tif = TIFFOpen(file, "r");
+	if( tif ==  NULL) return -1;
+	
+	u8 *abgr=NULL;
+	
+	print_load("TIFFGetField width");
+	if( TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &(*data).width) != 1) goto error;
+    print_load("TIFFGetField height");
+	if( TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &(*data).height) != 1) goto error;
+	
+	(*data).pitch = (*data).width*4;
+	
+	print_load("malloc abgr");
+	abgr = (u8 *) malloc( (*data).pitch * (*data).height);
+	if(!abgr) goto error;
+	memset(abgr, 0, (*data).pitch * (*data).height);
+	
+	print_load("TIFFReadRGBAImageOriented");
+	// it's ABGR !
+	if ( TIFFReadRGBAImageOriented(tif, (*data).width, (*data).height, (uint32_t *) abgr, ORIENTATION_TOPLEFT, 0) != 1) goto error;
+	
+	print_load("malloc bmp_out");
+	(*data).bmp_out = (u8 *) malloc((*data).pitch * (*data).height);
+	if(!(*data).bmp_out) goto error;
+	
+	print_load("loop");
+	s64 i = 0;
+	s64 k = 0;
+	s64 j = 0;
+	for (i = 0; i<(*data).height ; i++) {
+		k=i*(*data).width;
+		for (j=k; j < k+(*data).width; j++) {	
+			u8 ARGB[4]={0};
+			ARGB[0] = abgr[j*4 + 0];
+			ARGB[1] = abgr[j*4 + 3];
+			ARGB[2] = abgr[j*4 + 2];
+			ARGB[3] = abgr[j*4 + 1];
+			memcpy((*data).bmp_out + j*4, ARGB, 4);
+		}
+	}
+	
+	print_load("FREE");
+	FREE(abgr);
+	print_load("TIFFClose");
+	if(tif) TIFFClose(tif);
+	
+	return 0;
+	
+error:
+	
+	print_load("error");
+	FREE((*data).bmp_out)
+	FREE(abgr);
+	if(tif) TIFFClose(tif);
+	return -1;
+}
+
 u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 {
+	//memset(picture_viewer_info, 0, sizeof(picture_viewer_info));
+	
 	int file_size = 0;
 	
 	out->bmp_out = NULL;
@@ -2748,23 +3149,51 @@ u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 	char *buff = LoadFile((char *) imgPath, &file_size);
 	if(buff==NULL) return FAILED;
 	
+	int ret=-1;
+	imgData tp;
+	char *ext = get_ext(imgPath);
+	if( !strcasecmp(ext, ".png") ) {
+		ret = pngLoadFromBuffer((const void *) buff, file_size, (pngData *) &tp);
+	} else 
+	if( !strcasecmp(ext, ".jpg") || !strcasecmp(ext, ".jpeg") || !strcasecmp(ext, ".jpe")) {
+		ret = jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) &tp);
+	} else 
+	if( !strcasecmp(ext, ".dds") ) {
+		ret = ddsLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	} else 
+	if( !strcasecmp(ext, ".tga") ) {
+		ret = tgaLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	} else 
+	if( !strcasecmp(ext, ".bmp") ) {
+		ret = bmpLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	} else
+	if( !strcasecmp(ext, ".gim") ) {
+		ret = gimLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	} else 
+	if( !strcasecmp(ext, ".webp") ) {
+		ret = webpLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	} else
+	if( !strcasecmp(ext, ".gtf")) {
+		ret = gtfLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	} else
+	if( !strcasecmp(ext, ".tiff") || !strcasecmp(ext, ".tif") ) {
+		ret = tiffLoadFromFile(imgPath, (imgData *) &tp);
+	}
+	
+	if( ret != 0 ) {
+		ret = MagickLoadFromBuffer((const void *) buff, file_size, (imgData *) &tp);
+	}
+	
+	FREE(buff);
+	
+	if( ret != 0 ) return FAILED;
+	
+	out->height = tp.height;
+	out->width = tp.width;
+	out->pitch = tp.pitch;
+	out->bmp_out = (u8 *) malloc(tp.pitch*tp.height+1);
+	
 	if( gray ) {
-		imgData tp;
-		
-		if( get_ext(imgPath) == _PNG ) {
-			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) &tp) != 0)
-			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) &tp) != 0) {
-				free(buff);
-				return FAILED;
-			}
-		} else {
-			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) &tp) != 0) 
-			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) &tp) != 0)
-			{
-				free(buff);
-				return FAILED;
-			}
-		}
 					
 		u64 d;
 
@@ -2781,11 +3210,6 @@ u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 			// memcpy(out->bmp_out + d/4, &Y, 1);
 		// }
 		
-		out->height = tp.height;
-		out->width = tp.width;
-		out->pitch = tp.pitch;
-		out->bmp_out = (u8 *) malloc(tp.pitch*tp.height+1);
-
 		for(d=0; d< tp.pitch*tp.height; d+=4) {
 			u8 ARGB[4];
 			memcpy(&ARGB, tp.bmp_out+d, 4);
@@ -2801,25 +3225,11 @@ u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 		}
 		
 	} else {
-	
-		if( get_ext(imgPath) == _PNG ) {
-			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) out) != 0)
-			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) out) != 0) {
-				free(buff);
-				return FAILED;
-			}
-		} else {
-			if(jpgLoadFromBuffer((const void *) buff, file_size, (jpgData *) out) != 0) 
-			if(pngLoadFromBuffer((const void *) buff, file_size, (pngData *) out) != 0)
-			{
-				free(buff);
-				return FAILED;
-			}
-		}
+		memcpy(out->bmp_out, tp.bmp_out, tp.pitch*tp.height);
 	}
-	
-	free(buff);
 
+	free(tp.bmp_out);
+	
 	return SUCCESS;
 }
 
@@ -2827,6 +3237,7 @@ u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 // SCREENSHOT
 //******************************************************
 
+// https://en.wikipedia.org/wiki/BMP_file_format
 typedef struct                       /**** BMP file header structure ****/
 {
 	u32 bfSize;           /* Size of file */
@@ -2874,56 +3285,122 @@ void es_bmp_info_header(bmp_info_header *w)
 	w->biClrImportant = ENDIAN_SWAP_32(w->biClrImportant); 
 }
 
-// https://en.wikipedia.org/wiki/BMP_file_format
-void ScreenShot()
+s8 bmpLoadFromBuffer(const void *buffer, int file_size, imgData *data)
 {
-	if( ComboNewPad(BUTTON_L2, BUTTON_R2) == NO ) return;
+	bmp_file_header bfh;
+	bmp_info_header bih;
+	
+	u8 *buff = (u8 *) buffer;
+	
+	print_load("Magic bmpLoadFromBuffer");
+	char magic[2];
+	memcpy(magic, buff, 2);
+	if( magic[0] != 'B' || magic[1] != 'M') {
+		print_load("Magic bmpLoadFromBuffer");
+		return -1;
+	}
+	
+	print_load("bfh memcpy bmpLoadFromBuffer");
+	memcpy(&bfh, buff + 2, sizeof(bmp_file_header));
+	print_load("bih memcpy bmpLoadFromBuffer");
+	memcpy(&bih, buff + 2 + sizeof(bmp_file_header), sizeof(bmp_info_header));
+	
+	print_load("bih es_bmp_file_header bmpLoadFromBuffer");
+	es_bmp_file_header(&bfh);
+	print_load("bih es_bmp_info_header bmpLoadFromBuffer");
+	es_bmp_info_header(&bih);
+		
+	if( bih.biWidth < 0 || bih.biHeight < 0) {
+		print_load("bih.biHeight < 0 || bih.biWidth < 0 bmpLoadFromBuffer");
+		return -1;
+	}
+	
+	u32 BPP = bih.biBitCount / 8;
+	
+	if( BPP != 4 && BPP != 3 && BPP != 1) {
+		print_load("Error : bmpLoadFromBuffer BPP %d ", BPP);
+		return -1;
+	}
+	
+	print_load("pixels malloc bmpLoadFromBuffer");
+	u8 *pixels = (u8 *) malloc(bih.biWidth * bih.biHeight * 4);
+	if (pixels == NULL) {
+		print_load("Error : pixels malloc bmpLoadFromBuffer");
+		return -1;
+	}
+	
+	print_load("bmpLoadFromBuffer loop");
 
-	if(Video_currentBuffer==NO) return;
+	u8 pad  = (4 - ((3*bih.biWidth) & 3)) & 3;
 	
-	u8 *mem = malloc(Video_Resolution.width*Video_Resolution.height*4 + 1);
-	memcpy(mem, Video_buffer[1], Video_Resolution.width*Video_Resolution.height*4);
-	
-	//start_loading();
-	
-print_load("Get size scaled...");
-	double sx = (double) Video_Resolution.width;
-	double sy = (double) Video_Resolution.height;
-	double psx = (double) (1000 + videoscale_x)/1000.0;
-	double psy = (double) (1000 + videoscale_y)/1000.0;
-	
-	u32 w = (u32) (sx * psx);
-	u32 h = (u32) (sy * psy);
-	u32 x = (u32) (((u32)sx - w) / 2);
-	u32 y = (u32) (((u32)sy - h) / 2);
-	
-	mkdir("/dev_hdd0/photo", 0777);
-	
-	char ScreenShotPath[128];
-	int o;
-	for(o=0; o<1000; o++) {
-		sprintf(ScreenShotPath, "/dev_hdd0/photo/ManaGunZ_%03d.bmp", o);
-		if(path_info(ScreenShotPath) == _NOT_EXIST) break;
+	s64 i = 0;
+	s64 k = 0;
+	s64 l = 0;
+	s64 j = 0;
+	for (i = bih.biHeight-1; 0<=i ; i--)
+	{
+		k=i*bih.biWidth;
+		for (j=k; j < k+bih.biWidth; j++)
+		{	
+			pixels[l] = 0xFF; // alpha
+			l++;
+			if( BPP == 1 ) {
+				pixels[l] = buff[bfh.bfOffBits + j + i*pad];
+				l++;        
+				pixels[l] = buff[bfh.bfOffBits + j + i*pad];
+				l++;        
+				pixels[l] = buff[bfh.bfOffBits + j + i*pad];
+				l++;
+			} else
+			if( BPP == 3 || BPP == 4) {
+				pixels[l] = buff[bfh.bfOffBits + j*BPP + i*pad + 2];
+				l++;        
+				pixels[l] = buff[bfh.bfOffBits + j*BPP + i*pad + 1];
+				l++;        
+				pixels[l] = buff[bfh.bfOffBits + j*BPP + i*pad   ];
+				l++;
+			}
+			
+		}
 	}
 	
-print_load("Open file %s", ScreenShotPath);
-	FILE *f = fopen(ScreenShotPath, "wb");
+	print_load("bmpLoadFromBuffer memcpy bmp_out");
+	(*data).bmp_out	= (u8 *) malloc(bih.biWidth * bih.biHeight * 4); 
+	memcpy((*data).bmp_out, pixels, bih.biWidth * bih.biHeight * 4);
+
+	free(pixels);
+	
+	(*data).width = bih.biWidth;
+	(*data).height = bih.biHeight;
+	(*data).pitch = (*data).width*4;
+	
+	return 0;
+}
+
+u8 SaveBMP(char *bmp_path, u8 *pixels, u32 x, u32 y, u32 w, u32 h)
+{
+
+	print_load("Open file %s", bmp_path);
+	FILE *f = fopen(bmp_path, "wb");
 	if (!f) {
-		print_load("Error : ScreenShot, failed to open file");
-		return;
+		print_load("Error : failed to open %s", bmp_path);
+		return FAILED;
 	}
 	
-print_load("Define headers");
+	print_load("Define headers");
 	bmp_file_header bfh;
 	bmp_info_header bih;
 
-	unsigned short bfType=0x424D;           
+	u32 size_of_file_header = sizeof(bmp_file_header);
+	u32 size_of_info_header = sizeof(bmp_info_header);
+	
+	unsigned short bfType=0x424D; // magic "BM"       
 	bfh.bfReserved1 = 0;
 	bfh.bfReserved2 = 0;
-	bfh.bfSize = 2+sizeof(bmp_file_header) + sizeof(bmp_info_header)+w*h*3;
-	bfh.bfOffBits = 0x36;
+	bfh.bfSize = 2 + size_of_file_header + size_of_info_header + w * h * 3;
+	bfh.bfOffBits = 2 + size_of_file_header + size_of_info_header;
 
-	bih.biSize = sizeof(bmp_info_header);
+	bih.biSize = size_of_info_header;
 	bih.biWidth = w;
 	bih.biHeight = h;
 	bih.biPlanes = 1;
@@ -2955,11 +3432,11 @@ print_head("Get bitmap data...");
 		k=i*Video_Resolution.width;
 		prog_bar1_value = (y+h-1-i)/h;
 		for(j=x+k; j<x+k+w; j++) {
-			bitmap[l] = mem[3+j*4];
+			bitmap[l] = pixels[3+j*4];
 			l++;
-			bitmap[l] = mem[2+j*4];
+			bitmap[l] = pixels[2+j*4];
 			l++;
-			bitmap[l] = mem[1+j*4];
+			bitmap[l] = pixels[1+j*4];
 			l++;
 		}
 		for(j=0; j<pad; j++) {
@@ -2967,7 +3444,6 @@ print_head("Get bitmap data...");
 			l++;
 		}
 	}
-	free(mem);
 
 print_head("Writing bitmap data...");
 	prog_bar1_value = 0;
@@ -2983,10 +3459,48 @@ print_head("Writing bitmap data...");
 	
 	fclose(f);
 	
-	SetFilePerms(ScreenShotPath);
+	SetFilePerms(bmp_path);
 	
 	free(bitmap);
 	
+	return SUCCESS;
+}
+
+void ScreenShot()
+{
+	if( ComboNewPad(BUTTON_L2, BUTTON_R2) == NO ) return;
+
+	if(Video_currentBuffer==NO) return;
+	
+	u8 *mem = malloc(Video_Resolution.width*Video_Resolution.height*4 + 1);
+	memcpy(mem, Video_buffer[1], Video_Resolution.width*Video_Resolution.height*4);
+	
+	//start_loading();
+	
+print_load("Get size scaled...");
+	double sx = (double) Video_Resolution.width;
+	double sy = (double) Video_Resolution.height;
+	double psx = (double) (1000 + videoscale_x)/1000.0;
+	double psy = (double) (1000 + videoscale_y)/1000.0;
+	
+	u32 w = (u32) (sx * psx);
+	u32 h = (u32) (sy * psy);
+	u32 x = (u32) (((u32)sx - w) / 2);
+	u32 y = (u32) (((u32)sy - h) / 2);
+	
+	mkdir("/dev_hdd0/photo", 0777);
+	
+	char ScreenShotPath[128];
+	int o;
+	for(o=0; o<1000; o++) {
+		sprintf(ScreenShotPath, "/dev_hdd0/photo/ManaGunZ_%03d.bmp", o);
+		if(path_info(ScreenShotPath) == _NOT_EXIST) break;
+	}
+	
+	SaveBMP(ScreenShotPath, mem, x, y, w, h);
+	
+	FREE(mem);
+
 	//end_loading();
 }
 
@@ -2995,6 +3509,7 @@ print_head("Writing bitmap data...");
 //*******************************************************
 
 // http://www.psdevwiki.com/ps3/AIM_Manager#0x19003_-_Get_Device_ID
+
 u8 TEST_IDPS[0x10];
 void GetIDPS()
 {
@@ -3002,7 +3517,6 @@ void GetIDPS()
 }
 
 //  https://www.imagemagick.org/api/magick-image.php
-
 void ConvertImage(char *file_in, char *file_out)
 {
 	MagickWandGenesis();
@@ -3055,54 +3569,114 @@ void Crop_Image(char *file_in, char *file_out, float x, float y, float w, float 
 	if(mw) mw = DestroyMagickWand(mw);
 	MagickWandTerminus();
 }
-/*
-#include "dds_reader.h"
 
-typedef struct
+s8 MagickLoadFromBuffer(const void *buffer, int file_size, imgData *data)
 {
-	void *bmp_out;
-
-	u32 pitch;
-	u32 width;
-	u32 height;
-} ddsData;
-
-void ddsLoadFromFile(char *path, ddsData *data)
-{
-
-	FILE* file = fopen(path, "rb");
-	if(file) {
-		fseek(file, 0, SEEK_END);
-		int size = ftell(file);
-		fseek(file, 0, SEEK_SET);
-
-		unsigned char *buffer = (unsigned char *)malloc(size);
-		fread(buffer, 1, size, file);
-		fclose(file);
-
-		int width = ddsGetWidth(buffer);
-		int height = ddsGetHeight(buffer);
-		int mipmap = ddsGetMipmap(buffer);
-		
-		if(mipmap > 0) {
-			// mipmap
-			int i;
-			for(i=0; (width > 0) || (height > 0); i++) {
-				if(width <= 0) width = 1;
-				if(height <= 0) height = 1;
-				data->bmp_out = ddsRead(buffer, DDS_READER_ABGR, i);
-			}
-		}
-		else data->bmp_out = ddsRead(buffer, DDS_READER_ABGR, 0);
-
-  		data->width = width;
-		data->height = height;
-		data->pitch = width*4;
-		
-		free(buffer);
+	print_load("MagickWandGenesis");
+	
+	MagickWandGenesis();
+	
+	MagickWand *mw = NULL;
+	
+	mw = NewMagickWand();
+	
+	print_load("MagickReadImageBlob");
+	if( MagickReadImageBlob(mw, buffer, file_size) == MagickFalse ) return -1;
+	
+	print_load("MagickSetImageType");
+	if( MagickSetImageType(mw, TrueColorAlphaType) == MagickFalse ) {
+		print_load("failed to MagickSetImageType");
 	}
+	
+	print_load("MagickSetImageFormat");
+	if( MagickSetImageFormat(mw, "png") == MagickFalse ) {
+		print_load("failed MagickSetImageFormat");
+	}
+	
+	size_t blob_len;
+	
+	print_load("MagickGetImageBlob");
+	unsigned char *blob = MagickGetImageBlob(mw, &blob_len);
+	
+	int ret = pngLoadFromBuffer(blob, blob_len, (pngData *) data);
+
+	MagickRelinquishMemory(blob);
+	
+	
+	print_load("DestroyMagickWand");
+	if(mw) mw = DestroyMagickWand(mw);
+	
+	MagickWandTerminus();
+	
+	return ret;
 }
-*/
+
+// MagickSetImageFormat(mw, "ARGB") return false
+// ugly fix : convert it to "png" then use pngLoad
+u8 MagickLoadFromFile(char *file_in, imgData *data)
+{
+	print_load("MagickWandGenesis");
+	
+	MagickWandGenesis();
+	
+	MagickWand *mw = NULL;
+	
+	mw = NewMagickWand();
+	
+	print_load("MagickReadImage");
+	if( MagickReadImage(mw, file_in) == MagickFalse ) {
+		print_load("Error : failed to MagickReadImage");
+		return -1;
+	}
+	
+	print_load("MagickReadImage");
+	if( MagickSetImageType(mw, TrueColorAlphaType) == MagickFalse ) {
+		print_load("Error : failed to MagickReadImage");
+		return -1;
+	}
+	
+	print_load("MagickSetImageFormat");
+	if( MagickSetImageFormat(mw, "png") == MagickFalse ) {
+		print_load("Error : failed MagickSetImageFormat");
+	}
+	
+	size_t blob_len;
+	
+	print_load("MagickGetImageBlob");
+	unsigned char *blob = MagickGetImageBlob(mw, &blob_len);
+	
+	int ret = pngLoadFromBuffer(blob, blob_len, (pngData *) data);
+	
+	MagickRelinquishMemory(blob);
+	
+	print_load("DestroyMagickWand");
+	if(mw) mw = DestroyMagickWand(mw);
+	
+	MagickWandTerminus();
+	
+	return ret;
+}
+
+// save supported image format supporte by this lib
+void SaveMagicList()
+{
+	size_t l;
+	ExceptionInfo exception;
+	char **list = GetMagickList("*", &l, &exception);
+	
+	FILE *f;
+	
+	f = fopen("/dev_hdd0/MagicList.txt", "w");
+	
+	int i;
+	for(i=0; i<l; i++){
+		fputs(list[i], f);
+		fputs("\n", f);
+		list[i] = (char *)RelinquishMagickMemory(list[i]);
+	}
+	fclose(f);
+	RelinquishMagickMemory(list);
+}
 
 void Load_FM()
 {
@@ -3116,10 +3690,10 @@ void Load_FM()
 	}
 
 	texture_pointer = texture_mem + TEXTURE_POINTER_TMP;
-
+	
 	memset(&TMP_PIC, 0, sizeof(TMP_PIC));
 	TMP_PIC_offset = 0;
-	
+		
 	if(is_apng(TMP_PIC_path) == YES) {
 		Load_APNG(TMP_PIC_path);
 		if(loaded == YES) end_loading();
@@ -3127,6 +3701,8 @@ void Load_FM()
 	}
 	
 	LoadTexture(TMP_PIC_path, &TMP_PIC_offset ,&TMP_PIC, NULL, NO);
+	
+	//SaveFile("/dev_hdd0/test2.raw", TMP_PIC.bmp_out, TMP_PIC.pitch * TMP_PIC.height);
 	
 	if(loaded == YES) end_loading();
 }
@@ -3255,13 +3831,13 @@ u8 Have_GAMEPIC(int game_pos)
 {
 	u8 ret = GAMEPIC_NONE;
 	
-	if(list_game_platform[game_pos] == _ISO_PS3 || list_game_platform[game_pos] == _JB_PS3
-	|| list_game_platform[game_pos] == _ISO_PSP || list_game_platform[game_pos] == _JB_PSP) ret += GAMEPIC_ICON0;
+	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3
+	|| list_game_platform[game_pos] == ISO_PSP || list_game_platform[game_pos] == JB_PSP) ret += GAMEPIC_ICON0;
 	
 	char temp[512];
 	
 // 3D
-	u8 is_PS1 = (list_game_platform[game_pos] == _ISO_PS1 || list_game_platform[game_pos] == _JB_PS1);
+	u8 is_PS1 = (list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1);
 	
 	char t[10] = {0};
 	if(is_PS1) strcpy(t, "_FRONT");
@@ -3334,7 +3910,7 @@ end:
 
 u8 Read_PS1BACK(int game_pos, imgData *DataPic)
 {
-	u8 is_PS1 = (list_game_platform[game_pos] == _ISO_PS1 || list_game_platform[game_pos] == _JB_PS1);
+	u8 is_PS1 = (list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1);
 	
 	if(is_PS1==NO || UI_position!=FLOW || FLOW_3D == NO) return FAILED;
 		
@@ -3363,7 +3939,7 @@ u8 Read_PS1BACK(int game_pos, imgData *DataPic)
 u8 Read_GAMEPIC_COVER3D(int game_pos, imgData *DataPic)
 {
 	char temp[512];
-	u8 is_PS1 = (list_game_platform[game_pos] == _ISO_PS1 || list_game_platform[game_pos] == _JB_PS1);
+	u8 is_PS1 = (list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1);
 		
 	char t[10] = {0};
 	if(is_PS1==YES) strcpy(t, "_FRONT");
@@ -3410,7 +3986,7 @@ u8 Read_GAMEPIC_COVER2D(int game_pos, imgData *DataPic)
 	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
 	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	
-	if( list_game_platform[game_pos] == _ISO_PS3 || list_game_platform[game_pos] == _JB_PS3) return FAILED;
+	if( list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3) return FAILED;
 	
 	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
 	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
@@ -3428,31 +4004,31 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 {
 	char temp[512];
 	
-	if(list_game_platform[game_pos] == _ISO_PS3) {
+	if(list_game_platform[game_pos] == ISO_PS3) {
 		int size;
 		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], "/PS3_GAME/ICON0.PNG", &size);
 		if(mem==NULL) return FAILED;
 		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0)  {free(mem); return SUCCESS;}
 	} else
-	if(list_game_platform[game_pos] == _ISO_PSP) {
+	if(list_game_platform[game_pos] == ISO_PSP) {
 		int size;
 		char *mem = LoadFileFromISO(NO, list_game_path[game_pos], "/PSP_GAME/ICON0.PNG", &size);
 		if(mem==NULL) return FAILED;
 		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0) {free(mem); return SUCCESS;}
 	} else	
-	if(list_game_platform[game_pos] == _JB_PS3) {
+	if(list_game_platform[game_pos] == JB_PS3) {
 		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
-	if(list_game_platform[game_pos] == _JB_PSP) {
+	if(list_game_platform[game_pos] == JB_PSP) {
 		sprintf(temp, "%s/PSP_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 		sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
-	if(list_game_platform[game_pos] == _ISO_PS2 || list_game_platform[game_pos] == _ISO_PS1) {
+	if(list_game_platform[game_pos] == ISO_PS2 || list_game_platform[game_pos] == ISO_PS1) {
 		strcpy(temp, list_game_path[game_pos]);
 		temp[strlen(temp)-4]=0;
 		char temp2[255];
@@ -3640,8 +4216,7 @@ void Load_GAMEPIC()
 		memcpy(texture_pointer, GAMEPIC[slot].bmp_out, GAMEPIC[slot].pitch * GAMEPIC[slot].height);
 		free(GAMEPIC[slot].bmp_out);
 		GAMEPIC_offset[slot] = tiny3d_TextureOffset(texture_pointer);
-		
-		
+				
 		PS1BACK_offset[slot] = 0;
 		if( Read_PS1BACK(gamepos, &PS1BACK[slot]) == FAILED) goto next;
 		texture_pointer = texture_mem + TEXTURE_POINTER_GAMEPIC(slot) + TEXTURE_GAMEPIC_SIZE(slot);
@@ -3742,7 +4317,7 @@ void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
 	float xj,yj,wj,hj;
 	float xl,yl,wl,hl;
 	
-	if(list_game_platform[pos] == _ISO_PS3 || list_game_platform[pos] == _JB_PS3) {
+	if(list_game_platform[pos] == ISO_PS3 || list_game_platform[pos] == JB_PS3) {
 		if(PICTURE_offset[PS3_CASE] != 0) {
 			tiny3d_SetTexture(0, PICTURE_offset[PS3_CASE], PICTURE[PS3_CASE].width, PICTURE[PS3_CASE].height, PICTURE[PS3_CASE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
@@ -3759,7 +4334,7 @@ void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
 			Draw_Box(xj, yj, z, 0, wj, hj, WHITE, YES);
 		}
 	} else
-	if(list_game_platform[pos] == _ISO_PS2 || list_game_platform[pos] == _JB_PS2) {
+	if(list_game_platform[pos] == ISO_PS2 || list_game_platform[pos] == JB_PS2) {
 		if(PICTURE_offset[PS2_CASE] != 0) {
 			tiny3d_SetTexture(0, PICTURE_offset[PS2_CASE], PICTURE[PS2_CASE].width, PICTURE[PS2_CASE].height, PICTURE[PS2_CASE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
@@ -3776,7 +4351,7 @@ void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
 			Draw_Box(xj, yj, z, 0, wj, hj, WHITE, YES);
 		}
 	} else
-	if(list_game_platform[pos] == _ISO_PS1 || list_game_platform[pos] == _JB_PS1) {
+	if(list_game_platform[pos] == ISO_PS1 || list_game_platform[pos] == JB_PS1) {
 		if(PICTURE_offset[PS1_CASE] != 0) {
 			tiny3d_SetTexture(0, PICTURE_offset[PS1_CASE], PICTURE[PS1_CASE].width, PICTURE[PS1_CASE].height, PICTURE[PS1_CASE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
@@ -3793,7 +4368,7 @@ void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
 			Draw_Box(xj, yj, z, 0, wj, hj, WHITE, YES);
 		}
 	} else
-	if(list_game_platform[pos] == _ISO_PSP || list_game_platform[pos] == _JB_PSP) {
+	if(list_game_platform[pos] == ISO_PSP || list_game_platform[pos] == JB_PSP) {
 		if(PICTURE_offset[PSP_CASE] != 0) {
 			tiny3d_SetTexture(0, PICTURE_offset[PSP_CASE], PICTURE[PSP_CASE].width, PICTURE[PSP_CASE].height, PICTURE[PSP_CASE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
@@ -3834,28 +4409,28 @@ void Draw_COVER(int pos, float x, float y, float z, float w, float h, u32 CoverO
 		yj -= hj/2;
 	}
 	
-	if(list_game_platform[pos] == _ISO_PS3 || list_game_platform[pos] == _JB_PS3) {
+	if(list_game_platform[pos] == ISO_PS3 || list_game_platform[pos] == JB_PS3) {
 		plat = PS3_CASE;
 		xl = 0;
 		yl = 30;
 		wl = 260;
 		hl = 300;
 	} else
-	if(list_game_platform[pos] == _ISO_PS2 || list_game_platform[pos] == _JB_PS2) {
+	if(list_game_platform[pos] == ISO_PS2 || list_game_platform[pos] == JB_PS2) {
 		plat = PS2_CASE;
 		xl = 0;
 		yl = 10;
 		wl = 260;
 		hl = 370;
 	}else
-	if(list_game_platform[pos] == _ISO_PS1 || list_game_platform[pos] == _JB_PS1) {
+	if(list_game_platform[pos] == ISO_PS1 || list_game_platform[pos] == JB_PS1) {
 		plat = PS1_CASE;
 		xl = 30;
 		yl = 5;
 		wl = 240;
 		hl = 240;
 	} else
-	if(list_game_platform[pos] == _ISO_PSP || list_game_platform[pos] == _JB_PSP) {
+	if(list_game_platform[pos] == ISO_PSP || list_game_platform[pos] == JB_PSP) {
 		plat = PSP_CASE;
 		xl = 0;
 		yl = 10;
@@ -4046,23 +4621,23 @@ void Extract_IconParam()
 	char PARAM_IN[128];
 	int i;
 	for(i=0; i<=game_number; i++) {
-		if(list_game_platform[i] != _ISO_PS3 && list_game_platform[i] != _ISO_PSP) continue;
+		if(list_game_platform[i] != ISO_PS3 && list_game_platform[i] != ISO_PSP) continue;
 		
-		if(list_game_platform[i] == _ISO_PS3) {
+		if(list_game_platform[i] == ISO_PS3) {
 			strcpy(ICON_IN, "/PS3_GAME/ICON0.PNG");
 			strcpy(PARAM_IN, "/PS3_GAME/PARAM.SFO");
 		}
 		else
-		if(list_game_platform[i] == _ISO_PSP) {
+		if(list_game_platform[i] == ISO_PSP) {
 			strcpy(ICON_IN, "/PSP_GAME/ICON0.PNG");
 			strcpy(PARAM_IN, "/PSP_GAME/PARAM.SFO");
 		}
 		
 		strcpy(ICON_OUT, list_game_path[i]);
-		RemoveExtention(ICON_OUT);
+		RemoveExtension(ICON_OUT);
 		strcat(ICON_OUT, ".PNG");
 		strcpy(PARAM_OUT, list_game_path[i]);
-		RemoveExtention(PARAM_OUT);
+		RemoveExtension(PARAM_OUT);
 		strcat(PARAM_OUT, ".SFO");
 		
 		if(path_info(ICON_OUT)==_NOT_EXIST) {
@@ -4073,7 +4648,7 @@ void Extract_IconParam()
 				if(GetParamSFO("TITLE", list_game_title[i], i, NULL)==FAILED) {
 					strcpy(list_game_title[i], list_game_path[i]);
 					strcpy(list_game_title[i], &strrchr(list_game_title[i], '/')[1]);
-					RemoveExtention(list_game_title[i]);
+					RemoveExtension(list_game_title[i]);
 				}
 			}
 		}
@@ -4086,12 +4661,12 @@ void Draw_DEFAULT(int pos, float x , float y, float z,  float w, float h, u8 cen
 	
 	int type = list_game_platform[pos];
 	u8 plat = 222;
-	if(type == _JB_PS1 || type == _JB_PS2 || type == _JB_PS3 || type == _JB_PSP) {
+	if(type == JB_PS1 || type == JB_PS2 || type == JB_PS3 || type == JB_PSP) {
 		if(PICTURE_offset[DEFAULT_JB] != 0) {
 			plat = DEFAULT_JB;
 		}
 	} else
-	if(type == _ISO_PS1 || type == _ISO_PS2 || type == _ISO_PS3 || type == _ISO_PSP) {
+	if(type == ISO_PS1 || type == ISO_PS2 || type == ISO_PS3 || type == ISO_PSP) {
 		if(PICTURE_offset[DEFAULT_ISO] != 0) {
 			plat = DEFAULT_ISO;
 		}
@@ -4129,10 +4704,10 @@ void Draw_DEFAULT(int pos, float x , float y, float z,  float w, float h, u8 cen
 	tiny3d_SetTexture(0, PICTURE_offset[plat], PICTURE[plat].width, PICTURE[plat].height, PICTURE[plat].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 	
 	u32 col = color;
-	if(type == _JB_PS1 || type == _ISO_PS1) col = SetALPHA(GetALPHA(color), COLOR_PS1);
-	if(type == _JB_PS2 || type == _ISO_PS2) col = SetALPHA(GetALPHA(color), COLOR_PS2);
-	if(type == _JB_PS3 || type == _ISO_PS3) col = SetALPHA(GetALPHA(color), COLOR_PS3);
-	if(type == _JB_PSP || type == _ISO_PSP) col = SetALPHA(GetALPHA(color), COLOR_PSP);
+	if(type == JB_PS1 || type == ISO_PS1) col = SetALPHA(GetALPHA(color), COLOR_PS1);
+	if(type == JB_PS2 || type == ISO_PS2) col = SetALPHA(GetALPHA(color), COLOR_PS2);
+	if(type == JB_PS3 || type == ISO_PS3) col = SetALPHA(GetALPHA(color), COLOR_PS3);
+	if(type == JB_PSP || type == ISO_PSP) col = SetALPHA(GetALPHA(color), COLOR_PSP);
 	Draw_Box(x1, y1, z, 0, w1, h1, col , YES);
 	
 }
@@ -4308,6 +4883,7 @@ void Draw_MMTHM_XMB(float x , float y, float z, float w, float h,  u8 n_icon)
 //*******************************************************
 // APNG
 //*******************************************************
+//https://fr.wikipedia.org/wiki/Portable_Network_Graphics
 
 #define MAGIC_PNG 0x89504E470D0A1A0A
 
@@ -4406,6 +4982,15 @@ u64 nTime()
 	u64 time_n=0;
 	sysGetCurrentTime(&time_s, &time_n);
 	return 1000000000ULL*time_s + time_n;
+}
+
+u64 sTime()
+{
+	u64 time_s=0;
+	u64 time_n=0;
+	sysGetCurrentTime(&time_s, &time_n);
+	
+	return time_s;
 }
 
 void init_timer(u8 i)
@@ -4638,7 +5223,6 @@ u8 Load_APNG(char* filename)
 
 	return YES;
 }
-
 
 // u8 Load_APNG(char* filename)
 // {
@@ -5344,12 +5928,12 @@ u8 make_ABG(char *dir_path, char *file_out)
 		
 		char temp[255];
 		sprintf(temp, "%s/%s", dir_path, dir->d_name);
-		u8 ext = get_ext(temp);
+		char *ext = get_ext(temp);
 		
-		if( ext == _JS) {
+		if( !strcasecmp(ext, ".js") ) {
 			strcpy(JS, temp);
 		} else
-		if( ext == _PNG) {
+		if( !strcasecmp(ext, ".png") ) {
 
 			FILE* fo;
 			fo = fopen(temp, "rb");
@@ -5517,7 +6101,6 @@ char *sprintf_malloc(char *format, ...)
 	return strcpy_malloc(str);
 }
 
-// It may be faster than previous function I wrote...
 char *language(char *lang_mem, const char *strName, char *str_default)
 {
 	if(lang_mem==NULL) return strcpy_malloc(str_default);
@@ -5612,8 +6195,7 @@ void update_lang()
 	LANG(STR_UNKNOWN, "STR_UNKNOWN", STR_UNKNOWN_DEFAULT);
 	LANG(STR_FILE, "STR_FILE", STR_FILE_DEFAULT);
 	LANG(STR_CANCEL, "STR_CANCEL", STR_CANCEL_DEFAULT);
-	LANG(STR_TURNOFF_YES, "STR_TURNOFF_YES", STR_TURNOFF_YES_DEFAULT);
-	LANG(STR_TURNOFF_NO, "STR_TURNOFF_NO", STR_TURNOFF_NO_DEFAULT);
+	LANG(STR_TURNOFF, "STR_TURNOFF", STR_TURNOFF_DEFAULT);
 	LANG(STR_CANCELLED, "STR_CANCELLED", STR_CANCELLED_DEFAULT);
 	LANG(STR_UNIT, "STR_UNIT", STR_UNIT_DEFAULT);
 	LANG(STR_TOTALSIZE, "STR_TOTALSIZE", STR_TOTALSIZE_DEFAULT);
@@ -6135,7 +6717,6 @@ u8 GetFromTHM(char *thm, char *file, char *dst)
 	return SUCCESS;
 }
 
-extern int gim2png(const char* gimfilename,char* pngfilename);
 extern int uncompressGIMBuffer(void* compressed_buffer, size_t compressed_buffer_size, void** gim_buffer);
 int GIM2PNG(char *in, char *out)
 {
@@ -6352,7 +6933,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 		// .gim to .png
 		char gim[128];
 		strcpy(gim, dst);
-		RemoveExtention(gim);
+		RemoveExtension(gim);
 		strcat(gim, ".gim");
 		fp=fopen(gim, "wb");
 
@@ -7449,7 +8030,7 @@ char *LoadFileFromISO(u8 prog, char *path, char *filename, int *size)
 			if(split666) sprintf(iso_path, "%s%02d", temp, i);
 			else sprintf(iso_path, "%s%d", temp, i);
 
-			fsize = get_size(iso_path, NO);
+			fsize = get_size(iso_path);
 			
 			if(file_offset<fsize) {
 				if(i!=0) {					 
@@ -7504,16 +8085,16 @@ void LOAD_PIC1()
 	
 	TMP_PIC_offset=0;
 	
-	if( list_game_platform[position_CURPIC] != _ISO_PS3 && list_game_platform[position_CURPIC] != _ISO_PSP &&
-		list_game_platform[position_CURPIC] != _JB_PS3 ) return;
+	if( list_game_platform[position_CURPIC] != ISO_PS3 && list_game_platform[position_CURPIC] != ISO_PSP &&
+		list_game_platform[position_CURPIC] != JB_PS3 ) return;
 		
-	if( list_game_platform[position_CURPIC] == _ISO_PS3 ) {
+	if( list_game_platform[position_CURPIC] == ISO_PS3 ) {
 		mem = LoadFileFromISO(YES, list_game_path[position_CURPIC], "/PS3_GAME/PIC1.PNG", &size);
 	} else
-	if( list_game_platform[position_CURPIC] == _ISO_PSP ) {
+	if( list_game_platform[position_CURPIC] == ISO_PSP ) {
 		mem = LoadFileFromISO(YES, list_game_path[position_CURPIC], "/PSP_GAME/PIC1.PNG", &size);
 	} else
-	if( list_game_platform[position_CURPIC] == _JB_PS3 ) {
+	if( list_game_platform[position_CURPIC] == JB_PS3 ) {
 		char temp[255];
 		sprintf(temp, "%s/PS3_GAME/PIC1.PNG", list_game_path[position_CURPIC]);
 		mem = LoadFileProg(temp, &size);
@@ -8695,6 +9276,22 @@ int Draw_Progress_Bar(float x, float y, u8 size, float value, u32 color)
 	
 }
 
+float Draw_Progress_Bar_Advanced(float x, float y, float z, float r, float w, float h, 
+								 float border, u32 border_color, u32 bg_color, u32 bar_color, u64 max, u64 value)
+{
+	//background
+	Draw_Box(x, y, z, r, w, h, bg_color, NO);
+	
+	//border
+	if( border != 0 ) Draw_Box(x-border, y-border, z, r, w+border*2, h+border*2, border_color, NO);
+	
+	// bar
+	float bar_w = w*value/max;
+	Draw_Box(x, y, z, r, bar_w, h, bar_color, NO);
+	
+	return x+w+border;
+}
+
 void DrawNotBody(float x, float y, float z, float w, float h)
 {
 	u32 color = WHITE;
@@ -8937,19 +9534,54 @@ void DrawLoadingIcon()
 }
 
 u8 show_scene = NO;
-static sys_ppu_thread_t loading_id;	
+static sys_ppu_thread_t loading_id;
+
+u64 task_ProgressBar1_max=0;
+u64 task_ProgressBar1_val=0;
+u64 task_ProgressBar2_max=0;
+u64 task_ProgressBar2_val=0;
+
+void task_Init(const u64 max)
+{
+	if(task_ProgressBar1_max==0) {
+		task_ProgressBar1_val = 0;
+		task_ProgressBar1_max=max;
+	}
+	task_ProgressBar2_val= 0;
+	task_ProgressBar2_max=max;
+}
+
+void task_Update(u64 val)
+{
+	task_ProgressBar1_val+= val;
+	task_ProgressBar2_val+= val;
+}
+
+void task_End()
+{
+	if(task_ProgressBar1_max == task_ProgressBar1_val || cancel) {
+		task_ProgressBar1_max=0;
+		task_ProgressBar1_val=0;
+	}
+	task_ProgressBar1_max=0;
+	task_ProgressBar1_val=0;
+}
+
 void Draw_Loading(void *unused)
 {
-	int i=0;
-	int show_log=YES;
+// bullet
 	int bullet_move = 1;
-	int h=20, v=70;
 	int speed = 3;
 	int boost=100;
-	cancel=NO;
+	int h=20, v=70;
+	
 	u32 color=GREEN;
 	u8 have_log=NO;
-	gathering_cancel=NO;
+	int i=0;
+	int show_log=YES;
+	u8 old_DEBUG = DEBUG;
+	
+	cancel=NO;
 	LoadIconRot=0;
 	
 	strcpy(head_title, "\0");
@@ -8959,12 +9591,16 @@ void Draw_Loading(void *unused)
 	
 	//if(scene == SCENE_FILEMANAGER) show_scene = YES;
 	
+	u64 start=0;
+	u64 previous_val=0;
+	
 	while(loading) {
-		cls();
+				
+		if(!loading) break;
 		
 		int x=50, y=40;
 		
-		if(loading_log[0][0]!=0 || head_title[0] != 0 || gathering || prog_bar1_value >= 0) have_log=YES;
+		if(loading_log[0][0]!=0 || head_title[0] != 0 || prog_bar1_value >= 0) have_log=YES;
 		
 		if(show_scene) {
 			Draw_scene();
@@ -8975,46 +9611,12 @@ void Draw_Loading(void *unused)
 		FontColor(COLOR_1);
 		SetFontZ(0);
 		
-		if(show_log && have_log) {
-			
-			if(head_title[0] != 0) {
-				FontColor(COLOR_2);
-				DrawString(x, y, head_title);
-				FontColor(COLOR_1);
-				y+=20;
-			}
-			if(prog_bar1_value >= 0) {
-				Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
-				y+=15;
-				if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
-				y+=25;
-			}
-			if(gathering){
-				FontColor(COLOR_1);
-				DrawFormatString(x, y, STR_GATHERING);
-				y+=20;
-				DrawFormatString(x, y, "%s = %i", STR_FILES, nb_file);
-				y+=20;
-				DrawFormatString(x, y, "%s = %i", STR_DIRS, nb_directory);
-				y+=20;
-				char *size_tot = get_unit(total_size);
-				DrawFormatString(x, y,"%s = %s", STR_TOTALSIZE, size_tot);
-				y+=20;
-				if(size_tot) free(size_tot);
-			}
-			for(i=0; i<=20; i++){
-			
-				if(strstr(loading_log[i], "Error")) FontColor(RED);
-				else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
-				else FontColor(COLOR_1);
-				
-				DrawFormatString(x , y, loading_log[i]);
-				y+=20;
-				if(y>450) break;
-			}
-		}
+		if(!loading) break;
+		
+		if(!loading) break;
 		
 		if(!show_scene) {	
+		
 			int t;
 			switch(bullet_move)
 			{
@@ -9027,6 +9629,8 @@ void Draw_Loading(void *unused)
 					}
 					Draw_Box(h  , v, 0, 0, 3 , 20, 0xFFFFFF50, NO);
 					Draw_Box(h+4, v, 0, 0, 16, 20, 0xFFFFFF50, NO);
+					
+					if(!loading) break;
 					
 					tiny3d_SetPolygon(TINY3D_POLYGON);
 					tiny3d_VertexColor(0xFFFFFF50);
@@ -9054,6 +9658,8 @@ void Draw_Loading(void *unused)
 					}
 					Draw_Box(h+17, v, 0, 0, 3 , 20, 0xFFFFFF50, NO);
 					Draw_Box(h   , v, 0, 0, 16, 20, 0xFFFFFF50, NO);
+					
+					if(!loading) break;
 					
 					tiny3d_SetPolygon(TINY3D_POLYGON);
 					tiny3d_VertexColor(0xFFFFFF50);
@@ -9083,6 +9689,8 @@ void Draw_Loading(void *unused)
 					Draw_Box(h, v+17, 0, 0, 20,  3, 0xFFFFFF50, NO);
 					Draw_Box(h, v   , 0, 0, 20, 16, 0xFFFFFF50, NO);
 					
+					if(!loading) break;
+					
 					tiny3d_SetPolygon(TINY3D_POLYGON);
 					tiny3d_VertexColor(0xFFFFFF50);
 					for(t=90; t<=270 ; t+=15) {
@@ -9109,6 +9717,8 @@ void Draw_Loading(void *unused)
 					}
 					Draw_Box(h, v  , 0, 0, 20, 3 , 0xFFFFFF50, NO);
 					Draw_Box(h, v+4, 0, 0, 20, 16, 0xFFFFFF50, NO);
+					
+					if(!loading) break;
 					
 					tiny3d_SetPolygon(TINY3D_POLYGON);
 					tiny3d_VertexColor(0xFFFFFF50);
@@ -9143,7 +9753,106 @@ void Draw_Loading(void *unused)
 			if(boost<100) {
 				color = GREEN;
 			}
+		}		
+		
+		if(show_log && have_log) {
+			
+			if(head_title[0] != 0) {
+				FontColor(COLOR_2);
+				DrawString(x, y, head_title);
+				FontColor(COLOR_1);
+				y+=20;
+			}
+			if( task_ProgressBar1_max != 0 && start == 0 && task_ProgressBar1_max != task_ProgressBar1_val) {
+				start = sTime();
+				init_timer(4);
+				start_timer(4);
+			}
+			if( start ) {
+				
+				u64 progress_bar_w = 600;
+				
+				char speed_STR[32];
+				char elapsed_STR[32];
+				char remaining_STR[32];
+				if( get_time(4) > 1000 ) {
+					
+					start_timer(4);
+					
+					char *copy_speed = get_unit(task_ProgressBar1_val - previous_val);
+					if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
+					FREE(copy_speed);
+					previous_val = task_ProgressBar1_val;
+					
+					u64 ElapsedTime = sTime() - start;
+					u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
+						
+					char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
+					if(ElapsedTime_STR) sprintf(elapsed_STR,  "Elapsed time : %s", ElapsedTime_STR);
+					FREE(ElapsedTime_STR);	
+					
+					char *RemainingTime_STR = GetTimeStr(RemainingTime);
+					if(RemainingTime_STR) sprintf(remaining_STR,  "Remaining time : %s", RemainingTime_STR);
+					FREE(RemainingTime_STR);
+				}
+				
+				DrawFormatString(x, y, elapsed_STR);
+				y+=new_line(1);
+				
+				DrawFormatString(x, y, remaining_STR);
+				y+=new_line(1);
+									
+				char *size_current = get_unit(task_ProgressBar1_val);
+				if(size_current) DrawString(x, y, size_current);
+				FREE(size_current);
+				
+				char *size_tot = get_unit(task_ProgressBar1_max);
+				if(size_tot) DrawString(x+progress_bar_w-WidthFromStr(size_tot), y, size_tot);
+				FREE(size_tot);
+				
+				DrawStringFromCenterX(x+progress_bar_w/2, y, speed_STR);
+				
+				y+=new_line(1);
+
+				Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar1_max, task_ProgressBar1_val);
+				
+				y+=new_line(1);
+				
+				if( task_ProgressBar2_max !=  task_ProgressBar1_max) {
+					Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar2_max, task_ProgressBar2_val);
+					y+=new_line(1);
+				}
+				
+				if( task_ProgressBar1_max == task_ProgressBar1_val ) {
+					 task_ProgressBar1_max=0;
+					 task_ProgressBar1_val=0;
+					 task_ProgressBar2_max=0;
+					 task_ProgressBar2_val=0;
+				}
+				if( task_ProgressBar1_max == 0) start = 0;
+			} else 
+			if(prog_bar1_value >= 0) {
+				Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
+				y+=15;
+				if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
+				y+=25;
+			}
+			
+			if(!loading) break;
+			
+			for(i=0; i<=20; i++){
+				
+				if(strstr(loading_log[i], "Error")) FontColor(RED);
+				else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+				else FontColor(COLOR_1);
+				
+				DrawFormatString(x , y, loading_log[i]);
+				y+=20;
+				if(y>450) break;
+			}
 		}
+		
+		if(!loading) break;
 		
 		// *** DISPLAY BUTTONS ***
 		x=INPUT_X;
@@ -9151,7 +9860,7 @@ void Draw_Loading(void *unused)
 		FontSize(15);
 		FontColor(COLOR_1);
 		SetFontZ(0);
-
+		
 		if(show_scene) {
 			if(LoadIconRot<180) {
 				Draw_input();
@@ -9160,28 +9869,39 @@ void Draw_Loading(void *unused)
 		}
 		
 		if(have_log) {
-			if(show_log)	x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
+			if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
 			else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
 		}
-			
+		
 		if(!show_scene) {
 			x=Draw_Button_Square(x, y, 15);
 			x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
 			x=DrawFormatString( x+5, y, "%s ", STR_BOOST);
 		}
 		
+		if(!loading) break;
+		
 		if(AutoM == YES) {
 			x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
 		}
-		if(prog_bar1_value >= 0 || gathering) {
+		if(prog_bar1_value >= 0 || task_ProgressBar1_max) {
 			x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		}
+		
+		//x=DrawButton(x, y, "DEBUG", BUTTON_R1);
+		//x=Draw_checkbox(x-3, y, 0, "", DEBUG, YES);
+		
+		if(!loading) break;
 		
 		Draw_MemMonitor();
 		DrawLoadingIcon();
 		tiny3d_Flip();
 		//ScreenShot();
+		cls();
+		
 		ps3pad_read();
+		
+		//if( NewPad(BUTTON_R1) ) DEBUG = !DEBUG;
 		
 		if(NewPad(BUTTON_RIGHT)) {
 			bullet_move = 1;
@@ -9195,17 +9915,14 @@ void Draw_Loading(void *unused)
 		if(NewPad(BUTTON_DOWN)) {
 			bullet_move = 4;
 		}
-		if(NewPad(BUTTON_CIRCLE) && prog_bar1_value >= 0) {
+		if(NewPad(BUTTON_CIRCLE) && (prog_bar1_value >= 0 || task_ProgressBar1_max)) {
 			cancel=YES;
-		}
-		if(NewPad(BUTTON_CIRCLE) && gathering == YES) {
-			gathering_cancel=YES;
 		}
 		if((NewPad(BUTTON_TRIANGLE) || OldPad(BUTTON_TRIANGLE)) && AutoM==YES) {
 			gui_called=YES;
 		}
 		if(NewPad(BUTTON_SELECT)) {
-			if(show_log) show_log=NO; else show_log=YES;
+			show_log=!show_log;
 		}
 		if(OldPad(BUTTON_SQUARE)) {
 			if(0 < boost && boost <= 30 && speed==9 ) {
@@ -9227,10 +9944,14 @@ void Draw_Loading(void *unused)
 		}
 	}
 	
+	cls();
+	tiny3d_Flip();
+	
+	DEBUG = old_DEBUG;
+	
 	prog_bar1_value=-1;
 	prog_bar2_value=-1;
 	cancel=NO;
-	gathering=NO;
 	
 	strcpy(head_title, "\0");
 	show_scene=NO;
@@ -9238,15 +9959,16 @@ void Draw_Loading(void *unused)
 	for(i=0; i<=20; i++){
 		strcpy(loading_log[i], "\0");
 	}
-
+	
+	loading=-1;
+	
 	sysThreadExit(0);
 }
 
+FILE *mgz_log=NULL;
 static char buff[4096];
 void print_load(char *format, ...)
-{
-	if(loading==NO) return;
-	
+{	
 	char *str = (char *) buff;
 	va_list	opt;
 	
@@ -9268,17 +9990,31 @@ void print_load(char *format, ...)
 	
 	time_not=1;
 	if(strstr(loading_log[0], "Warning ")) sleep(1);
-	if(strstr(loading_log[0], "Error ")) sleep(4);
+	if(strstr(loading_log[0], "Error ")) sleep(2);
 	
 	ERR = FALSE;
 	WAR = FALSE;
+	
+	if( LOG ) {
+		
+		if( mgz_log == NULL ) {
+			mkdir("/dev_hdd0/tmp", 0777);
+			mgz_log = fopen("/dev_hdd0/tmp/mgz.log", "w");
+			if( mgz_log == NULL ) return;
+		}
+		
+		fputs(loading_log[0], mgz_log);
+		fputs("\n", mgz_log);
+	}
+	
+	// If it freeze, it allow to display every messages before the freeze (loading screen thread is async)
+	if( DEBUG ) usleep(500000);
+
 }
 
 static char buff2[4096];
 void print_head(char *format2, ...)
 {
-	if(loading==NO) return;
-	
 	char *str2 = (char *) buff2;
 	va_list	opt2;
 	
@@ -9287,7 +10023,40 @@ void print_head(char *format2, ...)
 	va_end(opt2);
 	
 	strcpy(head_title, str2);
+	
+	if( LOG ) {
+		
+		if( mgz_log == NULL ) {
+			mkdir("/dev_hdd0/tmp", 0777);
+			mgz_log = fopen("/dev_hdd0/tmp/mgz.log", "w");
+			if( mgz_log == NULL ) return;
+		}
+		
+		fputs(head_title, mgz_log);
+		fputs("\n", mgz_log);
+	}
+	
+	// If it freeze, it allow to display every messages before the freeze
+	if( DEBUG ) usleep(500000);
+	
+}
 
+void hex_print_load(char *data, size_t len)
+{
+   int i = 0;
+   char line[33];
+   memset(line, 0, 33);
+   
+   while( i < len) {
+       
+        sprintf(&line[i%16*2], "%02X",  data[i]);
+        if((i>0 && i%16 == 15) || i == (len-1)) {
+            print_load("%s", line);
+            memset(line, 0, 33);
+        }
+        i++;
+   }
+    
 }
 
 void start_loading()
@@ -9303,13 +10072,192 @@ void end_loading()
 	if(loading==YES) {
 		u64 ret;
 		loading=NO;
+		while(loading==NO) usleep(1000);
 		sysThreadJoin(loading_id, &ret);
+		loading=NO;
 	}
 }
+
+void reset_gathering()
+{
+	gathering_cancel=NO;
+	gathering_total_size=0;
+	gathering_nb_file=0;
+	gathering_nb_directory=0;
+	
+}
+
+static sys_ppu_thread_t gathering_id;	
+void Draw_Gathering(void *unused)
+{
+	int i;
+	for(i=0; i<=20; i++) strcpy(loading_log[i], "\0");
+	
+	reset_gathering();
+	
+	while(gathering) {
+				
+		int x=50, y=40;
+		
+		Draw_BGS();
+		
+		FontSize(20);
+		FontColor(COLOR_1);
+		SetFontZ(0);
+
+		
+		FontColor(COLOR_1);
+		DrawFormatString(x, y, STR_GATHERING);
+		y+=20;
+		DrawFormatString(x, y, "%s = %i", STR_FILES, gathering_nb_file);
+		y+=20;
+		DrawFormatString(x, y, "%s = %i", STR_DIRS, gathering_nb_directory);
+		y+=20;
+		char *size_tot = get_unit(gathering_total_size);
+		DrawFormatString(x, y,"%s = %s", STR_TOTALSIZE, size_tot);
+		y+=20;
+		FREE(size_tot);
+		
+		for(i=0; i<=20; i++){
+			if(strstr(loading_log[i], "Error")) FontColor(RED);
+			else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+			else FontColor(COLOR_1);
+			
+			DrawFormatString(x , y, loading_log[i]);
+			y+=20;
+			if(y>450) break;
+		}
+		
+		// *** DISPLAY BUTTONS ***
+		x=INPUT_X;
+		y=INPUT_Y;
+		FontSize(15);
+		FontColor(COLOR_1);
+		SetFontZ(0);
+		
+		x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
+		
+		Draw_MemMonitor();
+		DrawLoadingIcon();
+		tiny3d_Flip();
+		//ScreenShot();
+		cls();
+		
+		ps3pad_read();
+		
+		if(NewPad(BUTTON_CIRCLE) && gathering==YES) {
+			gathering_cancel=YES;
+		}
+	}
+	
+	for(i=0; i<=20; i++) strcpy(loading_log[i], "\0");
+	
+	
+	gathering=-1;
+	
+	sysThreadExit(0);
+}
+
+void start_gathering()
+{
+	if(gathering==NO) {
+		gathering=YES;
+		reset_gathering();
+		sysThreadCreate(&gathering_id, Draw_Gathering, NULL, 999, 0x2000, THREAD_JOINABLE, "gathering");
+	}
+}
+
+void end_gathering()
+{
+	if(gathering==YES) {
+		u64 ret;
+		gathering=NO;
+		while(gathering==NO) usleep(1000);
+		sysThreadJoin(gathering_id, &ret);
+		gathering=NO;
+	}
+}
+
 
 float DrawStringFromCenterX(float x, float y, char *txt)
 {
 	return DrawString(x-WidthFromStr(txt)/2, y, txt);
+}
+
+
+//*******************************************************
+// Update Manager
+//*******************************************************
+
+// https://www.psdevwiki.com/ps3/Update_Manager
+
+#define UM_UPDATE_PACKAGE_TOPHALF		0x6001
+#define UM_INSPECT_PACKAGE_TOPHALF		0x6002
+#define UM_GET_PACKAGE_INFO				0x6003
+#define UM_GET_FIX_INSTRUCTION			0x6004
+#define UM_EXTRACT_PACKAGE_TOPHALF		0x6005	
+#define UM_GET_EXTRACT_PACKAGE			0x6006
+#define UM_IS_FLASH_INITIALIZED			0x6007
+#define UM_SET_FLASH_INITIALIZED		0x6008	
+#define UM_GET_TOKEN_SEED               0x6009
+#define UM_SET_TOKEN					0x600A
+#define UM_READ_EPROM                   0x600B
+#define UM_WRITE_EPROM                  0x600C
+#define UM_GET_STATUS					0x600D
+#define UM_MALLOC			            0x600E
+#define UM_FREE			                0x600F
+#define UM_CHECK_INTEGRITY				0x6010
+#define UM_GET_APPLICABLE_VERSION		0x6011
+#define UM_REALLOC                      0x6012
+
+s32 update_manager(u32 packet_id, u64 arg1, u64 arg2, u64 arg3, u64 arg4, u64 arg5, u64 arg6)
+{
+	lv2syscall7(863, packet_id, arg1, arg2, arg3, arg4, arg5, arg6);
+	return_to_user_prog(u32);
+}
+
+s32 GetApplicableVersion(void * data)
+{
+	return update_manager(UM_GET_APPLICABLE_VERSION, 1, (u64) data, 0,0,0,0);
+}
+
+u8 get_minver(char *minver)
+{
+	u16 data[0x10];
+	
+	int result = GetApplicableVersion(data);
+	if( result != 0) {
+		print_load("Error : GetApplicableVersion failed : 0x%08X", result);
+		return FAILED;
+	}
+	
+	sprintf(minver, "%02X.%02X", data[0], data[1]);
+	
+	//SaveFile("/dev_usb000/GetApplicableVersion.bin", (char *) data, 0x20);
+	
+	return SUCCESS;
+}
+
+char *get_date()
+{
+	char *date = (char *) malloc( 20 );
+	if( date == NULL ) return NULL;
+	
+	time_t rawtime;
+	struct tm * timeinfo;
+	
+	time ( &rawtime );
+	timeinfo = localtime( &rawtime );
+	sprintf(date, "%04d%02d%02d_%02d%02d%02d", timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+	
+	return date;
+}
+
+float get_fps()
+{
+	// TimeVal	time = FWTime::getCurrentTime();
+	// float fFPS = 1.f / (float)(time - mLastTime);
+	// mLastTime = time;
 }
 
 //*******************************************************
@@ -9503,6 +10451,17 @@ u8 lv2peek8(u64 addr) {
 u64 lv2poke8(u64 addr, u8 value) 
 { 
 	return lv2poke(addr, (((u64) value) <<56) | (lv2peek(addr) & 0xffffffffffffffULL));
+}
+
+u64 lv1peek(u64 addr)
+{ 
+	if(cobra) {
+		lv2syscall1(11, (u64) addr >> 0ULL);
+		return_to_user_prog(u64);
+	} else {
+		lv2syscall1(8, (u64) addr >> 0ULL);
+		return_to_user_prog(u64);
+	}
 }
 
 void lv1poke( u64 addr, u64 val)
@@ -10030,20 +10989,28 @@ void DumpDevicesInfo()
 
 void DumpDevicesData()
 {
+	print_head("DumpDevicesData");
+	
 	int ret=-1;
 	
 	u64 i, size;
 	sys_fs_mount_info *info;
 		
+	print_load("sys_fs_get_mount_info_size");
+	
 	ret = sys_fs_get_mount_info_size(&size);
 	if (ret != 0) {
 		print_load("Error : sys_fs_get_mount_info_size FAILED ! %X", ret);
 		return;
 	}
 	
+	print_load("malloc");
+	
 	info = malloc(size*sizeof(sys_fs_mount_info));
 	memset(info, 0, size*sizeof(sys_fs_mount_info));
-		
+	
+	print_load("sys_fs_get_mount_info");
+	
 	ret = sys_fs_get_mount_info(info, size, &size);
 	if (ret != 0)
 	{
@@ -10052,13 +11019,19 @@ void DumpDevicesData()
 		return;
 	}
 	
+	print_load("loop");
 	for (i = 0; i < size; i++)
 	{
+		print_load("get device : %s", info[i].deviceName);
+		
 		u64 device_id = get_device(info[i].deviceName);
 		if(device_id == FAILED) {
 			//print_load("Error : DumpDevicesData get_device %s = FAILED !", info[i].deviceName);
 			continue;
 		}
+		
+		
+		print_load("sys_storage_get_device_info");
 		
 		device_info_t device_info;
 		memset(&device_info, 0, sizeof(device_info));
@@ -10072,6 +11045,7 @@ void DumpDevicesData()
 		u32 source;
 		u32 read;
 	
+		print_load("sys_storage_open");
 		
 		ret = sys_storage_open(device_id, &source );
 		if( ret != 0 ) {
@@ -10079,6 +11053,7 @@ void DumpDevicesData()
 			continue;
 		}
 		
+		print_load("malloc sector");
 		
 		u8 *sector = (u8 *) malloc(device_info.sector_size+1);
 		if(sector==NULL) {
@@ -10089,6 +11064,9 @@ void DumpDevicesData()
 		char temp[128];
 		if(strcmp(info[i].mount_point, "/")==0) strcpy(temp, "/dev_hdd0/tmp/rawdata_root.bin");
 		else sprintf(temp, "/dev_hdd0/tmp/rawdata_%s.bin", &info[i].mount_point[1]);	
+		
+		
+		print_load("fopen %s", temp);
 		
 		FILE *f;
 		f = fopen(temp, "wb");
@@ -10108,21 +11086,278 @@ void DumpDevicesData()
 		if(0x10 < count) count=0x10; else
 		count=1;
 		
+		print_load("count");
+		
 		if(strncmp(info[i].mount_point, "/dev_flash", 10) ==0) flag = 0x22;
 		
+		print_load("loop2");
 		int j;
 		for(j=0; j<count; j++) {
 			memset(sector, 0, device_info.sector_size);
 			sys_storage_read(source, j, 1, sector, &read, flag);
 			fwrite(sector, device_info.sector_size, 1, f);
 		}
+		print_load("fclose");
 		fclose(f);
 		sys_storage_close(source);		
-		free(sector);	
+		free(sector);
 	}
 	
 	free(info);
 }
+
+#define BDVD_BUFF_SEC_NB		0x400
+#define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
+
+u8 dump_enc_bdvd(char *output)
+{
+	u32 source;
+	
+	device_info_t device_info;
+	memset(&device_info, 0, sizeof(device_info));
+	int ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
+	if( ret != 0 ) {
+		print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
+		return FAILED;
+	}
+	
+	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
+		print_load("Error : sys_storage_open");
+		return FAILED;
+	}
+	
+	u8 *buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	if(buff==NULL) {
+		print_load("Error : DumpDevicesData malloc FAILED ! %X", ret);
+		sys_storage_close(source);
+		return FAILED;
+	}
+	
+	FILE *f;
+	f = fopen(output, "wb");
+	if(f==NULL) {
+		free(buff);
+		sys_storage_close(source);
+		print_load("Error : DumpDevicesData fopen FAILED ! %s");
+		return FAILED;
+	}
+	
+	strcpy( copy_src, "/dev_bdvd");
+	strcpy( copy_dst, output);
+
+	u64 count = device_info.sector_count;
+	u32 read;
+	u64 current_sector=0;
+	u64 sector_nb = BDVD_BUFF_SEC_NB;
+	
+	gathering_nb_file = -1;
+	gathering_nb_directory = -1;
+	
+	gathering_total_size = count * 0x800;
+	
+	while( current_sector < count ) {
+		memset(buff, 0, BDVD_BUFFSIZE);
+		
+		if(count < current_sector + BDVD_BUFF_SEC_NB) sector_nb = count - current_sector;
+		else sector_nb = BDVD_BUFF_SEC_NB;
+		
+		sys_storage_read(source, current_sector, sector_nb, buff, &read, 0);
+		
+		fwrite(buff, sector_nb, 0x800, f);
+		
+		current_sector += sector_nb;
+
+		copy_current_size += sector_nb*0x800;	
+		
+		if(copy_cancel) break;
+	}
+	
+	fclose(f);
+	sys_storage_close(source);
+	free(buff);
+	
+	if( copy_cancel) return FAILED;
+	
+	return SUCCESS;
+}
+
+u32 u8_to_u32(u8* arr)
+{
+	return (0x1000000*arr[0] + 0x10000*arr[1] + 0x100*arr[2] + arr[3]);
+}
+
+void reset_iv(unsigned char* iv, unsigned int j)
+{
+  memset(iv, 0, 12);
+
+  iv[12] = (j & 0xFF000000)>>24;
+  iv[13] = (j & 0x00FF0000)>>16;
+  iv[14] = (j & 0x0000FF00)>> 8;
+  iv[15] = (j & 0x000000FF)>> 0;
+}
+
+u8 dump_dec_bdvd(char *output)
+{
+	print_load("Get decryption key d1");
+	u8 *key = get_d1();
+	if(key == NULL ) {
+		print_load("Error : get_d1 ");
+		return FAILED;
+	}
+	
+	unsigned char key_d1[] = {0x38, 11, 0xcf, 11, 0x53, 0x45, 0x5b, 60, 120, 0x17, 0xab, 0x4f, 0xa3, 0xba, 0x90, 0xed};
+	unsigned char iv_d1[] = {0x69, 0x47, 0x47, 0x72, 0xaf, 0x6f, 0xda, 0xb3, 0x42, 0x74, 0x3a, 0xef, 170, 0x18, 0x62, 0x87};
+	
+	aes_context aes_d1;
+    if( aes_setkey_enc(&aes_d1, key_d1, 128 )!=0 ){
+		print_load(" Error : aes_setkey_enc aes_d1 ");
+		return FAILED;
+	}
+    if(aes_crypt_cbc(&aes_d1, AES_ENCRYPT, 16, iv_d1, key, key)!=0){
+		print_load(" Error : aes_crypt_cbc aes_d1 ");
+		return FAILED;
+	}
+	print_load("Decryption key :");
+	hex_print_load((char *) key, 16);
+	
+	u32 source;
+	print_load("sys_storage_open BDVD_DRIVE");
+	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
+		print_load("Error : sys_storage_open");
+		return FAILED;
+	}
+
+	print_load("sys_storage_open BDVD_DRIVE");
+	u8 *buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	if(buff==NULL) {
+		print_load("Error : malloc BDVD_BUFFSIZE");
+		sys_storage_close(source);
+		return FAILED;
+	}
+	
+	print_load("fopen %s", output);
+	FILE *f = fopen(output, "wb");
+	if(f==NULL) {
+		free(buff);
+		sys_storage_close(source);
+		print_load("Error : fopen");
+		return FAILED;
+	}
+	
+	print_load("init aes");
+	aes_context aes;
+	if( aes_setkey_dec(&aes, key, 128 )!=0 ) {
+		print_load(" Error : aes_setkey_dec ");
+		return FAILED;
+	}
+	
+	print_load("malloc iv");
+	u8 *iv = (u8 *) malloc(0x10);
+	if( iv == NULL ) {
+		print_load(" Error : malloc iv ");
+		return FAILED;
+	}	
+	
+	print_load("malloc sec0sec1");
+	u8 *sec0sec1 = (u8 *) malloc( 0x800 * 2 );
+	if( sec0sec1 == NULL ) {
+		print_load(" Error : malloc sec0sec1 ");
+		return FAILED;
+	}
+	
+	
+	u32 read;
+	print_load("sys_storage_read sec0sec1");
+	sys_storage_read(source, 0, 2, sec0sec1, &read, 0);
+		
+	u32 regions=(u8_to_u32(sec0sec1)*2)-1;
+	u32 total_sectors=1+u8_to_u32(sec0sec1+12+((regions-1)*4));
+	
+	print_load("gethering data");	
+	strcpy( copy_src, "/dev_bdvd");
+	strcpy( copy_dst, output);
+	gathering_nb_file = -1;
+	gathering_nb_directory = -1;
+	gathering_total_size = total_sectors * 0x800;
+	
+	
+	u64 current_sector=0;
+	u64 sector_nb;
+	u8 plain = YES;
+	
+	print_load("regions :  0x%X\n", regions);
+	print_load("total_sectors :  0x%X\n", total_sectors);
+	print_load("gathering_total_size :  0x%X\n", gathering_total_size);
+	
+	u32 i=0;
+	while(i<regions)
+	{	
+		u32 region_last_sector=u8_to_u32(sec0sec1+12+(i*4)) + 1;
+		
+		print_load("Region #%02d\n", i);
+		
+		if( plain == YES ) {
+			print_load("Copying offset 0x%llX to 0x%llX\n", 
+						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
+		} else {
+			region_last_sector -= 1;
+			print_load("Decripting offset 0x%llX to 0x%llX\n", 
+						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
+		}
+		 
+		while( current_sector < region_last_sector ) {
+		
+			memset(buff, 0, BDVD_BUFFSIZE);
+				
+			if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
+			else sector_nb = BDVD_BUFF_SEC_NB;
+			
+			sys_storage_read(source, current_sector, sector_nb, buff, &read, 0);
+			
+			if(copy_cancel) break;
+			
+			if( plain == NO ) {
+				u32 k;
+				for(k=0;k<sector_nb;++k) {
+					reset_iv(iv, current_sector+k);
+					if(aes_crypt_cbc(&aes, AES_DECRYPT, 0x800, iv, buff+0x800*k , buff+0x800*k )!=0) {
+						printf("Error : aes_crypt_cbc ");
+						fclose(f);
+						sys_storage_close(source);
+						free(buff);
+						free(iv);
+						free(sec0sec1);
+						return FAILED;
+					}
+				}
+			}
+			
+			if(copy_cancel) break;
+						
+			fwrite(buff, sector_nb, 0x800, f);
+			
+			current_sector += sector_nb;
+			
+			copy_current_size += sector_nb*0x800;
+		
+			if(copy_cancel) break;
+		}
+		
+		plain = !plain;
+		++i;
+	}
+	
+	fclose(f);
+	sys_storage_close(source);
+	free(buff);
+	free(iv);
+	free(sec0sec1);
+	
+	if( copy_cancel) return FAILED;
+	
+	return SUCCESS;
+}
+
 
 //*******************************************************
 // ZIP
@@ -10496,45 +11731,63 @@ u8 sha1_file(char *path, unsigned char output[20] )
     return SUCCESS;
 }
 
+#define MD5_BUFFER_SIZE		0x100000
 u8 md5_file(char *path, unsigned char output[16])
 {
     FILE *f;
-    size_t n;
     md5_context ctx;
-    unsigned char buf[1024];
-	uint64_t read=0;
-	uint64_t file_size;
+    u64 file_size;
+	u64 read=0;
+	u64 n;
+	
+	u8 *buf = (u8 *) malloc(MD5_BUFFER_SIZE);
+	if(buf == NULL) {
+		return FAILED;
+	}
 	
 	f = fopen( path, "rb");
     if( f == NULL ) {
 		//print_load("Error : md5_file, failed to open file");
+		FREE(buf);
 		return FAILED;
 	}
-
-    md5_starts( &ctx );
 	
 	print_head("Calculating MD5...");
-	prog_bar1_value=0;
+	
+	print_load("%s : %s", STR_FILE, &strrchr(path, '/')[1]);
 	
 	fseek (f , 0 , SEEK_END);
-	file_size = ftell (f);
+	file_size = (u64) ftell (f);
 	fseek(f, 0, SEEK_SET);
 	
-    while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 ) 
-	{
-		read+=n;
-		prog_bar1_value=(read*100)/file_size;
-		md5_update( &ctx, buf, n );
-		if(cancel==YES) break;
+	task_Init(file_size);
+	
+	md5_starts( &ctx );	
+	
+	while(read < file_size) {
+		if( read + MD5_BUFFER_SIZE > file_size) n = file_size-read;
+		else n = MD5_BUFFER_SIZE;
+		
+		fread(buf, sizeof(u8), n, f);
+		read += n;
+		
+		task_Update(n);
+		
+		md5_update(&ctx, buf, n);
+		
+		if(cancel) break;
 	}
-
+	
     md5_finish( &ctx, output );
 
     memset( &ctx, 0, sizeof( md5_context ) );
 
+	FREE(buf);
     fclose(f);
 	
-	if(cancel==YES) {
+	task_End();
+	
+	if(cancel) {
 		memset(output, 0, sizeof(output));
 		return FAILED;
 	}
@@ -10545,18 +11798,6 @@ u8 md5_file(char *path, unsigned char output[16])
 //*******************************************************
 // Game OPTION
 //*******************************************************
-
-void print_copy_log(char *str)
-{	
-	int i=0;
-	for(i=9; i > 0; i--){
-		strcpy(copy_log[i], copy_log[i-1]);
-	}
-	
-	strcpy(copy_log[0], str);
-	
-	if(strncmp(copy_log[0], "Error", 5) == 0)  sleep(4);
-}
 
 void get_hash(FILE* log, int hash_type, char *path)
 {
@@ -10641,22 +11882,25 @@ void HashFolder(int hash_type, char *dir)
 	}
 }
 
-u64 get_size(char *path, u8 upd_data)
+u64 get_size(char *path)
 {
 	struct stat s;
 	
-	if(stat(path, &s) != 0) return 0; else 
+	if(stat(path, &s) != 0) {
+		print_load("Error : %s", path);
+		return 0;
+	} else 
 	if(!S_ISDIR(s.st_mode)) { //FILE
-		if(upd_data==YES) {
-			total_size+=s.st_size;
-			nb_file+=1;
+		if(gathering) {
+			++gathering_nb_file;
+			gathering_total_size+=s.st_size;
 		}
 		return s.st_size;
 	}
 	
 	if(gathering_cancel==YES) return 0;
 	
-	if(upd_data == YES) nb_directory+=1;
+	if(gathering) ++gathering_nb_directory;
 	
 	u64 dir_size=0;
 	DIR *d;
@@ -10673,10 +11917,9 @@ u64 get_size(char *path, u8 upd_data)
 		
 		if(gathering_cancel==YES) return 0;
 		
-		dir_size += get_size(temp, upd_data);		
+		dir_size += get_size(temp);		
 	}
 	closedir(d);
-	
 	
 	return dir_size;
 }
@@ -10772,9 +12015,7 @@ int Delete_Game(char *path, int position)
 
 void Get_Game_Size(char *path)
 {
-	total_size=0;
-	nb_file= 0;
-	nb_directory=0;
+	reset_gathering();
 	
 	u8 split666 = is_66600(path);
 	if( is_splitted_iso(path) || split666) {
@@ -10791,11 +12032,11 @@ void Get_Game_Size(char *path)
 		for(i=0; i<100; i++) {
 			if(split666) sprintf(temp , "%s%02d" , iso_path, i);
 			else sprintf(temp , "%s%d" , iso_path, i);
-			get_size(temp, YES);
+			get_size(temp);
 		}
 	} 
 	else {
-		get_size(path, YES);
+		get_size(path);
 	}
 }
 
@@ -10839,8 +12080,18 @@ char *get_unit(u64 nb)
 	
 }
 
-u8 reading = 0;
-u8 writing = 0;
+char *GetTimeStr(u64 secTime)
+{
+	u64 loc_secTime = secTime;
+	
+	u64 hr = loc_secTime / 3600ULL;
+	loc_secTime = loc_secTime - 3600ULL * hr;
+	u64 min = loc_secTime / 60ULL;
+	loc_secTime = loc_secTime - 60ULL * min;
+	u64 sec = loc_secTime;
+	
+	return sprintf_malloc("%02d:%02d:%02d", hr, min, sec);
+}
 
 static sys_ppu_thread_t Copy_id;
 
@@ -10848,25 +12099,34 @@ void Draw_Copy_screen(void *unused)
 {
 	int i;
 	
-	uint8_t shutdown = NO;
+	u8 shutdown = NO;
 	copy_current_size=0;
-	total_size=0;
-	nb_file=0;
-	nb_directory=0;
-	gathering_cancel=NO;
 	copy_cancel=NO;
+	
+	u8 show_log = YES;
 	u8 is_dir = NO;
 	if(path_info(copy_src) == _DIRECTORY) is_dir=YES;
 	
 	u64 previous_size=0;
 	
+	for(i=0; i<=20; i++){
+		strcpy(loading_log[i], "\0");
+	}
+	
 	char speed_STR[32];
+	char elapsed_STR[32];
+	char remaining_STR[32];
+	
 	init_timer(4);
 	start_timer(4);
 	
+	u64 start_copy = sTime();
+	
+	float bar_w = 600;
+	
 	while(copy_flag) {
 		
-		cls();	
+		cls();
 		
 		Draw_BGS();
 		Draw_Notification();
@@ -10876,9 +12136,7 @@ void Draw_Copy_screen(void *unused)
 		
 		FontColor(COLOR_4);
 		
-		if(gathering==YES) {
-			DrawString(x , y, STR_GATHERING);
-		} else DrawString(x , y, STR_COPYING);
+		DrawString(x , y, STR_COPYING);
 		
 		FontColor(COLOR_1);
 		
@@ -10894,102 +12152,132 @@ void Draw_Copy_screen(void *unused)
 		
 		y+=new_line(1);
 		
-		if(gathering_cancel==YES)
+		if(gathering_cancel==YES) {
 			DrawFormatString(x , y, "%s : %s", STR_FILES, STR_UNKNOWN);
-		else
-			DrawFormatString(x , y, "%s : %d", STR_FILES, nb_file);
-		
+		} else 
+		if( 0 < gathering_nb_file ) {
+			DrawFormatString(x , y, "%s : %d", STR_FILES, gathering_nb_file);
+		}
 		y+=new_line(1);
 		
 		if(is_dir) {
-			if(gathering_cancel==YES)
+			if(gathering_cancel==YES) {
 				DrawFormatString(x , y, "%s : %s", STR_DIRS, STR_UNKNOWN);
-			else
-				DrawFormatString(x , y, "%s : %d", STR_DIRS, nb_directory);
-			
+			} else 
+			if( 0 <= gathering_nb_directory ) {
+				DrawFormatString(x , y, "%s : %d", STR_DIRS, gathering_nb_directory);
+			}
 			y+=new_line(1);
-		}
-		
-		char *size_current = get_unit(copy_current_size);
-		DrawString(x, y, size_current);
-		if(size_current) free(size_current);
-		
-		
-		if(gathering_cancel==YES) DrawString(x+400-WidthFromStr(STR_UNKNOWN), y, STR_UNKNOWN); 
-		else {
-			
-			char *size_tot = get_unit(total_size);
-			DrawString(x+400-WidthFromStr(size_tot), y, size_tot);
-			if(size_tot) free(size_tot);
 		}
 		
 		if( get_time(4) > 1000 ) {
 			char *copy_speed = get_unit(copy_current_size-previous_size);
-			
-			sprintf(speed_STR, "%s/s", copy_speed);
-			if(copy_speed) free(copy_speed);
+			if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
+			FREE(copy_speed);
 			
 			previous_size = copy_current_size;
 			start_timer(4);
+			
+			u64 ElapsedTime = sTime() - start_copy;
+			u64 RemainingTime = ElapsedTime * gathering_total_size / copy_current_size - ElapsedTime;
+				
+			char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
+			if(ElapsedTime_STR) sprintf(elapsed_STR,  "Elapsed : %s", ElapsedTime_STR);
+			FREE(ElapsedTime_STR);	
+			
+			if( gathering_total_size != 0 && gathering_cancel == NO) {
+				
+				char *RemainingTime_STR = GetTimeStr(RemainingTime);
+				if(RemainingTime_STR) sprintf(remaining_STR,  "Remaining : %s", RemainingTime_STR);
+				FREE(RemainingTime_STR);				
+			}
 		}
 		
+		DrawFormatString(x, y, elapsed_STR);
+		y+=new_line(1);
+			
+		if( gathering_total_size != 0 && gathering_cancel == NO) {
 		
-		DrawStringFromCenterX(x+200, y, speed_STR);
+			DrawFormatString(x, y, remaining_STR);
+			y+=new_line(1);
+		}
+				
+		char *size_current = get_unit(copy_current_size);
+		if(size_current) DrawString(x, y, size_current);
+		FREE(size_current);
+		
+		if(gathering_cancel==YES) DrawString(x+bar_w-WidthFromStr(STR_UNKNOWN), y, STR_UNKNOWN); 
+		else {
+			char *size_tot = get_unit(gathering_total_size);
+			if(size_tot) DrawString(x+bar_w-WidthFromStr(size_tot), y, size_tot);
+			FREE(size_tot);
+		}
+		
+		DrawStringFromCenterX(x+bar_w/2, y, speed_STR);
 		
 		y+=new_line(1);
-		
-		float val;
-		if(gathering_cancel==YES) val = 100; else 
-		val = copy_current_size * 100 / total_size;
-		
-		Draw_Progress_Bar(x, y, 4, val, COLOR_2);
+
+		if(gathering_total_size != 0 && gathering_cancel==NO) {
+			Draw_Progress_Bar_Advanced(x, y, 0, 0, bar_w, 4, 1, WHITE, BLACK, GREEN,  gathering_total_size, copy_current_size);
+		}
 		
 		y+=15;
-		Draw_Progress_Bar(x, y, 4, file_copy_prog_bar, COLOR_2);
-	
+		if(1 < gathering_nb_file) {
+			Draw_Progress_Bar_Advanced(x, y, 0, 0, bar_w, 4, 1, WHITE, BLACK, GREEN, 100, copy_file_prog_bar);
+			y+=20;
+			DrawFormatString(x, y, "%s : %s", STR_FILE, copy_file);
+		}
 		y+=20;
-		
-		DrawFormatString(x, y, "%s : %s", STR_FILE, copy_file);
-		
-		
-		y+=new_line(2);
 		
 		FontSize(17);
 		
-		for(i=0; i<10; i++) {
-			DrawString(x, y, copy_log[i]);
-			y+=new_line(1);
+		if( loading_log[0][0] ) {
+			for(i=0; i<=20; i++){
+				if(strstr(loading_log[i], "Error")) FontColor(RED);
+				else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+				else FontColor(COLOR_1);
+				
+				DrawFormatString(x , y, loading_log[i]);
+				y+=20;
+				if(y>450) break;
+			}
 		}
-
+		
 		x=INPUT_X;
 		y=INPUT_Y;
 		FontColor(COLOR_1);
 		SetFontZ(0);
-
+	
 		x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		
-		if(shutdown==YES) {
-			x=DrawButton(x, y, STR_TURNOFF_YES, BUTTON_SELECT);
-		} else {
-			x=DrawButton(x, y, STR_TURNOFF_NO, BUTTON_SELECT);
+		x=DrawButton(x, y, STR_TURNOFF, BUTTON_L1);
+		x=Draw_checkbox(x-3, y, 0, "", shutdown, YES);
+		
+		if( loading_log[0][0] ) {	
+			if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
+					else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
 		}
 		
 		tiny3d_Flip();
 		//ScreenShot();
 		ps3pad_read();
 		
-		if(NewPad(BUTTON_SELECT)) {
-			if(shutdown==YES) shutdown=NO; else shutdown=YES;
+		if(NewPad(BUTTON_L1)) {
+			shutdown= !shutdown;
+		}
+		if( loading_log[0][0] ) {	
+			if(NewPad(BUTTON_SELECT)) {
+				show_log = !show_log;
+			}
 		}
 		if(NewPad(BUTTON_CIRCLE)) {
-			if(gathering==YES) {
-				gathering_cancel=YES;
-				show_msg(STR_CANCELLED);
-			} else 	copy_cancel = YES;
+			copy_cancel = YES;
+			show_msg(STR_CANCELLED);
 		}
 		
-		
 	}
+	
+	print_load("Delete_Game");
 	
 	if(copy_cancel == YES) Delete_Game(copy_dst, -1);
 	else if(shutdown==YES) {
@@ -10999,32 +12287,39 @@ void Draw_Copy_screen(void *unused)
 	
 	memset(copy_src, 0, sizeof(copy_src));
 	memset(copy_dst, 0, sizeof(copy_dst));
-	copy_current_size=0;
-	total_size=0;
-	copy_cancel=NO;
-	gathering=NO;
-	gathering_cancel=NO;
-	nb_file=0;
-	nb_directory=0;
 	
-	for(i=0; i<10; i++){
-		strcpy(copy_log[i], "\0");
+	copy_current_size=0;
+	copy_cancel=NO;
+	
+	reset_gathering();
+	
+	for(i=0; i<=20; i++){
+		strcpy(loading_log[i], "\0");
 	}
+	
+	copy_flag = -1;
+	print_load("sysThreadExit");
 	
 	sysThreadExit(0);
 }
 
 void start_copy_loading()
 {
-	copy_flag=YES;
-	sysThreadCreate(&Copy_id, Draw_Copy_screen, NULL, 999, 0x2000, THREAD_JOINABLE, "copying");	
+	if( copy_flag==NO) {
+		copy_flag=YES;
+		sysThreadCreate(&Copy_id, Draw_Copy_screen, NULL, 999, 0x2000, THREAD_JOINABLE, "copying");	
+	}
 }
 
 void end_copy_loading()
 {
-	u64 ret;
-	copy_flag=NO;
-	sysThreadJoin(Copy_id, &ret);
+	if(copy_flag==YES) {
+		u64 ret;
+		copy_flag=NO;
+		while(copy_flag==NO) usleep(1000);
+		sysThreadJoin(Copy_id, &ret);
+		copy_flag=NO;
+	}
 }
 
 void initAIO()
@@ -11086,11 +12381,11 @@ static void reading_callback(sysFSAio *xaio, s32 error, s32 xid, u64 size)
 	char tmp[128];
     if(error != 0) {
 		reading_statut[i] = FAILED;
-		sprintf(tmp, "Error : reading error %X", (unsigned int) error); print_copy_log(tmp);
+		sprintf(tmp, "Error : reading error %X", (unsigned int) error); print_load(tmp);
 	} else 
 	if(size != xaio->size) {
 		reading_statut[i] = FAILED;
-		sprintf(tmp, "Error : reading size %X / %X", (unsigned int) size, (unsigned int) xaio->size); print_copy_log(tmp);
+		sprintf(tmp, "Error : reading size %X / %X", (unsigned int) size, (unsigned int) xaio->size); print_load(tmp);
 	} else {
 		buffer_statut[buffer_to_read] = DATA_FULL;
 		buffer_to_read++;
@@ -11107,11 +12402,11 @@ static void writing_callback(sysFSAio *xaio, s32 error, s32 xid, u64 size)
 	char tmp[128];
 	if(error != 0) {
 		writing_statut[i] = FAILED;
-		sprintf(tmp, "Error : writing error %X", (unsigned int) error); print_copy_log(tmp);
+		sprintf(tmp, "Error : writing error %X", (unsigned int) error); print_load(tmp);
 	} else 
 	if(size != xaio->size) {
 		writing_statut[i] = FAILED;
-		sprintf(tmp, "Error : writing size %X / %X", (unsigned int) size, (unsigned int) xaio->size); print_copy_log(tmp);
+		sprintf(tmp, "Error : writing size %X / %X", (unsigned int) size, (unsigned int) xaio->size); print_load(tmp);
 	} else {
 		buffer_statut[buffer_to_write] = DATA_EMPTY;
 		buffer_to_write++;
@@ -11144,7 +12439,7 @@ int CopyFile_async(char *src, char *dst)
 */
 	if(sysFsOpen(src, SYS_O_RDONLY, &fdr, 0,0) != 0) {
 		//sysFsAioFinish(src);
-		print_copy_log("Error : failed to copy_async / sysFsOpen(src)");
+		print_load("Error : failed to copy_async / sysFsOpen(src)");
 		return FAILED;
 	}
 /*
@@ -11159,13 +12454,13 @@ int CopyFile_async(char *src, char *dst)
 		//sysFsAioFinish(src);
 		//sysFsAioFinish(dst);
 		sysFsClose(fdr);
-		print_copy_log("Error : failed to copy_async / sysFsOpen(src)");
+		print_load("Error : failed to copy_async / sysFsOpen(src)");
 		return FAILED;
 	}
 
 	char *mem = (char *) malloc(BUFFNUMBER * BUFFSIZE);
 	if(mem == NULL) {
-		print_copy_log("Error : failed to copy_async / malloc");
+		print_load("Error : failed to copy_async / malloc");
 		return FAILED;
 	}
 	
@@ -11206,7 +12501,7 @@ int CopyFile_async(char *src, char *dst)
 						reading_pos+=aio_read[i].size;
 						
 						if(sysFsAioRead(&aio_read[i], &id_r[i], reading_callback) != 0) {
-							print_copy_log("Error : failed to copy_async / sysFsAioRead");
+							print_load("Error : failed to copy_async / sysFsAioRead");
 							goto error;
 						}
 					}
@@ -11215,7 +12510,7 @@ int CopyFile_async(char *src, char *dst)
         
 		
 			if(reading_statut[i] == FAILED) {
-				print_copy_log("Error : failed to copy_async / reading_statut = FAILED !");
+				print_load("Error : failed to copy_async / reading_statut = FAILED !");
 				goto error;
 			}
 			
@@ -11235,7 +12530,7 @@ int CopyFile_async(char *src, char *dst)
 						writing_pos += aio_write[i].size;
 						
 						if(sysFsAioWrite(&aio_write[i], &id_w[i], writing_callback) != 0) {
-							print_copy_log("Error : failed to copy_async / sysFsAioWrite");
+							print_load("Error : failed to copy_async / sysFsAioWrite");
 							goto error;
 						}
 					} 
@@ -11243,11 +12538,11 @@ int CopyFile_async(char *src, char *dst)
 			}
 			
 			if(writing_statut[i] == FAILED) {
-				print_copy_log("Error : failed to copy_async / writing_statut = FAILED !");
+				print_load("Error : failed to copy_async / writing_statut = FAILED !");
 				goto error;
 			}
 			
-			file_copy_prog_bar=writed*100/size;
+			copy_file_prog_bar=writed*100/size;
 			
 		}
     }
@@ -11293,7 +12588,7 @@ u8 CopyFile_sysFs(char* src, char* dst)
 	int f1;
 	int f2;
 	
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 
 	struct stat s;
 	if(stat(src, &s) != 0) return FAILED; 
@@ -11330,13 +12625,13 @@ u8 CopyFile_sysFs(char* src, char* dst)
 
 		pos += read;
 		
-		file_copy_prog_bar=pos*100/lenght;
+		copy_file_prog_bar=pos*100/lenght;
 		copy_current_size+=read;
 	}
 
 skip:
 
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	if(mem) free(mem);
 	if(f1) sysFsClose(f1);
@@ -11357,7 +12652,7 @@ u8 CopyFile_sysFsLv2(char* src, char* dst)
 	s32 fd = -1;
 	s32 fd2 = -1;
 	
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 
 	struct stat s;
 	if(stat(src, &s) != 0) return FAILED; 
@@ -11390,13 +12685,13 @@ u8 CopyFile_sysFsLv2(char* src, char* dst)
 
 		pos += read;
 		
-		file_copy_prog_bar=pos*100/lenght;
+		copy_file_prog_bar=pos*100/lenght;
 		copy_current_size+=read;
 	}
 
 skip:
 
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	if(mem) free(mem);
 	if(fd >=0) sysLv2FsClose(fd);
@@ -11430,17 +12725,17 @@ u8 CopyFile_ps3ntfs(char* src, char* dst)
 	strcpy(source, src);
 	strcpy(destination, dst);
 	if(strcmp(src, dst)==0) {
-		RemoveExtention(destination);
+		RemoveExtension(destination);
 		char *temp_str = strcpy_malloc(destination);
 		int o;
 		for(o=0; o<1000; o++) {
-			sprintf(destination, "%s_%03d%s", temp_str, o, GetExtention(dst));
+			sprintf(destination, "%s_%03d%s", temp_str, o, GetExtension(dst));
 			if(path_info(destination) == _NOT_EXIST) break;
 		}
 		free(temp_str);
 	}
 	
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	struct stat s;
 	if(stat(src, &s) != 0) return FAILED; 
@@ -11501,7 +12796,7 @@ next_file:
 
 		pos += read;
 		
-		file_copy_prog_bar=pos*100/lenght;
+		copy_file_prog_bar=pos*100/lenght;
 		copy_current_size+=read;
 	}
 	
@@ -11526,7 +12821,7 @@ next_file:
 	
 skip:
 
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	if(mem) FREE(mem);
 	
@@ -11556,7 +12851,7 @@ u8 CopyFile_fcntl(char* src, char* dst)
 	int f1=-1;
 	int f2=-1;
 	
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	struct stat s;
 	if(stat(src, &s) != 0) return FAILED; 
@@ -11587,13 +12882,13 @@ u8 CopyFile_fcntl(char* src, char* dst)
 
 		pos += rd;
 		
-		file_copy_prog_bar=pos*100/lenght;
+		copy_file_prog_bar=pos*100/lenght;
 		copy_current_size+=rd;
 	}
 
 skip:
 
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	if(mem) free(mem);
 	if(f1) close(f1);
@@ -11616,7 +12911,7 @@ u8 CopyFile_stdio(char* src, char* dst)
 	FILE* f;
 	FILE* f2;
 	
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	struct stat s;
 	if(stat(src, &s) != 0) return FAILED; 
@@ -11653,7 +12948,7 @@ u8 CopyFile_stdio(char* src, char* dst)
 		
 		pos += read;
 		
-		file_copy_prog_bar=pos*100/lenght;
+		copy_file_prog_bar=pos*100/lenght;
 		
 		copy_current_size+=read;
 	
@@ -11661,7 +12956,7 @@ u8 CopyFile_stdio(char* src, char* dst)
 	
 skip:
 	
-	file_copy_prog_bar=0;
+	copy_file_prog_bar=0;
 	
 	if(mem) free(mem);
 	if(f) fclose(f);
@@ -11804,6 +13099,8 @@ void SpeedTest()
 u8 Copy(char *src, char *dst)
 {
 	
+	if(copy_cancel) return FAILED;
+	
 	u8 info_file = path_info(src);
 	
 	if(info_file == _NOT_EXIST) return FAILED; else
@@ -11904,6 +13201,8 @@ u8 CopyJoin(char *src, char *dst)
 
 u8 Move(char *src, char *dst)
 {
+	if( copy_cancel ) return FAILED;
+	
 	char dev_src[30];
 	char dev_dst[30];
 	
@@ -12002,12 +13301,9 @@ void sort_GAMELIST()
 
 void add_GAMELIST(char *path)
 {
-	u8 ext = get_ext(path);
+	u8 plat = get_platform(path);
 	
-	if(ext != _ISO_PS3 && ext != _JB_PS3
-	&& ext != _ISO_PSP && ext != _JB_PSP
-	&& ext != _ISO_PS2 && ext != _JB_PS2
-	&& ext != _ISO_PS1 && ext != _JB_PS1) return;
+	if(plat == UNK) return;
 		
 	game_number++;
 	list_game_path = (char **) realloc(list_game_path, (game_number+1) * sizeof(char *));
@@ -12017,13 +13313,13 @@ void add_GAMELIST(char *path)
 	list_game_havepic = (u8 *) realloc(list_game_havepic, (game_number+1) * sizeof(u8) );
 	
 	list_game_path[game_number] = strcpy_malloc(path);
-	list_game_platform[game_number] = ext;
+	list_game_platform[game_number] = plat;
 	
 	char title[512];
 	strcpy(title, &strrchr(path, '/')[1]);
-	RemoveExtention(title);
+	RemoveExtension(title);
 	
-	if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
+	if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP) {
 		GetParamSFO("TITLE", title, game_number, NULL);
 	}
 	list_game_title[game_number] = strcpy_malloc(title);
@@ -12083,7 +13379,7 @@ void remove_GAMELIST(s64 pos)
 void get_GAMELIST(char *scan_path)
 {
 	print_load("Scanning : %s", scan_path);
-	
+		
 	DIR *d;
 	struct dirent *dir;
 	
@@ -12162,9 +13458,7 @@ void Load_GAMELIST()
 }
 
 void Copy_Game(char *src, char *dst)
-{
-	start_copy_loading();	
-	
+{	
 	strcpy(copy_src, src);
 	strcpy(copy_dst, dst);
 	
@@ -12173,9 +13467,12 @@ void Copy_Game(char *src, char *dst)
 	char *tmp = strrchr(copy_src, '/');
 	strcat(copy_dst, tmp);
 	
-	gathering=YES;
+	start_gathering();
 	Get_Game_Size(copy_src);
-	gathering=NO;
+	end_gathering();
+	
+	
+	start_copy_loading();
 	
 	u8 ret = FAILED;
 	u8 split666 = is_66600(copy_src);		  
@@ -12230,7 +13527,7 @@ void Copy_Game(char *src, char *dst)
 
 end:
 	//if(ret==SUCCESS) 
-	if( (total_size <= copy_current_size && copy_current_size != 0) 
+	if( (gathering_total_size <= copy_current_size && copy_current_size != 0) 
 	||	(gathering_cancel == YES && copy_cancel==NO && copy_current_size > 0) ) {
 	
 		add_GAMELIST(copy_dst);
@@ -12253,10 +13550,10 @@ end:
 void Draw_GameProperties()
 {
 	
-	char *tot_size = get_unit(total_size);
+	char *tot_size = get_unit(gathering_total_size);
 	char sys_vers[64];
 	memset(sys_vers, 0, 64);
-	if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+	if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 		char tmp[10];
 		if(GetParamSFO("PS3_SYSTEM_VER", tmp, position, NULL)==SUCCESS) {
 			float f;
@@ -12306,16 +13603,16 @@ void Draw_GameProperties()
 		FontColor(COLOR_3);
 		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_PLATFORM);
 		FontColor(COLOR_1);
-		if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+		if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 			DrawString(xt+10 , y,  "PlayStation 3");
 		} else
-		if(list_game_platform[position] == _JB_PS2 || list_game_platform[position] == _ISO_PS2) {
+		if(list_game_platform[position] == JB_PS2 || list_game_platform[position] == ISO_PS2) {
 			DrawString(xt+10 , y,  "PlayStation 2");
 		} else
-		if(list_game_platform[position] == _JB_PS1 || list_game_platform[position] == _ISO_PS1) {
+		if(list_game_platform[position] == JB_PS1 || list_game_platform[position] == ISO_PS1) {
 			DrawString(xt+10 , y,  "PlayStation");
 		} else
-		if(list_game_platform[position] == _JB_PSP || list_game_platform[position] == _ISO_PSP) {
+		if(list_game_platform[position] == JB_PSP || list_game_platform[position] == ISO_PSP) {
 			DrawString(xt+10 , y,  "PlayStation Portable");
 		} else DrawString(xt+10 , y,  STR_UNKNOWN);
 		
@@ -12341,7 +13638,7 @@ void Draw_GameProperties()
 		FontColor(COLOR_3);
 		xt=DrawFormatString(x1 , y, "%s :", STR_FILES);
 		FontColor(COLOR_1);
-		DrawFormatString(xt+10 , y,  "%d", nb_file);
+		DrawFormatString(xt+10 , y,  "%d", gathering_nb_file);
 		
 		y+=new_line(1);
 		
@@ -12349,13 +13646,13 @@ void Draw_GameProperties()
 			FontColor(COLOR_3);
 			xt=DrawFormatString(x1 , y, "%s :", STR_DIRS);
 			FontColor(COLOR_1);
-			DrawFormatString(xt+10 , y,  "%d", nb_directory);
+			DrawFormatString(xt+10 , y,  "%d", gathering_nb_directory);
 			
 			y+=new_line(1);
 		}
 		
 		
-		if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+		if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 			FontColor(COLOR_3);
 			xt=DrawFormatString(x1 , y, "%s :", STR_SYSVERS);
 			FontColor(COLOR_1);
@@ -12371,7 +13668,7 @@ void Draw_GameProperties()
 		
 		y+=new_line(1);
 		
-		if(list_game_platform[position] == _ISO_PS2) {
+		if(list_game_platform[position] == ISO_PS2) {
 		
 			
 			FontColor(COLOR_3);
@@ -12409,44 +13706,51 @@ void Draw_GameProperties()
 		}
 	}
 	
-	total_size=0;
-	nb_file=0;
-	nb_directory=0;
+	gathering_total_size=0;
+	gathering_nb_file=0;
+	gathering_nb_directory=0;
 	
 }
 
-void dump_lv1(char *dump_path) 
-{
-	show_msg("TODO");
-}
+#define DUMPER_BUFFSIZE		0x10000
 
-void dump_lv2(char *dump_path) 
+void dump_lv1(char *path)
 {
 	FILE* f=NULL;
-	u64 i, data;
-	char temp[128];
-	
-	int j=0;
-	
-	sprintf(temp, "%s_%d", dump_path, j);
-	
-	while(path_info(temp) != _NOT_EXIST) {
-		j+=1;
-		sprintf(temp, "%s_%d", dump_path, j);
+	u64 i, j;
+	char temp[512];
+		
+	char *date = get_date();
+	if( date == NULL) {
+		print_load("Error : failed to get_date");
+		return;
 	}
+	
+	sprintf(temp, "%s/%s_%X_LV1.BIN", path, date, firmware);
+	
+	FREE(date);
+	remove(temp);
 	
 	f=fopen(temp, "wb");
 	if(f==NULL) {
-		print_load("Error : cannot dump %s", temp);
+		print_load("Error : cannot fopen %s", temp);
 		return;
-	} else
+	}
 	
 	prog_bar1_value = 0;
 	
-	for(i=0x8000000000000000ULL ; i < 0x8000000000800000ULL; i+=0x8) {
-		data=lv2peek(i);
-		fwrite(&data, sizeof(u64), 1, f);
-		prog_bar1_value = (i*100)/0x800000;
+	u64 data[DUMPER_BUFFSIZE];
+	
+	for(i=0x0ULL ; i < 0x1000000ULL; i+= 0x8 * DUMPER_BUFFSIZE ) {
+		memset(data, 0, DUMPER_BUFFSIZE*8);
+		
+		for( j = 0; j < DUMPER_BUFFSIZE; j++) {
+			data[j]=lv1peek(i+j*0x8);
+		}
+		
+		fwrite(&data, sizeof(u64), DUMPER_BUFFSIZE, f);
+		
+		prog_bar1_value = ((i+j)*100)/0x1000000ULL;
 		if(cancel==YES) break;
 	}
 	fclose(f);
@@ -12455,10 +13759,85 @@ void dump_lv2(char *dump_path)
 		Delete(temp);
 		cancel=NO;
 	}
-
 }
 
-void dump_flash(char *dump_path)
+
+void dump_lv2(char *path)
+{
+	FILE* f=NULL;
+	u64 i, j;
+	char temp[512];
+		
+	char *date = get_date();
+	if( date == NULL) {
+		print_load("Error : failed to get_date");
+		return;
+	}
+	
+	sprintf(temp, "%s/%s_%X_LV2.BIN", path, date, firmware);
+	
+	FREE(date);
+	remove(temp);
+	
+	f=fopen(temp, "wb");
+	if(f==NULL) {
+		print_load("Error : cannot fopen %s", temp);
+		return;
+	}
+	
+	prog_bar1_value = 0;
+	
+	u64 data[DUMPER_BUFFSIZE];
+	
+	for(i=0x8000000000000000ULL ; i < 0x8000000000800000ULL; i+= 0x8 * DUMPER_BUFFSIZE ) {
+		memset(data, 0, DUMPER_BUFFSIZE*8);
+		
+		for( j = 0; j < DUMPER_BUFFSIZE; j++) {
+			data[j]=lv2peek(i+j*0x8);
+		}
+		fwrite(&data, sizeof(u64), DUMPER_BUFFSIZE, f);
+		
+		prog_bar1_value = ((i+j)*100)/0x800000;
+		if(cancel==YES) break;
+	}
+	fclose(f);
+	
+	if(cancel==YES) {
+		Delete(temp);
+		cancel=NO;
+	}
+}
+
+u8 FlashInfo(u64 *flash_id, u8 *mode)
+{
+	u32 sourceR, read;
+	u64 offset, sector[ 0x40 ];
+	int ret = 1;
+	
+	ret = sys_storage_open( FLASH_NOR, &sourceR );
+    if( ret == 0 ) {
+		offset = 0x178;
+		*flash_id = FLASH_NOR;
+	} else {
+    	offset = 0x204;
+		sys_storage_close( sourceR );
+		ret = sys_storage_open( FLASH_NAND, &sourceR );
+		if( ret != 0 ) return FAILED;
+		*flash_id = FLASH_NAND;
+	}
+	
+	sys_storage_read( sourceR, offset, 0x1, sector, &read, 0x22 );
+	sys_storage_close( sourceR );
+	
+	if(0x0000000100820000 <= sector[0x0E] && sector[0x0E] < 0x0000000100830000)
+		*mode = 0xD;
+	else 
+		*mode = 0xC;
+		
+	return SUCCESS;
+}
+
+void dump_flash(char *path)
 {
 	FILE* f;
 	
@@ -12468,24 +13847,28 @@ void dump_flash(char *dump_path)
 	u64 i;
 	u64 size_dump;
 	
-	char temp[255];
-	int j=0;
+	u64 flash_id;
+	u8 mode;
 	
-	sprintf(temp, "%s_%d", dump_path, j);
-	
-	while(path_info(temp) != _NOT_EXIST) {
-		j+=1;
-		sprintf(temp, "%s_%d", dump_path, j);
+	if( FlashInfo(&flash_id, &mode) == FAILED ) {
+		print_load("Error : FlashInfo sys_storage_open");
+		return;
 	}
 	
-	ret = sys_storage_open( FLASH_NOR, &source );
+	ret = sys_storage_open(flash_id, &source );
 	if( ret != 0 ) { 
-		size_dump=0x77E00;
-		sys_storage_close(source);
-		sys_storage_open(FLASH_NAND, &source);
-	} 
-	else {
+		print_load("Error : dump_flash sys_storage_open");
+		return;
+	}
+	
+	char temp[255];
+	
+	if( flash_id == FLASH_NOR ) {
+		sprintf(temp, "%s/%XEX-FLASH.NOR.BIN", path, mode);
 		size_dump=0x8000 ;
+	} else {
+		sprintf(temp, "%s/%XEX-FLASH.NAND.BIN", path, mode);
+		size_dump=0x77E00;
 	}
 	
 	prog_bar1_value = 0;
@@ -12505,6 +13888,200 @@ void dump_flash(char *dump_path)
 		Delete(temp);
 		cancel=NO;
 	}
+}
+
+u8 *Load_from_device(u32 start_offset, u32 size, u32 device_id, u32 sector_size)
+{
+	u32 source;
+	if( sys_storage_open( device_id, &source) != 0) {
+		print_load("Error : Load_from_device sys_storage_open");
+		return NULL;
+	}
+	
+	u8 *data = (u8 *) malloc(size);
+	if(data==NULL) {
+		print_load("Error : Load_from_device malloc");
+		sys_storage_close(source);
+		return NULL;
+	}
+	
+	u32 read;
+	u32 dumped = 0;
+	u8 buffer[ sector_size ];
+	
+	u32 sector_id = start_offset / sector_size;
+	
+	u32 start_sector_offset = start_offset - (sector_id * sector_size);
+		
+	u32 end_offset = start_offset + size;
+	
+	u32 end_sector_id = end_offset / sector_size ;
+	u32 end_sector_offset = end_offset - (end_sector_id * sector_size);
+	
+	
+	u32 start = start_sector_offset;
+	
+	while(sector_id <= end_sector_id ) {
+		
+		memset(buffer, 0, 0x200);
+
+		sys_storage_read( source, sector_id, 1,  buffer, &read, 0x22 );
+		
+		u32 cpy_size = sector_size - start;
+		
+		if(sector_id == end_sector_id ) cpy_size = end_sector_offset - start;
+		
+		memcpy(data + dumped, &buffer[start], cpy_size);
+		
+		dumped += cpy_size;
+		
+		start = 0;
+		sector_id++;
+	}
+	
+	if( dumped != size ) {
+		print_load("Error : Load_from_device dumped != size");
+		FREE(data);
+		sys_storage_close(source);
+		return NULL;
+	}
+	
+	sys_storage_close(source);
+	
+	return data;
+}
+
+// https://www.psdevwiki.com/ps3/Flash
+
+#define FLASH_SECTOR_SIZE	0x200
+
+u8 *Load_from_flash(u32 start_offset, u32 size, u32 source)
+{
+	u8 *data = (u8 *) malloc(size);
+	if(data==NULL) {
+		print_load("Error : load_from_flash malloc");
+		return NULL;
+	}
+	
+	u32 read;
+	u32 dumped = 0;
+	u8 buffer[ FLASH_SECTOR_SIZE ];
+	
+	u32 sector_id = start_offset / FLASH_SECTOR_SIZE;
+	
+	u32 start_sector_offset = start_offset - (sector_id * FLASH_SECTOR_SIZE);
+		
+	u32 end_offset = start_offset + size;
+	
+	u32 end_sector_id = end_offset / FLASH_SECTOR_SIZE ;
+	u32 end_sector_offset = end_offset - (end_sector_id * FLASH_SECTOR_SIZE);
+	
+	u32 start = start_sector_offset;
+	
+	while(sector_id <= end_sector_id ) {
+		
+		memset(buffer, 0, 0x200);
+
+		sys_storage_read( source, sector_id, 1,  buffer, &read, 0x22 );
+		
+		u32 cpy_size = FLASH_SECTOR_SIZE - start;
+		
+		if(sector_id == end_sector_id ) cpy_size = end_sector_offset - start;
+		
+		memcpy(data + dumped, &buffer[start], cpy_size);
+		
+		dumped += cpy_size;
+		
+		start = 0;
+		sector_id++;
+	}
+	
+	if( dumped != size ) {
+		print_load("Error : load_from_flash dumped != size");
+		FREE(data);
+		return NULL;
+	}
+	
+	return data;
+}
+
+u8 *get_eid4()
+{	
+	u32 source;
+	u64 offset;
+    
+    int ret = 1;
+
+    ret = sys_storage_open( FLASH_NOR, &source );
+    if( ret == 0 ) {
+		offset = 0x303A0;
+	} else {
+		offset = 0x81BA0; 
+		sys_storage_close( source );
+		sys_storage_open( FLASH_NAND, &source );
+	}
+	
+    u8 *eid4 = Load_from_flash(offset, 0x30, source);
+	
+	sys_storage_close( source );
+	
+	return eid4;
+	
+	
+}
+
+u8 dump_3Dump()
+{
+	if( path_info( "/dev_hdd0/tmp/3Dump.bin" ) == _FILE ) {
+		print_load( "* 3Dump.bin found" );
+		return SUCCESS;
+	}
+	
+	if( path_info( "/dev_hdd0/tmp/eid_root_key" ) == _FILE ) {
+		// todo : check it  !
+	} else {
+		if( dump_eid_root_key("/dev_hdd0/tmp/eid_root_key") == FAILED) return FAILED;
+	}
+	
+	int size;
+	char *erk = LoadFile("/dev_hdd0/tmp/eid_root_key", &size);
+	if( erk == NULL) {
+		print_load("Error : dump_3Dump, load eid_root_key");
+		return FAILED;
+	}
+	
+	u8 *eid4 = get_eid4();
+	if( eid4 == NULL) {
+		FREE(erk);
+		return FAILED;
+	}
+	
+	FILE *f;
+	
+	f=fopen("/dev_hdd0/tmp/3Dump.bin", "wb");
+	if(f==NULL) {
+		print_load("Error : dump_3Dump, fopen 3Dump.bin");
+		FREE(erk);
+		FREE(eid4);
+		return FAILED;
+	}
+	
+	fwrite(eid4, 0x30, 1,  f);
+	fwrite(erk, 0x30, 1, f);
+	fclose(f);
+	
+	SetFilePerms("/dev_hdd0/tmp/3Dump.bin");
+	
+	return SUCCESS;
+}
+
+u8 *Load_3Dump()
+{
+	if( dump_3Dump() == FAILED )  return NULL;
+	
+	int size;
+	
+	return (u8 *) LoadFile("/dev_hdd0/tmp/3Dump.bin", &size);
 }
 
 u8 SetFilePerms(char *path)
@@ -12587,11 +14164,12 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 {
 	FILE* sfo=NULL;
 	
-	u8 type = get_ext(path);
 	
-	if(type != _ISO_PS3 && type != _ISO_PSP && type != _JB_PS3 && type != _JB_PSP && type != _SFO) return NULL;
+	char *ext = get_ext(path);
 	
-	if(type == _SFO) {
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _ISO_PSP) && strcmp(ext, _JB_PS3) && strcmp(ext, _JB_PSP) && strcasecmp(ext, ".sfo")) return NULL;
+	
+	if(!strcasecmp(ext, ".sfo")) {
 		sfo = fopen(path, "rb+");
 		if(sfo==NULL) return NULL;
 		
@@ -12603,7 +14181,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		
 		return sfo;
 	} else 
-	if(type == _ISO_PS3) {
+	if(!strcmp(ext, _ISO_PS3)) {
 		sfo = fopen(path, "rb+");
 		if(sfo==NULL) return NULL;
 		u64 file_offset=0;
@@ -12619,7 +14197,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		
 		return sfo;
 	} else
-	if(type == _ISO_PSP) {
+	if(!strcmp(ext, _ISO_PSP)) {
 		sfo = fopen(path, "rb+");
 		if(sfo==NULL) return NULL;
 		u64 file_offset=0;
@@ -12635,7 +14213,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		
 		return sfo;
 	} else
-	if(type== _JB_PS3) {
+	if(!strcmp(ext, _JB_PS3)) {
 	
 		char SFO_path[255];
 		sprintf(SFO_path, "%s/PS3_GAME/PKGDIR/PARAM.SFO", path);
@@ -12653,7 +14231,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		
 		return sfo;
 	} else
-	if(type == _JB_PSP) {
+	if(!strcmp(ext, _JB_PSP)) {
 		char SFO_path[255];
 		
 		sprintf(SFO_path, "%s/PSP_GAME/PARAM.SFO", path);
@@ -12843,10 +14421,9 @@ FILE* openEBOOT(int pos, u32 *start_offset)
 	FILE* eboot=NULL;
 	
 	u8 type = list_game_platform[pos];
-	if(type != _ISO_PS3 && type != _ISO_PSP && type != _JB_PS3)	type = get_ext(list_game_path[pos]);
-	if(type != _ISO_PS3 && type != _ISO_PSP && type != _JB_PS3) return FAILED;
+	if(type != ISO_PS3 && type != JB_PS3)	return FAILED;
 	
-	if(type == _ISO_PS3) {
+	if(type == ISO_PS3) {
 		eboot = fopen(list_game_path[pos], "rb+");
 		if(eboot==NULL) return NULL;
 		u64 file_offset=0;
@@ -12860,7 +14437,7 @@ FILE* openEBOOT(int pos, u32 *start_offset)
 
 		return eboot;
 	} else
-	if(type == _JB_PS3) {
+	if(type == JB_PS3) {
 		char EBOOT_path[255];
 		sprintf(EBOOT_path, "%s/PS3_GAME/USRDIR/EBOOT.BIN", list_game_path[pos]);
 		
@@ -13319,19 +14896,16 @@ screen:
 			x=DrawButton(x, y, STR_DL_ALL, BUTTON_SQUARE);
 		}
 		if(nPKG!=-1)  {
-			if(shutdown==YES) {
-				x=DrawButton(x, y, STR_TURNOFF_YES, BUTTON_SELECT);
-			} else {
-				x=DrawButton(x, y, STR_TURNOFF_NO, BUTTON_SELECT);
-			}
+			x=DrawButton(x, y, STR_TURNOFF, BUTTON_L1);
+			x=Draw_checkbox(x-3, y, 0, "", shutdown, YES);
 		}
 		
 		tiny3d_Flip();
 		ScreenShot();
 		ps3pad_read();
 		
-		if(NewPad(BUTTON_SELECT) && nPKG!=-1) {
-			if(shutdown==YES) shutdown=NO; else shutdown=YES;
+		if(NewPad(BUTTON_L1) && nPKG!=-1) {
+			shutdown= !shutdown;
 		}
 		if(NewPad(BUTTON_UP)) {
 			if(d_position>0) d_position--;
@@ -13766,7 +15340,9 @@ void PlugAndPlay_thread(void *unused)
 				// refresh several times because some devices takes times to be mounted
 				sleep(2);
 				if(do_Refresh==NO) do_Refresh = YES;
-				sleep(2);
+				sleep(3);
+				if(do_Refresh==NO) do_Refresh = YES;
+				sleep(4);
 				if(do_Refresh==NO) do_Refresh = YES;
 			}
 			Old_NumberOfDevice = NumberOfDevice;
@@ -13797,6 +15373,10 @@ void end_PlugAndPlay()
 
 void AutoRefresh_GAMELIST()
 {
+#ifdef RPCS3
+	return;
+#endif
+
 	if(PlugAndPlay==NO) { start_PlugAndPlay(); return; }
 	if(do_Refresh == NO) return;
 	
@@ -13825,7 +15405,7 @@ void AutoRefresh_GAMELIST()
 		getDevices();
 		if( device_number == device_number_OLD) {
 			print_load("Please wait even more...");
-			sleep(2);
+			sleep(4);
 			getDevices();
 		}
 	}
@@ -14002,9 +15582,9 @@ u8 CheckMD5(char *path)
 	
 	print_head("Checking MD5...");
 	
-	u8 platform = get_ext(path);
+	u8 platform = get_platform(path);
 	
-	if(platform != _ISO_PS2 && platform != _ISO_PS1) {
+	if(platform != ISO_PS2 && platform != ISO_PS1) {
 		print_load("Error : this platform isn't supported");
 		return FAILED;
 	}
@@ -14082,7 +15662,7 @@ u32 GetRenaCRC32(char *path)
 	char link[128];
 	u32 renaCRC = 0;
 	
-	if( Get_ID(path, _ISO_PSP, game_ID) == FAILED) return 0;
+	if( Get_ID(path, ISO_PSP, game_ID) == FAILED) return 0;
 	
 	sprintf(link, "http://renascene.com/?target=search1&srchser=1&srch=%s", game_ID);
 	Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp");
@@ -14121,7 +15701,7 @@ u32 GetPSPCRC32(char *path)
 	unsigned int CRC = 0;
 	char CRC_DB[128];
 	
-	if( Get_ID(path, _ISO_PSP, game_ID) == FAILED) return 0;
+	if( Get_ID(path, ISO_PSP, game_ID) == FAILED) return 0;
 	
 	sprintf(CRC_DB, "/dev_hdd0/game/%s/USRDIR/sys/PSP_CRC.txt", ManaGunZ_id);
 	
@@ -14503,7 +16083,7 @@ u8 md5_filefromISO(char *path, char *filename, unsigned char output[16])
 			if(split666) sprintf(iso_path, "%s%02d", temp, i);
 			else sprintf(iso_path, "%s%d", temp, i);
 			
-			fsize = get_size(iso_path, NO);
+			fsize = get_size(iso_path);
 			
 			if(file_offset<fsize) {
 				if(i!=0) {					 
@@ -14612,13 +16192,13 @@ check:
 
 u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 {
-	if(platform == _ISO_PS3 || platform == _JB_PS3) {
+	if(platform == ISO_PS3 || platform == JB_PS3) {
 		return GetParamSFO("TITLE_ID", game_ID, -1, gpath);	
 	} else
-	if(platform == _ISO_PSP || platform == _JB_PSP) {
+	if(platform == ISO_PSP || platform == JB_PSP) {
 		return GetParamSFO("DISC_ID", game_ID, -1, gpath);	
 	} else
-	if(platform == _ISO_PS2 || platform == _ISO_PS1) {
+	if(platform == ISO_PS2 || platform == ISO_PS1) {
 		char *mem = NULL;
 		int size;
 		mem = LoadFileFromISO(NO, gpath, "SYSTEM.CNF", &size);
@@ -14628,7 +16208,7 @@ u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 		if( strstr(mem, ":") != NULL) strcpy(game_ID, &strrchr(mem, ':')[1]);
 		free(mem);
 	} else
-	if(platform == _JB_PS2 || platform == _JB_PS1) {
+	if(platform == JB_PS2 || platform == JB_PS1) {
 		char temp[255];
 		sprintf(temp, "%s/SYSTEM.CNF", gpath);
 		char *mem = NULL;
@@ -14682,7 +16262,7 @@ u32 Download_covers()
 		int j;
 		for(j=0; j < strlen(game_ID); j++) game_ID[j] = upit(game_ID[j]);
 		
-		if(list_game_platform[i] == _JB_PS3 || list_game_platform[i] == _ISO_PS3)
+		if(list_game_platform[i] == JB_PS3 || list_game_platform[i] == ISO_PS3)
 		if(strstr(game_ID, "NP") != NULL) continue;
 		
 		sprintf(out, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, game_ID);
@@ -14730,7 +16310,7 @@ u32 Download_covers()
 		
 		u8 found = NO;
 		int n,k;
-		if(list_game_platform[i] == _JB_PS3 || list_game_platform[i] == _ISO_PS3) {
+		if(list_game_platform[i] == JB_PS3 || list_game_platform[i] == ISO_PS3) {
 			//sprintf(link, "http://damox.net/images/covers/PS3/%s.JPG", game_ID);
 			
 			//if(download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
@@ -14780,7 +16360,7 @@ u32 Download_covers()
 			if(found==YES) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 			print_load("FAILED : %s", list_game_title[i]); 
 		} else
-		if(list_game_platform[i] == _JB_PS2 || list_game_platform[i] == _ISO_PS2) {
+		if(list_game_platform[i] == JB_PS2 || list_game_platform[i] == ISO_PS2) {
 			
 			//sprintf(link, "http://opl.sksapps.com/art/%s_COV.jpg", game_ID);
 			//if( download(link, out) == SUCCESS) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
@@ -14840,7 +16420,7 @@ u32 Download_covers()
 						
 			print_load("FAILED : %s", list_game_title[i]); 
 		} else
-		if(list_game_platform[i] == _JB_PS1 || list_game_platform[i] == _ISO_PS1) {
+		if(list_game_platform[i] == JB_PS1 || list_game_platform[i] == ISO_PS1) {
 			
 			//see http://playstationmuseum.com/product-codes/%s
 			
@@ -14879,7 +16459,7 @@ u32 Download_covers()
 			if(found==YES) {print_load("OK : %s", list_game_title[i]); nb_dl++; continue;}
 			else print_load("FAILED : %s", list_game_title[i]); 
 		} else
-		if(list_game_platform[i] == _JB_PSP || list_game_platform[i] == _ISO_PSP) {
+		if(list_game_platform[i] == JB_PSP || list_game_platform[i] == ISO_PSP) {
 			
 			//sprintf(link, "http://damox.net/images/covers/PSP/%s.jpg", game_ID);
 			//if(download(link, out) == SUCCESS) found=YES;
@@ -14981,72 +16561,6 @@ void remove_cfw_syscalls()
 //*******************************************************
 // Signed ELF
 //*******************************************************
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <unistd.h>
-#include <getopt.h>
-
-#include "types.h"
-#include "config.h"
-#include "aes.h"
-#include "util.h"
-#include "keys.h"
-#include "sce.h"
-#include "np.h"
-#include "self.h"
-#include "rvk.h"
-#include "frontend.h"
-
-/*! Shorter Versions of arg options. */
-#define ARG_NULL no_argument
-#define ARG_NONE no_argument
-#define ARG_REQ required_argument
-#define ARG_OPT optional_argument
-
-/*! Verbose mode. */
-BOOL _verbose = FALSE;
-/*! Raw mode. */
-BOOL _raw = FALSE;
-
-/*! List keys. */
-//static BOOL _list_keys = FALSE;
-/*! Print infos on file. */
-//static BOOL _print_info = FALSE;
-/*! Decrypt file. */
-static BOOL _decrypt_file = FALSE;
-/*! Encrypt file. */
-static BOOL _encrypt_file = FALSE;
-
-/*! Parameters. */
-char *_template = NULL;
-char *_file_type = NULL;
-char *_compress_data = NULL;
-char *_skip_sections = NULL;
-char *_key_rev = NULL;
-char *_meta_info = NULL;
-char *_keyset = NULL;
-char *_auth_id = NULL;
-char *_vendor_id = NULL;
-char *_self_type = NULL;
-char *_app_version = NULL;
-char *_fw_version = NULL;
-char *_add_shdrs = NULL;
-char *_ctrl_flags = NULL;
-char *_cap_flags = NULL;
-#ifdef CONFIG_CUSTOM_INDIV_SEED
-char *_indiv_seed = NULL;
-#endif
-char *_license_type = NULL;
-char *_app_type = NULL;
-char *_content_id = NULL;
-char *_klicensee = NULL;
-char *_real_fname = NULL;
-char *_add_sig = NULL;
 
 int make_EBOOT_NPDRM(char *in, char *out, char *content_id)
 {
@@ -15418,7 +16932,7 @@ u8 re_sign_EBOOT(char *path)
 	}
 	
 	strcpy(elf, local_path);	
-	RemoveExtention(elf);
+	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
 	if(Extract(local_path, elf)==FAILED) {
@@ -15470,7 +16984,7 @@ u8 re_sign_SELF(char *path)
 	}
 	
 	strcpy(elf, local_path);	
-	RemoveExtention(elf);
+	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
 	if(Extract(local_path, elf)==FAILED) {
@@ -15522,7 +17036,7 @@ u8 re_sign_SPRX(char *path)
 	}
 	
 	strcpy(prx, local_path);	
-	RemoveExtention(prx);
+	RemoveExtension(prx);
 	strcat(prx, ".prx");
 	
 	if(Extract(local_path, prx)==FAILED) {
@@ -16793,7 +18307,7 @@ void mount_fake_BR()
 	}
 }
 
-u8 ISOtype(char *isoPath)
+char *ISOtype(char *isoPath)
 {
 	FILE* f;
 	f = fopen(isoPath, "rb");			
@@ -16874,42 +18388,67 @@ u8 ISOtype(char *isoPath)
 	
 }
 
-u8 is_folder(u8 ext)
+u8 is_folder(char *ext)
 {
-	if(	   ext == _DIRECTORY
-		|| ext == _JB_PS3 
-		|| ext == _JB_PS2
-		|| ext == _JB_PS1
-		|| ext == _JB_PSP
+	if(	   !strcmp(ext, _SDIR)
+		|| !strcmp(ext, _JB_PS3) 
+		|| !strcmp(ext, _JB_PS2)
+		|| !strcmp(ext, _JB_PS1)
+		|| !strcmp(ext, _JB_PSP)
 	) return YES;
 	
 	return NO;
 }
 
-u8 can_read(u8 ext)
+u8 can_read(char *ext)
 {
-	if(	   ext == _TXT 
-		|| ext == _XML 
-		|| ext == _JS
-		|| ext == _MD5
-		|| ext == _SHA1
-		|| ext == _LOG
-		|| ext == _INI
-		|| ext == _NFO
-	) return YES;
-	
+	int i;
+	for( i = 0; i < ArrayCount(TXTViewerSupport); i++) {
+		if(  !strcasecmp(ext, TXTViewerSupport[i]) )  return YES;
+	}	
 	return NO;
 }
 
-u8 get_ext(char *file)
+u8 can_view(char *ext)
 {
-	char file_name[128];
+	int i;
+	for( i = 0; i < ArrayCount(PictureViewerSupport); i++) {
+		if(  !strcasecmp(ext, PictureViewerSupport[i]) )  return YES;
+	}
+	return NO;
+}
+
+u8 get_platform_from_ext(char *ext)
+{
+	if(!strcmp(ext, _JB_PS3)) return JB_PS3;
+	if(!strcmp(ext, _JB_PS2)) return JB_PS2;
+	if(!strcmp(ext, _JB_PS1)) return JB_PS1;
+	if(!strcmp(ext, _JB_PSP)) return JB_PSP;
+	
+	if(!strcmp(ext, _ISO_PS3)) return ISO_PS3;
+	if(!strcmp(ext, _ISO_PS2)) return ISO_PS2;
+	if(!strcmp(ext, _ISO_PS1)) return ISO_PS1;
+	if(!strcmp(ext, _ISO_PSP)) return ISO_PSP;
+	
+	return UNK;
+}
+
+u8 get_platform(char *file)
+{
+	char *ext = get_ext(file);
+	
+	return get_platform_from_ext(ext);
+}
+
+char *get_ext(char *file)
+{
+	char *file_name;
 	
 	u8 is_path=NO;
 	
-	if(strstr(file, "/")) is_path=YES;
-	
-	if(is_path==YES) {
+	if(strstr(file, "/")) {
+		is_path=YES;
+		
 		if(path_info(file) == _DIRECTORY)  {
 			char temp[255];
 			sprintf(temp, "%s/PS3_GAME/PARAM.SFO", file);
@@ -16922,126 +18461,38 @@ u8 get_ext(char *file)
 				f=fopen(temp, "rb");
 				if(f!=NULL) {
 					fgets(temp, 128, f);
-					if( strstr(temp, " =") != NULL) strtok(temp, " =");
 					fclose(f);
+					
+					if( strstr(temp, " =") != NULL) strtok(temp, " =");
 					if(!strcmp(temp, "BOOT2")) return _JB_PS2; else
 					if(!strcmp(temp, "BOOT")) return _JB_PS1;
 				}
-				return _FILE;
 			}
-			return _DIRECTORY;
+			return _SDIR;
 		}
-		strcpy(file_name, &strrchr(file, '/')[1]);
-	} else strcpy(file_name, file);
+		file_name = &strrchr(file, '/')[1];
+	} else {
+		file_name = file;
+	}
 	
-	char *ext = GetExtention(file_name);
-	if(ext==NULL) return _FILE;
+	char *ext = GetExtension(file_name);
+	if(ext==NULL) return _SFILE;
 	
-	if (!strcmp(file_name, "xRegistry.sys")) {
+	if (!strcmp(file_name, _XREG)) {
 		return _XREG;
 	} else
-	if (!strcmp(ext, ".66600")) {
-		return _66600;
-	} else
-	if (!strcmp(ext, ".TTF") || !strcmp(ext, ".ttf")) {
-		return _TTF;
-	} else
-	if (!strcmp(ext, ".JPG") || !strcmp(ext, ".jpg")) {
-		return _JPG;
-	} else
-	if (!strcmp(ext, ".PNG") || !strcmp(ext, ".png")) {
-		return _PNG;
-	} else 
-	if (!strcmp(ext, ".P3T") || !strcmp(ext, ".p3t")) {
-		return _P3T;
-	} else 
-	if (!strcmp(ext, ".THM") || !strcmp(ext, ".thm")) {
-		return _THM;
-	} else 
-	if (!strcmp(ext, ".RAF") || !strcmp(ext, ".raf")) {
-		return _RAF;
-	} else
-	if (!strcmp(ext, ".JSX") || !strcmp(ext, ".jsx")) {
-		return _JSX;
-	} else
-	if (!strcmp(ext, ".JS") || !strcmp(ext, ".js")) {
-		return _JS;
-	} else
-	if (!strcmp(ext, ".MD5") || !strcmp(ext, ".md5")) {
-		return _MD5;
-	} else
-	if (!strcmp(ext, ".SHA1") || !strcmp(ext, ".sha1")) {
-		return _SHA1;
-	} else
-	if (!strcmp(ext, ".NFO") || !strcmp(ext, ".nfo")) {
-		return _NFO;
-	} else
-	if (!strcmp(ext, ".LOG") || !strcmp(ext, ".log")) {
-		return _LOG;
-	} else
-	if (!strcmp(ext, ".INI") || !strcmp(ext, ".ini")) {
-		return _INI;
-	} else
-	if (!strcmp(ext, ".VAG") || !strcmp(ext, ".vag")) {
-		return _VAG;
-	} else
-	if (!strcmp(ext, ".QRC") || !strcmp(ext, ".qrc")) {
-		return _QRC;
-	} else 
-	if (!strcmp(file_name, "EBOOT.ELF") || !strcmp(file_name, "EBOOT.elf")) {
+	if (!strcasecmp(file_name, _EBOOT_ELF)) {
 		return _EBOOT_ELF;
 	} else 
-	if (!strcmp(file_name, "EBOOT.BIN")) {
+	if (!strcasecmp(file_name, _EBOOT_BIN)) {
 		return _EBOOT_BIN;
 	} else 
-	if (!strcmp(ext, ".SELF") || !strcmp(ext, ".self")) {
-		return _SELF;
-	} else 
-	if (!strcmp(ext, ".ELF") || !strcmp(ext, ".elf")) {
-		return _ELF;
-	} else
-	if (!strcmp(ext, ".TXT") || !strcmp(ext, ".txt")) {
-		return _TXT;
-	} else 
-	if (!strcmp(ext, ".XML") || !strcmp(ext, ".xml")) {
-		return _XML;
-	} else 
-	if (!strcmp(ext, ".SPRX") || !strcmp(ext, ".sprx")) {
-		return _SPRX;
-	} else
-	if (!strcmp(ext, ".PRX") || !strcmp(ext, ".prx")) {
-		return _PRX;
-	} else
-	if (!strcmp(ext, ".PKG") || !strcmp(ext, ".pkg")) {
-		return _PKG;
-	} else 
-	if (!strcmp(ext, ".TRP") || !strcmp(ext, ".trp")) {
-		return _TRP;
-	} else 
-	if (!strcmp(ext, ".SFO") || !strcmp(ext, ".sfo")) {
-		return _SFO;
-	} else 
-	if (!strcmp(ext, ".RCO") || !strcmp(ext, ".rco")) {
-		return _RCO;
-	} else 
-	if (!strcmp(ext, ".CSO") || !strcmp(ext, ".cso")) {
-		return _CSO;
-	} else
-	if (is_iso(file)==YES) {
+	if(is_iso(file)==YES) {
 		if(is_path == YES) return ISOtype(file);
 		return _ISO;
-	} else 
-	if (!strcmp(ext, ".GTF") || !strcmp(ext, ".gtf")) {
-		return _GTF;
-	} else 
-	if (!strcmp(ext, ".DDS") || !strcmp(ext, ".dds")) {
-		return _DDS;
-	}  else 
-	if (!strcmp(ext, ".ZIP") || !strcmp(ext, ".zip")) {
-		return _ZIP;
-	} 
+	}
 	
-	return _FILE;
+	return ext;
 }
 
 //*******************************************************
@@ -17454,14 +18905,12 @@ void add_to_map(char *path1, char *path2)
 	{
 		for(n=0; n<max_mapped; n++)
 		{
-			if(!strcmp(file_to_map[n].src, path1)) goto leave;
+			if(!strcmp(file_to_map[n].src, path1)) return;
 		}
 		sprintf(file_to_map[max_mapped].src, "%s", path1);
 		sprintf(file_to_map[max_mapped].dst, "%s", path2);
 		max_mapped++;
 	}
-leave:
-	return;
 }
 
 void string_to_lv2(char* path, u64 addr)
@@ -17734,23 +19183,15 @@ u8 is_FAT32(char *file_name)
 
 u8 is_iso(char *file_name)
 {
-	char *Ext = GetExtention(file_name);
+	char *Ext = GetExtension(file_name);
 	
-	if( (Ext[1] == 'I' || Ext[1] == 'i')
-	&& 	(Ext[2] == 'S' || Ext[2] == 's')
-	&&	(Ext[3] == 'O' || Ext[3] == 'o') )	return YES;
+	if( !strncasecmp(Ext, ".iso", 4) )	return YES;
 	
-	if( (Ext[1] == 'B' || Ext[1] == 'b')
-	&& 	(Ext[2] == 'I' || Ext[2] == 'i')
-	&&	(Ext[3] == 'N' || Ext[3] == 'n') )	return YES;
+	if( !strncasecmp(Ext, ".bin", 4) )	return YES;
 	
-	if( (Ext[1] == 'M' || Ext[1] == 'm')
-	&& 	(Ext[2] == 'D' || Ext[2] == 'd')
-	&&	(Ext[3] == 'F' || Ext[3] == 'f') )	return YES;
+	if( !strncasecmp(Ext, ".mdf", 4) )	return YES;
 	
-	if( (Ext[1] == 'I' || Ext[1] == 'i')
-	&& 	(Ext[2] == 'M' || Ext[2] == 'm')
-	&&	(Ext[3] == 'G' || Ext[3] == 'g') )	return YES;
+	if( !strncasecmp(Ext, ".img", 4) )	return YES;
 	
 	return NO;
 }
@@ -17804,13 +19245,13 @@ u8 can_mount()
 	return NO;
 }
 
-u8 can_be_mounted(u8 ext)
+u8 can_be_mounted(u8 platform)
 {
 	if(can_mount()) {
-		if(ext==_ISO_PS3 || ext==_JB_PS3) return YES;
-		if(ext==_ISO_PS2 && !HEN) return YES;
-		if(ext==_ISO_PS1) return YES;
-		if(ext==_ISO_PSP) return YES;
+		if(platform == ISO_PS3 || platform == JB_PS3) return YES;
+		if(platform == ISO_PS2 && !HEN) return YES;
+		if(platform) return YES;
+		if(platform == ISO_PSP) return YES;
 	}
 	
 	return NO;
@@ -18339,7 +19780,7 @@ void mamba_Mount()
 
 u8 MountGame(char *GamePath)
 {
-	u8 platform = get_ext(GamePath);
+	u8 platform = get_platform(GamePath);
 	
 	if(can_be_mounted(platform)==NO || is_66600(GamePath)) {
 		print_load("Error : Cannot be mounted");
@@ -18354,7 +19795,7 @@ u8 MountGame(char *GamePath)
 	
 	iso = is_iso(GamePath);
 	
-	if(platform == _ISO_PS3 || platform == _JB_PS3) {
+	if(platform == ISO_PS3 || platform == JB_PS3) {
 		
 		if(PEEKnPOKE) {
 			if(payload==IRIS) iris_Mount(); else
@@ -18380,12 +19821,12 @@ u8 MountGame(char *GamePath)
 			}
 		}
 	} else 
-	if(platform == _ISO_PS2 || platform == _ISO_PS1 || platform == _ISO_PSP) {
+	if(platform == ISO_PS2 || platform == ISO_PS1 || platform == ISO_PSP) {
 		int emul;
 		
-		if(platform == _ISO_PS2) emul = EMU_PS2_DVD;
-		if(platform == _ISO_PS1) emul = EMU_PSX;
-		if(platform == _ISO_PSP) emul = EMU_PSP;
+		if(platform == ISO_PS2) emul = EMU_PS2_DVD;
+		if(platform == ISO_PS1) emul = EMU_PSX;
+		if(platform == ISO_PSP) emul = EMU_PSP;
 		
 		if(PEEKnPOKE) {
 			if(!cobra && !mamba) {
@@ -18495,7 +19936,7 @@ typedef struct
 	uint32_t pkg_info_count;
 	uint32_t pkg_info_size;
 	uint32_t item_count;
-	uint64_t total_size;
+	uint64_t gathering_total_size;
 	uint64_t data_offset;
 	uint64_t data_size;
 	char content_id[48];
@@ -18511,7 +19952,7 @@ typedef struct
 	 (x).pkg_info_count = FROM_BE (32, (x).pkg_info_count);				 \
 	 (x).pkg_info_size = FROM_BE (32, (x).pkg_info_size);		   \
 	 (x).item_count = FROM_BE (32, (x).item_count);			 \
-	 (x).total_size = FROM_BE (64, (x).total_size);			 \
+	 (x).gathering_total_size = FROM_BE (64, (x).gathering_total_size);			 \
 	 (x).data_offset = FROM_BE (64, (x).data_offset);		   \
 	 (x).data_size = FROM_BE (64, (x).data_size);
 #define PKG_HEADER_TO_BE(x) PKG_HEADER_FROM_BE (x)
@@ -18875,7 +20316,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	header.item_count = htonl((uint32_t)item_count);
 	header.data_offset = htonll((uint64_t)(PKG_HEADER__PKG_INFO_OFFSET + 0x40 + PKG_HEADER__PKG_INFO_SIZE + 0x40 ));
 	header.data_size = htonll(tmp);
-	header.total_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x60 + 0x40 + 0x40); 
+	header.gathering_total_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x60 + 0x40 + 0x40); 
 	memset(header.content_id, 0, sizeof(header.content_id));
 	memset(header.qa_digest, 0, sizeof(header.qa_digest));
 	memset(header.KLicensee, 0, sizeof(header.KLicensee));
@@ -19175,7 +20616,7 @@ u8 pkg_list(const char *filename)
 	
 	sprintf(str, "Item count : %d\n",	  header.item_count);
 	fputs(str, txt);
-	sprintf(str, "PKG size : %d\n",	(int) header.total_size);
+	sprintf(str, "PKG size : %d\n",	(int) header.gathering_total_size);
 	fputs(str, txt);
 	sprintf(str, "Content ID : %s\n",	  header.content_id);
 	fputs(str, txt);
@@ -19450,9 +20891,9 @@ print_load("Init...");
 	} else {
 		
 		strcpy(title, &strrchr(path, '/')[1]);
-		RemoveExtention(title);
-		u8 ext = get_ext(path);
-		if(ext == _ISO_PS3 || ext == _JB_PS3 || ext == _ISO_PSP || ext == _JB_PSP) {
+		RemoveExtension(title);
+		u8 platform = get_platform(path);
+		if(platform == ISO_PS3 || platform == JB_PS3 || platform == ISO_PSP || platform == JB_PSP) {
 			GetParamSFO("TITLE", title, game_number, NULL);
 		}
 	}
@@ -19975,6 +21416,7 @@ void read_setting()
 		fread(&COLOR_BG, sizeof(u32), 1, fp);
 		fread(&root_display, sizeof(u8), 1, fp);
 		fread(&LOG, sizeof(u8), 1, fp);
+		fread(&DEBUG, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 	}
@@ -20045,6 +21487,7 @@ void write_setting()
 		fwrite(&COLOR_BG, sizeof(u32), 1, fp);
 		fwrite(&root_display, sizeof(u8), 1, fp);
 		fwrite(&LOG, sizeof(u8), 1, fp);
+		fwrite(&DEBUG, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 		SetFilePerms(setPath);
@@ -20758,7 +22201,7 @@ void init_FileExplorer()
 	for(i=0; i<WINDOW_MAX; i++) window_content_Name[i]=NULL;
 	window_content_Size = (u64 **) malloc(WINDOW_MAX * sizeof(u64 *));
 	for(i=0; i<WINDOW_MAX; i++) window_content_Size[i]=NULL;
-	window_content_Type = (u8 **) malloc(WINDOW_MAX * sizeof(u8 *));
+	window_content_Type = (char ***) malloc(WINDOW_MAX * sizeof(char **));
 	for(i=0; i<WINDOW_MAX; i++) window_content_Type[i]=NULL;
 	window_content_Selected = (u8 **) malloc(WINDOW_MAX * sizeof(u8 *));
 	for(i=0; i<WINDOW_MAX; i++) window_content_Selected[i]=NULL;
@@ -20812,11 +22255,19 @@ void finalize_FileExplorer()
 		FREE(window_content_Name[i]);
 	}
 	FREE(window_content_Name);
+	
+	
+	for(i=0; i<WINDOW_MAX; i++) {
+		if(window_content_Type[i] == NULL) continue;
+		for(j=0; j<WINDOW_MAX_ITEMS; j++) {
+			FREE(window_content_Type[i][j]);
+		}
+		FREE(window_content_Type[i]);
+	}
+	FREE(window_content_Type);
 
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_content_Size[i]);
 	FREE(window_content_Size);
-	for(i=0; i<WINDOW_MAX; i++) FREE(window_content_Type[i]);
-	FREE(window_content_Type);
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_content_Selected[i]);
 	FREE(window_content_Selected);
 
@@ -21301,7 +22752,10 @@ void Draw_window()
 				Draw_MaximizeBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W/2-DOCKBOX_H/2, window_y[n]+BORDER, window_z[n], DOCKBOX_H, DOCKBOX_H);
 			}
 		}
-				
+		
+		//CONTENT BOX
+		Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H, window_z[n], 0,  window_w[n]-BORDER*2, window_h[n]-TOP_H-BORDER, 0xF0F0F0FF, NO);
+		
 		//SCROLL BAR
 		window_item_N[n] = ((window_h[n] - TOP_H-COL_H-BORDER) / LINE_H) - 1;
 		window_scroll_N[n] = 0;
@@ -21325,17 +22779,13 @@ void Draw_window()
 			SCROLL_W = 0;
 		}
 		
-		//CONTENT BOX
-		Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H, window_z[n], 0,  window_w[n]-BORDER*2, window_h[n]-TOP_H-BORDER, 0xF0F0F0FF, NO);
-		
 		FontColor(BLACK);
 		if(strcmp(window_path[n], "/") != 0 ) {
 		
 			//COLUMN HEADER BOX
 			Draw_Box(window_x[n]+BORDER, window_y[n]+TOP_H,  window_z[n], 0, window_w[n]-BORDER*2, COL_H, 0xD4DBEDFF, NO); 
 			DrawString(window_x[n]+BORDER+5, window_y[n]+TOP_H+3, STR_NAME);
-			
-		
+					
 			if(window_w_col_size[n]< COL_W_MIN) window_w_col_size[n]=COL_W_MIN;
 			if(window_w[n] - window_w_col_size[n] - BORDER*2 - SCROLL_W < COL_W_MIN) window_w_col_size[n] = window_w[n] - COL_W_MIN - BORDER*2 - SCROLL_W;
 					
@@ -21544,7 +22994,7 @@ void Draw_window()
 				// ICONS
 				if( fm_CustomIcons == NO) {
 				
-					u8 ext = window_content_Type[n][window_scroll_P[n]+i];
+					char *ext = window_content_Type[n][window_scroll_P[n]+i];
 					
 					if( is_folder(ext) ) {
 						DrawIcon_Directory(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n]);
@@ -21563,10 +23013,10 @@ void Draw_window()
 						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], USB, WHITE, DevicesInfo[j].ReadOnly);
 					} else
 					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_bdvd", 8)==0) {
-						if( window_content_Type[n][window_scroll_P[n]+i] == _JB_PS3) {
+						if( !strcmp(window_content_Type[n][window_scroll_P[n]+i], _JB_PS3)) {
 							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS3, WHITE, DevicesInfo[j].ReadOnly);
 						} else
-						if( window_content_Type[n][window_scroll_P[n]+i] == _JB_PS1) {
+						if( !strcmp(window_content_Type[n][window_scroll_P[n]+i], _JB_PS1)) {
 							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS1, WHITE, DevicesInfo[j].ReadOnly);
 						} else {
 							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC, WHITE, DevicesInfo[j].ReadOnly);
@@ -21588,7 +23038,7 @@ void Draw_window()
 						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
 					} else 
 					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "app_home", 8)==0) {
-						if( window_content_Type[n][window_scroll_P[n]+i] == _JB_PS3) {
+						if( !strcmp(window_content_Type[n][window_scroll_P[n]+i], _JB_PS3)) {
 							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS3, WHITE, DevicesInfo[j].ReadOnly);
 						} else {
 							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], APP_HOME, WHITE, DevicesInfo[j].ReadOnly);
@@ -21617,7 +23067,7 @@ void Draw_window()
 			}
 						
 			DrawTXTInBox(window_x[n]+BORDER+LINE_H+5, 
-						 window_y[n]+TOP_H+COL_H+LINE_H*i, 
+						 window_y[n]+TOP_H+COL_H+LINE_H*i + 2, 
 						 window_z[n], 
 						 window_w[n]- BORDER*2-SCROLL_W-window_w_col_size[n]-LINE_H-5-5-5, 
 						 1, 
@@ -21633,36 +23083,36 @@ void Draw_window()
 			}
 		
 		
-			u8 ext = window_content_Type[n][window_scroll_P[n]+i];
+			char *ext = window_content_Type[n][window_scroll_P[n]+i];
 			
 			if( is_folder(ext) ) {
 				DrawIcon_Directory(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n]);
 			} else
-			if(ext == _PNG || ext == _JPG) {
+			if(can_view(ext)) {
 				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], GREEN);
-			} else
-			if(ext == _SELF || ext == _SPRX || ext == _EBOOT_BIN) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], RED);
-			} else
-			if(ext == _ELF || ext == _PRX || ext == _EBOOT_ELF) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], ORANGE);
-			} else
-			if(ext == _PKG) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], BLUE);
-			} else
-			if(ext == _RCO) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], PURPLE);
-			} else
-			if(ext == _TRP) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], PINK);
-			} else
-			if(ext == _SFO) {
-				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], GREY);
 			} else
 			if(can_read(ext)) {
 				DrawIcon_TXT(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
 			} else
-			if(ext == _ISO) {
+			if( !strcasecmp(ext, ".self") || !strcasecmp(ext, ".sprx") || !strcmp(ext, _EBOOT_BIN)) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], RED);
+			} else
+			if( !strcasecmp(ext, ".elf") || !strcasecmp(ext, ".prx") || !strcmp(ext, _EBOOT_ELF)) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], ORANGE);
+			} else
+			if(!strcasecmp(ext, ".pkg")) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], BLUE);
+			} else
+			if(!strcasecmp(ext, ".rco")) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], PURPLE);
+			} else
+			if(!strcasecmp(ext, ".trp")) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], PINK);
+			} else
+			if(!strcasecmp(ext, ".sfo")) {
+				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], GREY);
+			} else
+			if(!strcasecmp(ext, ".iso")) {
 				Draw_DISK(window_x[n]+BORDER+1 , window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], LINE_H, COLOR_ISO);
 			} else {
 				DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
@@ -22082,12 +23532,12 @@ void sort(int window_id)
 	
 	char **list_Dir = (char **) malloc( (Folder_N+2) * sizeof(char*) );
 	u8 *list_Dir_sel = (u8 *) malloc( (Folder_N+2) * sizeof(u8) );
-	u8 *list_Dir_type = (u8 *) malloc( (Folder_N+2) * sizeof(u8) );
+	char **list_Dir_type = (char **) malloc( (Folder_N+2) * sizeof(char*) );
 	
 	char **list_Fil = (char **) malloc( (File_N+2) * sizeof(char*) );
 	u64 *list_Fil_siz = (u64 *) malloc( (File_N+2) * sizeof(u64) );
 	u8 *list_Fil_sel = (u8 *) malloc( (File_N+2) * sizeof(u8) );
-	u8 *list_Fil_type = (u8 *) malloc( (File_N+2) * sizeof(u8) );
+	char **list_Fil_type = (char **) malloc( (File_N+2) * sizeof(char*) );
 	
 
 	Folder_N = -1;
@@ -22098,13 +23548,13 @@ void sort(int window_id)
 			Folder_N++;
 			list_Dir[Folder_N] = strcpy_malloc(window_content_Name[window_id][i]);
 			list_Dir_sel[Folder_N] = window_content_Selected[window_id][i];
-			list_Dir_type[Folder_N] = window_content_Type[window_id][i];
+			list_Dir_type[Folder_N] = strcpy_malloc(window_content_Type[window_id][i]);
 		} else {
 			File_N++;
 			list_Fil[File_N] = strcpy_malloc(window_content_Name[window_id][i]);
 			list_Fil_sel[File_N] = window_content_Selected[window_id][i];
 			list_Fil_siz[File_N] = window_content_Size[window_id][i];
-			list_Fil_type[File_N] = window_content_Type[window_id][i];
+			list_Fil_type[File_N] = strcpy_malloc(window_content_Type[window_id][i]);
 		}
 	}
 	
@@ -22121,8 +23571,8 @@ void sort(int window_id)
 			if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
 			if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
 			if(window_sort[window_id] == ASC) {
-				if(strcmp(ta, tb) < 0) min = j;
-			} else if(strcmp(ta, tb) > 0) min = j;
+				if(strcasecmp(ta, tb) < 0) min = j;
+			} else if(strcasecmp(ta, tb) > 0) min = j;
 		}
 		if(min==i) continue;
 		
@@ -22136,10 +23586,13 @@ void sort(int window_id)
 		t = list_Dir_sel[min];
 		list_Dir_sel[min] = list_Dir_sel[i];
 		list_Dir_sel[i] = t;
-				
-		t = list_Dir_type[min];
-		list_Dir_type[min] = list_Dir_type[i];
-		list_Dir_type[i] = t;
+		
+		FREE(ta);
+		ta = strcpy_malloc(list_Dir_type[min]);
+		FREE(list_Dir_type[min]);
+		list_Dir_type[min] = strcpy_malloc(list_Dir_type[i]);
+		FREE(list_Dir_type[i]);
+		list_Dir_type[i] = strcpy_malloc(ta);
 	}
 	
 	for (i = 0; i<File_N; i++) { 
@@ -22152,8 +23605,8 @@ void sort(int window_id)
 			if(ta[0]>=97 && ta[0]<=123) ta[0]-=32;
 			if(tb[0]>=97 && tb[0]<=123) tb[0]-=32;
 			if(window_sort[window_id] == ASC) {
-				if(strcmp(ta, tb) < 0) min = j;
-			} else if(strcmp(ta, tb) > 0) min = j;
+				if(strcasecmp(ta, tb) < 0) min = j;
+			} else if(strcasecmp(ta, tb) > 0) min = j;
 		}
 		if(min==i) continue;
 		
@@ -22171,10 +23624,13 @@ void sort(int window_id)
 		t1 = list_Fil_siz[min];
 		list_Fil_siz[min] = list_Fil_siz[i];
 		list_Fil_siz[i] = t1;
-		
-		t = list_Fil_type[min];
-		list_Fil_type[min] = list_Fil_type[i];
-		list_Fil_type[i] = t;
+
+		FREE(ta);
+		ta = strcpy_malloc(list_Fil_type[min]);
+		FREE(list_Fil_type[min]);
+		list_Fil_type[min] = strcpy_malloc(list_Fil_type[i]);
+		FREE(list_Fil_type[i]);
+		list_Fil_type[i] = strcpy_malloc(ta);
 	}
 	
 	FREE(ta);
@@ -22188,7 +23644,7 @@ void sort(int window_id)
 		Parent=YES;
 		window_content_Name[window_id][0] = strcpy_malloc("..");
 		window_content_Selected[window_id][0] = NO;
-		window_content_Type[window_id][0] = _DIRECTORY;
+		window_content_Type[window_id][0] = strcpy_malloc(_SDIR);
 		window_content_Size[window_id][0] = 0;
 	}
 
@@ -22196,38 +23652,38 @@ void sort(int window_id)
 		for(j=0; j<=Folder_N; j++) {
 			window_content_Name[window_id][j+Parent] = strcpy_malloc(list_Dir[j]);
 			window_content_Selected[window_id][j+Parent] = list_Dir_sel[j];
-			window_content_Type[window_id][j+Parent] = list_Dir_type[j];
+			window_content_Type[window_id][j+Parent] = strcpy_malloc(list_Dir_type[j]);
 			window_content_Size[window_id][j+Parent] = 0;
 		}
 		for(j=0; j<=File_N; j++) {
 			window_content_Name[window_id][j+Parent+Folder_N+1] = strcpy_malloc(list_Fil[j]);
 			window_content_Selected[window_id][j+Parent+Folder_N+1] = list_Fil_sel[j];
-			window_content_Type[window_id][j+Parent+Folder_N+1] = list_Fil_type[j];
+			window_content_Type[window_id][j+Parent+Folder_N+1] = strcpy_malloc(list_Fil_type[j]);
 			window_content_Size[window_id][j+Parent+Folder_N+1] = list_Fil_siz[j];
 		}
 	} else {
 		for(j=0; j<=File_N; j++) {
 			window_content_Name[window_id][j+Parent] = strcpy_malloc(list_Fil[j]);
 			window_content_Selected[window_id][j+Parent] = list_Fil_sel[j];
-			window_content_Type[window_id][j+Parent] = list_Fil_type[j];
+			window_content_Type[window_id][j+Parent] = strcpy_malloc(list_Fil_type[j]);
 			window_content_Size[window_id][j+Parent] = list_Fil_siz[j];
 		}
 		for(j=0; j<=Folder_N; j++) {
 			window_content_Name[window_id][j+Parent+File_N+1] = strcpy_malloc(list_Dir[j]);
 			window_content_Selected[window_id][j+Parent+File_N+1] = list_Dir_sel[j];
-			window_content_Type[window_id][j+Parent+File_N+1] = list_Dir_type[j];
+			window_content_Type[window_id][j+Parent+File_N+1] = strcpy_malloc(list_Dir_type[j]);
 			window_content_Size[window_id][j+Parent+File_N+1] = 0;
 		}
 	}
 	
 	
-	free(list_Dir);
-	free(list_Dir_sel);
-	free(list_Dir_type);
-	free(list_Fil);
-	free(list_Fil_siz);
-	free(list_Fil_sel);
-	free(list_Fil_type);
+	FREE(list_Dir);
+	FREE(list_Dir_sel);
+	FREE(list_Dir_type);
+	FREE(list_Fil);
+	FREE(list_Fil_siz);
+	FREE(list_Fil_sel);
+	FREE(list_Fil_type);
 }
 
 void CloseWindow(int window_id)
@@ -22241,6 +23697,7 @@ void CloseWindow(int window_id)
 	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(window_content_Name[window_id][i]);
 	FREE(window_content_Name[window_id]);
 	FREE(window_content_Size[window_id]);
+	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(window_content_Type[window_id][i]);
 	FREE(window_content_Type[window_id]);
 	FREE(window_content_Selected[window_id]);
 	
@@ -22286,12 +23743,17 @@ u8 OpenWindow()
 	
 	window_lastpath[window_activ] = (char *) malloc(WINDOW_MAX_PATH_LENGTH * sizeof(char));
 	window_path[window_activ] = (char *) malloc(WINDOW_MAX_PATH_LENGTH * sizeof(char));
+	
+	window_content_Type[window_activ] = (char **) malloc(WINDOW_MAX_ITEMS * sizeof(char *));
 	window_content_Name[window_activ] = (char **) malloc(WINDOW_MAX_ITEMS * sizeof(char *));
 	
-	for(n=0; n<WINDOW_MAX_ITEMS; n++) window_content_Name[window_activ][n]=NULL;
+	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
+		window_content_Name[window_activ][n]=NULL;
+		window_content_Type[window_activ][n]=NULL;
+	}
 
 	window_content_Size[window_activ] = (u64 *) malloc(WINDOW_MAX_ITEMS * sizeof(u64));
-	window_content_Type[window_activ] = (u8 *) malloc(WINDOW_MAX_ITEMS * sizeof(u8));
+	
 	window_content_Selected[window_activ] = (u8 *) malloc(WINDOW_MAX_ITEMS * sizeof(u8));
 	
 	strcpy(window_path[window_activ], "/");
@@ -22362,7 +23824,7 @@ void RefreshWindow(window_id)
 	window_content_N[window_id]=-1;
 	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
 		FREE(window_content_Name[window_id][n]);
-		window_content_Type[window_id][n] = _FILE;
+		FREE(window_content_Type[window_id][n]);
 		window_content_Size[window_id][n] = 0;
 		window_content_Selected[window_id][n] = NO;
 	}
@@ -22389,20 +23851,20 @@ void RefreshWindow(window_id)
 		window_content_N[window_id]++;
 						
 		if(dir->d_type & DT_DIR) {
-			window_content_Type[window_id][window_content_N[window_id]] = _DIRECTORY;
+			window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
 			if(strcmp(window_path[window_id], "/") == 0) {
 				if(strcmp(dir->d_name, "app_home") == 0 || strcmp(dir->d_name, "dev_bdvd") == 0) {
 					sprintf(temp, "/%s", dir->d_name);
-					window_content_Type[window_id][window_content_N[window_id]] = get_ext(temp);
+					window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(get_ext(temp));
 				}
 			}
 		} else 
 		if(dir->d_type & DT_REG) {
 			if(strcmp(window_path[window_id], "/") != 0) {
 				sprintf(temp, "%s/%s", window_path[window_id], dir->d_name);
-				window_content_Size[window_id][window_content_N[window_id]] = get_size(temp, NO);	
+				window_content_Size[window_id][window_content_N[window_id]] = get_size(temp);	
 			}
-			window_content_Type[window_id][window_content_N[window_id]] = get_ext(dir->d_name);
+			window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(get_ext(dir->d_name));
 		} 
 		else {
 			if(strcmp(window_path[window_id], "/") == 0) {
@@ -22410,18 +23872,18 @@ void RefreshWindow(window_id)
 				if( can_opendir(temp) ) {
 					window_content_Type[window_id][window_content_N[window_id]] = get_ext(temp);
 					if( is_folder(window_content_Type[window_id][window_content_N[window_id]]) == NO) {
-						window_content_Type[window_id][window_content_N[window_id]] = _DIRECTORY;
+						window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
 					}
 				} else {
-					window_content_Type[window_id][window_content_N[window_id]] = _FILE;
+					window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SFILE);
 				}
 			} else {
 				sprintf(temp, "%s/%s", window_path[window_id], dir->d_name);
 				if( can_opendir(temp) ) {
-					window_content_Type[window_id][window_content_N[window_id]] = _DIRECTORY;
+					window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
 				} else {
-					window_content_Size[window_id][window_content_N[window_id]] = get_size(temp, NO);
-					window_content_Type[window_id][window_content_N[window_id]] = get_ext(dir->d_name);
+					window_content_Size[window_id][window_content_N[window_id]] = get_size(temp);
+					window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(get_ext(dir->d_name));
 				}
 			}
 		}
@@ -22437,14 +23899,14 @@ void RefreshWindow(window_id)
 			n = NTFS_Test_Device(temp);
 			if(n>=0) {
 				window_content_N[window_id]++;
-				window_content_Type[window_id][window_content_N[window_id]]= _DIRECTORY;
+				window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
 				sprintf(temp, "ntfs%c:", 48+i);
 				window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc(temp);
 			}
 		}
 	} else {
 		window_content_N[window_id]++;
-		window_content_Type[window_id][window_content_N[window_id]]= _DIRECTORY;
+		window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
 		window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc("..");
 	}
 	
@@ -22485,7 +23947,7 @@ void Window(char *directory)
 	int n;
 	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
 		FREE(window_content_Name[window_activ][n]);
-		window_content_Type[window_activ][n] = _FILE;
+		FREE(window_content_Type[window_activ][n]);
 		window_content_Size[window_activ][n] = 0;
 		window_content_Selected[window_activ][n] = NO;
 	}
@@ -22495,25 +23957,25 @@ void Window(char *directory)
 		memset(DevicesInfo, 0, sizeof(DevicesInfo));
 		
 		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
 		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd0");
 		DevicesInfo_N++;
 		GetDeviceInfo("/dev_hdd0/", &DevicesInfo[window_content_N[window_activ]]);
 		
 		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
 		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd1");
 		DevicesInfo_N++;
 		GetDeviceInfo("/dev_hdd1/", &DevicesInfo[window_content_N[window_activ]]);
 		
 		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
 		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_usb000");
 		DevicesInfo_N++;
 		GetDeviceInfo("/dev_usb000/", &DevicesInfo[window_content_N[window_activ]]);
 		
 		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
 		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_flash");
 		DevicesInfo_N++;
 		GetDeviceInfo("/dev_flash/", &DevicesInfo[window_content_N[window_activ]]);
@@ -22521,7 +23983,7 @@ void Window(char *directory)
 // RPCS3 app_home = /dev_hdd0/game/MANAGUNZ0/USRDIR
 
 		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]]= _DIRECTORY;
+		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
 		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("app_home");
 		DevicesInfo_N++;
 		GetDeviceInfo("/app_home/", &DevicesInfo[window_content_N[window_activ]]);
@@ -22584,9 +24046,6 @@ void properties_input()
 	if(NewPad(BUTTON_CIRCLE))
 	{
 		prop_activ=NO;
-		total_size=0;
-		nb_file= 0;
-		nb_directory=0;
 		int i;
 		for(i=0; i<=PROP_ITEM_NUMBER; i++) {
 			FREE(PROP_ITEM[i]);
@@ -22615,45 +24074,35 @@ void Draw_properties()
 	
 	int i;
 	for(i=0; i<=PROP_ITEM_NUMBER; i++) {
-		DrawFormatString(PROP_X+5, PROP_Y+PROP_FONT*i, PROP_ITEM[i]);
-		DrawFormatString(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*i, PROP_ITEM_VALUE[i]);
+		DrawTXTInBox(PROP_X+5, PROP_Y+PROP_FONT*i, 0, PROP_COL_W, 1, PROP_ITEM[i], 0, BLACK);
+		DrawTXTInBox(PROP_X+PROP_COL_W+5, PROP_Y+PROP_FONT*i, 0, PROP_W - PROP_COL_W, 1, PROP_ITEM_VALUE[i], 0, BLACK);
 	}
-	
 }
 
 void open_properties()
 {
-	start_loading();
-	
-	total_size=0;
-	nb_file=0;
-	nb_directory=0;
-	
-	u8 is_fil=NO;
-	u8 is_dir=NO;
-	gathering=YES;
+	start_gathering();	
 	if(option_sel_N < 0) {
-		get_size(window_path[window_activ], YES);
-		is_dir=YES;
+		get_size(window_path[window_activ]);
 	} else {
 		int i;
 		for(i=0; i<=option_sel_N; i++) {
-			get_size(option_sel[i], YES);
-			if(is_fil==NO) if(path_info(option_sel[i]) == _FILE) is_fil=YES;
-			if(is_dir==NO) if(path_info(option_sel[i]) == _DIRECTORY) is_dir=YES;
+			get_size(option_sel[i]);
 		}
-	}
-	gathering=NO;
+	}	
+	end_gathering();
 	
 	if(gathering_cancel) {
-		gathering_cancel=NO;	
-		total_size=0;
-		nb_file=0;
-		nb_directory=0;
-		end_loading();
+		reset_gathering();
 		return;
 	}
-
+	
+	start_loading();
+	
+	u8 have_fil=NO;
+	u8 have_dir=NO;
+	if( 0 < gathering_nb_file ) have_fil=YES;
+	if( 0 < gathering_nb_directory ) have_dir=YES;
 	
 	PROP_ITEM = (char **) malloc(PROP_MAX_ITEMS*sizeof(char *));
 	PROP_ITEM_VALUE = (char **) malloc(PROP_MAX_ITEMS*sizeof(char *));
@@ -22667,51 +24116,28 @@ void open_properties()
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = strcpy_malloc(window_path[window_activ]);
 	}
 	
-// TOFIX : getWidth use DrawString : It can't be used here while the "loading thread" is running !
-// FIXED... need a test.
-/* 
-	int l = strlen(PROP_ITEM_VALUE[PROP_ITEM_NUMBER]); 
-	while((float) WidthFromStr(PROP_ITEM_VALUE[PROP_ITEM_NUMBER]) > (float) PROP_W - (float) PROP_COL_W - (float) 10.0f) {
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-1]=0;
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-2]='.';
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-3]='.';
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER][l-4]='.';
-		l--;
+	if( 0 < gathering_nb_directory ) {
+		PROP_ITEM_NUMBER++;
+		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_DIR);
+		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%d", gathering_nb_directory);
 	}
-*/
-	PROP_ITEM_NUMBER++;
-	PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_TYPE);
-	if(is_dir == YES && is_fil == YES) {
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = strcpy_malloc(STR_MULT);
-	} else
-	if(is_dir == YES) {
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = strcpy_malloc(STR_DIR);
-	} else
-	if(is_fil == YES) {
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = strcpy_malloc(STR_FILE);
-	}
-
-	if(nb_directory!=0 && nb_file!=1) {
+	if(0 < gathering_nb_file) {
 		PROP_ITEM_NUMBER++;
 		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_FILE);
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%d", nb_file);
-		
-		PROP_ITEM_NUMBER++;
-		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_FOLDER);
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%d", nb_directory);
+		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%d", gathering_nb_file);
 	}
-
+	
 	PROP_ITEM_NUMBER++;
 	PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_SIZE);
-	char *prop_size_str = get_unit(total_size);
-	if(total_size<1024) {
+	char *prop_size_str = get_unit(gathering_total_size);
+	if(gathering_total_size<1024) {
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = strcpy_malloc(prop_size_str);
 	} else {
-		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%s (%llu %s)", prop_size_str, (long long unsigned int) total_size, STR_UNIT);
+		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%s (%llu %s)", prop_size_str, (long long unsigned int) gathering_total_size, STR_UNIT);
 	}
 	free(prop_size_str);
 
-	if(option_sel_N == 0 && is_fil == YES) {
+	if(option_sel_N == 0 && gathering_nb_file == 1) {
 		u64 prop_md5[2];
 		if( md5_file(option_sel[0], (u8 *) prop_md5) == SUCCESS) {
 			PROP_ITEM_NUMBER++;
@@ -22719,18 +24145,15 @@ void open_properties()
 			PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%016llX%016llX", (long long unsigned int) prop_md5[0],
 																				 (long long unsigned int) prop_md5[1]);
 		}
-		
+		/*
 		u32 prop_sha1[5];
 		if( sha1_file(option_sel[0], (u8 *) prop_sha1) == SUCCESS) {
 			PROP_ITEM_NUMBER++;
 			PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc("SHA-1");
 			PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%08lX%08lX%08lX%08lX%08lX ", (long unsigned int) prop_sha1[0], (long unsigned int) prop_sha1[1], (long unsigned int) prop_sha1[2], (long unsigned int) prop_sha1[3], (long unsigned int) prop_sha1[4]);
-		}			
+		}
+		*/
 	}
-
-	total_size=0;
-	nb_file= 0;
-	nb_directory=0;
 	
 	prop_activ = YES;
 
@@ -22748,7 +24171,7 @@ void picture_viewer_input()
 		int flag=NO, i;
 		for(i=0; i<=window_content_N[window_activ]; i++) {
 			if(flag==YES) {
-				if(window_content_Type[window_activ][i] == _JPG || window_content_Type[window_activ][i] == _PNG) {
+				if( can_view( window_content_Type[window_activ][i]) ) {
 					sprintf(TMP_PIC_path, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i]);
 					Load_FM();
 					break;
@@ -22763,7 +24186,7 @@ void picture_viewer_input()
 		int flag=NO, i;
 		for(i=window_content_N[window_activ]; i>0; i--) {
 			if(flag==YES) {
-				if(window_content_Type[window_activ][i] == _JPG || window_content_Type[window_activ][i] == _PNG) {
+				if( can_view(window_content_Type[window_activ][i]) ) {
 					sprintf(TMP_PIC_path, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i]);
 					Load_FM();
 					break;
@@ -22812,6 +24235,10 @@ void Draw_picture_viewer()
 		yi = (512 - hi) / 2;
 	
 		Draw_Box(xi, yi, 0, 0, wi, hi, WHITE, YES);
+		
+		//DrawTXTInBox(30, 30, 0, 200, 450, picture_viewer_info, 0, WHITE);
+
+		
 	}
 	
 	Draw_Box(0, 460, 0, 0, 848, 20, BLACK, NO);
@@ -23344,7 +24771,7 @@ void Option(char *item)
 		} else {
 			window_content_N[window_activ]++;
 			window_content_Size[window_activ][window_content_N[window_activ]] = 0;
-			window_content_Type[window_activ][window_content_N[window_activ]] = _DIRECTORY;
+			window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
 			window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc(&strrchr(temp, '/')[1]);
 			sort(window_activ);
 		}
@@ -23364,15 +24791,20 @@ void Option(char *item)
 			fclose(f);
 			window_content_N[window_activ]++;
 			window_content_Size[window_activ][window_content_N[window_activ]] = 0;
-			window_content_Type[window_activ][window_content_N[window_activ]] = _FILE;
+			window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SFILE);
 			window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc(&strrchr(temp, '/')[1]);
 			sort(window_activ);
 		}
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		//
+		DumpDevicesData();
 		end_loading();
+	} else
+	if(strcmp(item, "Test2") == 0) {
+		start_copy_loading();
+		dump_dec_bdvd("/dev_hdd0/tmp/bdvd.iso");
+		end_copy_loading();
 	} else
 	if(strcmp(item, STR_SYMLINK_SRC) == 0) {
 		FREE(FM_OLD_PATH);
@@ -23389,22 +24821,27 @@ void Option(char *item)
 		if(mamba) show_msg(STR_DONE);
 	} else
 	if(strcmp(item, STR_PASTE) == 0) {
-		start_copy_loading();
+		
 		
 		if(option_copy_N==0 && is_66600(option_copy[0])) {
-			gathering=YES;
+			start_gathering();
 			strcpy(copy_src, option_copy[0]);
 			sprintf(copy_dst, "%s%s", window_path[window_activ], strrchr(copy_src, '/'));
 			Get_Game_Size(option_copy[0]);
-			gathering=NO;
+			end_gathering();
+			
+			start_copy_loading();
 			CopyJoin(copy_src, copy_dst);
+			end_copy_loading();
 			
 		} else {
-			gathering=YES;
+			start_gathering();
 			for(i=0; i<=option_copy_N; i++){
-				get_size(option_copy[i], YES);
+				get_size(option_copy[i]);
 			}
-			gathering=NO;
+			end_gathering();
+			
+			start_copy_loading();
 			for(i=0; i<=option_copy_N; i++) {
 				strcpy(copy_src, option_copy[i]);
 				sprintf(copy_dst, "%s%s", window_path[window_activ], strrchr(copy_src, '/'));
@@ -23415,24 +24852,27 @@ void Option(char *item)
 					Copy(copy_src, copy_dst);
 				}
 			}
+			end_copy_loading();
 		}
 		
 		for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(option_copy[i]);	
 		option_copy_N=-1;
-		end_copy_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_JOIN) == 0) {
-		start_copy_loading();
+			
 		for(i=0; i<=option_sel_N; i++) {
-			gathering=YES;
 			strcpy(copy_src, option_sel[i]);
 			sprintf(copy_dst, "%s%s", window_path[window_activ], strrchr(copy_src, '/'));
+			
+			start_gathering();
 			Get_Game_Size(option_sel[i]);
-			gathering=NO;
+			end_gathering();
+			
+			start_copy_loading();
 			CopyJoin(copy_src, copy_dst);
+			end_copy_loading();
 		}
-		end_copy_loading();
 		Window(".");
 	} else
 	if(strcmp(item, STR_COPY) == 0) {
@@ -23511,7 +24951,7 @@ void Option(char *item)
 		for(i=0; i<=option_sel_N; i++) {
 			char elf[255];
 			strcpy(elf, option_sel[i]);	
-			RemoveExtention(elf);
+			RemoveExtension(elf);
 			strcat(elf, ".elf");
 			
 			if( path_info(elf) != _NOT_EXIST) Delete(elf);
@@ -23539,7 +24979,7 @@ void Option(char *item)
 		for(i=0; i<=option_sel_N; i++) {
 			char elf[255];
 			strcpy(elf, option_sel[i]);	
-			RemoveExtention(elf);
+			RemoveExtension(elf);
 			strcat(elf, ".ELF");
 			
 			if( path_info(elf) != _NOT_EXIST) Delete(elf);
@@ -23567,7 +25007,7 @@ void Option(char *item)
 		for(i=0; i<=option_sel_N; i++) {
 			char BIN[255];
 			strcpy(BIN, option_sel[i]);	
-			RemoveExtention(BIN);
+			RemoveExtension(BIN);
 			strcat(BIN, ".BIN");
 			
 			char BIN_ORI[255];
@@ -23591,7 +25031,7 @@ void Option(char *item)
 		for(i=0; i<=option_sel_N; i++) {
 			char SELF[255];
 			strcpy(SELF, option_sel[i]);	
-			RemoveExtention(SELF);
+			RemoveExtension(SELF);
 			strcat(SELF, ".self");
 			
 			char SELF_ORI[255];
@@ -23615,7 +25055,7 @@ void Option(char *item)
 		for(i=0; i<=option_sel_N; i++) {
 			char prx[255];
 			strcpy(prx, option_sel[i]);	
-			RemoveExtention(prx);
+			RemoveExtension(prx);
 			strcat(prx, ".prx");
 			if( path_info(prx) != _NOT_EXIST) Delete(prx);
 			if(Extract(option_sel[i], prx)==FAILED) {
@@ -23639,7 +25079,7 @@ void Option(char *item)
 		for(i=0; i<=option_sel_N; i++) {
 			char SPRX[255];
 			strcpy(SPRX, option_sel[i]);	
-			RemoveExtention(SPRX);
+			RemoveExtension(SPRX);
 			strcat(SPRX, ".sprx");
 			
 			char SPRX_ORI[255];
@@ -23729,17 +25169,17 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_DUMP_LV2) == 0) {
 		start_loading();
-		dump_lv2("/dev_hdd0/LV2.BIN");
+		dump_lv2("/dev_hdd0");
 		end_loading();
 	} else
 	if(strcmp(item, STR_DUMP_LV1) == 0) {
 		start_loading();
-		dump_lv1("/dev_hdd0/LV1.BIN");
+		dump_lv1("/dev_hdd0");
 		end_loading();
 	} else
 	if(strcmp(item, STR_DUMP_FLASH) == 0) {
 		start_loading();
-		dump_flash("/dev_hdd0/FLASH.BIN");
+		dump_flash("/dev_hdd0");
 		end_loading();
 	} else
 	if(strcmp(item, STR_EXTRACT_TRP) == 0) {
@@ -24068,6 +25508,7 @@ void Open_option()
 		
 	} else {
 		int same_ext = -1;
+		char *ext=NULL;
 		for(i=0; i<=window_content_N[window_activ]; i++) {
 			if(window_content_Selected[window_activ][i] == YES) {
 				option_sel_N++;
@@ -24076,11 +25517,12 @@ void Open_option()
 				} else {
 					option_sel[option_sel_N] = sprintf_malloc("%s/%s", window_path[window_activ], window_content_Name[window_activ][i]);
 				}
-				if(same_ext == -1) { //1st ext
-					same_ext = get_ext(option_sel[option_sel_N]);
+				if(same_ext == -1) { //1st
+					same_ext = YES;
+					ext = get_ext(option_sel[option_sel_N]);
 				} else 
-				if(same_ext != -2) {
-					if(same_ext != get_ext(option_sel[option_sel_N])) same_ext = -2;
+				if(same_ext == YES) {
+					if(strcasecmp(ext, get_ext(option_sel[option_sel_N]))) same_ext = NO;
 				}
 			}
 		}
@@ -24103,13 +25545,14 @@ void Open_option()
 			}
 			add_option_item(STR_DUMP_FLASH);
 			//add_option_item("Test");
+			//add_option_item("Test2");
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
 				add_option_item(STR_LOAD_MAMBA);
 			}
 			
 			if(option_sel_N==0 ) {
-				if(same_ext == _JB_PS3) {
+				if(!strcmp(ext, _JB_PS3)){
 					add_option_item(STR_CONVERT_ISO);
 				}
 				if( cobra || mamba ) {
@@ -24151,9 +25594,7 @@ void Open_option()
 			}
 			
 			if( 0 <= option_sel_N) {
-				if(0 <= same_ext) {
-					
-					u8 ext = same_ext;			
+				if(same_ext == YES) {		
 					
 					if( is_folder(ext) ) {
 						add_option_item(STR_MAKE_PKG);
@@ -24161,39 +25602,43 @@ void Open_option()
 						add_option_item(STR_GETSHA1);
 					}
 					
-					if(ext == _JPG || ext == _PNG) {
+					if(can_view(ext)) {
 						if(option_sel_N==0) add_option_item(STR_VIEW);
 						
-						if(ext == _PNG && option_sel_N < 0) {
+						if(strcasecmp(ext, ".png")) {
+							//add_option_item("Convert to PNG");
+						}
+						if(!strcasecmp(ext, ".png") && option_sel_N < 0) {
 							add_option_item(STR_MAKE_APNG);
 						}
-					} else 
+					}
 					if( can_read(ext) == YES) {
 						if(option_sel_N==0) add_option_item(STR_VIEW_TXT);
-					} else
-					if(ext == _SFO) {
+					}
+					
+					if(!strcasecmp(ext, ".sfo")) {
 						if(option_sel_N==0) add_option_item(STR_VIEW_SFO);
 					} else
-					if(ext == _XREG) {
+					if(!strcmp(ext, _XREG)) {
 						if(option_sel_N==0) add_option_item(STR_READ_XREG);
 					} else
-					if(ext == _SELF) {
+					if(!strcasecmp(ext, ".self")) {
 						add_option_item(STR_EXTRACT_ELF);
 						add_option_item(STR_RESIGN_SELF);
 						if(option_sel_N==0) add_option_item(STR_LAUNCH_SELF);
 					} else 
-					if(ext == _EBOOT_BIN) {
+					if(!strcmp(ext, _EBOOT_BIN)) {
 						add_option_item(STR_EXTRACT_EBOOT);
 						add_option_item(STR_RESIGN_EBOOT);
 						if(option_sel_N==0) add_option_item(STR_LAUNCH_EBOOT);
 					} else 
-					if(ext == _EBOOT_ELF) {
+					if(!strcmp(ext, _EBOOT_ELF)) {
 						add_option_item(STR_SIGN_EBOOT);
 					} else 
-					if(ext == _ELF) {
+					if(!strcasecmp(ext, ".elf")) {
 						add_option_item(STR_SIGN_ELF);
 					}  else		
-					if(ext == _SPRX) {
+					if(!strcasecmp(ext, ".sprx")) {
 						add_option_item(STR_EXTRACT_PRX);
 						add_option_item(STR_RESIGN_SPRX);
 						
@@ -24232,61 +25677,55 @@ void Open_option()
 						
 						}
 					} else
-					if(ext == _PRX) {
+					if(!strcasecmp(ext, ".prx")) {
 						add_option_item(STR_SIGN_PRX);
 					} else
-					if(ext == _RCO) {
+					if(!strcasecmp(ext, ".rco")) {
 						add_option_item(STR_EXTRACT_RCO);
 					} else 
-					if(ext == _PKG) {
+					if(!strcasecmp(ext, ".pkg")) {
 						add_option_item(STR_EXTRACT_PKG);
 						if(option_sel_N==0) add_option_item(STR_PKG_INFO);
 					} else
-					if(ext == _TRP) {
+					if(!strcasecmp(ext, ".trp")) {
 						add_option_item(STR_EXTRACT_TRP);
 					} else
-					if(ext == _JB_PS3 || ext == _ISO_PS3) {
-						if(ext == _ISO_PS3) {
-							add_option_item(STR_EXTRACT_ISO);
-						} else
-						if(ext == _JB_PS3) {
-							add_option_item(STR_CONVERT_ISO);
-						}
+					if(!strcmp(ext, _JB_PS3)) {
+						add_option_item(STR_CONVERT_ISO);
 						//add_option_item(STR_MAKE_SHTCUT_PKG);
 						add_option_item(STR_CHECK_IRD);
 					} else
-					if(ext == _ISO_PSP) {
+					if(!strcmp(ext, _ISO_PS3)) {
+						add_option_item(STR_EXTRACT_ISO);
+						//add_option_item(STR_MAKE_SHTCUT_PKG);
+						add_option_item(STR_CHECK_IRD);
+					} else
+					if(!strcmp(ext, _ISO_PSP)) {
 						add_option_item(STR_COMPRESS_ISO);
 						add_option_item(STR_CHECK_CRC32);
 					} else
-					if(ext == _CSO) {
+					if(!strcasecmp(ext, ".cso")) {
 						add_option_item(STR_DECOMPRESS_CSO);
 					} else
-					if(ext == _THM) {
+					if(!strcasecmp(ext, ".thm")) {
 						add_option_item(STR_EXTRACT_THM);
 					} else
-					if(ext == _P3T) {
+					if(!strcasecmp(ext, ".p3t")) {
 						add_option_item(STR_EXTRACT_P3T);
 					} else
-					if(ext == _RAF) {
+					if(!strcasecmp(ext, ".raf")) {
 						add_option_item(STR_EXTRACT_RAF);
 					} else
-					if(ext == _QRC) {
+					if(!strcasecmp(ext, ".qrc")) {
 						add_option_item(STR_EXTRACT_QRC);
 					} else
-					if(ext == _JSX) {
+					if(!strcasecmp(ext, ".jsx")) {
 						add_option_item(STR_CONVERT_JSX_JS);
 					} else
-					if(ext == _VAG) {
+					if(!strcasecmp(ext, ".vag")) {
 						add_option_item(STR_CONVERT_VAG_WAV);
 					} else
-					if(ext == _GTF) {
-						add_option_item(STR_CONVERT_GTF_DDS);
-					} else
-					if(ext == _DDS) {
-						add_option_item(STR_CONVERT_DDS_PNG);
-					} else
-					if(ext == _ZIP) {
+					if(!strcasecmp(ext, ".zip")) {
 						add_option_item(STR_EXTRACT_ZIP);
 					}
 					
@@ -24296,7 +25735,7 @@ void Open_option()
 						}
 					}
 					
-					if(can_be_mounted(ext) && option_sel_N==0) {
+					if(can_be_mounted(get_platform_from_ext(ext)) && option_sel_N==0) {
 						add_option_item(STR_MOUNTGAME);
 					}
 				}
@@ -24532,7 +25971,7 @@ u8 window_input()
 					if( is_folder(window_content_Type[window_activ][i+window_scroll_P[window_activ]]) ){
 						Window(window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
 					} else 
-					if(window_content_Type[window_activ][i+window_scroll_P[window_activ]] == _JPG || window_content_Type[window_activ][i+window_scroll_P[window_activ]] == _PNG) {
+					if( can_view(window_content_Type[window_activ][i+window_scroll_P[window_activ]]) == YES){
 						char picpath[255];
 						sprintf(picpath, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
 						open_picture_viewer(picpath);
@@ -24542,12 +25981,12 @@ u8 window_input()
 						sprintf(txtpath, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
 						open_txt_viewer(txtpath);
 					} else 
-					if(window_content_Type[window_activ][i+window_scroll_P[window_activ]] == _SFO) {
+					if(!strcasecmp(window_content_Type[window_activ][i+window_scroll_P[window_activ]], ".sfo")) {
 						char sfopath[255];
 						sprintf(sfopath, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
 						open_SFO_viewer(sfopath);
 					} else 
-					if(window_content_Type[window_activ][i+window_scroll_P[window_activ]] == _ISO) {
+					if(is_iso(window_content_Type[window_activ][i+window_scroll_P[window_activ]])) {
 						char IsoPath[255];
 						sprintf(IsoPath, "%s/%s", window_path[window_activ], window_content_Name[window_activ][i+window_scroll_P[window_activ]]);
 						read_game_setting(-1);
@@ -24808,11 +26247,13 @@ u8 window_input()
 			} else
 			// Down
 			if(window_y[window_activ]+TOP_H+COL_H+window_scroll_y[window_activ]+window_scroll_size[window_activ] < curs_y && curs_y < window_y[window_activ]+window_h[window_activ]-BORDER) {
-				if(window_scroll_P[window_activ] < window_scroll_N[window_activ]) window_scroll_P[window_activ]++;
+				if(window_scroll_P[window_activ] + window_item_N[window_activ] < window_scroll_N[window_activ])	window_scroll_P[window_activ]+=window_item_N[window_activ];
+				else window_scroll_P[window_activ] = window_scroll_N[window_activ];
 			} else
 			// Up
 			if(window_y[window_activ]+TOP_H+COL_H < curs_y && curs_y < window_y[window_activ]+TOP_H+COL_H+window_scroll_y[window_activ]) {
-				if(window_scroll_P[window_activ]>0) window_scroll_P[window_activ]--;
+				if(window_scroll_P[window_activ] > window_item_N[window_activ] ) window_scroll_P[window_activ]-=window_item_N[window_activ];
+				else window_scroll_P[window_activ]=0;
 			}
 		}
 	}
@@ -26037,7 +27478,7 @@ u8 *LoadMEMfromISO(char *iso_file, u32 sector, u32 offset, u32 size)
 			if(split666) sprintf(iso_path, "%s%02d", temp, i);
 			else sprintf(iso_path, "%s%d", temp, i);
 			
-			fsize = get_size(iso_path, NO);
+			fsize = get_size(iso_path);
 			
 			if(iso_offset<fsize) {
 				if(i!=0) {
@@ -26466,7 +27907,7 @@ void CONFIG_check(char *IsoPath)
 	
 	if(path_info(CurrentCONFIG) == _FILE) return;
 		
-	if( Get_ID(IsoPath, _ISO_PS2, PS2_ID) == FAILED) return;
+	if( Get_ID(IsoPath, ISO_PS2, PS2_ID) == FAILED) return;
 	
 	u8 MGZCFGS = MGZCONFIG();
 	
@@ -28396,7 +29837,7 @@ u8 Remove_LIMG(char *iso_file)
 		return NO;
 	}
 	
-	u64 size = get_size(iso_file, NO) - LIMG_SIZE;
+	u64 size = get_size(iso_file) - LIMG_SIZE;
 	
 	if(truncate(iso_file, size) == 0) return NO;
 	
@@ -28431,7 +29872,7 @@ u8 Add_LIMG(char *iso_file)
 	}
 	FCLOSE(f);
 	
-	u64 Size = get_size(iso_file, NO);
+	u64 Size = get_size(iso_file);
 	
 	// it must be a better way to detect properly cd / dvd ...
 	u32 DiskType=2; // CD
@@ -28580,14 +30021,14 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_RENAME)) {
 		char NewName[255];
 		strcpy(NewName, list_game_title[position]);
-		char *extention = GetExtention(list_game_path[position]);
+		char *extension = GetExtension(list_game_path[position]);
 		if(Get_OSK_String(STR_RENAME, NewName, 255) == SUCCESS) {
 			if(NewName[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extention);
+				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extension);
 				if( rename(list_game_path[position], NewPath) == 0) {
 					FREE(list_game_path[position]);				
 					list_game_path[position] = strcpy_malloc(NewPath);
@@ -28710,17 +30151,12 @@ u8 PS2_GAME_MENU_CROSS()
 		}
 	} else 
 	if(item_is(STR_PROPS)) {
-		start_loading();
-		gathering=YES;
+		start_gathering();
 		Get_Game_Size(list_game_path[position]);
-		gathering=NO;
-		end_loading();
+		end_gathering();
 			
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
-		total_size=0;
-		nb_file= 0;
-		nb_directory=0;
 	} else
 	if(item_is(STR_ENABLE_480P)) {
 		start_loading();
@@ -28937,14 +30373,14 @@ u8 PSP_GAME_MENU_CROSS()
 	if(item_is(STR_RENAME)) {
 		char NewName[255];
 		strcpy(NewName, list_game_title[position]);
-		char *extention = GetExtention(list_game_path[position]);
+		char *extension = GetExtension(list_game_path[position]);
 		if(Get_OSK_String(STR_RENAME, NewName, 255) == SUCCESS) {
 			if(NewName[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extention);
+				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extension);
 				if( rename(list_game_path[position], NewPath) == 0) {
 					FREE(list_game_path[position]);				
 					list_game_path[position] = strcpy_malloc(NewPath);
@@ -29014,17 +30450,12 @@ u8 PSP_GAME_MENU_CROSS()
 		}
 	} else 
 	if(item_is(STR_PROPS)) {
-		start_loading();
-		gathering=YES;
+		start_gathering();
 		Get_Game_Size(list_game_path[position]);
-		gathering=NO;
-		end_loading();
+		end_gathering();
 			
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
-		total_size=0;
-		nb_file= 0;
-		nb_directory=0;
 	}
 	
 	init_PSP_GAME_MENU();
@@ -29169,14 +30600,14 @@ u8 PS1_GAME_MENU_CROSS()
 	if(item_is(STR_RENAME)) {
 		char NewName[255];
 		strcpy(NewName, list_game_title[position]);
-		char *extention = GetExtention(list_game_path[position]);
+		char *extension = GetExtension(list_game_path[position]);
 		if(Get_OSK_String(STR_RENAME, NewName, 255) == SUCCESS) {
 			if(NewName[0] != 0) {
 				char DirPath[255];
 				char NewPath[255];
 				strcpy(DirPath, list_game_path[position]);
 				DirPath[strrchr(DirPath, '/') - DirPath] = 0;
-				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extention);
+				sprintf(NewPath, "%s/%s%s", DirPath, NewName, extension);
 				if( rename(list_game_path[position], NewPath) == 0) {
 					FREE(list_game_path[position]);				
 					list_game_path[position] = strcpy_malloc(NewPath);
@@ -29249,17 +30680,12 @@ u8 PS1_GAME_MENU_CROSS()
 		}
 	} else 
 	if(item_is(STR_PROPS)) {
-		start_loading();
-		gathering=YES;
+		start_gathering();
 		Get_Game_Size(list_game_path[position]);
-		gathering=NO;
-		end_loading();
+		end_gathering();
 			
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
-		total_size=0;
-		nb_file= 0;
-		nb_directory=0;
 	}
 	
 	init_PS1_GAME_MENU();
@@ -30037,8 +31463,7 @@ u8 PS3_GAME_MENU_CROSS()
 	if(item_is(STR_PATCH_EBOOT)) {
 		start_loading();
 		u8 ret;
-		if(iso==NO) ret = patch_EBOOT(position);
-		else 		ret = patchps3iso(list_game_path[position]);
+		ret = patch_EBOOT(position);
 		if(ret == SUCCESS) show_msg(STR_DONE); 
 		else show_msg(STR_FAILED);
 		end_loading();
@@ -30151,17 +31576,12 @@ u8 PS3_GAME_MENU_CROSS()
 		get_game_update();
 	} else 
 	if(item_is(STR_PROPS)) {
-		start_loading();
-		gathering=YES;
+		start_gathering();
 		Get_Game_Size(list_game_path[position]);
-		gathering=NO;
-		end_loading();
+		end_gathering();
 			
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
-		total_size=0;
-		nb_file= 0;
-		nb_directory=0;
 	}
 	
 	return CONTINUE;
@@ -30415,16 +31835,16 @@ void open_PS3_GAME_MENU()
 
 void open_GameMenu()
 {
-	if(list_game_platform[position] == _JB_PS3 || list_game_platform[position] == _ISO_PS3) {
+	if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 		open_PS3_GAME_MENU();
 	} else
-	if(list_game_platform[position] == _JB_PS2 || list_game_platform[position] == _ISO_PS2) {
+	if(list_game_platform[position] == JB_PS2 || list_game_platform[position] == ISO_PS2) {
 		open_PS2_GAME_MENU();
 	} else
-	if(list_game_platform[position] == _JB_PS1 || list_game_platform[position] == _ISO_PS1) {
+	if(list_game_platform[position] == JB_PS1 || list_game_platform[position] == ISO_PS1) {
 		open_PS1_GAME_MENU();
 	} else
-	if(list_game_platform[position] == _JB_PSP || list_game_platform[position] == _ISO_PSP) {
+	if(list_game_platform[position] == JB_PSP || list_game_platform[position] == ISO_PSP) {
 		open_PSP_GAME_MENU();
 	}
 
@@ -30463,7 +31883,7 @@ void GetPlugins(char *PluginsPath)
 		
 			if(dir->d_type & DT_DIR) GetPlugins(temp);
 			
-			if(get_ext(dir->d_name) != _SPRX) continue;
+			if(strcasecmp(get_ext(dir->d_name), ".sprx")) continue;
 			
 			if(ITEMS_NUMBER==MENU_MAX_ITEMS-1) break;
 			
@@ -31948,10 +33368,14 @@ void init_SETTINGS()
 		}
 	}
 	
+	/*
 	add_title_MENU("System");
 	
 	add_item_MENU("Logging", ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LOG;
+	
+	add_item_MENU("Debugging", ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = DEBUG;
 	
 	add_item_MENU("Dump eid_root_key", ITEM_TEXTBOX);
 	
@@ -31964,13 +33388,16 @@ void init_SETTINGS()
 	add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
-	
+	*/
 }
 
 void update_SETTINGS()
 {
 	if(item_is("Logging")) {
 		LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is("Debugging")) {
+		DEBUG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
 	if(item_is(STR_FONT)) {
 		if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
@@ -32193,8 +33620,7 @@ void update_SETTINGS()
 				init_SETTINGS();
 			}
 		}
-	} 
-	
+	}
 }
 
 u8 SETTING_R1()
@@ -32225,37 +33651,45 @@ u8 SETTING_R1()
 	
 	return SUCCESS;
 }
-		
+
 u8 SETTINGS_CROSS()
 {
 	if(item_is(STR_DUMP_LV1)) {
 		start_loading();
-		dump_lv1("/dev_hdd0/LV1.BIN");
+		dump_lv1("/dev_hdd0");
 		end_loading();
 	} else 
 	if(item_is(STR_DUMP_LV2)) {
 		start_loading();
-		dump_lv2("/dev_hdd0/LV2.BIN");
+		dump_lv2("/dev_hdd0");
 		end_loading();
 	} else 
 	if(item_is(STR_DUMP_FLASH)) {
 		start_loading();
-		dump_flash("/dev_hdd0/FLASH.BIN");
+		dump_flash("/dev_hdd0");
 		end_loading();
 	} else 
 	if(item_is("Dump BD keys")) {
 		start_loading();
-		Dump_BD_keys();
+		u8 ret = Dump_BD_keys();
 		end_loading();
+		if( ret == SUCCESS ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
 	if(item_is("Dump eid_root_key")) {
 		start_loading();
 		mkdir("/dev_hdd0/tmp", 0777);
-		dump_eid_root_key("/dev_hdd0/tmp/eid_root_key");
+		u8 ret = dump_eid_root_key("/dev_hdd0/tmp/eid_root_key");
 		end_loading();
+		if( ret == SUCCESS ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
 	if(item_is("Dump 3Dump.bin")) {
-		show_msg("todo");
+		start_loading();
+		u8 ret = dump_3Dump();
+		end_loading();
+		if( ret == SUCCESS ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_ADJUST)) {
 		Draw_AdjustScreen();
@@ -32754,7 +34188,7 @@ void AutoMount()
 	position=0;
 	
 	GetParamSFO("TITLE", list_game_title[0], 0, NULL);
-	list_game_platform[0] = get_ext(list_game_path[0]);
+	list_game_platform[0] = get_platform(list_game_path[0]);
 	iso = is_iso(list_game_path[0]);
 	usb = is_usb(list_game_path[0]);
 	
@@ -35656,7 +37090,7 @@ void Draw_FLOW_3D()
 		
 		if(0<=TextSlot) PICType = Get_PICType(GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height);
 		
-		if( list_game_platform[i] == _ISO_PS3 || list_game_platform[i] == _JB_PS3 ) {
+		if( list_game_platform[i] == ISO_PS3 || list_game_platform[i] == JB_PS3 ) {
 			// texture
 			if(PICTURE_offset[BR_LOGO]) tiny3d_SetTexture(0, PICTURE_offset[BR_LOGO], PICTURE[BR_LOGO].width, PICTURE[BR_LOGO].height, PICTURE[BR_LOGO].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 
@@ -35691,7 +37125,7 @@ void Draw_FLOW_3D()
 			}		
 		
 		} else
-		if( list_game_platform[i] == _ISO_PS2 || list_game_platform[i] == _JB_PS2 ) {
+		if( list_game_platform[i] == ISO_PS2 || list_game_platform[i] == JB_PS2 ) {
 			// material
 			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
 			tiny3d_AmbientMaterial( 0.1f, 0.1f, 0.1f, 1.0f); // r,g,b,a
@@ -35722,7 +37156,7 @@ void Draw_FLOW_3D()
 				}
 			}
 		} else
-		if( list_game_platform[i] == _ISO_PS1 || list_game_platform[i] == _JB_PS1 ) {
+		if( list_game_platform[i] == ISO_PS1 || list_game_platform[i] == JB_PS1 ) {
 			
 			// texture
 			if(PICTURE_offset[PS_LOGO]) tiny3d_SetTexture(0, PICTURE_offset[PS_LOGO], PICTURE[PS_LOGO].width, PICTURE[PS_LOGO].height, PICTURE[PS_LOGO].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
@@ -35769,7 +37203,7 @@ void Draw_FLOW_3D()
 				}
 			}
 		} else
-		if( list_game_platform[i] == _ISO_PSP || list_game_platform[i] == _JB_PSP ) {
+		if( list_game_platform[i] == ISO_PSP || list_game_platform[i] == JB_PSP ) {
 			// material
 			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
 			tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f); // r,g,b,a
@@ -35878,10 +37312,10 @@ void init_XMB()
 	for(i = 0 ; i <= game_number ; i++) {
 		if(XMB_H_position==XMB_COLUMN_SETTINGS) continue;
 		
-		if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] !=_ISO_PS3 && list_game_platform[i] !=_JB_PS3)) continue;
-		if(XMB_H_position==XMB_COLUMN_PS2 && (list_game_platform[i] !=_ISO_PS2 && list_game_platform[i] !=_JB_PS2)) continue;
-		if(XMB_H_position==XMB_COLUMN_PS1 && (list_game_platform[i] !=_ISO_PS1 && list_game_platform[i] !=_JB_PS1)) continue;
-		if(XMB_H_position==XMB_COLUMN_PSP && (list_game_platform[i] !=_ISO_PSP && list_game_platform[i] !=_JB_PSP)) continue;
+		if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] != ISO_PS3 && list_game_platform[i] != JB_PS3)) continue;
+		if(XMB_H_position==XMB_COLUMN_PS2 && (list_game_platform[i] != ISO_PS2 && list_game_platform[i] != JB_PS2)) continue;
+		if(XMB_H_position==XMB_COLUMN_PS1 && (list_game_platform[i] != ISO_PS1 && list_game_platform[i] != JB_PS1)) continue;
+		if(XMB_H_position==XMB_COLUMN_PSP && (list_game_platform[i] != ISO_PSP && list_game_platform[i] != JB_PSP)) continue;
 		if(XMB_H_position==XMB_COLUMN_FAVORITES && is_favorite(list_game_path[i]) == NO) continue;
 		
 		XMB_nb_line++;
@@ -36557,16 +37991,16 @@ void Draw_MAIN_input()
 		
 		FontColor(COLOR_1);
 		
-		if(list_game_platform[position] == _ISO_PS3 || list_game_platform[position] == _JB_PS3) {
+		if(list_game_platform[position] == ISO_PS3 || list_game_platform[position] == JB_PS3) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS3");
 		} else
-		if(list_game_platform[position] == _ISO_PS2 || list_game_platform[position] == _JB_PS2) {
+		if(list_game_platform[position] == ISO_PS2 || list_game_platform[position] == JB_PS2) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS2");
 		} else
-		if(list_game_platform[position] == _ISO_PS1 || list_game_platform[position] == _JB_PS1) {
+		if(list_game_platform[position] == ISO_PS1 || list_game_platform[position] == JB_PS1) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS1");
 		} else
-		if(list_game_platform[position] == _ISO_PSP || list_game_platform[position] == _JB_PSP) {
+		if(list_game_platform[position] == ISO_PSP || list_game_platform[position] == JB_PSP) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PSP");
 		} else {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "UNK");
@@ -36574,31 +38008,21 @@ void Draw_MAIN_input()
 		
 		float x1 = x;
 		
-		char *Ext = GetExtention(list_game_path[position]);
+		char *Ext = GetExtension(list_game_path[position]);
 	
-		if( (Ext[1] == 'I' || Ext[1] == 'i')
-		&& 	(Ext[2] == 'S' || Ext[2] == 's')
-		&&	(Ext[3] == 'O' || Ext[3] == 'o') )	{
+		if( !strncasecmp(Ext, ".iso", 4) )	{
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "ISO");
 		} else	
-		if( (Ext[1] == 'B' || Ext[1] == 'b')
-		&& 	(Ext[2] == 'I' || Ext[2] == 'i')
-		&&	(Ext[3] == 'N' || Ext[3] == 'n') )	{
+		if( !strncasecmp(Ext, ".bin", 4) )	{
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "BIN");
 		} else
-		if( (Ext[1] == 'M' || Ext[1] == 'm')
-		&& 	(Ext[2] == 'D' || Ext[2] == 'd')
-		&&	(Ext[3] == 'F' || Ext[3] == 'f') )	{
+		if( !strncasecmp(Ext, ".mdf", 4) )	{
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "MDF");
 		} else
-		if( (Ext[1] == 'I' || Ext[1] == 'i')
-		&& 	(Ext[2] == 'M' || Ext[2] == 'm')
-		&&	(Ext[3] == 'G' || Ext[3] == 'g') )	{
+		if( !strncasecmp(Ext, ".img", 4) )	{
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "IMG");
 		} else
-		if( (Ext[1] == 'C' || Ext[1] == 'c')
-		&& 	(Ext[2] == 'S' || Ext[2] == 's')
-		&&	(Ext[3] == 'O' || Ext[3] == 'o') )	{
+		if( !strncasecmp(Ext, ".cso", 4) )  {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "CSO");
 		} else {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "JB");
@@ -36727,10 +38151,10 @@ u8 Show_it(int pos)
 {
 	if(pos<0 || game_number<pos) return NO;
 	
-	if( Show_PS3==NO && (list_game_platform[pos]==_ISO_PS3 || list_game_platform[pos]==_JB_PS3)) return NO;
-	if( Show_PS2==NO && (list_game_platform[pos]==_ISO_PS2 || list_game_platform[pos]==_JB_PS2)) return NO;
-	if(	Show_PS1==NO && (list_game_platform[pos]==_ISO_PS1 || list_game_platform[pos]==_JB_PS1)) return NO;
-	if(	Show_PSP==NO && (list_game_platform[pos]==_ISO_PSP || list_game_platform[pos]==_JB_PSP)) return NO;
+	if( Show_PS3==NO && (list_game_platform[pos]== ISO_PS3 || list_game_platform[pos]== JB_PS3)) return NO;
+	if( Show_PS2==NO && (list_game_platform[pos]== ISO_PS2 || list_game_platform[pos]== JB_PS2)) return NO;
+	if(	Show_PS1==NO && (list_game_platform[pos]== ISO_PS1 || list_game_platform[pos]== JB_PS1)) return NO;
+	if(	Show_PSP==NO && (list_game_platform[pos]== ISO_PSP || list_game_platform[pos]== JB_PSP)) return NO;
 	
 	if( UI_position != XMB) {
 		if( Only_FAV && is_favorite(list_game_path[pos])==NO) return NO;

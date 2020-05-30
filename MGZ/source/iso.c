@@ -55,6 +55,11 @@ extern void print_load(char *format, ...);
 extern void Delete(char *path);
 
 extern u8 cancel;
+extern u64 task_ProgressBar1_max;
+extern u64 task_ProgressBar1_val;
+extern u64 task_ProgressBar2_max;
+extern u64 task_ProgressBar2_val;
+
 extern u64 prog_bar1_value;
 
 //#define ALIGNED32SECTORS 1
@@ -2110,6 +2115,8 @@ static int build_file_iso(int *fd, char *path1, char *path2, int level)
             u32 count = 0, percent = (u32) (s.st_size / 0x40000ULL);
             if(percent == 0) percent = 1;
 			
+			task_ProgressBar2_max = s.st_size;
+			task_ProgressBar2_val = 0;
             if(cancel)
             {
                 ps3ntfs_close(fd2); closedir(dir); return Error_ABORTED_BY_USER;
@@ -2119,7 +2126,7 @@ static int build_file_iso(int *fd, char *path1, char *path2, int level)
                 u32 fsize;
                 u32 lsize;
 				
-				prog_bar1_value = count * 100 / percent;
+				//prog_bar1_value = count * 100 / percent;
 				
                 if(cancel) {
                     ps3ntfs_close(fd2); closedir(dir); return Error_ABORTED_BY_USER;
@@ -2130,6 +2137,7 @@ static int build_file_iso(int *fd, char *path1, char *path2, int level)
 
                 count++;
                 if(fsize < 0x40000) memset(sectors, 0, 0x40000);
+				
                 if(is_file_split) {
                     int read = ps3ntfs_read(fd2, (void *) sectors, (int) fsize);
                     if(read < 0) {
@@ -2169,6 +2177,9 @@ static int build_file_iso(int *fd, char *path1, char *path2, int level)
                 }
                 flba += lsize / SECTOR_SIZE;
                 s.st_size-= fsize;
+				
+				task_ProgressBar1_val+=fsize;
+				task_ProgressBar2_val+=fsize;
             }
 			
             ps3ntfs_close(fd2);
@@ -2470,13 +2481,15 @@ int makeps3iso(char *g_path, char *f_iso, int split)
     flba= (flba + 31) & ~31;
     #endif
     toc = flba;
-
+	
     if((((u64)toc) * 2048ULL) > (avail - 0x100000ULL))
     {
         print_load("Error: Insufficient Disk Space in Destination");
         goto err;
     }
 
+	task_ProgressBar1_max = (((u64)toc) * 2048ULL);
+	
     sectors[0x3] = 1; // one range
     set732((void *) &sectors[0x8], 0); // first unencrypted sector
     set732((void *) &sectors[0xC], toc - 1); // last unencrypted sector
@@ -2688,10 +2701,20 @@ int makeps3iso(char *g_path, char *f_iso, int split)
     free(directory_iso); directory_iso = NULL;
     free(sectors);  sectors = NULL;
 	
-    return SUCCESS;
+	task_ProgressBar1_max=0;
+	task_ProgressBar1_val=0;
+	task_ProgressBar2_max=0;
+    task_ProgressBar2_val=0;
+	
+	return SUCCESS;
 
 err:
-
+	
+	task_ProgressBar1_max=0;
+	task_ProgressBar1_val=0;
+	task_ProgressBar2_max=0;
+    task_ProgressBar2_val=0;
+	
     if(directory_iso) {
         int n;
 
@@ -3003,6 +3026,8 @@ int extractps3iso(char *f_iso, char *g_path, int split)
         goto err;
     }
 
+	task_ProgressBar1_max = (((u64)toc) * 2048ULL);
+	
     u32 lba0 = isonum_731(&sect_descriptor.type_l_path_table[0]); // lba
     u32 size0 = isonum_733(&sect_descriptor.path_table_size[0]); // size
 
@@ -3300,11 +3325,14 @@ int extractps3iso(char *f_iso, char *g_path, int split)
                             goto err;
                         }
 
+						task_ProgressBar2_max = file_size;
+						task_ProgressBar2_val = 0;
+						
                         while(file_size > 0) {
                             u32 fsize;
                             
-							prog_bar1_value	= count * 100 / percent;
-
+							//prog_bar1_value	= count * 100 / percent;
+							
                             if(cancel) {
                                 print_load("Error: Aborted by User");
                                 goto err;
@@ -3342,8 +3370,11 @@ int extractps3iso(char *f_iso, char *g_path, int split)
                             }
 
                             file_size-= (u64) fsize;
-
+							
                             file_lba += (fsize + SECTOR_FILL) / SECTOR_SIZE;
+							
+							task_ProgressBar2_val += fsize;
+							task_ProgressBar1_val += fsize;
                         }
 
                         ps3ntfs_close(fd2); fd2 = -1;
@@ -3389,10 +3420,20 @@ int extractps3iso(char *f_iso, char *g_path, int split)
 
     free(split_file); split_file = NULL;
 	
+	task_ProgressBar1_max=0;
+	task_ProgressBar1_val=0;
+	task_ProgressBar2_max=0;
+    task_ProgressBar2_val=0;
+	
     return SUCCESS;
 
 err:
-
+	
+	task_ProgressBar1_max=0;
+	task_ProgressBar1_val=0;
+	task_ProgressBar2_max=0;
+    task_ProgressBar2_val=0;
+	
     if(fd) ps3ntfs_close(fd);
     if(fd2) ps3ntfs_close(fd2);
     if(split_index && fd_split) {ps3ntfs_close(fd_split); fd_split = -1;}

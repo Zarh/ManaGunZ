@@ -17,7 +17,7 @@ include $(PSL1GHT)/ppu_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/RCO source/RCO/7z source/cxml source/erk source/bd_keys
+SOURCES		:=	source source/RCO source/RCO/7z source/cxml source/erk source/bd
 DATA		:=	data
 INCLUDES	:=	include lib/libgtfconv/source lib/libapputil/source lib/ImageMagick lib/OpenSSL/include
 PKGFILES	:=	$(CURDIR)/pkgfiles
@@ -52,7 +52,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
 			../lib/libMagickWand.a ../lib/libMagickCore.a ../lib/libcrypto.a \
 			-ltiny3d -lsysmodule -lgcm_sys -lrsx -lsysutil -lio -lm -lfreetype -lz -lhttputil \
-			-lhttp -lssl -lnet -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
+			-lhttp -lssl -lnet -lwebp -ltiff -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
 			
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

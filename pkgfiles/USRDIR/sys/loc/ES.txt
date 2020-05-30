@@ -13,8 +13,7 @@ STR_DIRS					{Carpetas}
 STR_UNKNOWN					{Desconocido}
 STR_FILE					{Archivo}
 STR_CANCEL					{Cancelar}
-STR_TURNOFF_YES				{Apagar PS3 al finalizar la transferencia de archivos = Sí}
-STR_TURNOFF_NO				{Apagar PS3 al finalizar la transferencia de archivos = No}
+STR_TURNOFF					{Apagar PS3 al finalizar la transferencia de archivos}
 STR_CANCELLED				{Cancelado}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Tamaño total}

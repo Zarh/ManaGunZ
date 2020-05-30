@@ -55,21 +55,21 @@ bool gtf2dds(const char *gtf_fname, const char *dds_fname, uint8_t index, uint32
 
 	if(!fileReadFile(gtf_fname, &gtf.addr, &gtf.size)){
 		// error: bad input
-		print_load((char *) "Error: Bad input file\n");
+		print_load((char *) "Error: Bad input file");
 		return false;
 	}
 
 	int16_t num_gtf = gtfconv_gtf2dds_get_texture_count(&gtf, option);
 	if(num_gtf == CELL_GTFCONV_ERROR || num_gtf == 0){
 		// error: bad format
-		print_load((char *) "Error: Bad format\n");
+		print_load((char *) "Error: Bad format");
 		BUFFER_DELETE(gtf);
 		return false;
 	}
 
 	if(sIsSpecified && num_gtf <= index){
 		// error: bad id
-		print_load((char *) "Error: Bad id\n");
+		print_load((char *) "Error: Bad id");
 		BUFFER_DELETE(gtf);
 		return false;
 	}
@@ -80,14 +80,14 @@ bool gtf2dds(const char *gtf_fname, const char *dds_fname, uint8_t index, uint32
 		int32_t dds_size = gtfconv_gtf2dds_get_size(&gtf, index, option);
 		if(dds_size == CELL_GTFCONV_ERROR){
 			// error: bad format
-			print_load((char *) "Error: Bad format\n");
+			print_load((char *) "Error: Bad format");
 			BUFFER_DELETE(gtf);
 			return false;
 		}
 
 		if(!BUFFER_NEW(dds, dds_size)){
 			// error: memory error
-			print_load((char *) "Error: Memory access error\n");
+			print_load((char *) "Error: Memory access error");
 			BUFFER_DELETE(gtf);
 			return false;
 		}
@@ -97,13 +97,15 @@ bool gtf2dds(const char *gtf_fname, const char *dds_fname, uint8_t index, uint32
 
 		if(!bResult){
 			// error: conv failed
-			print_load((char *) "Error: Conversion failed\n");
+			print_load((char *) "Error: Conversion failed");
 		}
 		
 		if(bResult){
+			
+			
 			if(!fileWriteFile(dds_fname, dds.addr, dds.size)){
 				// error: out file error
-				print_load((char *) "Error: Bad output file\n");
+				print_load((char *) "Error: Bad output file");
 				bResult = false;
 			}
 		}
@@ -142,3 +144,57 @@ bool gtf2dds(const char *gtf_fname, const char *dds_fname, uint8_t index, uint32
 
 	return bResult;
 }
+
+extern "C" bool gtf2ddsFromBuffer(uint8_t *gtf_data_in, uint32_t gtf_size_in, uint8_t **dds_data_out, uint32_t *dds_size_out, uint8_t index, uint32_t option);
+bool gtf2ddsFromBuffer(uint8_t *gtf_data_in, uint32_t gtf_size_in, uint8_t **dds_data_out, uint32_t *dds_size_out, uint8_t index, uint32_t option)
+{
+	if(gtf_data_in == NULL) return false;
+	if(gtf_size_in == 0) return false;
+	
+	GTF_BUFFER_T gtf = {(uint8_t *) gtf_data_in, (uint32_t ) gtf_size_in};
+	
+	bool bResult = false;
+
+	GTF_BUFFER_T dds = {0, 0};
+	
+	print_load((char *) "gtfconv_gtf2dds_get_size");
+	int32_t dds_size = gtfconv_gtf2dds_get_size(&gtf, index, option);
+	if(dds_size == CELL_GTFCONV_ERROR){
+		// error: bad format
+		print_load((char *) "Error: Bad format");
+		return false;
+	}
+	
+	print_load((char *) "BUFFER_NEW( dds )");
+	if(!BUFFER_NEW(dds, dds_size)){
+		// error: memory error
+		print_load((char *) "Error: Memory access error");
+		return false;
+	}
+	
+	print_load((char *) "gtfconv_gtf2dds");
+	int32_t ret = gtfconv_gtf2dds(&dds, &gtf, index, option);
+	bResult = (ret == CELL_GTFCONV_OK);
+
+	if(!bResult){
+		// error: conv failed
+		print_load((char *) "Error: Conversion failed");
+	}
+	
+	if(bResult){
+		print_load((char *) "malloc");
+		*dds_data_out = (uint8_t *) malloc(dds.size);
+		if(*dds_data_out) {
+			memcpy(*dds_data_out, dds.addr, dds.size);
+			*dds_size_out = dds.size;
+		} else {
+			print_load((char *) "Error: malloc failed");
+			bResult=false;
+		}
+	}
+
+	BUFFER_DELETE(dds);
+
+	return bResult;
+}
+

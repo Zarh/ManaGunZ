@@ -12,8 +12,7 @@ STR_DIRS					{Könyvtárak}
 STR_UNKNOWN					{Ismeretlen}
 STR_FILE					{Fájl}
 STR_CANCEL					{Elvet}
-STR_TURNOFF_YES				{Kikapcsolni = Igen}
-STR_TURNOFF_NO				{Kikapcsolni = Nem}
+STR_TURNOFF					{Kikapcsolni}
 STR_CANCELLED				{Törölve}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Teljes méret}

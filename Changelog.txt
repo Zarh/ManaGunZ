@@ -1,6 +1,26 @@
+v1.39
+
+TO DO :
+Add Filemanager : Click under the thumb will scroll down/up a page instead of 1 item.
+
+TO FINISH (STR_CONVERT_TO_PNG)
+Add FileManager : Convert any supported picture to PNG.
+
+TO FINISH (add the ird !!)
+Add : Dump eid_root_key, 3Dump.bin, disc.pic and disc.key.
+Add : Dump decrypted BR.
+
+TO MAKE IT BETTER
+Add : ManaGunZ logs option. It's save loading logs at "/dev_hdd0/tmp/mgz.log".
+Add : ManaGunZ debug option. It slows the messages displayed on screen during the loadings.
+
 
 v1.38
-
+Add : Support CFW/HEN 486C
+Add FileManager : PictureViewer : support DDS, GTF, BMP, WEBP, TIFF, TGA, GIM and mores...
+Fix FileManager : The scroll bar is now visible.
+Fix : ManaGunZ won't set chinese language when the PS3 system is set with german language.
+Removed : SHA-1 calculation from file properties.
 
 v1.37
 Add : Support the firmware 4.85C.

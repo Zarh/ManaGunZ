@@ -6,9 +6,13 @@
 #include "utils.h"
 #include "payload.h"
 
-#define SYSMODULE_SYSUTIL_GAME		0x003e
+#define SYSMODULE_SYSUTIL_GAME	0x003e
+
+
 
 extern void print_load(char *format, ...);
+extern void print_head(char *format, ...);
+extern void hex_print_load(char *data, size_t len);
 
 extern u8 eid_root_key[EID_ROOT_KEY_SIZE];
 extern u64 HV_START_OFFSET;
@@ -17,7 +21,7 @@ extern u64 MMAP_OFFSET1;
 extern u64 MMAP_OFFSET2;
 extern u64 SPE_OFFSET;
 
-static int make_patches(void) {
+void make_patches(void) {
 	
 	/* allow mapping of HTAB with write protection */
 	lv1_poke64(HTAB_OFFSET, 0x60000000E97F00A8ULL);
@@ -40,78 +44,87 @@ static int make_patches(void) {
 	
 	/* remove page protection bits from htab entries */
 	patch_htab_entries(0);
-
-	return 0;
 }
 
 int dump_eid_root_key(const char* file_path) {
-	int result;
+	
+	int ret;
 
 	FILE* fp;
 	int poke_installed;
 	int payload_installed;
-
+	
 	poke_installed = 0;
 	payload_installed = 0;
 
-	print_load("Dumping the eid_root_key");
+	print_head("Dumping the eid_root_key");
 	
 	print_load("* install_new_poke");
-	result = install_new_poke();
-	if (result != 0) {
-		print_load("Error : install_new_poke() failed: 0x%08X", result);
+	if (install_new_poke() == FAILED) {
+		print_load("Error : install_new_poke() failed");
+		ret = FAILED;
 		goto error;
 	}
 	poke_installed = 1;
+		
 	print_load("* make_patches");
-	result = make_patches();
-	if (result != 0) {
-		print_load("Error : make_patches() failed: 0x%08X", result);
-		goto error;
-	}
+	make_patches();
+		
 	print_load("* install_payload");
-	result = install_payload();
-	if (result != 0) {
-		print_load("Error : install_payload() failed: 0x%08X", result);
+	if(install_payload() == FAILED) {
+		print_load("Error : install_payload() failed");
+		ret = FAILED;
 		goto error;
 	}
 	payload_installed = 1;
 
 	memset(eid_root_key, 0, EID_ROOT_KEY_SIZE);
+	
 	print_load("* run_payload");
-	result = run_payload((uintptr_t)eid_root_key, EID_ROOT_KEY_SIZE);
+	int result = run_payload((uintptr_t)eid_root_key, EID_ROOT_KEY_SIZE);
 	if (result != 0) {
 		print_load("Error : run_payload() failed: 0x%08X", result);
-		goto error;
-	}
-	print_load("* write eid_root_key");
-	fp = fopen(file_path, "wb");
-	if (!fp) {
-		result = errno;
-		print_load("Error : fopen() failed: 0x%08X", result);
+		ret = FAILED;
 		goto error;
 	}
 	
+	u8 empty[EID_ROOT_KEY_SIZE];
+	memset(empty, 0, EID_ROOT_KEY_SIZE);
+	
+	if( !memcmp((char *) eid_root_key, (char *) empty, EID_ROOT_KEY_SIZE) ) {
+		print_load("Error : eid_root_key is empty, something failed...");
+		ret = FAILED;
+		goto error;
+		
+	}
+	
+	print_load("* eid_root_key :");
+	hex_print_load((char *) eid_root_key, EID_ROOT_KEY_SIZE);
+	
+	print_load("* write eid_root_key");
+	fp = fopen(file_path, "wb");
+	if (!fp) {
+		print_load("Error : fopen() failed");
+		ret = FAILED;
+		goto error;
+	}
 	fwrite(eid_root_key, 1, EID_ROOT_KEY_SIZE, fp);
-
 	fclose(fp);
 
-	result = 0;
+	ret = SUCCESS;
 
 error:
 	if (payload_installed) {
 		print_load("* remove_payload");
-		result = remove_payload();
-		if (result != 0)
-			print_load("remove_payload() failed: 0x%08X", result);
+		if(remove_payload() == FAILED)
+			print_load("Warning : remove_payload() failed");
 	}
 
 	if (poke_installed) {
 		print_load("* remove_new_poke");
-		result = remove_new_poke();
-		if (result != 0)
-			print_load("remove_new_poke() failed: 0x%08X", result);
+		if (remove_new_poke() == FAILED)
+			print_load("Warning : remove_new_poke() failed");
 	}
 
-	return result;
+	return ret;
 }

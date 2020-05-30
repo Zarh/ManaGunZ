@@ -373,5 +373,15 @@
 	#define GAMEOS_LPAR_SIZE_PTR                 0x800000000037A640ULL
 #endif
 
+#ifdef FIRMWARE_486C
+	#define KERNEL_TOC			                 0x34FBB0
+	#define KERNEL_SYMBOL_EXTEND_KSTACK          0x0700A4
+	#define KERNEL_SYMBOL_COPY_TO_USER           0x00F86C
+	#define KERNEL_SYMBOL_MEMSET                 0x04D66C
+	#define KERNEL_SYMBOL_MEMCPY                 0x07E92C
+	#define GAMEOS_LPAR_BASE_PTR                 0x800000000037A638ULL
+	#define GAMEOS_LPAR_SIZE_PTR                 0x800000000037A640ULL
+#endif
+
 
 #endif /* __SYMBOLS_H__ */

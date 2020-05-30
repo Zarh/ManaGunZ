@@ -12,8 +12,7 @@ STR_DIRS					{Katalogi}
 STR_UNKNOWN					{Nieznany}
 STR_FILE					{Plik}
 STR_CANCEL					{Anuluj}
-STR_TURNOFF_YES				{WYŁĄCZ = TAK}
-STR_TURNOFF_NO				{WYŁĄCZ = NIE}
+STR_TURNOFF					{WYŁĄCZ}
 STR_CANCELLED				{Anulowano}
 STR_UNIT					{Bajty}
 STR_TOTALSIZE				{Całkowity rozmiar}

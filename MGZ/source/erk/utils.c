@@ -156,7 +156,7 @@ int triple_beep(void) {
 int install_new_poke(void) {
 	poke_with_cache_original_code = (uint32_t*)malloc(poke_with_cache_code_size);
 	if (!poke_with_cache_original_code)
-		return ENOMEM;
+		return FAILED;
 
 	memset(poke_with_cache_original_code, 0, poke_with_cache_code_size);
 
@@ -167,12 +167,12 @@ int install_new_poke(void) {
 
 	poke_syscall = SYSCALL_POKE_WITH_CACHE;
 
-	return 0;
+	return SUCCESS;
 }
 
 int remove_new_poke(void) {
 	if (!poke_with_cache_original_code)
-		return EFAULT;
+		return FAILED;
 
 	poke_syscall = old_poke_syscall;
 	old_poke_syscall = -1;
@@ -182,6 +182,6 @@ int remove_new_poke(void) {
 	free(poke_with_cache_original_code);
 	poke_with_cache_original_code = NULL;
 
-	return 0;
+	return SUCCESS;
 }
 

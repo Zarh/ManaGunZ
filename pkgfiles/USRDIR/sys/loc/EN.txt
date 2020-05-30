@@ -1,5 +1,5 @@
-STR_LANGUAGE			{English}
-STR_LANGCODE			{\x01}
+STR_LANGUAGE				{English}
+STR_LANGCODE				{\x01}
 
 STR_LANG					{Language}
 STR_LANG_DESC				{Choose your language.}
@@ -12,8 +12,7 @@ STR_DIRS					{Directories}
 STR_UNKNOWN					{Unknown}
 STR_FILE					{File}
 STR_CANCEL					{Cancel}
-STR_TURNOFF_YES				{Turn OFF = YES}
-STR_TURNOFF_NO				{Turn OFF = NO}
+STR_TURNOFF					{Turn off}
 STR_CANCELLED				{Cancelled}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Total size}

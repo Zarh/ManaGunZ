@@ -225,5 +225,11 @@
 #include "mamba_485C_lz_bin.h"
 #include "mamba_loader_485C_bin.h"
 
+#include "erk_dumper_486C_bin.h"
+#include "payload_sky_486C_bin.h"
+#include "umount_486C_bin.h"
+#include "mamba_486C_lz_bin.h"
+#include "mamba_loader_486C_bin.h"
+
 
 #endif /* __DATA_H__ */

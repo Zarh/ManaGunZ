@@ -12,8 +12,7 @@ STR_DIRS				{Каталоги}
 STR_UNKNOWN				{Неизвестно}
 STR_FILE				{Файл}
 STR_CANCEL				{Отмена}
-STR_TURNOFF_YES			{Выключить = ДА}
-STR_TURNOFF_NO			{Выключить = НЕТ}
+STR_TURNOFF				{Выключить}
 STR_CANCELLED			{Отменено}
 STR_UNIT				{Байт}
 STR_TOTALSIZE			{Общий размер}

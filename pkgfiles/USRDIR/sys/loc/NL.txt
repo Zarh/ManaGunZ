@@ -12,8 +12,7 @@ STR_DIRS					{Mappen}
 STR_UNKNOWN					{Onbekend}
 STR_FILE					{Bestand}
 STR_CANCEL					{Annuleer}
-STR_TURNOFF_YES				{ZET UIT = JA}
-STR_TURNOFF_NO				{ZET UIT = NEE}
+STR_TURNOFF					{Schakel}
 STR_CANCELLED				{Geannuleerd}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Totale Grootte}

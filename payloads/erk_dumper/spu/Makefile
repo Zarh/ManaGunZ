@@ -9,7 +9,7 @@ CFLAGS=-ffunction-sections -fdata-sections -fno-builtin -Os
 LDFLAGS=-Tldscript.ld -nostartfiles -nostdlib -nodefaultlibs -Wl,--gc-sections $(LIB)
 
 SCETOOLS_FLAGS = --compress-data=FALSE --sce-type=SELF --key-revision=00 --self-auth-id=1FF000000C000001 --self-vendor-id=FF000000
-SCETOOLS_FLAGS+= --self-type=LDR --self-app-version=0001000000000000 --self-fw-version=0003004000000000
+SCETOOLS_FLAGS+= --self-type=LDR --self-app-version=0004002100000000 --self-fw-version=0000000000000000
 SCETOOLS_FLAGS+= --self-ctrl-flags=0000000000000000000000000000000000000000000000000000000000000000
 SCETOOLS_FLAGS+= --self-cap-flags=0000000000000000000000000000000000000000000000780000000000000000
 

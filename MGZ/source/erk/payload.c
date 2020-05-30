@@ -14,7 +14,7 @@ extern size_t ERK_DUMPER_SIZE;
 
 int install_payload(void) {
 
-	if (ERK_DUMPER_SIZE <= 0)	return -1;
+	if (ERK_DUMPER_SIZE <= 0) return FAILED;
 	
 	lv2_copy_from_user(ERK_DUMPER, ERK_PAYLOAD_OFFSET, ERK_DUMPER_SIZE);
 
@@ -24,7 +24,7 @@ int install_payload(void) {
 	real_opd_offset = SYSCALL_OPD_OFFSET(SYSCALL_RUN_PAYLOAD);
 	lv2_poke64(SYSCALL_OPD_PTR_OFFSET(SYSCALL_RUN_PAYLOAD), ERK_PAYLOAD_OPD_OFFSET);
 
-	return 0;
+	return SUCCESS;
 }
 
 int remove_payload(void) {
@@ -33,5 +33,5 @@ int remove_payload(void) {
 		real_opd_offset = 0;
 	}
 
-	return 0;
+	return SUCCESS;
 }

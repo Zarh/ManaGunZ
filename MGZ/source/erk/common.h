@@ -11,6 +11,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#define SUCCESS 	1
+#define FAILED 		0
+
 #define COUNT_OF(x) (sizeof(x) / sizeof((x)[0]))
 
 #define KERNEL_BASE 0x8000000000000000ULL
