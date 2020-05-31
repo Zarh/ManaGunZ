@@ -3972,6 +3972,7 @@ void print_help()
 {
 	printf("offsetfinder.exe [option]\n\n\
 	search\t\tsearch offsets and generate files\n\
+	idpset\t\tsearch offsets, generate files and move them to idpset folder\n\
 	move\t\tmove files to their directories\n\
 	extract\t\textract dev_flash from PUP\n");
 	exit(0);
