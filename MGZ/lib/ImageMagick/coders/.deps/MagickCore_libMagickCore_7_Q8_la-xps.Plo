@@ -1,0 +1,294 @@
+coders/MagickCore_libMagickCore_7_Q8_la-xps.lo: coders/xps.c \
+ MagickCore/studio.h MagickCore/magick-config.h \
+ MagickCore/magick-baseconfig.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdarg.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdio.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/newlib.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/config.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/ieeefp.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/features.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stddef.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/reent.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/_types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_default_types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/lock.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdint.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdint.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/stdio.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/stat.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/time.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/time.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdlib.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/stdlib.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/alloca.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/string.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/string.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/strings.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/inttypes.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/unistd.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/unistd.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/ctype.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/locale.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/errno.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/errno.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/fcntl.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/fcntl.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/_default_fcntl.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/math.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include-fixed/limits.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/signal.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/signal.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/assert.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/syslimits.h \
+ MagickCore/method-attribute.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/timeb.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/dirent.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/dirent.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/wait.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/pwd.h \
+ MagickCore/magick-type.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/time.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/times.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/resource.h \
+ MagickCore/artifact.h MagickCore/blob.h MagickCore/image.h \
+ MagickCore/color.h MagickCore/pixel.h MagickCore/colorspace.h \
+ MagickCore/exception.h MagickCore/semaphore.h MagickCore/cache-view.h \
+ MagickCore/composite.h MagickCore/compress.h MagickCore/effect.h \
+ MagickCore/morphology.h MagickCore/geometry.h MagickCore/layer.h \
+ MagickCore/locale_.h MagickCore/linked-list.h MagickCore/monitor.h \
+ MagickCore/profile.h MagickCore/string_.h MagickCore/quantum.h \
+ MagickCore/resample.h MagickCore/resize.h MagickCore/stream.h \
+ MagickCore/timer.h MagickCore/blob-private.h \
+ MagickCore/nt-base-private.h MagickCore/delegate.h \
+ MagickCore/delegate-private.h MagickCore/splay-tree.h \
+ MagickCore/color-private.h MagickCore/image-private.h \
+ MagickCore/constitute.h MagickCore/draw.h MagickCore/type.h \
+ MagickCore/exception-private.h MagickCore/log.h MagickCore/magick.h \
+ MagickCore/list.h MagickCore/memory_.h MagickCore/monitor-private.h \
+ MagickCore/option.h MagickCore/property.h MagickCore/resource_.h \
+ MagickCore/quantum-private.h MagickCore/cache.h MagickCore/static.h \
+ MagickCore/module.h MagickCore/version.h MagickCore/token.h \
+ MagickCore/transform.h MagickCore/utility.h
+
+MagickCore/studio.h:
+
+MagickCore/magick-config.h:
+
+MagickCore/magick-baseconfig.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdarg.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdio.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/newlib.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/config.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/ieeefp.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/features.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stddef.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/reent.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/_types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_default_types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/lock.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdint.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdint.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/stdio.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/stat.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/time.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/time.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdlib.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/stdlib.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/alloca.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/string.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/string.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/strings.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/inttypes.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/unistd.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/unistd.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/ctype.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/locale.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/errno.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/errno.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/fcntl.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/fcntl.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/_default_fcntl.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/math.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include-fixed/limits.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/signal.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/signal.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/assert.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/syslimits.h:
+
+MagickCore/method-attribute.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/timeb.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/dirent.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/dirent.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/wait.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/pwd.h:
+
+MagickCore/magick-type.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/time.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/times.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/resource.h:
+
+MagickCore/artifact.h:
+
+MagickCore/blob.h:
+
+MagickCore/image.h:
+
+MagickCore/color.h:
+
+MagickCore/pixel.h:
+
+MagickCore/colorspace.h:
+
+MagickCore/exception.h:
+
+MagickCore/semaphore.h:
+
+MagickCore/cache-view.h:
+
+MagickCore/composite.h:
+
+MagickCore/compress.h:
+
+MagickCore/effect.h:
+
+MagickCore/morphology.h:
+
+MagickCore/geometry.h:
+
+MagickCore/layer.h:
+
+MagickCore/locale_.h:
+
+MagickCore/linked-list.h:
+
+MagickCore/monitor.h:
+
+MagickCore/profile.h:
+
+MagickCore/string_.h:
+
+MagickCore/quantum.h:
+
+MagickCore/resample.h:
+
+MagickCore/resize.h:
+
+MagickCore/stream.h:
+
+MagickCore/timer.h:
+
+MagickCore/blob-private.h:
+
+MagickCore/nt-base-private.h:
+
+MagickCore/delegate.h:
+
+MagickCore/delegate-private.h:
+
+MagickCore/splay-tree.h:
+
+MagickCore/color-private.h:
+
+MagickCore/image-private.h:
+
+MagickCore/constitute.h:
+
+MagickCore/draw.h:
+
+MagickCore/type.h:
+
+MagickCore/exception-private.h:
+
+MagickCore/log.h:
+
+MagickCore/magick.h:
+
+MagickCore/list.h:
+
+MagickCore/memory_.h:
+
+MagickCore/monitor-private.h:
+
+MagickCore/option.h:
+
+MagickCore/property.h:
+
+MagickCore/resource_.h:
+
+MagickCore/quantum-private.h:
+
+MagickCore/cache.h:
+
+MagickCore/static.h:
+
+MagickCore/module.h:
+
+MagickCore/version.h:
+
+MagickCore/token.h:
+
+MagickCore/transform.h:
+
+MagickCore/utility.h:

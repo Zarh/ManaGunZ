@@ -1,0 +1,39 @@
+libimagedec_la-image_dec.lo: image_dec.c image_dec.h ../src/webp/types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stddef.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/inttypes.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdint.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdint.h \
+ ../src/webp/config.h metadata.h jpegdec.h pngdec.h pnmdec.h tiffdec.h \
+ webpdec.h ../src/webp/decode.h ../src/webp/./types.h wicdec.h
+
+image_dec.h:
+
+../src/webp/types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stddef.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/inttypes.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdint.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdint.h:
+
+../src/webp/config.h:
+
+metadata.h:
+
+jpegdec.h:
+
+pngdec.h:
+
+pnmdec.h:
+
+tiffdec.h:
+
+webpdec.h:
+
+../src/webp/decode.h:
+
+../src/webp/./types.h:
+
+wicdec.h:

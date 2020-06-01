@@ -1,0 +1,15 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/usr/local/include/ImageMagick-7
+libname=MagickCore-7.Q16
+moduledir=${exec_prefix}/lib/ImageMagick-7.0.3/modules-Q16
+ 
+Name: MagickCore
+Description: MagickCore - C API for ImageMagick (ABI Q16)
+URL: https://www.imagemagick.org
+Version: 7.0.3
+Cflags: -I${includearchdir} -I${includedir} -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname}     -Lc:/PSDK3v2/ps3dev/portlibs/ppu/lib -lfreetype    -ljpeg   -Lc:/PSDK3v2/ps3dev/portlibs/ppu/lib -lpng14                          -lm      -lm

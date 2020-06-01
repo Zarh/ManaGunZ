@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+#  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+#  dedicated to making software imaging solutions freely available.
+#
+#  You may not use this file except in compliance with the License.  You may
+#  obtain a copy of the License at
+#
+#    http://www.imagemagick.org/script/license.php
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+#  Test for 'validate' utility.
+#
+. ./common.shi
+. ${srcdir}/tests/common.shi
+echo "1..17"
+
+${MAGICK} pnm:- null:   < ${SRCDIR}/rose.pnm && echo "ok" || echo "not ok"
+${MAGICK} pnm:- info:   < ${SRCDIR}/rose.pnm && echo "ok" || echo "not ok"
+${MAGICK} pnm:- miff:-  < ${SRCDIR}/rose.pnm | ${IDENTIFY} - && echo "ok" || echo "not ok"
+${MAGICK} pnm:- -       < ${SRCDIR}/rose.pnm | ${IDENTIFY} - && echo "ok" || echo "not ok"
+${MAGICK} ${SRCDIR}/rose.pnm -write null:  null: && echo "ok" || echo "not ok"
+${MAGICK} ${SRCDIR}/rose.pnm -write info:  null: && echo "ok" || echo "not ok"
+${MAGICK} ${SRCDIR}/rose.pnm -write miff:- null: | ${IDENTIFY} - && echo "ok" || echo "not ok"
+${MAGICK} ${SRCDIR}/rose.pnm -write -      null: | ${IDENTIFY} - && echo "ok" || echo "not ok"
+
+# IMv7 "magick" testing
+# -read option
+${MAGICK} -read ${SRCDIR}/rose.pnm info: && echo "ok" || echo "not ok"
+# -exit can be used insted of implicit write
+${MAGICK} ${SRCDIR}/rose.pnm -write info: -exit && echo "ok" || echo "not ok"
+# null: does not require an image during write
+${MAGICK} -write null: -exit && echo "ok" || echo "not ok"
+# implied write null: without image
+${MAGICK} ${SRCDIR}/rose.pnm -write info: +delete null: && echo "ok" || echo "not ok"
+# Write to file decriptor
+${MAGICK} ${SRCDIR}/rose.pnm fd:6  6>&1 | ${IDENTIFY} - && echo "ok" || echo "not ok"
+# Read from file decriptor
+exec 5<${SRCDIR}/rose.pnm
+${MAGICK} fd:5 info: && echo "ok" || echo "not ok"
+exec 5<&-
+# pipelined magick script
+echo "-read ${SRCDIR}/rose.pnm -write info:" | ${MAGICK} -script - && echo "ok" || echo "not ok"
+# pipelined magick script, input image pre-read
+echo "-write info:" | ${MAGICK} ${SRCDIR}/rose.pnm -script - && echo "ok" || echo "not ok"
+# pipelined script from file descriptor, read image from stdin
+echo "-read pnm:- -write info:" |\
+   ${MAGICK} -script fd:5 5<&0 <${SRCDIR}/rose.pnm && echo "ok" || echo "not ok"
+:

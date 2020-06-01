@@ -1,0 +1,14 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/usr/local/include/ImageMagick-7
+libname=Magick++-7.Q16
+ 
+Name: Magick++
+Description: Magick++ - C++ API for ImageMagick (ABI Q16)
+Version: 7.0.3
+Requires: MagickWand
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname} -lm
+Cflags: -I${includearchdir} -I${includedir} -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16

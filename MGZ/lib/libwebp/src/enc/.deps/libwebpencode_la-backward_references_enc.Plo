@@ -1,0 +1,101 @@
+libwebpencode_la-backward_references_enc.lo: backward_references_enc.c \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/assert.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/newlib.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/config.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/ieeefp.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/features.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/math.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/reent.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/_types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_default_types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/lock.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdint.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdint.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stddef.h \
+ ../../src/enc/backward_references_enc.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdlib.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/stdlib.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/alloca.h \
+ ../../src/webp/types.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/inttypes.h \
+ ../../src/webp/format_constants.h ../../src/enc/histogram_enc.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/string.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/string.h \
+ ../../src/dsp/lossless.h ../../src/webp/decode.h \
+ ../../src/webp/./types.h ../../src/utils/utils.h ../../src/webp/config.h \
+ c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include-fixed/limits.h \
+ ../../src/dsp/dsp.h ../../src/dsp/lossless_common.h \
+ ../../src/utils/color_cache_utils.h
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/assert.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/newlib.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/config.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/ieeefp.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/features.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/math.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/reent.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/_ansi.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/_types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/_default_types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/lock.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stdint.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdint.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include/stddef.h:
+
+../../src/enc/backward_references_enc.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/stdlib.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/machine/stdlib.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/alloca.h:
+
+../../src/webp/types.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/inttypes.h:
+
+../../src/webp/format_constants.h:
+
+../../src/enc/histogram_enc.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/string.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/../../../../powerpc64-ps3-elf/include/sys/string.h:
+
+../../src/dsp/lossless.h:
+
+../../src/webp/decode.h:
+
+../../src/webp/./types.h:
+
+../../src/utils/utils.h:
+
+../../src/webp/config.h:
+
+c:\psdk3v2\ps3dev\ppu\bin\../lib/gcc/powerpc64-ps3-elf/4.5.2/include-fixed/limits.h:
+
+../../src/dsp/dsp.h:
+
+../../src/dsp/lossless_common.h:
+
+../../src/utils/color_cache_utils.h:

@@ -1,0 +1,5 @@
+This directory contains the SGML sources for the Libtga documentation.
+You will need to install the DocBook DTD, the DocBook Stylesheets and some sort
+of a SGML parser (e.g. OpenJade) to transform these sources.
+The DocBook version used is 3.1, newer versions of the DTD should also work.
+An HTML version is available at http://tgalib.sourceforge.net

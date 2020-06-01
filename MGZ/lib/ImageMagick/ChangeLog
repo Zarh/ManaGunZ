@@ -1,0 +1,257 @@
+2016-09-27  7.0.3-2 Dirk Lemstra <dirk@lem.....org>
+  * Fixed incorrect RLE decoding when reading an SGI image (reference 
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=30514)
+
+2016-09-20  7.0.3-1 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.3-1, GIT revision 18851:ad91ea8:20160920.
+
+2016-09-16  7.0.3-1 Dirk Lemstra <dirk@lem.....org>
+  * Added layer RLE compression to the PSD encoder.
+  * Added define 'psd:preserve-opacity-mask' to preserve the opacity mask
+    in a PSD file.
+  * Fixed issue where the display window was used instead of the data window
+    when reading EXR files (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&p=137849).
+
+2016-09-05  7.0.3-0 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.3-0, GIT revision 18786:10aa64c:20160905.
+
+2016-08-29  7.0.3-0 Dirk Lemstra <dirk@lem.....org>
+  * Fixed reading DXT1 images with an alpha channel.
+  * Fixed incorrect padding calculation in PSD encoder.
+
+2016-08-27  7.0.2-10 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-10, GIT revision 18750:e3335b3:20160827.
+
+2016-08-27  7.0.2-10 Dirk Lemstra <dirk@lem.....org>
+  * Added define 'psd:additional-info' to preserve the additional information
+    in a PSD file.
+
+2016-08-15  7.0.2-10 Cristy  <quetzlzacatenango@image...>
+  * Prevent buffer overflow in BMP & SGI coders (bug report from
+    pwchen&rayzhong of tencent).
+  * Prevent buffer overflow and other problems in SIXEL, PDB, MAP, TIFF and
+    CALS coders (bug report from Donghai Zhu).
+  * The -stream option now increments the pixel pointer properly (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=30327).
+
+2016-08-14  7.0.2-9 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-9, GIT revision 18707:2c02f09:20160814.
+
+2016-08-14  7.0.2-9 Cristy  <quetzlzacatenango@image...>
+  * Fix compile error in opencl.c (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=30289).
+  * Eliminate compiler warning.
+
+2016-08-14  7.0.2-8 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-8, GIT revision 18698:74b1d5d:20160814.
+
+2016-08-07  7.0.2-8 Cristy  <quetzlzacatenango@image...>
+  * Prevent spurious removal of MPC cache files (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=30256).
+  * Note alpha channel when combining 4 or more images (reference
+    https://github.com/ImageMagick/ImageMagick/issues/250).
+
+2016-08-06  7.0.2-7 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-7, GIT revision 10980:ecc03a2:20160806.
+
+2016-08-01  7.0.2-7 Cristy  <quetzlzacatenango@image...>
+  * Evaluate lazy pixel cache morphology to prevent buffer overflow (bug report
+    from Ibrahim M. El-Sayed).
+  * Prevent buffer overflow (bug report from Max Thrane).
+  * Prevent memory use after free (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=30245).
+
+2016-07-30  7.0.2-6 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-6, GIT revision 18651:df24175:20160729.
+
+2016-07-29  7.0.2-6 Cristy  <quetzlzacatenango@image...>
+  * Support -region option (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=29692).
+
+2016-07-21  7.0.2-5 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-5, GIT revision 18627:2b5ddbd:20160721.
+
+2016-07-13  7.0.2-5 Cristy  <quetzlzacatenango@image...>
+  * Fix MVG stroke-opacity (reference
+    https://github.com/ImageMagick/ImageMagick/issues/229).
+  * Prevent possible buffer overflow when reading TIFF images (bug report from
+    Shi Pu of MS509 Team).
+  * Initialize index channel to get expected results from the stegano coder.
+
+2016-07-11  7.0.2-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-4, GIT revision 18591:50debe5:20160710.
+
+2016-07-10  7.0.2-4 Cristy  <quetzlzacatenango@image...>
+  * To comply with the SVG standard, use stroke-opacity for transparent strokes.
+  * Define CompositeChannels mask to Red, Green, Blue, Alpha, and Black.
+
+2016-07-09  7.0.2-3 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-3, GIT revision 18572:28560fc:20160709.
+
+2016-07-01  7.0.2-3 Cristy  <quetzlzacatenango@image...>
+  * Patch so -kuwahara option can preserve colormapped edges.
+  * The histogram coder now returns the correct extent.
+  * Use CopyMagickString() rather than CopyMagickMemory() for strings.
+
+2016-06-26  7.0.2-2 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-2, GIT revision 18514:a7b5b46:20160626.
+
+2016-06-23  7.0.2-2 Cristy  <quetzlzacatenango@image...>
+  * Correct for numerical instability (reference
+    https://github.com/ImageMagick/ImageMagick/issues/218).
+			 
+2016-06-21  7.0.2-1 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-1, GIT revision 18479:931319b:20160622.
+
+2016-06-17  7.0.2-1 Dirk Lemstra <dirk@lem.....org>
+  * Added support for GROUP4 compression to the FAX coder.
+
+2016-06-12  7.0.2-1 Cristy  <quetzlzacatenango@image...>
+  * Distort no longer converts grayscale image to sRGB (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=29895).
+  * Don't return a zero bounding box for QueryMultilineFontMetrics() (reference
+    https://github.com/ImageMagick/ImageMagick/issues/222).
+
+2016-06-12  7.0.2-0 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.2-0, GIT revision 10884:f0e15e8:20160612.
+
+2016-06-09  7.0.2-0 Cristy  <quetzlzacatenango@image...>
+  * Backoff finite precision epsilon (reference
+    https://github.com/ImageMagick/ImageMagick/issues/215).
+  * Fix drawing glitch for stroke widths greater than 2 (reference
+    https://github.com/ImageMagick/ImageMagick/issues/218).
+
+2016-06-05  7.0.1-10 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-10, GIT revision 18406:ba4ad2d:20160607.
+
+2016-06-04  7.0.1-10 Cristy  <quetzlzacatenango@image...>
+  * Deny indirect reads by policy, remove policy to permit, e.g.,
+    convert caption:@mytext.txt ...
+  * RLE check for pixel offset less than 0 (heap overflow report from Craig
+    Young).
+  * Properly initialze PES blocks (reference
+    https://github.com/ImageMagick/ImageMagick/issues/213).
+
+2016-06-03  7.0.1-9 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-9, GIT revision 10847:339f803:20160602.
+
+2016-06-02  7.0.1-9 Cristy  <quetzlzacatenango@image...>
+  * Fix small memory leak (patch provided by Андрей Черный).
+  * Coder path traversal is not authorized (bug report provided by
+    Masaaki Chida).
+  * Turn off alpha channel for the compare difference image (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29828).
+
+2016-05-31  7.0.1-8 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-8, GIT revision 18334:97775b5:20160531.
+
+2016-05-31  7.0.1-8 Cristy  <quetzlzacatenango@image...>
+  * Support configure script --enable-pipes option to enable pipes (|) in
+    filenames.
+  * Support configure script --enable-indirect-reads option to enable
+    indirect reads (@) in filenames.
+
+2016-05-30  7.0.1-7 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-7, GIT revision 18321:5511ef5:20160530.
+
+2016-05-25  7.0.1-7 Cristy  <quetzlzacatenango@image...>
+  * Security improvements to TEXT coder broke it (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29754).
+  * Fix stroke offset problem for -annotate (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29626).
+  * Don't interpret -fx option arguments (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29774);
+  * Add additional checks to DCM reader to prevent data-driven faults (bug
+    report from Hanno Böck).
+
+2016-05-21  7.0.1-6 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-6, GIT revision 18241:d4f277c:20160521.
+
+2016-05-20  7.0.1-6 Cristy  <quetzlzacatenango@image...>
+  * Fixed proper placement of text annotation for east / west gravity.
+
+2016-05-18  7.0.1-5 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-5, GIT revision 10789:f7c2e89:20160518,
+
+2016-05-18  7.0.1-5 Cristy  <quetzlzacatenango@image...>
+  * Process channels independently for -channel -equalize (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29708).
+  * Fix pixel cache on disk regression (reference
+    https://github.com/ImageMagick/ImageMagick/issues/202).
+
+2016-05-15  7.0.1-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-4, GIT revision 10778:52dae14:20160516.
+
+2016-05-10  7.0.1-4 Cristy  <quetzlzacatenango@image...>
+  * Prevent possible shell command injection vulnerability through the
+    authenticate parameter of the PDF, PCL and XPS coders (report from
+    Erez Turjeman).
+  * Quote passwords when passed to a delegate program.
+  * Iterate channels over source image rather than destination (bug report
+    from Hanno Böck).
+  * Can read geo-related EXIF metdata once-again (reference
+    https://github.com/ImageMagick/ImageMagick/issues/198).
+  * Sanitize all delegate emedded formatting characters.
+  * Don't sync pixel cache in AcquireAuthenticCacheView() (bug report from
+    Hanno Böck).
+
+2016-05-09  7.0.1-3 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-3, GIT revision 10755:d540dda:20160509.
+
+2016-05-07  7.0.1-3 Cristy  <quetzlzacatenango@image...>
+  * Remove https delegate.
+
+2016-05-06  7.0.1-2 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 7.0.1-2, GIT revision 10741:5746147:20160507.
+
+2016-05-04  7.0.1-2 Cristy  <quetzlzacatenango@image...>
+  * Check for buffer overflow in magick/draw.c/DrawStrokePolygon().
+  * Replace show delegate title with image filename rather than label.
+  * Fix GetNextToken() off by one error.
+  * Remove support for internal ephemeral coder.
+
+2016-05-03  7.0.1-1 Cristy  <quetzlzacatenango@image...>
+  * New version 7.0.1-1, GIT revision 10723:9fc8a0c:20160503.
+
+2016-05-03  7.0.1-1 Cristy  <quetzlzacatenango@image...>
+  * Sanitize input filename for http / https delegates (improved patch).
+  * Fix for possible security vulnerabilities (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=4&t=29588).
+
+2016-04-30  7.0.1-0 Cristy  <quetzlzacatenango@image...>
+  * New version 7.0.1-0, GIT revision 10716:b527bce:20160430.
+
+2016-01-30  7.0.0-0 	Fahad-Alsaidi & ShamsaHamed
+  * Add support for languages that require complex text layout (reference
+    https://github.com/ImageMagick/ImageMagick/pull/88).
+
+2012-04-27  7.0.0-0 Anthony thyssen <A.Thyssen@griffith...>
+  * Allow the use of set and escapes when no images in memory
+    (unless you attempt to access per-image meta-data)
+    Currently does not include %[fx:...] and %[pixel:...]
+
+2012-10-05  7.0.0-0 Anthony thyssen <A.Thyssen@griffith...>
+  * Rather than replicate 'options' into 'artifacts' make a link
+    from image to image_info and lookup a global option if no artifact
+    is defined.
+
+2012-09-11  7.0.0-0 Nicolas Robidoux <nicolas.robidoux@gmail...>
+  * sigmoidal-contrast:
+  * Remove unnecessary initial ClampToQuantum.
+
+2012-09-10  7.0.0-0 Nicolas Robidoux <nicolas.robidoux@gmail...>
+  * sigmoidal-contrast:
+  * Direct computation, without LUT;
+  * Fix re-declaration of i (at the top, and inside a conditional).
+
+2012-09-04  7.0.0-0 Nicolas Robidoux <nicolas.robidoux@gmail...>
+  * Add tanh/atanh clone of legacy sigmoidal map (faster & more accurate).
+
+2012-08-08  7.0.0-0 Nicolas Robidoux <nicolas.robidoux@gmail...>
+  * Add final ClampToQuantum in sigmoidal colormap loop.
+  * Remove OpenMP calls from colormap update loops.
+
+2011-08-01  7.0.0-0 Cristy  <quetzlzacatenango@image...>
+  * New version 7.0.0-0.
+

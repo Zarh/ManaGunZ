@@ -1,0 +1,22 @@
+# Test environment
+top_srcdir='/home/Zar/managunz/mgz/lib/ImageMagick'
+top_builddir='/home/Zar/managunz/mgz/lib/ImageMagick'
+
+set -a
+COMPARE="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick compare"
+COMPOSITE="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick composite"
+CONJURE="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick conjure"
+CONVERT="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick convert"
+DISPLAY="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick display"
+IDENTIFY="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick identify"
+MAGICK="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick"
+MONTAGE="/home/Zar/managunz/mgz/lib/ImageMagick/utilities/magick montage"
+VALIDATE="/home/Zar/managunz/mgz/lib/ImageMagick/tests/validate"
+DRAWTEST="/home/Zar/managunz/mgz/lib/ImageMagick/tests/drawtest"
+WANDTEST="/home/Zar/managunz/mgz/lib/ImageMagick/tests/wandtest"
+LD_LIBRARY_PATH="/home/Zar/managunz/mgz/lib/ImageMagick/magick/.libs:${LD_LIBRARY_PATH}"
+MAGICK_CODER_MODULE_PATH="/home/Zar/managunz/mgz/lib/ImageMagick/coders"
+MAGICK_CONFIGURE_PATH="/home/Zar/managunz/mgz/lib/ImageMagick/config:/home/Zar/managunz/mgz/lib/ImageMagick/config"
+MAGICK_FILTER_MODULE_PATH="/home/Zar/managunz/mgz/lib/ImageMagick/filters"
+PATH="/home/Zar/managunz/mgz/lib/ImageMagick/utilities:/home/Zar/managunz/mgz/lib/ImageMagick/tests:${PATH}"
+set +a

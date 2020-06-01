@@ -1,0 +1,16 @@
+.*\.gdbinit$
+.*core$
+/output.*$
+/test_.+_out\..+$
+Magick\.bs$
+Magick\.c$
+Magick\.o$
+\.bak$
+\.svn$
+\.old$
+^MANIFEST\.
+^MakeMaker-\d
+^Makefile$
+^blib/
+^pm_to_blib$
+~$

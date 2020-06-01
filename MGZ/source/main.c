@@ -2068,6 +2068,7 @@ s8 bmpLoadFromBuffer(const void *buffer, int file_size, imgData *data);
 s8 MagickLoadFromBuffer(const void *buffer, int file_size, imgData *data);
 u8 make_png(char *outfile, imgData data);
 char *GetTimeStr(u64 secTime);
+char *sprintf_malloc(char *format, ...);
 
 void Draw_MENU();
 
@@ -3827,6 +3828,64 @@ u8 Get_PIC(char *path)
 	return Get_PICType(width, height);
 }
 
+char *GetPath_GAMEPIC_COVER3D(int game_pos, int n)
+{
+	u8 is_PS1 = (list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1);
+	
+	char t[10] = {0};
+	if(is_PS1) strcpy(t, "_FRONT");
+	
+	if(n==0) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(n==1) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(n==2) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(n==3) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_id, list_game_ID[game_pos], t);
+	
+	return NULL;
+}
+
+char *GetPath_GAMEPIC_COVER2D(int game_pos, int n)
+{	
+	if(n==0) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
+	if(n==1) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(n==2) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
+	if(n==3) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
+	
+	if(n==4) return sprintf_malloc("/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[game_pos]);
+	if(n==5) return sprintf_malloc("/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[game_pos]);
+	if(n==6) return sprintf_malloc("/dev_hdd0/tmp/covers/%s.png", list_game_ID[game_pos]);
+	if(n==7) return sprintf_malloc("/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[game_pos]);
+	
+	if(n==8) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[game_pos]);
+	if(n==9) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[game_pos]);
+	if(n==10) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
+	if(n==11) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
+	
+	if( list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3) return NULL;
+	
+	if(n==12) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
+	if(n==13) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
+	if(n==14) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
+	if(n==15) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
+	
+	return NULL;
+	
+}
+
+char *GetPath_GAMEPIC_UNK(int game_pos, int n)
+{
+	char temp[512];
+	strcpy(temp, list_game_path[game_pos]);
+	temp[strlen(temp)-4]=0;
+	
+	if(n==0) return sprintf_malloc( "%s.jpg", temp);
+	if(n==1) return sprintf_malloc( "%s.JPG", temp);
+	if(n==2) return sprintf_malloc( "%s.png", temp);
+	if(n==3) return sprintf_malloc( "%s.PNG", temp);
+	
+	return NULL;
+	
+}
+
 u8 Have_GAMEPIC(int game_pos)
 {
 	u8 ret = GAMEPIC_NONE;
@@ -3834,77 +3893,44 @@ u8 Have_GAMEPIC(int game_pos)
 	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3
 	|| list_game_platform[game_pos] == ISO_PSP || list_game_platform[game_pos] == JB_PSP) ret += GAMEPIC_ICON0;
 	
-	char temp[512];
-	
 // 3D
-	u8 is_PS1 = (list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1);
-	
-	char t[10] = {0};
-	if(is_PS1) strcpy(t, "_FRONT");
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER3D; goto search_2D; }
-
-search_2D:
+	int n = 0;
+	while(1)
+	{
+		char *GAMEPIC_path = GetPath_GAMEPIC_COVER3D(game_pos, n);
+		if( GAMEPIC_path == NULL) break;
+		
+		if(path_info(GAMEPIC_path) == _FILE) { ret += GAMEPIC_COVER3D; break; }
+		FREE(GAMEPIC_path);
+		
+		n++;
+	}
 			
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
+	n=0;
+	while(1)
+	{
+		char *GAMEPIC_path = GetPath_GAMEPIC_COVER2D(game_pos, n);
+		if( GAMEPIC_path == NULL) break;
+		
+		if(path_info(GAMEPIC_path) == _FILE) { ret += GAMEPIC_COVER2D; break; }
+		FREE(GAMEPIC_path);
+		
+		n++;
+	}
 	
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-				
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
-	if(path_info(temp) == _FILE) { ret += GAMEPIC_COVER2D; goto search_next; }
-	
-	
-search_next:
+	n=0;
+	while(1)
+	{
+		char *GAMEPIC_path = GetPath_GAMEPIC_UNK(game_pos, n);
+		if( GAMEPIC_path == NULL) break;
+		
+		if(path_info(GAMEPIC_path) == _FILE) { ret += Get_PIC(GAMEPIC_path); break; }
+		FREE(GAMEPIC_path);
+		
+		n++;
+	}
 
-	strcpy(temp, list_game_path[game_pos]);
-	temp[strlen(temp)-4]=0;
-	char temp2[512];
-	sprintf(temp2, "%s.jpg", temp);
-	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
-	sprintf(temp2, "%s.png", temp);
-	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
-	sprintf(temp2, "%s.JPG", temp);
-	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
-	sprintf(temp2, "%s.PNG", temp);
-	if(path_info(temp2) == _FILE) { ret += Get_PIC(temp2); goto end; }
 	
-end:
-
 	return ret;
 }
 
@@ -3938,64 +3964,71 @@ u8 Read_PS1BACK(int game_pos, imgData *DataPic)
 
 u8 Read_GAMEPIC_COVER3D(int game_pos, imgData *DataPic)
 {
-	char temp[512];
-	u8 is_PS1 = (list_game_platform[game_pos] == ISO_PS1 || list_game_platform[game_pos] == JB_PS1);
+	
+	if( !(list_game_havepic[game_pos] & GAMEPIC_COVER3D) ) return FAILED;
+	
+	int n = 0;
+	while(1)
+	{
+		char *COVER3D_path = GetPath_GAMEPIC_COVER3D(game_pos, n);
+		if( COVER3D_path == NULL) break;
 		
-	char t[10] = {0};
-	if(is_PS1==YES) strcpy(t, "_FRONT");
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+		int ret = imgLoadFromFile(COVER3D_path, DataPic, NO);
+		FREE(COVER3D_path);
+		
+		if(ret == SUCCESS) return SUCCESS;
+		
+		n++;
+	}
+
+	n=0;
+	while(1)
+	{
+		char *COVER3D_path = GetPath_GAMEPIC_UNK(game_pos, n);
+		if( COVER3D_path == NULL) break;
+		
+		int ret = imgLoadFromFile(COVER3D_path, DataPic, NO);
+		FREE(COVER3D_path);
+		
+		if(ret == SUCCESS) return SUCCESS;
+		
+		n++;
+	}
 	
 	return FAILED;
 }
 
 u8 Read_GAMEPIC_COVER2D(int game_pos, imgData *DataPic)
 {
-	char temp[512];
+	if( !(list_game_havepic[game_pos] & GAMEPIC_COVER2D) ) return FAILED;
 	
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-			
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	
-	if( list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3) return FAILED;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
-	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
+	int n = 0;
+	while(1)
+	{
+		char *COVER2D_path = GetPath_GAMEPIC_COVER2D(game_pos, n);
+		if( COVER2D_path == NULL) break;
+		
+		int ret = imgLoadFromFile(COVER2D_path, DataPic, NO);
+		FREE(COVER2D_path);
+		
+		if(ret == SUCCESS) return SUCCESS;
+		
+		n++;
+	}
+
+	n=0;
+	while(1)
+	{
+		char *COVER2D_path = GetPath_GAMEPIC_UNK(game_pos, n);
+		if( COVER2D_path == NULL) break;
+		
+		int ret = imgLoadFromFile(COVER2D_path, DataPic, NO);
+		FREE(COVER2D_path);
+		
+		if(ret == SUCCESS) return SUCCESS;
+		
+		n++;
+	}
 	
 	return FAILED;
 }
@@ -4003,6 +4036,8 @@ u8 Read_GAMEPIC_COVER2D(int game_pos, imgData *DataPic)
 u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 {
 	char temp[512];
+	
+	if( !(list_game_havepic[game_pos] & GAMEPIC_ICON0) ) return FAILED;
 	
 	if(list_game_platform[game_pos] == ISO_PS3) {
 		int size;
@@ -4029,17 +4064,20 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
 	if(list_game_platform[game_pos] == ISO_PS2 || list_game_platform[game_pos] == ISO_PS1) {
-		strcpy(temp, list_game_path[game_pos]);
-		temp[strlen(temp)-4]=0;
-		char temp2[255];
-		sprintf(temp2, "%s.jpg", temp);
-		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
-		sprintf(temp2, "%s.png", temp);
-		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
-		sprintf(temp2, "%s.JPG", temp);
-		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
-		sprintf(temp2, "%s.PNG", temp);
-		if(imgLoadFromFile(temp2, DataPic, NO) == SUCCESS) return SUCCESS;
+		
+		int n = 0;
+		while(1)
+		{
+			char *GAMEPIC_path = GetPath_GAMEPIC_UNK(game_pos, n);
+			if( GAMEPIC_path == NULL) break;
+			
+			int ret = imgLoadFromFile(GAMEPIC_path, DataPic, NO);
+			FREE(GAMEPIC_path);
+			
+			if(ret == SUCCESS) return SUCCESS;
+			
+			n++;
+		}
 	}
 	
 	return FAILED;
@@ -8116,6 +8154,7 @@ void LOAD_PIC1()
 	}
 }
 
+
 void LOAD_COVER() 
 {	
 	COVER_offset = 0;
@@ -8123,53 +8162,12 @@ void LOAD_COVER()
 	if(Show_COVER == NO) return;
 	if(position_CURPIC<0) return;
 
-	char temp[128];
-
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[position_CURPIC]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	return;
-read:
-
-	if( imgLoadFromFile(temp, &COVER, NO) == FAILED) return;
-	
-	texture_pointer = texture_mem + TEXTURE_POINTER_COVER;
-	memcpy(texture_pointer, COVER.bmp_out, COVER.pitch*COVER.height);
-	free(COVER.bmp_out);
-	COVER_offset = tiny3d_TextureOffset(texture_pointer);
+	if(Read_GAMEPIC_COVER2D(position, &COVER) == SUCCESS) {
+		texture_pointer = texture_mem + TEXTURE_POINTER_COVER;
+		memcpy(texture_pointer, COVER.bmp_out, COVER.pitch*COVER.height);
+		free(COVER.bmp_out);
+		COVER_offset = tiny3d_TextureOffset(texture_pointer);
+	}
 }
 
 void Draw_CURPIC()
@@ -27344,51 +27342,27 @@ void Draw_ICON0_creator_input()
 	x=DrawButton(x, y, STR_MOVE_FRAME, BUTTON_UP | BUTTON_DOWN | BUTTON_LEFT | BUTTON_RIGHT );
 }
 
+
 void open_ICON0_creator()
 {
-	char temp[128];
-
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
 	
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.PNG", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/tmp/covers/%s.png", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.JPG", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.jpg", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	sprintf(temp, "/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[position]);
-	if(path_info(temp) == _FILE) goto read;
-	
-	return;
-read:
+	int n=0;
+	char *temp=NULL;
+	while(1)
+	{
+		temp = GetPath_GAMEPIC_COVER2D(position, n);
+		if( temp == NULL) return;
+		
+		if(path_info(temp) == _FILE) break;
+		
+		FREE(temp);
+		n++;
+	}
 	
 	memset(ICON0_creator_PATH, 0, sizeof(ICON0_creator_PATH));
 	strcpy(ICON0_creator_PATH, temp);
+	
+	FREE(temp);
 	
 	X_ICON0_creator=0;
 	Y_ICON0_creator=0;

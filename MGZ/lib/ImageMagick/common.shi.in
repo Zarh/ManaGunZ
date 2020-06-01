@@ -1,0 +1,22 @@
+# Test environment
+top_srcdir='@abs_top_srcdir@'
+top_builddir='@abs_top_builddir@'
+
+set -a
+COMPARE="@abs_top_builddir@/utilities/magick compare"
+COMPOSITE="@abs_top_builddir@/utilities/magick composite"
+CONJURE="@abs_top_builddir@/utilities/magick conjure"
+CONVERT="@abs_top_builddir@/utilities/magick convert"
+DISPLAY="@abs_top_builddir@/utilities/magick display"
+IDENTIFY="@abs_top_builddir@/utilities/magick identify"
+MAGICK="@abs_top_builddir@/utilities/magick"
+MONTAGE="@abs_top_builddir@/utilities/magick montage"
+VALIDATE="@abs_top_builddir@/tests/validate"
+DRAWTEST="@abs_top_builddir@/tests/drawtest"
+WANDTEST="@abs_top_builddir@/tests/wandtest"
+LD_LIBRARY_PATH="@abs_top_builddir@/magick/.libs:${LD_LIBRARY_PATH}"
+MAGICK_CODER_MODULE_PATH="@abs_top_builddir@/coders"
+MAGICK_CONFIGURE_PATH="@abs_top_builddir@/config:@abs_top_srcdir@/config"
+MAGICK_FILTER_MODULE_PATH="@abs_top_builddir@/filters"
+PATH="@abs_top_builddir@/utilities:@abs_top_builddir@/tests:${PATH}"
+set +a

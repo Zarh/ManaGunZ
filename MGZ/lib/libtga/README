@@ -1,0 +1,52 @@
+RELEASE NOTES		Libtga 1.0.1		Nov 28 2002
+
+
+  These are the release notes for the Libtga package. The TGA library
+  is a library to read and write TGA images.
+
+
+COPYING:
+
+  Libtga is released under the GNU Lesser General Public License.  The
+  example programs are released under the GNU General Public License.
+  The documentation is released under the GNU Free Documentation
+  License.  For more information on the licenses see the the files
+  COPYING, COPYING.LIB and COPYING.DOC in the project's root directory
+  and the corresponding sub directories.
+
+
+INSTALLING:
+
+  Instructions on how to install and compile the package can be found
+  in the file INSTALL.
+
+
+REPORTING BUGS:
+
+  If you want to report a bug or have any problems with this package
+  or want to see a feature in a future release either mail the
+  maintainer or submit a bug report at http://sf.net/projects/tgalib
+
+
+SITES:
+
+  Download
+	http://sf.net/projects/tgalib
+	
+  Homepage
+	http://tgalib.sf.net
+
+  Anonymous CVS
+	export CVSROOT=:pserver:anonymous@cvs.tgalib.sf.net:/cvsroot/tgalib
+  	cvs login
+	cvs -z3 co libtga
+	
+	
+
+AUTHORS:
+
+  See the AUTHORS file.
+
+
+
+Matthias Brueckner <matbrc@gmx.de>  Nov 28 2002

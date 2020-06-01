@@ -22,24 +22,3 @@ OffsetFinder/*
 
 !/MGZ/data/*.bin
 
-MGZ/lib/*
-
-!/MGZ/lib/ImageMagick
-/MGZ/lib/ImageMagick/*
-!/MGZ/lib/ImageMagick/MagickCore
-/MGZ/lib/ImageMagick/MagickCore/*
-!/MGZ/lib/ImageMagick/MagickCore/*.h
-!/MGZ/lib/ImageMagick/MagickWand
-/MGZ/lib/ImageMagick/MagickWand/*
-!/MGZ/lib/ImageMagick/MagickWand/*.h
-
-!/MGZ/lib/libapputil
-/MGZ/lib/libapputil/build
-!/MGZ/lib/libgtfconv
-/MGZ/lib/libgtfconv/build
-!/MGZ/lib/configure_libiconv
-!/MGZ/lib/configure_ImageMagick
-!/MGZ/lib/*.a
-
-!/MGZ/lib/OpenSSL/
-!/MGZ/lib/configure_OpenSSL

@@ -1,0 +1,15 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/usr/local/include/ImageMagick-7
+libname=MagickWand-7.Q8
+ 
+Name: MagickWand
+Description: MagickWand - C API for ImageMagick (ABI Q8)
+URL: https://www.imagemagick.org
+Version: 7.0.3
+Requires: MagickCore
+Cflags: -I${includearchdir} -I${includedir} -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=8
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname}       -ljpeg   -Lc:/PSDK3v2/ps3dev/portlibs/ppu/lib -lpng14                          -lm      -lm

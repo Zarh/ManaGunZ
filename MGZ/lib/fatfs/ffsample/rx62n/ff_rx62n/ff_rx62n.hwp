@@ -1,0 +1,227 @@
+[HIMDBVersion]
+2.0
+[DATABASE_VERSION]
+"2.8" 
+[PROJECT_DETAILS]
+"ff_rx62n" "C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n" "C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ff_rx62n.hwp" "RX" "Renesas RX Standard" "Application" "RX600" "RX62N" 
+[INFORMATION]
+"プロジェクト情報がありません" 
+[TOOL_CHAIN]
+"Renesas RX Standard Toolchain" "1.2.1.0" 
+[CONFIGURATIONS]
+"Debug" "C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\Debug" 
+"Release" "C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\Release" 
+[BUILD_PHASES]
+"Renesas OptLinker" 1 
+"Renesas RX Assembler" 1 
+"Renesas RX C/C++ Compiler" 1 
+"Renesas RX C/C++ Library Generator" 1 
+"Renesas RX Configurator" 1 
+[TOOL_ENVIRONMENT]
+[EXTENSIONS]
+"Absolute file" "ABS" 
+"Assembly include file" "INC" 
+"Assembly list file" "LST" 
+"Assembly source file" "S" 
+"Assembly source file" "SRC" 
+"Binary file" "BIN" 
+"C header file" "H" 
+"C source file" "C" 
+"C++ header file" "HPP" 
+"C++ source file" "CC" 
+"C++ source file" "CP" 
+"C++ source file" "CPP" 
+"CPU information file" "CPU" 
+"Calling information file" "CAL" 
+"Configuration file" "CFG" 
+"Debug information file" "DBG" 
+"Hex file" "HEX" 
+"Library file" "LIB" 
+"Library information file" "LBP" 
+"Linkage map file" "MAP" 
+"Linkage symbol file" "FSY" 
+"Object file" "OBJ" 
+"Optimize map file" "bls" 
+"Preprocessed C source file" "P" 
+"Preprocessed C++ source file" "PP" 
+"Relocatable file" "REL" 
+"Rts information file" "RTS" 
+"S-Record file" "MOT" 
+"Stack information file" "SNI" 
+"TD include object file" "RTI" 
+[FILE_GROUPS]
+"Absolute file" "BIN" "NONE" "" 
+"Assembly include file" "TEXT" "EDITOR" "" 
+"Assembly list file" "TEXT" "EDITOR" "" 
+"Assembly source file" "TEXT" "EDITOR" "" 
+"Binary file" "BIN" "NONE" "" 
+"C header file" "TEXT" "EDITOR" "" 
+"C source file" "TEXT" "EDITOR" "" 
+"C++ header file" "TEXT" "EDITOR" "" 
+"C++ source file" "TEXT" "EDITOR" "" 
+"CPU information file" "BIN" "NONE" "" 
+"Calling information file" "BIN" "NONE" "" 
+"Configuration file" "TEXT" "EDITOR" "" 
+"Debug information file" "BIN" "NONE" "" 
+"Hex file" "TEXT" "EDITOR" "" 
+"Library file" "BIN" "NONE" "" 
+"Library information file" "TEXT" "EDITOR" "" 
+"Linkage map file" "TEXT" "EDITOR" "" 
+"Linkage symbol file" "TEXT" "EDITOR" "" 
+"Object file" "BIN" "NONE" "" 
+"Optimize map file" "BIN" "NONE" "" 
+"Preprocessed C source file" "TEXT" "EDITOR" "" 
+"Preprocessed C++ source file" "TEXT" "EDITOR" "" 
+"Relocatable file" "BIN" "NONE" "" 
+"Rts information file" "BIN" "NONE" "" 
+"S-Record file" "TEXT" "EDITOR" "" 
+"Stack information file" "BIN" "NONE" "" 
+"TD include object file" "BIN" "NONE" "" 
+[ASSOCIATED_APPLICATIONS]
+[TOOLCHAIN_PHASE]
+"Renesas OptLinker" 
+"Renesas RX Assembler" 
+"Renesas RX C/C++ Compiler" 
+"Renesas RX C/C++ Library Generator" 
+"Renesas RX Configurator" 
+[UTILITY_PHASE]
+[CUSTOM_PHASES]
+[CUSTOM_PHASE_INPUT_GROUP]
+[CUSTOM_PHASE_OUTPUT_SYNTAX]
+[BUILD_ORDER]
+"Renesas RX C/C++ Library Generator" 1 
+"Renesas RX C/C++ Compiler" 1 
+"Renesas RX Assembler" 1 
+"Renesas OptLinker" 1 
+"Renesas RX Configurator" 0 
+[BUILD_PHASE_DETAILS]
+"Renesas OptLinker" "Object file|Library file|Relocatable file" 0 
+"Renesas RX Assembler" "Assembly source file|Linkage symbol file" 1 
+"Renesas RX C/C++ Compiler" "C source file|C++ source file" 1 
+"Renesas RX C/C++ Library Generator" "" 0 
+"Renesas RX Configurator" "Configuration file" 0 
+[BUILD_FILE_ORDER_Assembly source file]
+"Renesas RX Assembler" 1 
+[BUILD_FILE_ORDER_C source file]
+"Renesas RX C/C++ Compiler" 1 
+[BUILD_FILE_ORDER_C++ source file]
+"Renesas RX C/C++ Compiler" 1 
+[BUILD_FILE_ORDER_Linkage symbol file]
+"Renesas RX Assembler" 1 
+[SCRAP]
+"Project Generator Setup File" "" 
+[MAPPINGS]
+"Assembly source file" "Renesas RX Assembler" "Renesas RX C/C++ Compiler" 
+"Library file" "Renesas OptLinker" "Renesas RX C/C++ Library Generator" 
+"Object file" "Renesas OptLinker" "Renesas RX Assembler" 
+"Object file" "Renesas OptLinker" "Renesas RX C/C++ Compiler" 
+[PROJECT_FILES]
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\dbsct.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ff.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ffunicode.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\intprg.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\main.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\mmc_rspi.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\resetprg.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\rtc_rx62n.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\sound.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\uart_sci.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\vecttbl.c" "User" "C source file" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\xprintf.c" "User" "C source file" 2 
+[FOLDER]
+"C header file" "C header file" 
+"C source file" "C source file" 
+[GENERAL_DATA_PROJECT]
+"ParallelOn" "1" 
+"USE_CUSTOM_LINKAGE_ORDER" "0" 
+[ON_DEMAND_COMPONENTS_LOADED]
+[SYNC_SESSION_NAMES]
+[SESSIONS]
+"DefaultSession" "C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\DefaultSession.hsf" 0 
+[GENERAL_DATA_SESSION_DefaultSession]
+[OPTIONS_Debug_Renesas OptLinker]
+"Single Shot" "04853a12cacc2d10" 5 
+[OPTIONS_Debug_Renesas RX Assembler]
+"Assembly source file" "0897a387c28fdc10" 4 
+"Linkage symbol file" "0897a387c28fdc10" 4 
+[OPTIONS_Debug_Renesas RX C/C++ Compiler]
+"C source file" "0897a387c28fdc10" 2 
+"C++ source file" "0897a387c28fdc10" 3 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\dbsct.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ff.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ffunicode.c" "05e01a12cacc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\intprg.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\main.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\mmc_rspi.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\resetprg.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\rtc_rx62n.c" "0deb249776832d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\sound.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\uart_sci.c" "009c73beff532d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\vecttbl.c" "0897a387c28fdc10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\xprintf.c" "0897a387c28fdc10" 2 
+[OPTIONS_Debug_Renesas RX C/C++ Library Generator]
+"Single Shot" "08ad6c8ee9e62d10" 1 
+[OPTIONS_Debug_Renesas RX Configurator]
+"Single Shot" "05e01a12cacc2d10" 6 
+[OPTIONS_Debug]
+"" 0 
+"[V|VERSION|1] [B|COMMAND|1] [S|SPEC|UITRON4] [S|OUTPUTPATH|^"$(CONFIGDIR)^"] [S|CPU|RX600] [S|ENDIAN|LITTLE] [S|FINT_REGISTER|0]" 6 
+"[V|VERSION|1] [B|DEBUG|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(FILELEAF).obj^"] [B|LISTFILE|0] [S|CPU|RX600] [S|ENDIAN|LITTLE] [S|FINT_REGISTER|0]" 4 
+"[V|VERSION|1] [B|DEBUG|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(FILELEAF).obj^"] [B|LISTFILE|0] [S|CPU|RX600] [S|ENDIAN|LITTLE] [S|ROUND|NEAREST] [S|DBL_SIZE|4] [B|SIGNED_CHAR|0] [B|SIGNED_BITFIELD|0] [S|BIT_ORDER|RIGHT] [S|FINT_REGISTER|0] [S|BRANCH|24] [S|SECTION|L=C]" 2 
+"[V|VERSION|1] [S|LANG|CPP] [B|SJIS|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(FILELEAF).obj^"] [B|DEBUG|1] [B|SIZE|1] [B|MAP|0] [I|INLINE|100] [I|LOOP|2] [S|MISRA2004_CHECK_RULE|ALL] [S|MISRA2004_RULE|1.1|3.4|4.1|5.2|5.3|5.4|5.5|5.6|5.7|6.1|6.2|6.3|6.4|6.5|7.1|8.1|8.2|8.3|8.5|8.6|8.7|8.8|8.11|8.12|9.2|9.3|10.1|10.2|10.3|10.4|10.5|10.6|11.1|11.2|11.3|11.4|11.5|12.1|12.2|12.3|12.4|12.5|12.6|12.7|12.8|12.9|12.10|12.11|12.12|12.13|13.1|13.2|13.3|13.4|13.7|14.1|14.2|14.3|14.4|14.5|14.6|14.7|14.8|14.9|14.10|15.1|15.2|15.3|15.4|15.5|16.1|16.2|16.3|16.4|16.5|16.6|16.8|16.9|17.3|17.4|17.5|17.6|18.1|18.2|18.4|19.1|20.2|20.4|20.5|20.7|20.8|20.9|20.10|20.11|20.12] [S|MISRA1998_CHECK_RULE|ALL] [S|MISRA1998_RULE|1|5|8|12|13|14|17|18|19|20|21|22|24|28|29|31|32|33|34|35|36|37|38|39|40|42|43|44|45|46|48|49|50|51|53|54|55|56|57|58|59|60|61|62|63|64|65|68|69|70|71|72|73|74|75|76|77|78|79|80|82|83|84|85|99|101|102|103|104|105|106|108|110|111|112|113|115|118|119|121|122|123|124|125|126|127] [S|MISRA_GROUP_FILE_PATH|^"$(PROJDIR)\$(PROJECTNAME).rde^"] [S|CPU|RX600] [S|BASE|00000000=NONE]
+ [S|SECTION|L=C]" 3 
+"[V|VERSION|1] [S|MODE|BUILD/CHANGED] [S|EXISTOUTPUTPATH|^"$(CONFIGDIR)\$(PROJECTNAME).lib^"] [B|RUNTIME|1] [B|STRING|1] [B|NEW|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(PROJECTNAME).lib^"] [S|SECTION|L=C] [B|SIZE|1] [I|INLINE|100] [I|LOOP|2] [S|CPU|RX600] [S|BASE|00000000=NONE] [I|PID|16]
+" 1 
+"[V|VERSION|6] [B|DEBUG|1] [S|OUTPUT|^"$(CONFIGDIR)\$(PROJECTNAME).abs^"]  [B|LIST|1] [S|LIST|^"$(CONFIGDIR)\$(PROJECTNAME).map^"] [B|OPTIMIZE|0] [S|ROM|(D,R)|(D_1,R_1)|(D_2,R_2)] [S|ENDIAN|LITTLE] [S|FORM|STYPE] [S|OUTPUT|^"$(CONFIGDIR)\$(PROJECTNAME).mot^"] [S|START|B_1,R_1,B_2,R_2,B,R,SU,SI(1000)|PResetPRG(FFFF8000)|C_1,C_2,C,C$*,D*,P,PIntPRG,W*(FFFF8100)|FIXEDVECT(FFFFFFD0)]" 5 
+[EXCLUDED_FILES_Debug]
+[LINKAGE_ORDER_Debug]
+[GENERAL_DATA_CONFIGURATION_Debug]
+[OPTIONS_Release_Renesas OptLinker]
+"Single Shot" "04853a12cacc2d10" 5 
+[OPTIONS_Release_Renesas RX Assembler]
+"Assembly source file" "02ead732b9852d10" 4 
+"Linkage symbol file" "02ead732b9852d10" 4 
+[OPTIONS_Release_Renesas RX C/C++ Compiler]
+"C source file" "00deb1fd2bcc2d10" 2 
+"C++ source file" "00deb1fd2bcc2d10" 3 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\dbsct.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ff.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\ffunicode.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\intprg.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\main.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\mmc_rspi.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\resetprg.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\rtc_rx62n.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\sound.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\uart_sci.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\vecttbl.c" "00deb1fd2bcc2d10" 2 
+"C:\user\elm-chan\fsw\ff\ffsample\rx62n\ff_rx62n\xprintf.c" "00deb1fd2bcc2d10" 2 
+[OPTIONS_Release_Renesas RX C/C++ Library Generator]
+"Single Shot" "048f8858e9e62d10" 1 
+[OPTIONS_Release_Renesas RX Configurator]
+"Single Shot" "05e01a12cacc2d10" 6 
+[OPTIONS_Release]
+"" 0 
+"[V|VERSION|1] [B|COMMAND|1] [S|SPEC|UITRON4] [S|OUTPUTPATH|^"$(CONFIGDIR)^"] [S|CPU|RX600] [S|ENDIAN|LITTLE] [S|FINT_REGISTER|0]" 6 
+"[V|VERSION|1] [B|SJIS|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(FILELEAF).obj^"] [S|CPU|RX600] [S|BASE|00000000=NONE] [I|PID|16] [B|SKIPDEPENDENCY|1]
+" 4 
+"[V|VERSION|1] [S|LANG|CPP] [B|SJIS|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(FILELEAF).obj^"] [S|SECTION|L=C] [B|SIZE|1] [B|MAP|0] [I|INLINE|100] [I|LOOP|2] [S|MISRA2004|ALL] [S|MISRA2004RULEFILE|^"$(CONFIGDIR)\$(PROJECTNAME).rde^"] [S|CPU|RX600] [S|BASE|00000000=NONE] [I|PID|16] [B|SKIPDEPENDENCY|1]
+" 3 
+"[V|VERSION|1] [S|LANG|C] [B|SJIS|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(FILELEAF).obj^"] [S|SECTION|L=C] [B|SIZE|1] [B|MAP|0] [I|INLINE|100] [I|LOOP|2] [S|MISRA2004|ALL] [S|MISRA2004RULEFILE|^"$(CONFIGDIR)\$(PROJECTNAME).rde^"] [S|CPU|RX600] [S|BASE|00000000=NONE] [I|PID|16] [B|SKIPDEPENDENCY|1]
+" 2 
+"[V|VERSION|1] [S|MODE|BUILD/CHANGED] [S|EXISTOUTPUTPATH|^"$(CONFIGDIR)\$(PROJECTNAME).lib^"] [B|RUNTIME|1] [B|STRING|1] [B|NEW|1] [S|OUTPUTPATH|^"$(CONFIGDIR)\$(PROJECTNAME).lib^"] [S|SECTION|L=C] [B|SIZE|1] [I|INLINE|100] [I|LOOP|2] [S|CPU|RX600] [S|BASE|00000000=NONE] [I|PID|16] [B|SKIPDEPENDENCY|1]
+" 1 
+"[V|VERSION|6] [S|FORM|STYPE] [S|BYTE_COUNT_VALUE|FF] [B|DEBUG|0] [S|ROM|(D,R)|(D_1,R_1)|(D_2,R_2)] [S|CRC|NONE|DEFAULT|00000000] [B|LIST|1] [S|LIST|^"$(CONFIGDIR)\$(PROJECTNAME).map^"] [S|SHOW|METHODCUSTOM|] [S|OUTPUT|^"$(CONFIGDIR)\$(PROJECTNAME).mot^"] [I|SPACE|^"FF^"] [B|OPTIMIZE|0] [S|START|B_1,R_1,B_2,R_2,B,R,SU,SI(01000)|PResetPRG,C_1,C_2,C,C$*,D*,P,PIntPRG,W*(0FFFE0000)|FIXEDVECT(0FFFFFFD0)] [S|MEMORY|HIGH] [B|SKIPDEPENDENCY|1]
+" 5 
+[EXCLUDED_FILES_Release]
+[LINKAGE_ORDER_Release]
+[GENERAL_DATA_CONFIGURATION_Release]
+[GENERAL_DATA_CONFIGURATION_SESSION_Debug_DefaultSession]
+[SESSION_DATA_CONFIGURATION_SESSION_Debug_DefaultSession]
+"MEMORY_MAPPING_OPTIONS" "" 
+[GENERAL_DATA_CONFIGURATION_SESSION_Release_DefaultSession]
+[SESSION_DATA_CONFIGURATION_SESSION_Release_DefaultSession]
+"MEMORY_MAPPING_OPTIONS" "" 
+[EXT_DEBUGGER_INFO]
+0 "" "" "" "" 
+[END]

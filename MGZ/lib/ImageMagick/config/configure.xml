@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuremap [
+<!ELEMENT configuremap (configure)+>
+<!ELEMENT configure (#PCDATA)>
+<!ATTLIST configure name CDATA #REQUIRED>
+<!ATTLIST configure value CDATA #REQUIRED>
+]>
+<configuremap>
+  <configure name="CC" value="ppu-gcc -std=gnu99 -std=gnu99"/>
+  <configure name="CFLAGS" value="-Ic:/PSDK3v2/ps3dev/portlibs/ppu/include/cairo -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include/pixman-1 -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include/freetype2 -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include/libpng14   -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include/libpng14   -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include/freetype2 -Ic:/PSDK3v2/ps3dev/portlibs/ppu/include     -I/c/PSDK3v2/psl1ght/ppu/include -I/c/PSDK3v2/ps3dev/portlibs/ppu/include -Wall -fexceptions -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="CODER_PATH" value="/usr/local/lib/ImageMagick-7.0.3/modules-Q16/coders"/>
+  <configure name="CONFIGURE_PATH" value="/usr/local/etc/ImageMagick-7/"/>
+  <configure name="CONFIGURE" value="configure  '--host=ppu' '--enable-static' '--disable-shared' '--disable-hdri' '--disable-largefile' '--disable-openmp' '--disable-docs' '--without-modules' '--without-magick-plus-plus' '--without-perl' '--without-frozenpaths' '--without-bzlib' '--without-autotrace' '--without-x' '--without-xml' '--without-zlib' '--with-quantum-depth=16' '--with-djvu' '--with-dps' '--with-fftw' '--with-flif' '--with-fpx' '--with-fontconfig' '--with-freetype' '--with-gslib' '--with-gvc' '--with-jbig' '--with-lcms' '--with-lqr' '--with-lzma' '--with-openexr' '--with-openjp2' '--with-pango' '--with-png' '--with-raqm' '--with-rsvg' '--with-tiff' '--with-webp' '--with-wmf' 'host_alias=ppu' 'CFLAGS=-I/c/PSDK3v2/psl1ght/ppu/include -I/c/PSDK3v2/ps3dev/portlibs/ppu/include' 'LDFLAGS=-L/c/PSDK3v2/psl1ght/ppu/lib -L/c/PSDK3v2/ps3dev/portlibs/ppu/lib -lrt -llv2' 'PKG_CONFIG_PATH=/c/PSDK3v2/ps3dev/portlibs/ppu/lib/pkgconfig'"/>
+  <configure name="COPYRIGHT" value="Copyright (C) 1999-2016 ImageMagick Studio LLC"/>
+  <configure name="CPPFLAGS" value="-I/usr/local/include/ImageMagick-7"/>
+  <configure name="CXXFLAGS" value="-g -O2"/>
+  <configure name="CXX" value="ppu-g++"/>
+  <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
+  <configure name="DELEGATES" value="mpeg freetype jng jpeg png"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CFLAGS=-I/c/PSDK3v2/psl1ght/ppu/include -I/c/PSDK3v2/ps3dev/portlibs/ppu/include' 'LDFLAGS=-L/c/PSDK3v2/psl1ght/ppu/lib -L/c/PSDK3v2/ps3dev/portlibs/ppu/lib -lrt -llv2'  --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-bzlib=no  --with-zlib=no  --with-autotrace=no  --with-fontpath=  --with-xml=no  --with-perl=no "/>
+  <configure name="DOCUMENTATION_PATH" value="/usr/local/share/doc/ImageMagick-7"/>
+  <configure name="EXEC-PREFIX" value="/usr/local"/>
+  <configure name="EXECUTABLE_PATH" value="/usr/local/bin"/>
+  <configure name="FEATURES" value="DPC Cipher"/>
+  <configure name="FILTER_PATH" value="/usr/local/lib/ImageMagick-7.0.3/modules-Q16/filters"/>
+  <configure name="GIT_REVISION" value="11258" />
+  <configure name="HOST" value="powerpc64-unknown-linux-gnu"/>
+  <configure name="INCLUDE_PATH" value="/usr/local/include/ImageMagick-7"/>
+  <configure name="LDFLAGS" value="-L/usr/local/lib -L/c/PSDK3v2/psl1ght/ppu/lib -L/c/PSDK3v2/ps3dev/portlibs/ppu/lib -lrt -llv2"/>
+  <configure name="LIBRARY_PATH" value="/usr/local/lib/ImageMagick-7.0.3"/>
+  <configure name="LIBS" value="    -Lc:/PSDK3v2/ps3dev/portlibs/ppu/lib -lfreetype    -ljpeg   -Lc:/PSDK3v2/ps3dev/portlibs/ppu/lib -lpng14                          -lm     "/>
+  <configure name="LIB_VERSION_NUMBER" value="7,0,3,2"/>
+  <configure name="LIB_VERSION" value="0x703"/>
+  <configure name="NAME" value="ImageMagick"/>
+  <configure name="PCFLAGS" value="-DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="PREFIX" value="/usr/local"/>
+  <configure name="QuantumDepth" value="16"/>
+  <configure name="RELEASE_DATE" value="2019-12-23"/>
+  <configure name="SHAREARCH_PATH" value="/usr/local/lib/ImageMagick-7.0.3/config-Q16"/>
+  <configure name="SHARE_PATH" value="/usr/local/share/ImageMagick-7"/>
+  <configure name="TARGET_CPU" value="powerpc64"/>
+  <configure name="TARGET_OS" value="linux-gnu"/>
+  <configure name="TARGET_VENDOR" value="unknown"/>
+  <configure name="VERSION" value="7.0.3"/>
+  <configure name="WEBSITE" value="http://www.imagemagick.org"/>
+</configuremap>

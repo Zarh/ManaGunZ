@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Copyright 2004 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
+#
+# This file is part of Magick++, the C++ API for ImageMagick and
+# ImageMagick.  Please see the file "COPYING" included with Magick++
+# for usage and copying restrictions.
+#
+subdir=Magick++/tests
+. ./common.shi
+echo "1..13"
+
+SRCDIR=${top_srcdir}/${subdir}/
+export SRCDIR
+
+cd ${subdir} || exit 1
+
+for mytest in appendImages attributes averageImages coalesceImages coderInfo color colorHistogram exceptions geometry montageImages morphImages readWriteBlob readWriteImages
+do
+  ./${mytest} && echo "ok" || echo "not ok"
+done
+:

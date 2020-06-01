@@ -1,0 +1,21 @@
+This project includes disk image feature. It is one of the virtual drive feature
+to mount a FAT volume image file on the FAT volume as showin in disk_image.png.
+
+To turn-on the disk image feature, define _DISK_IMAGE with physical drive number
+as virtual drive somewhere in the project. In this project, it is defined in
+diskio.h. 
+
+The virtual drive feature is implemented in mmc_176x_ssp.c as code blocks
+enclosed with #ifdef _DISK_IMAGE ... #endif. It will able be ported to any projects
+without any platform dependency.
+
+The disk image feature can be used as follows:
+
+f_mount("0:", &fs1);                       /* Initialize logical drive 0 */
+f_open(&file1, "0:file1.txt", FA_READ);    /* This is normal file access */
+
+disk_ioctl(_DISK_IMAGE, CTRL_OPEN_IMAGE_RO, "0:disk.img");  /* Initialize virtual drive (opens disk image file) */
+
+f_mount("1:", &fs2);                       /* Initialize logical drive 1 associated with virtual drive */
+f_open(&file2, "1:file.txt", FA_READ);     /* Accessing a file in the virtual drive */
+

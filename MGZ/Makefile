@@ -19,9 +19,12 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source source/RCO source/RCO/7z source/cxml source/erk source/bd
 DATA		:=	data
-INCLUDES	:=	include lib/libgtfconv/source lib/libapputil/source lib/ImageMagick lib/OpenSSL/include
-PKGFILES	:=	$(CURDIR)/pkgfiles
 
+INCLUDES	:=	include lib/libgtfconv/source lib/libapputil/source lib/ImageMagick lib/OpenSSL/include
+INCLUDES    +=  lib/libwebp/src lib/libtga/src lib/libiconv/include lib/libgif/include lib/cobra/include
+INCLUDES    +=  lib/libntfs_ext/include lib/fatfs/include lib/fatfs/include
+
+PKGFILES	:=	$(CURDIR)/pkgfiles
 ifeq ($(RPCS3), 1)
 MACHDEP	= -DRPCS3
 endif
@@ -51,6 +54,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
 			../lib/libMagickWand.a ../lib/libMagickCore.a ../lib/libcrypto.a \
+			../lib/libfatfs.a ../lib/libgif.a ../lib/libtarga.a ../lib/libwebp.a \
 			-ltiny3d -lsysmodule -lgcm_sys -lrsx -lsysutil -lio -lm -lfreetype -lz -lhttputil \
 			-lhttp -lssl -lnet -lwebp -ltiff -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
 			

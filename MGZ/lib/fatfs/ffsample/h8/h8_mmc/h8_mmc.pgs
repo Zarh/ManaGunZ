@@ -1,0 +1,35 @@
+; Project Generator Setup Infomation
+
+[PGS Version]
+Version=1.0
+
+[Toolchain]
+Toolchain=Hitachi H8S,H8/300 Standard
+Toolchain Name=Hitachi H8S,H8/300 Standard Toolchain
+Toolchain Version=7.0.0.0
+
+[CPU]
+CPU Family=H8S,H8/300
+CPU Series=300H
+CPU Type=H8/3694F
+Operating Mode=Normal
+Address Space=Not Support
+Multiple=disable
+Divide=disable
+
+[Project]
+Project Name=h8_mmc
+Project Type=Application
+
+[Stack Settings]
+Stack Pointer Address=H'FF80
+Stack Size=H'200
+Stack Section Name=S
+Stack Section Address=
+Source File Name=stacksct.h
+Description=#pragma stacksize 0x200         /* Do not modify this line. */
+Default Stack Pointer Address=H'FF80
+Default Stack Size=H'100
+
+[Initial Settings]
+Simulator I/O=disable

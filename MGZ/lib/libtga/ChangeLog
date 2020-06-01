@@ -1,0 +1,105 @@
+2002-11-28   Matthias Brueckner <matbrc@gmx.de>
+	* updated examples/Makefile.am: examples now compile without
+		having libtga installed before
+
+2002-11-20   Matthias Brueckner <matbrc@gmx.de>
+	* merged ChangeLog and src/ChangeLog
+	* doc/Makefile.am: fixed (api.sgml added to EXTRA_DIST)
+	* doc/README: updated
+	* tgaread.c: fixed bug (SF request id #628453)
+	* tgaread.c,tgawrite.c: removed some unused variables
+	* tga.h: updated version info to 1.0.1,
+		 added __FILE__ and __LINE__ definitions for
+		 non-gcc compilers
+	
+	
+2002-05-28   Matthias Brueckner <matbrc@gmx.de>
+	* KNOWN_BUGS: created
+	* doc/api/: removed directory, api.sgml now in doc/
+	* examples/decode.c, examples/encode.c: created
+	* examples/tgacpy.c: removed
+	* acinclude.m4: created
+	* configure.in: generation of debug symbols is now disabled by
+	default (enable with --enable-debug)
+
+	* tgaread.c (TGAReadImage): changed success return value to TGA_OK
+	* tgawrite.c (TGAWriteImage): now returns last error code (tga->last)
+	* tgawrite.c (TGAWriteHeader): changed success return value to TGA_OK 
+	* tga.c (TGAOpenFd): now checks for return value of ftell() system call
+	* tga.h: reordered error codes
+	* tga.h, tgaread.c, tgawrite.c: changed TGASeek to __TGASeek and 
+	TGAbgr2rgb to __TGAbgr2rgb
+	* tga.h: removed unused error messages TGA_UNKNOWN_FORMAT and 
+	TGA_WARNING
+	* tga.h: upated version info to 1.0.0
+	* tga.h, tgaread.c: removed TGA_ALPHA, TGA_FLIP_HORZ and
+	TGA_FLIP_VERT flags, they were unnecessary
+
+2002-05-24  Matthias Brueckner  <matbrc@gmx.de>
+
+	* tgaread.c: added 15 and 16-bit color depth handling code
+	* tgaread.c, tgawrite.c: defined some additional temporary
+	variables to avoid too many dereferenciations in TGAReadRLE() and 
+	TGAWriteRLE()
+
+2002-04-08  Matthias Brueckner  <matbrc@gmx.de>
+
+	* tga.h, tga.c, tgaread.c, tgawrite.c: removed unnecessary includes
+	* changed all off_t to long: off_t not defined by ANSI/ISO C 
+	* tga.h: removed bit-fields in TGAHeader: they're not supported
+	in ANSI/ISO C 
+	* tga.h, tga.c: added TGAOpenFd() function 
+	* tga.h: removed 'name' field in TGAHeader
+
+2002-03-29  Matthias Brueckner <matbrc@gmx.de> (0.1.7)
+	
+	- finally fixed RLE encoding and decoding
+	- several minor bug fixes
+
+2002-03-28  Matthias Brueckner <matbrc@gmx.de>
+
+	- TGAIsMapped() and TGAIsEncoded() are now macros:
+	  TGA_IS_MAPPED and TGA_IS_ENCODED
+	- clean-up and preparation for 0.1.7 release
+	
+2002-03-27  Matthias Brueckner <matbrc@gmx.de>
+
+	- simplified error handling
+	- fixed several minor bugs
+	- changed TGAHeader (descriptor byte -> alpha, horz, vert)
+		
+2002-03-22  Matthias Brueckner <matbrc@gmx.de>
+
+	- clean-up
+	- checked currently implemented parts of the TGA file format specs
+	  for full specification compliance
+  
+2002-03-17  Matthias Brueckner <matbrc@gmx.de>
+	
+	- added TGA_CAN_SWAP macro
+	
+2002-03-08  Matthias Brueckner <matbrc@gmx.de>
+	
+	- added TGA_ALPHA, TGA_FLIP_HORZ and TGA_FLIP_VERT flags
+	
+2002-03-02  Matthias Brueckner <matbrc@gmx.de>
+
+	- replaced bzero() by memset() for ISO C compliance
+	- added TGAIsMapped() and TGAbgr2rgb() functions
+	- changed TGA_LIBTGA_VERSION_* macros to LIBTGA_VERSION_*
+
+2002-02-16  Matthias Brueckner <matbrc@gmx.de>
+	
+	- added TGAStrError() for error code -> string translation
+	- updated TGAReadImage() and TGAWriteImage()
+		
+2002-02-15  Matthias Brueckner <matbrc@gmx.de>
+
+	- merged in RLE handling code from The Gimp's TGA Filter:
+	  Copyright (C) 1997 Raphael FRANCOIS and Gordon Matzigkeit
+	- added new read/write interface (TGAReadImage(), TGAWriteImage())
+
+2002-02-13  Matthias Brueckner <matbrc@gmx.de>
+
+	- fixed SIGSEGV in TGAError() and TGAWarning() if NULL pointer 
+	  is passed
