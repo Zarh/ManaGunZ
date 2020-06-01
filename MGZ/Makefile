@@ -56,7 +56,7 @@ LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/
 			../lib/libMagickWand.a ../lib/libMagickCore.a ../lib/libcrypto.a \
 			../lib/libfatfs.a ../lib/libgif.a ../lib/libtarga.a ../lib/libwebp.a \
 			-ltiny3d -lsysmodule -lgcm_sys -lrsx -lsysutil -lio -lm -lfreetype -lz -lhttputil \
-			-lhttp -lssl -lnet -lwebp -ltiff -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
+			-lhttp -lssl -lnet -ltiff -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
 			
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
