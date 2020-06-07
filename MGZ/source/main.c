@@ -3803,7 +3803,7 @@ u8 Get_PICType(u32 w, u32 h)
 	if( w == 850.0 && h == 570.0 )  return GAMEPIC_COVER3D; // PS2
 	
 	if( w == 260.0 && h == 300.0 )  return GAMEPIC_COVER2D; // PS3
-	if( w == 950.0 && h == 550.0 )  return GAMEPIC_COVER3D; // PS3
+	if( w == 950.0 && h == 520.0 )  return GAMEPIC_COVER3D; // PS3
 	
 	if( w == 200.0 && h == 340.0 )  return GAMEPIC_COVER2D; // PSP
 	if( w == 800.0 && h == 640.0 )  return GAMEPIC_COVER3D; // PSP
