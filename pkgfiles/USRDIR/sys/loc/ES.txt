@@ -217,7 +217,7 @@ STR_EXTRACT_THM				{Extraer THM}
 STR_EXTRACT_P3T				{Extraer P3T}
 STR_EXTRACT_RAF				{Extraer RAF}
 STR_EXTRACT_QRC				{Extraer QRC}
-STR_EXTRACT_ZIP				{Extraer ZIP}
+STR_EXTRACT_HERE			{Extraer aqui}
 STR_CONVERT_JSX_JS			{Convertir JSX a JS}
 STR_CONVERT_VAG_WAV			{Convertir VAG a WAV}
 STR_CONVERT_GTF_DDS			{Convertir GTF a DDS}

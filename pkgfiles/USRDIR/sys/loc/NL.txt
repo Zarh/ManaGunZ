@@ -189,7 +189,7 @@ STR_EXTRACT_THM				{Verkrijg THM}
 STR_EXTRACT_P3T				{Verkrijg P3T}
 STR_EXTRACT_RAF				{Verkrijg RAF}
 STR_EXTRACT_QRC				{Verkrijg QRC}
-STR_EXTRACT_ZIP				{Verkrijg ZIP}
+STR_EXTRACT_HERE			{Verkrijg ZIP}
 STR_CONVERT_JSX_JS			{Converteer JSX naar JS}
 STR_CONVERT_VAG_WAV			{Converteer VAG naar WAV}
 STR_CONVERT_GTF_DDS			{Converteer GTF naar DDS}

@@ -87,6 +87,8 @@
 #include "jsx.h"
 #include "cxml.h"
 
+#include "unrar.h"
+
 #include "md5.h"
 #include "sha1.h"
 #include "ird.h"
@@ -1640,8 +1642,8 @@ static char *STR_EXTRACT_RAF=NULL;
 #define STR_EXTRACT_RAF_DEFAULT				"Extract RAF"
 static char *STR_EXTRACT_QRC=NULL;
 #define STR_EXTRACT_QRC_DEFAULT				"Extract QRC"
-static char *STR_EXTRACT_ZIP=NULL;
-#define STR_EXTRACT_ZIP_DEFAULT				"Extract ZIP"
+static char *STR_EXTRACT_HERE=NULL;
+#define STR_EXTRACT_HERE_DEFAULT			"Extract here"
 static char *STR_CONVERT_JSX_JS=NULL;
 #define STR_CONVERT_JSX_JS_DEFAULT			"Convert JSX to JS"
 static char *STR_CONVERT_VAG_WAV=NULL;
@@ -6410,7 +6412,7 @@ void update_lang()
 	LANG(STR_EXTRACT_P3T, "STR_EXTRACT_P3T", STR_EXTRACT_P3T_DEFAULT);
 	LANG(STR_EXTRACT_RAF, "STR_EXTRACT_RAF", STR_EXTRACT_RAF_DEFAULT);
 	LANG(STR_EXTRACT_QRC, "STR_EXTRACT_QRC", STR_EXTRACT_QRC_DEFAULT);
-	LANG(STR_EXTRACT_ZIP, "STR_EXTRACT_ZIP", STR_EXTRACT_ZIP_DEFAULT);
+	LANG(STR_EXTRACT_HERE, "STR_EXTRACT_HERE", STR_EXTRACT_HERE_DEFAULT);
 	LANG(STR_CONVERT_JSX_JS, "STR_CONVERT_JSX_JS", STR_CONVERT_JSX_JS_DEFAULT);
 	LANG(STR_CONVERT_VAG_WAV, "STR_CONVERT_VAG_WAV", STR_CONVERT_VAG_WAV_DEFAULT);
 	LANG(STR_CONVERT_GTF_DDS, "STR_CONVERT_GTF_DDS", STR_CONVERT_GTF_DDS_DEFAULT);
@@ -11356,6 +11358,51 @@ u8 dump_dec_bdvd(char *output)
 	return SUCCESS;
 }
 
+//*******************************************************
+// RAR
+//*******************************************************
+
+u8 ExtractRar(const char* RarFile)
+{
+	char dstPath[255];
+	
+	strcpy(dstPath, RarFile);
+	dstPath[strlen(dstPath)-4]=0;
+	
+	mkdir(dstPath, 0777);
+	
+	HANDLE hArcData; //Archive Handle
+	struct RAROpenArchiveDataEx rarOpenArchiveData;
+    struct RARHeaderDataEx rarHeaderData;
+    memset(&rarOpenArchiveData, 0, sizeof(rarOpenArchiveData));
+    memset(&rarHeaderData, 0, sizeof(rarHeaderData));
+
+    rarOpenArchiveData.ArcName = (char*) RarFile;
+    rarOpenArchiveData.CmtBuf = NULL;
+    rarOpenArchiveData.CmtBufSize = 0;
+    rarOpenArchiveData.OpenMode = RAR_OM_EXTRACT;
+    hArcData = RAROpenArchiveEx(&rarOpenArchiveData);
+    
+    print_load("UnRAR [%s]", RarFile);
+     
+    if(rarOpenArchiveData.OpenResult != ERAR_SUCCESS) {   
+        print_load("OpenArchive '%s' Failed!", rarOpenArchiveData.ArcName);
+        return FAILED;   
+    }   
+      
+    while (RARReadHeaderEx(hArcData, &rarHeaderData) == ERAR_SUCCESS) {   
+        print_load("Extracting '%s' (%ld) ...", rarHeaderData.FileName, rarHeaderData.UnpSize + (((uint64_t)rarHeaderData.UnpSizeHigh) << 32));
+		
+        if (RARProcessFile(hArcData, RAR_EXTRACT, dstPath, NULL) != ERAR_SUCCESS) {   
+            print_load("ERROR: UnRAR Extract Failed!");
+            return FAILED;
+        }   
+    }
+
+    RARCloseArchive(hArcData);
+	
+	return SUCCESS;
+}
 
 //*******************************************************
 // ZIP
@@ -11590,6 +11637,30 @@ u8 ExtractZipFile(char* ZipFile, char* File, char* out)
 	
 	return SUCCESS;
 }
+
+
+//*******************************************************
+// ARCHIVE
+//*******************************************************
+
+u8 is_archive(char *ext)
+{
+	if(	!strcasecmp(ext, ".zip") ) return YES;
+	if( !strcasecmp(ext, ".rar") ) return YES;
+	
+	return NO;
+}
+
+u8 ExtractArchive(char *ArchFile)
+{
+	char *ext = GetExtension(ArchFile);
+	
+	if(	!strcasecmp(ext, ".zip") ) return ExtractZip(ArchFile);
+	if( !strcasecmp(ext, ".rar") ) return ExtractRar(ArchFile);
+
+	return FAILED;
+}
+
 
 //*******************************************************
 //NTFS
@@ -25443,11 +25514,11 @@ void Option(char *item)
 		end_loading();
 	}
 	else
-	if(strcmp(item, STR_EXTRACT_ZIP) == 0) { 
+	if(strcmp(item, STR_EXTRACT_HERE) == 0) { 
 		start_loading();
 		for(i=0; i<=option_sel_N; i++) {
-			print_head("Extracting ZIP");
-			ExtractZip(option_sel[i]);
+			print_head("Extracting archive...");
+			ExtractArchive(option_sel[i]);
 		}
 		end_loading();
 		Window(".");
@@ -25723,9 +25794,10 @@ void Open_option()
 					if(!strcasecmp(ext, ".vag")) {
 						add_option_item(STR_CONVERT_VAG_WAV);
 					} else
-					if(!strcasecmp(ext, ".zip")) {
-						add_option_item(STR_EXTRACT_ZIP);
-					}
+					if(is_archive(ext)) {
+						add_option_item(STR_EXTRACT_HERE);
+					} 
+					
 					
 					if(option_sel_N==0) {
 						if( is_66600(option_sel[0])) {
@@ -31077,25 +31149,25 @@ u8 input_CHOOSE_IDPS()
 		} else
 		if(CHOOSE_IDPS_position==9) {
 			if(IDPS[0xB] - (IDPS[0xB] >> 4)*0x10 < 0xF) IDPS[0xB]++;
-		}  else
+		} else
 		if(CHOOSE_IDPS_position==10) {
 			if((IDPS[0xC] >> 4) < 0xF) IDPS[0xC] = IDPS[0xC] + 0x10;
 		} else
 		if(CHOOSE_IDPS_position==11) {
 			if(IDPS[0xC] - (IDPS[0xC] >> 4)*0x10 < 0xF) IDPS[0xC]++;
-		}  else
+		} else
 		if(CHOOSE_IDPS_position==12) {
 			if((IDPS[0xD] >> 4) < 0xF) IDPS[0xD] = IDPS[0xD] + 0x10;
 		} else
 		if(CHOOSE_IDPS_position==13) {
 			if(IDPS[0xD] - (IDPS[0xD] >> 4)*0x10 < 0xF) IDPS[0xD]++;
-		}  else
+		} else
 		if(CHOOSE_IDPS_position==14) {
 			if((IDPS[0xE] >> 4) < 0xF) IDPS[0xE] = IDPS[0xE] + 0x10;
 		} else
 		if(CHOOSE_IDPS_position==15) {
 			if(IDPS[0xE] - (IDPS[0xE] >> 4)*0x10 < 0xF) IDPS[0xE]++;
-		}  else
+		} else
 		if(CHOOSE_IDPS_position==16) {
 			if((IDPS[0xF] >> 4) < 0xF) IDPS[0xF] = IDPS[0xF] + 0x10;
 		} else

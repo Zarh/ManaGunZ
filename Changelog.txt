@@ -14,6 +14,9 @@ TO MAKE IT BETTER
 Add : ManaGunZ logs option. It's save loading logs at "/dev_hdd0/tmp/mgz.log".
 Add : ManaGunZ debug option. It slows the messages displayed on screen during the loadings.
 
+DONE
+
+Add FileManager: Extract RAR files.
 
 v1.38
 Add : Support CFW/HEN 486C

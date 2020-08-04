@@ -189,7 +189,7 @@ STR_EXTRACT_THM				{THM Kicsomagolása}
 STR_EXTRACT_P3T				{P3T Kicsomagolása}
 STR_EXTRACT_RAF				{RAF Kicsomagolása}
 STR_EXTRACT_QRC				{QRC Kicsomagolása}
-STR_EXTRACT_ZIP				{ZIP Kicsomagolása}
+STR_EXTRACT_HERE			{Kicsomagolása ki itt}
 STR_CONVERT_JSX_JS			{Konvertálás: JSX-JS}
 STR_CONVERT_VAG_WAV			{Konvertálás: VAG-WAV}
 STR_CONVERT_GTF_DDS			{Konvertálás: GTF-DDS}

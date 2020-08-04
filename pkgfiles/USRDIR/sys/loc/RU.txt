@@ -189,7 +189,7 @@ STR_EXTRACT_THM				{Извлечь THM}
 STR_EXTRACT_P3T				{Извлечь P3T}
 STR_EXTRACT_RAF				{Извлечь RAF}
 STR_EXTRACT_QRC				{Извлечь QRC}
-STR_EXTRACT_ZIP				{Извлечь ZIP}
+STR_EXTRACT_HERE			{Извлечь сюда}
 STR_CONVERT_JSX_JS			{Конвертировать JSX в JS}
 STR_CONVERT_VAG_WAV			{Конвертировать VAG в WAV}
 STR_CONVERT_GTF_DDS			{Конвертировать GTF в DDS}
