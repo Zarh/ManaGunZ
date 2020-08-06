@@ -88,6 +88,7 @@
 #include "cxml.h"
 
 #include "unrar.h"
+#include "7zExtractor.h"
 
 #include "md5.h"
 #include "sha1.h"
@@ -11362,14 +11363,8 @@ u8 dump_dec_bdvd(char *output)
 // RAR
 //*******************************************************
 
-u8 ExtractRar(const char* RarFile)
+u8 ExtractRar(const char* RarFile, char *dstPath)
 {
-	char dstPath[255];
-	
-	strcpy(dstPath, RarFile);
-	dstPath[strlen(dstPath)-4]=0;
-	
-	mkdir(dstPath, 0777);
 	
 	HANDLE hArcData; //Archive Handle
 	struct RAROpenArchiveDataEx rarOpenArchiveData;
@@ -11408,18 +11403,14 @@ u8 ExtractRar(const char* RarFile)
 // ZIP
 //*******************************************************
 
-u8 ExtractZip(char* ZipFile)
+u8 ExtractZip(char* ZipFile, char *dstFolder)
 {
 	char FileOUT[255];
-	char Folder[255];
-	
+
 	int err=0;
 	struct zip *f_zip=NULL;
 	
-	strcpy(Folder, ZipFile);
-	Folder[strlen(Folder)-4]=0;
-	
-	mkdir(Folder, 0777);
+	mkdir(dstFolder, 0777);
 	
 	f_zip = zip_open(ZipFile, ZIP_CHECKCONS, &err);
 	if(err != ZIP_ER_OK || f_zip==NULL)
@@ -11456,7 +11447,7 @@ u8 ExtractZip(char* ZipFile)
 		
 		print_load((char*)file_stat.name);
 		
-		sprintf(FileOUT, "%s/%s", Folder, file_stat.name);
+		sprintf(FileOUT, "%s/%s", dstFolder, file_stat.name);
 		
 		if(FileOUT[strlen(FileOUT)-1]=='/') {
 			FileOUT[strlen(FileOUT)-1]=0;
@@ -11638,6 +11629,21 @@ u8 ExtractZipFile(char* ZipFile, char* File, char* out)
 	return SUCCESS;
 }
 
+//*******************************************************
+// 7Z
+//*******************************************************
+
+void Callback_7z(const char* fileName, unsigned long fileSize, unsigned fileNum, unsigned numFiles)
+{
+    print_load("[%d/%d] File: %s Size: %ld\n", fileNum, numFiles, fileName, fileSize);
+}
+
+u8 Extract7z(char *src, char *dst)
+{
+	if( Extract7zFileEx(src, dst, &Callback_7z, DEFAULT_IN_BUF_SIZE) == 0) return SUCCESS;
+	
+	return FAILED;
+}
 
 //*******************************************************
 // ARCHIVE
@@ -11647,6 +11653,7 @@ u8 is_archive(char *ext)
 {
 	if(	!strcasecmp(ext, ".zip") ) return YES;
 	if( !strcasecmp(ext, ".rar") ) return YES;
+	if( !strcasecmp(ext, ".7z") ) return YES;
 	
 	return NO;
 }
@@ -11655,8 +11662,15 @@ u8 ExtractArchive(char *ArchFile)
 {
 	char *ext = GetExtension(ArchFile);
 	
-	if(	!strcasecmp(ext, ".zip") ) return ExtractZip(ArchFile);
-	if( !strcasecmp(ext, ".rar") ) return ExtractRar(ArchFile);
+	char DirName[255];
+	
+	strcpy(DirName, ArchFile);
+	RemoveExtension(DirName);
+	mkdir(DirName, 0777);
+	
+	if(	!strcasecmp(ext, ".zip") ) return ExtractZip(ArchFile, DirName);
+	if( !strcasecmp(ext, ".rar") ) return ExtractRar(ArchFile, DirName);
+	if( !strcasecmp(ext, ".7z") ) return Extract7z(ArchFile, DirName);
 
 	return FAILED;
 }
