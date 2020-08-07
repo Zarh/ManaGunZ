@@ -89,6 +89,7 @@
 
 #include "unrar.h"
 #include "7zExtractor.h"
+#include "minitar.h"
 
 #include "md5.h"
 #include "sha1.h"
@@ -2782,6 +2783,18 @@ char *GetExtension(char *path)
        m--;
        while(m > 1 && path[m] != '.' && path[m] != '/') m--; 
     }
+	
+	if(strcmp(&path[m], ".gz")==0) {
+		int k = m - 4;
+		if(strcmp(&path[m-4], ".tar.gz")==0) {
+			m-=4;	
+		}
+	}
+	if(strcmp(&path[m], ".bz2")==0) {
+		if(strcmp(&path[m-4], ".tar.bz2")==0) {
+			m-=4;	
+		}
+	}
     
     if(path[m] == '.') return &path[m];
 
@@ -11654,6 +11667,10 @@ u8 is_archive(char *ext)
 	if(	!strcasecmp(ext, ".zip") ) return YES;
 	if( !strcasecmp(ext, ".rar") ) return YES;
 	if( !strcasecmp(ext, ".7z") ) return YES;
+	if( !strcasecmp(ext, ".tar.bz2") ) return YES;
+	if( !strcasecmp(ext, ".tar.gz") ) return YES;
+	if( !strcasecmp(ext, ".tgz") ) return YES;
+	if( !strcasecmp(ext, ".tar") ) return YES;
 	
 	return NO;
 }
@@ -11671,7 +11688,11 @@ u8 ExtractArchive(char *ArchFile)
 	if(	!strcasecmp(ext, ".zip") ) return ExtractZip(ArchFile, DirName);
 	if( !strcasecmp(ext, ".rar") ) return ExtractRar(ArchFile, DirName);
 	if( !strcasecmp(ext, ".7z") ) return Extract7z(ArchFile, DirName);
-
+	if( !strcasecmp(ext, ".tar.bz2") ) return !untar_bz2(ArchFile, DirName);
+	if( !strcasecmp(ext, ".tar.gz") ) return !untar_gz(ArchFile, DirName);
+	if( !strcasecmp(ext, ".tgz") ) return !untar_gz(ArchFile, DirName);
+	if( !strcasecmp(ext, ".tar") ) return !untar(ArchFile, DirName);
+	
 	return FAILED;
 }
 
