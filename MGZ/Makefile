@@ -56,7 +56,7 @@ LDFLAGS		=	$(MACHDEP) -Wl,-Map,$(notdir $@).map
 LIBS	:=  -lxml2 ../lib/libiconv.a ../lib/libntfs_ext.a ../lib/libcobra.a ../lib/libgtfconv.a ../lib/libapputil.a \
 			../lib/libMagickWand.a ../lib/libMagickCore.a ../lib/libcrypto.a \
 			../lib/libfatfs.a ../lib/libgif.a ../lib/libtarga.a ../lib/libwebp.a \
-			../lib/libunrar.a ../lib/libun7zip.a ../lib/libuntar.a\
+			../lib/libunrar.a ../lib/libun7zip.a ../lib/libuntar.a \
 			-ltiny3d -lsysmodule -lgcm_sys -lrsx -lsysutil -lio -lm -lfreetype -lz -lhttputil \
 			-lhttp -lssl -lnet -ltiff -lpng -ljpeg -lpngdec -ljpgdec -lsysfs -lzip 
 			

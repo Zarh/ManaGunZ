@@ -2785,7 +2785,6 @@ char *GetExtension(char *path)
     }
 	
 	if(strcmp(&path[m], ".gz")==0) {
-		int k = m - 4;
 		if(strcmp(&path[m-4], ".tar.gz")==0) {
 			m-=4;	
 		}
@@ -34712,80 +34711,115 @@ void Draw_LIST()
 //  6----4----2
 //
 
-void Draw_PS3COVER_3D()
+void Draw_ONFRONT3D(float w, float h, float e, float x1)
 {
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume
+	z=-e/2;
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	
+	tiny3d_VertexPos(x-w/2+x1, y+h/2, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(0.0f, 0.0f);
+	
+	tiny3d_VertexPos(x-w/2+x1, y-h/2 , z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(0.0f, 1.0f);
+	
+	tiny3d_VertexPos(x+w/2, y+h/2, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(1.0f, 0.0f);
+	 
+	tiny3d_VertexPos(x+w/2, y-h/2, z);
+	tiny3d_Normal(0, 0, -1);
+	tiny3d_VertexTexture(1.0f, 1.0f);
+	
+	tiny3d_End();
+	
+}
+
+void Draw_ONFRONT3D_ICON0(float w, float e, float r)
+{
+	float h_icon0 = w * 176.0 / 320.0;
+	
+	Draw_ONFRONT3D(w, h_icon0, e, r);
+}
+
+void Draw_COVER3D(u8 type, float w, float h, float e, float r, float x1, float y1) 
+{
+	if(type == GAMEPIC_ICON0)  {
+		Draw_ONFRONT3D_ICON0(w, e, r);
+		return;
+	}
+	if(type == GAMEPIC_COVER2D) {
+		Draw_ONFRONT3D(w, h, e, r);
+		return;
+	}
+	
+	float t;
+	
 	// la boite est de face
-	
-	//float l;
-	
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
 	
-	x-=0.1; // pour avoir la jaquette autour de la boite
+	y+=y1;
+	x+=x1;
 	
-	float w=129; // largeur de la jaquette de face
-	float h=149; // hauteur de la jaquettte de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-
-	
-	float l_tot = w*2-2*r + e-2*r + PI*r;
+	float l_tot = w-r + PI*r/4;
 	
 	float SW=0; // longueur de la texture
 	
 	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		
-	tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
-	tiny3d_Normal(0, 0, 1);
-	tiny3d_VertexTexture(0.0f, 0.0f);
 	
-	tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
-	tiny3d_Normal(0, 0, 1);
-	tiny3d_VertexTexture(0.0f, 1.0f);
+	if(type==GAMEPIC_COVER3D) {
 	
-	tiny3d_VertexPos(x-w/2 + r, y+h/2	, z+e/2); // inferieur / haut / gauche [3]
-	tiny3d_Normal(0, 0, 1);
-	SW += w-r;
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	 
-	tiny3d_VertexPos(x-w/2 + r	, y-h/2	, z+e/2); // inferieur / bas / gauche [4]
-	tiny3d_Normal(0, 0, 1);
+		l_tot = w*2-2*r + e-2*r + PI*r;
 	
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	// COIN INFERIEUR
-	int t;
-	for(t=80; t>=0 ; t-=10) {
-		SW += (PI*r) * 10/180;
+		tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexTexture(0.0f, 0.0f);
 		
-		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  [5]
-		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		
-		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  [6]
-		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
+		tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexTexture(0.0f, 1.0f);
+				
+		// COIN INFERIEUR
+		for(t=90; t>=0 ; t-=10) {
+			if(t==90) SW += w-r;
+			else SW += (PI*r) * 10/180;
+			
+			tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  t=90 [3] , t=0 [5]
+			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+			tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+			
+			tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  t=90 [4] , t=0 [6]
+			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+			tiny3d_VertexTexture((float) SW / l_tot, 1.0f);			
+		}
+			
+		// COIN SUPERIEUR (1)
+		for(t=0; t>=-45 ; t-=7.5) {
+			if(t==0) SW += e-2*r;
+			else SW += (PI*r) * 10/180;
+			
+			tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [7] t=0 
+			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+			tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
+			tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [8] t=0
+			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+			tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
+		}
 	}
 	
-	SW += e-2*r;
-	tiny3d_VertexPos(x-w/2, y+h/2, z-e/2+r);										// [7]
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	tiny3d_VertexPos(x-w/2, y-h/2, z-e/2+r);										// [8]
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
-	
-	// COIN SUPERIEUR
-	for(t=190; t<=270 ; t+=10) {
-		SW += (PI*r) * 10/180;
+	// COIN SUPERIEUR (2)
+	for(t=-45; t>=-90 ; t-=7.5) {
+		if(t==-45 && GAMEPIC_COVER3D) SW += (PI*r) * 10/180;
 		
-		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] 
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] t=-90
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
 		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] 
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
+		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] t=-90
+		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
+		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);	
 	}
 	
 	SW += w-r;
@@ -34798,106 +34832,20 @@ void Draw_PS3COVER_3D()
 	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
 	
 	tiny3d_End();
-	
 }
 
-void Draw_ICON03D(float w, float e, float r)
-{
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
-	
-	x-=0.1; // pour avoir la jaquette autour de la boite
-		
-	float w_icon0 = w-r ;
-	
-	float h_icon0 = w_icon0 * 176.0 / 320.0;
-	
-	y=-h_icon0/2;
-	x=-w/2+r;
-	z=-e/2;
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	
-	tiny3d_VertexPos(x, y+h_icon0 , z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture(0.0f, 0.0f);
-	
-	tiny3d_VertexPos(x, y , z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture(0.0f, 1.0f);
-	
-	tiny3d_VertexPos(x+w_icon0, y+h_icon0	, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture(1.0f, 0.0f);
-	 
-	tiny3d_VertexPos(x+w_icon0, y	, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture(1.0f, 1.0f);
-	
-	tiny3d_End();
-}
+//***********
+// PS3 BOX
+//***********
 
-void Draw_PS3ICON0()
+void Draw_PS3PIC_3D(u8 type)
 {
-	float w=129; // largeur de la jaquette de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-	
-	Draw_ICON03D(w, e, r);
-}
-
-void Draw_PS3COVER()
-{
-	
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
-	
-	x-=0.1; // pour avoir la jaquette autour de la boite
-	
 	float w=129; // largeur de la jaquette de face
 	float h=149; // hauteur de la jaquettte de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=14+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
-	float l_tot = w-r + PI*r/2 ;
-	
-	y=-h/2;
-	x=-w/2;
-	z=-e/2;
-	
-	float SW=0; // longueur de la texture
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	
-	tiny3d_VertexPos(x, y+h, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture(0, 0.0f);
-	tiny3d_VertexPos(x, y, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture(0, 1.0f); 
-	
-	// COIN SUPERIEUR
-	int t;
-	for(t=190; t<=270 ; t+=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+h , z+r + r*sin(t*PI/180));
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y , z+r + r*sin(t*PI/180));
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += w-r;
-	tiny3d_VertexPos(x+w, y+h, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	
-	tiny3d_VertexPos(x+w, y, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	tiny3d_End();
+	Draw_COVER3D(type, w,h,e,r,-0.01,0);
 }
 
 void Draw_PS3GAMECASE_3D()
@@ -35363,157 +35311,18 @@ void Draw_PS3GAMECASE_3D()
 
 }
 
-void Draw_PS2ICON0()
-{
-	
-	float w=130; // largeur de la jaquette de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-	
-	Draw_ICON03D(w, e, r);
-}
+//***********
+// PS2 BOX
+//***********
 
-void Draw_PS2COVER()
+void Draw_PS2PIC_3D(u8 type)
 {
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
-	
-	x-=0.1; // pour avoir la jaquette autour de la boite
-	
 	float w=130; // largeur de la jaquette de face
 	float h=180; // hauteur de la jaquettte de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=14+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
-
-	float l_tot = w-r + PI*r/2 ;
 	
-	y=-h/2;
-	x=-w/2;
-	z=-e/2;
-	
-	float SW=0; // longueur de la texture
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	
-	tiny3d_VertexPos(x, y+h, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture(0, 0.0f);
-	tiny3d_VertexPos(x, y, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture(0, 1.0f); 
-	
-	// COIN SUPERIEUR
-	int t;
-	for(t=190; t<=270 ; t+=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+h , z+r + r*sin(t*PI/180));
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y , z+r + r*sin(t*PI/180));
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += w-r;
-	tiny3d_VertexPos(x+w, y+h, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	
-	tiny3d_VertexPos(x+w, y, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	tiny3d_End();
-}
-
-void Draw_PS2COVER_3D()
-{
-	// la boite est de face
-	
-	//float l;
-	
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
-	
-	x-=0.1; // pour avoir la jaquette autour de la boite
-	
-	float w=130; // largeur de la jaquette de face
-	float h=180; // hauteur de la jaquettte de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-
-	
-	float l_tot = w*2-2*r + e-2*r + PI*r;
-	
-	float SW=0; // longueur de la texture
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		
-	tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
-	tiny3d_Normal(0, 0, 1);
-	tiny3d_VertexTexture(0.0f, 0.0f);
-	
-	tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
-	tiny3d_Normal(0, 0, 1);
-	tiny3d_VertexTexture(0.0f, 1.0f);
-	
-	tiny3d_VertexPos(x-w/2 + r, y+h/2	, z+e/2); // inferieur / haut / gauche [3]
-	tiny3d_Normal(0, 0, 1);
-	SW += w-r;
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	 
-	tiny3d_VertexPos(x-w/2 + r	, y-h/2	, z+e/2); // inferieur / bas / gauche [4]
-	tiny3d_Normal(0, 0, 1);
-	
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	// COIN INFERIEUR
-	int t;
-	for(t=80; t>=0 ; t-=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  [5]
-		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		
-		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  [6]
-		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += e-2*r;
-	tiny3d_VertexPos(x-w/2, y+h/2, z-e/2+r);										// [7]
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	tiny3d_VertexPos(x-w/2, y-h/2, z-e/2+r);										// [8]
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
-	
-	// COIN SUPERIEUR
-	for(t=190; t<=270 ; t+=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] 
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] 
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += w-r;
-	tiny3d_VertexPos(x+w/2, y+h/2, z-e/2); // superieur / haut / droite 		// [11] 
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	
-	tiny3d_VertexPos(x+w/2, y-h/2, z-e/2); // superieur / bas / droite 		// [12]
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	tiny3d_End();
-	
+	Draw_COVER3D(type, w, h, e, r, -0.01, 0);
 }
 
 void Draw_PS2GAMECASE_3D()
@@ -35908,16 +35717,419 @@ void Draw_PS2GAMECASE_3D()
 	
 }
 
+//***********
+// PSP BOX
+//***********
+
+void Draw_PSPPIC_3D(u8 type)
+{
+	float w=92; // largeur de la jaquette de face
+	float h=158; // hauteur de la jaquettte de face
+	float e=14+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float r=3; // rayon des arrondies
+
+	Draw_COVER3D(type,w,h,e,r,-0.01,0);
+}
+
+void Draw_PSPGAMECASE_3D()
+{
+
+	//float l;
+	int t,i;
+	
+	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
+	
+	float w=92; // largeur de la jaquette de face
+	float h=158; // hauteur de la jaquettte de face
+	float e=14; // epaisseur de la boite 
+	float r=3; // rayon des arrondies
+	
+	float wb = 99; // largeur de la boite
+	float hb = 168; // hauteur de la boite
+	//float l1 = 15; // hauteur de l'en-tete de la boite 
+	float r1 = 5; // rayon du haut
+	float l2 = 5; // distance entre le coté de la boite et la jaquette
+	float r2 = 5; // rayon du bas
+	
+	float l3 = 36; // distance entre le bas et l'ouverture lateral
+	
+	x = -w/2;
+	y = -h/2-l2;
+	z = -e/2;
+	
+// surface superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*sin(t*PI/180)   , y+hb-r1 + (r1-r)*cos(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*sin(t*PI/180),y+hb-r1  + (r1-r)*cos((t)*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+	
+// arrondie superieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin superieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie gauche superieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+r - r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin superieur haut gauche TORE
+	for(t=180; t<=260; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=270; i<=360; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// surface du bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+wb-r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_VertexPos(x+r2, y, z+e-r);
+	tiny3d_Normal(0, -1, 0);
+	tiny3d_End();
+	
+// coin bas droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surfaces de droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+r2, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+r2, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb-5, y+l3+5, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+l3+5, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_VertexPos(x+wb, y+hb-r1, z+e-r);
+	tiny3d_Normal(1, 0, 0);
+	tiny3d_End();
+
+
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+r );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+	
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(0, 0, -1);
+		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(0, 0, -1);
+	}
+	tiny3d_End();
+	
+// coin haut droite
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+e-r );
+		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface du haut
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x+r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_VertexPos(x+wb-r1, y+hb, z+e-r);
+	tiny3d_Normal(0, 1, 0);
+	tiny3d_End();
+	
+// coin haut gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+	
+// surface de gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	tiny3d_VertexPos(x, y+hb-r1, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+hb-r1, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_VertexPos(x, y+r2, z+e-r);
+	tiny3d_Normal(-1, 0, 0);
+	tiny3d_End();
+	
+	
+// coin bas gauche
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
+		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
+	}
+	tiny3d_End();
+
+// 	arrondie inferieur bas
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+
+// arrondie coin inferieur bas droit TORE
+	for(t=270; t<=350; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// arrondie droit inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut droite TORE
+	for(t=0; t<=80; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie haut inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=90; t<=170; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+
+// arrondie gauche inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+e-r + r*cos(t*PI/180) );
+		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
+	}
+	tiny3d_End();
+	
+// arrondie coin inferieur haut gauche TORE
+	for(t=180; t<=270; t+=10) {
+		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+		for(i=0; i<=90; i+=10) {
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
+			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
+			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
+		}
+		tiny3d_End();
+	}
+	
+// surface inferieur
+	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos(x+r2    - (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos(x+wb-r2 + (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	for(t=0; t<=90; t+=10) {
+		tiny3d_VertexPos( x+r1 - (r1-r)*cos(t*PI/180)   , y+hb-r1 + (r1-r)*sin(t*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+		tiny3d_VertexPos( x+wb-r1 + (r1-r)*cos(t*PI/180), y+hb-r1 + (r1-r)*sin((t)*PI/180), z+e );
+		tiny3d_Normal(0, 0, 1);
+	}
+	tiny3d_End();
+
+}
+
+//***********
+// PS1 BOX
+//***********
+
 #define PS1_e 15.0f
 
 void Draw_PS1ICON0()
 {	
 	float wb = 140; // largeur de la boite
-	float e=PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=PS1_e+0.01; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float w=126; // largeur de la jaquette de face
 	float l=wb-w; // largeur de la marge noire à gauche
 	
-	Draw_ICON03D(w, e, l);
+	Draw_ONFRONT3D_ICON0(w, e, l);
 }
 
 void Draw_PS1COVER_FRONT()
@@ -36382,16 +36594,15 @@ void Draw_PS1GAMECASE_3D()
 		tiny3d_VertexTexture(0, 1.0f); 
 		
 		// COIN SUPERIEUR
-		for(t=190; t<=270 ; t+=10) {
+		for(t=-10; t>=-90 ; t-=10) {
 			SW += (PI*r) * 10/180;
 			
-			tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+hb-r , z+r + r*sin(t*PI/180));
-			tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+			tiny3d_VertexPos(x+r - r*cos(t*PI/180), y+hb-r , z+r + r*sin(t*PI/180));
+			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
 			tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-			tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+r , z+r + r*sin(t*PI/180));
-			tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
+			tiny3d_VertexPos(x+r - r*cos(t*PI/180), y+r , z+r + r*sin(t*PI/180));
+			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
 			tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-			
 		}
 		
 		
@@ -36406,542 +36617,6 @@ void Draw_PS1GAMECASE_3D()
 		
 		tiny3d_End();
 	}
-}
-
-void Draw_PSPICON0()
-{	
-	float w=92; // largeur de la jaquette de face
-	float e=15.0+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-	
-	Draw_ICON03D(w, e, r);
-}
-
-void Draw_PSPCOVER()
-{
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
-	
-	x-=0.1; // pour avoir la jaquette autour de la boite
-
-	float w=92; // largeur de la jaquette de face
-	float h=158; // hauteur de la jaquettte de face
-	float e=15.0+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-
-	float l_tot = w-r + PI*r/2 ;
-	
-	y=-h/2;
-	x=-w/2;
-	z=-e/2;
-	
-	float SW=0; // longueur de la texture
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	
-	tiny3d_VertexPos(x, y+h, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture(0, 0.0f);
-	tiny3d_VertexPos(x, y, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture(0, 1.0f); 
-	
-	// COIN SUPERIEUR
-	int t;
-	for(t=190; t<=270 ; t+=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y+h , z+r + r*sin(t*PI/180));
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		tiny3d_VertexPos(x+r + r*cos(t*PI/180), y , z+r + r*sin(t*PI/180));
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += w-r;
-	tiny3d_VertexPos(x+w, y+h, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	
-	tiny3d_VertexPos(x+w, y, z);
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	tiny3d_End();
-}
-
-void Draw_PSPCOVER_3D()
-{
-	// la boite est de face
-	
-	//float l;
-	
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
-	
-	x-=0.1; // pour avoir la jaquette autour de la boite
-
-	float w=92; // largeur de la jaquette de face
-	float h=158; // hauteur de la jaquettte de face
-	float e=14+0.1; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float r=3; // rayon des arrondies
-
-	float l_tot = w*2-2*r + e-2*r + PI*r;
-	
-	float SW=0; // longueur de la texture
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		
-	tiny3d_VertexPos(x+w/2, y+h/2 , z+e/2);  // inferieur / haut / droite  [1]
-	tiny3d_Normal(0, 0, 1);
-	tiny3d_VertexTexture(0.0f, 0.0f);
-	
-	tiny3d_VertexPos(x+w/2, y-h/2 , z+e/2); // inferieur / bas / droite  [2]
-	tiny3d_Normal(0, 0, 1);
-	tiny3d_VertexTexture(0.0f, 1.0f);
-	
-	tiny3d_VertexPos(x-w/2 + r, y+h/2	, z+e/2); // inferieur / haut / gauche [3]
-	tiny3d_Normal(0, 0, 1);
-	SW += w-r;
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	 
-	tiny3d_VertexPos(x-w/2 + r	, y-h/2	, z+e/2); // inferieur / bas / gauche [4]
-	tiny3d_Normal(0, 0, 1);
-	
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	// COIN INFERIEUR
-	int t;
-	for(t=80; t>=0 ; t-=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z+e/2-r + r*sin(t*PI/180));  //  [5]
-		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		
-		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y-h/2 , z+e/2-r + r*sin(t*PI/180));  //  [6]
-		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += e-2*r;
-	tiny3d_VertexPos(x-w/2, y+h/2, z-e/2+r);										// [7]
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	tiny3d_VertexPos(x-w/2, y-h/2, z-e/2+r);										// [8]
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f); 
-	
-	// COIN SUPERIEUR
-	for(t=190; t<=270 ; t+=10) {
-		SW += (PI*r) * 10/180;
-		
-		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] 
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-		tiny3d_VertexPos(x-w/2+r + r*cos(t*PI/180), y-h/2 , z-e/2+r + r*sin(t*PI/180));	// [10] 
-		tiny3d_Normal(0, cos(t*PI/180), sin(t*PI/180));
-		tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-		
-	}
-	
-	SW += w-r;
-	tiny3d_VertexPos(x+w/2, y+h/2, z-e/2); // superieur / haut / droite 		// [11] 
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 0.0f);
-	
-	tiny3d_VertexPos(x+w/2, y-h/2, z-e/2); // superieur / bas / droite 		// [12]
-	tiny3d_Normal(0, 0, -1);
-	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
-	tiny3d_End();
-	
-}
-
-void Draw_PSPGAMECASE_3D()
-{
-
-	//float l;
-	int t,i;
-	
-	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
-	
-	float w=92; // largeur de la jaquette de face
-	float h=158; // hauteur de la jaquettte de face
-	float e=14; // epaisseur de la boite 
-	float r=3; // rayon des arrondies
-	
-	float wb = 99; // largeur de la boite
-	float hb = 168; // hauteur de la boite
-	//float l1 = 15; // hauteur de l'en-tete de la boite 
-	float r1 = 5; // rayon du haut
-	float l2 = 5; // distance entre le coté de la boite et la jaquette
-	float r2 = 5; // rayon du bas
-	
-	float l3 = 36; // distance entre le bas et l'ouverture lateral
-	
-	x = -w/2;
-	y = -h/2-l2;
-	z = -e/2;
-	
-// surface superieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos( x+r1 - (r1-r)*sin(t*PI/180)   , y+hb-r1 + (r1-r)*cos(t*PI/180), z );
-		tiny3d_Normal(0, 0, -1);
-		tiny3d_VertexPos( x+wb-r1 + (r1-r)*sin(t*PI/180),y+hb-r1  + (r1-r)*cos((t)*PI/180), z );
-		tiny3d_Normal(0, 0, -1);
-	}
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r2    - (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
-		tiny3d_Normal(0, 0, -1);
-		tiny3d_VertexPos(x+wb-r2 + (r2-r)*cos(t*PI/180), y+r2 - (r2-r)*sin(t*PI/180), z );
-		tiny3d_Normal(0, 0, -1);
-	}
-	tiny3d_End();
-	
-	
-// arrondie superieur bas
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
-		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(0, -sin(t*PI/180), -cos(t*PI/180));
-	}
-	tiny3d_End();
-
-// arrondie coin superieur bas droit TORE
-	for(t=270; t<=350; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=270; i<=360; i+=10) {
-			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-	
-// arrondie droit superieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
-		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(sin(t*PI/180), 0, -cos(t*PI/180));
-	}
-	tiny3d_End();
-	
-// arrondie coin superieur haut droite TORE
-	for(t=0; t<=80; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=270; i<=360; i+=10) {
-			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-
-// arrondie haut superieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
-		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(0, sin(t*PI/180), -cos(t*PI/180));
-	}
-	tiny3d_End();
-
-// arrondie coin superieur haut gauche TORE
-	for(t=90; t<=170; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=270; i<=360; i+=10) {
-			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-	
-// arrondie gauche superieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
-		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+r - r*cos(t*PI/180) );
-		tiny3d_Normal(-sin(t*PI/180), 0, -cos(t*PI/180));
-	}
-	tiny3d_End();
-	
-// arrondie coin superieur haut gauche TORE
-	for(t=180; t<=260; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=270; i<=360; i+=10) {
-			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-
-// surface du bas
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexPos(x+wb-r2, y, z+r);
-	tiny3d_Normal(0, -1, 0);
-	tiny3d_VertexPos(x+wb-r2, y, z+e-r);
-	tiny3d_Normal(0, -1, 0);
-	tiny3d_VertexPos(x+r2, y, z+r);
-	tiny3d_Normal(0, -1, 0);
-	tiny3d_VertexPos(x+r2, y, z+e-r);
-	tiny3d_Normal(0, -1, 0);
-	tiny3d_End();
-	
-// coin bas droite
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
-		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
-		tiny3d_VertexPos(x+wb-r2 + r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
-		tiny3d_Normal(sin(t*PI/180), -cos(t*PI/180), 0);
-	}
-	tiny3d_End();
-	
-// surfaces de droite
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexPos(x+wb, y+r2, z+r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb, y+r2, z+e-r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb, y+l3, z+r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb, y+l3, z+e-r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
-		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
-		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
-		tiny3d_Normal(sin(t*PI/180), cos(t*PI/180), 0);
-	}
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexPos(x+wb-5, y+l3+5, z+r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb-5, y+l3+5, z+e-r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb-5, y+hb-l3-5, z+e-r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+r );
-		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
-		tiny3d_VertexPos(x+wb - 5*cos(t*PI/180), y+hb-l3-5 + 5*sin(t*PI/180) , z+e-r );
-		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
-	}
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexPos(x+wb, y+hb-l3, z+r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb, y+hb-l3, z+e-r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb, y+hb-r1, z+r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_VertexPos(x+wb, y+hb-r1, z+e-r);
-	tiny3d_Normal(1, 0, 0);
-	tiny3d_End();
-
-
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+r );
-		tiny3d_Normal(0, 0, 1);
-		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+r );
-		tiny3d_Normal(0, 0, 1);
-	}
-	tiny3d_End();
-	
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+l3+5 - 5*cos(t*PI/180) , z+e-r );
-		tiny3d_Normal(0, 0, -1);
-		tiny3d_VertexPos(x+wb - 5*sin(t*PI/180), y+hb-l3-5 + 5*cos(t*PI/180) , z+e-r );
-		tiny3d_Normal(0, 0, -1);
-	}
-	tiny3d_End();
-	
-// coin haut droite
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+r );
-		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
-		tiny3d_VertexPos(x+wb-r1 + r1*cos(t*PI/180), y+hb-r1 + r1*sin(t*PI/180) , z+e-r );
-		tiny3d_Normal(cos(t*PI/180), sin(t*PI/180), 0);
-	}
-	tiny3d_End();
-	
-// surface du haut
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexPos(x+r1, y+hb, z+r);
-	tiny3d_Normal(0, 1, 0);
-	tiny3d_VertexPos(x+r1, y+hb, z+e-r);
-	tiny3d_Normal(0, 1, 0);
-	tiny3d_VertexPos(x+wb-r1, y+hb, z+r);
-	tiny3d_Normal(0, 1, 0);
-	tiny3d_VertexPos(x+wb-r1, y+hb, z+e-r);
-	tiny3d_Normal(0, 1, 0);
-	tiny3d_End();
-	
-// coin haut gauche
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+r );
-		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
-		tiny3d_VertexPos(x+r1 - r1*sin(t*PI/180), y+hb-r1 + r1*cos(t*PI/180) , z+e-r );
-		tiny3d_Normal(-sin(t*PI/180), cos(t*PI/180), 0);
-	}
-	tiny3d_End();
-	
-// surface de gauche
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	tiny3d_VertexPos(x, y+hb-r1, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexPos(x, y+hb-r1, z+e-r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexPos(x, y+r2, z+r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_VertexPos(x, y+r2, z+e-r);
-	tiny3d_Normal(-1, 0, 0);
-	tiny3d_End();
-	
-	
-// coin bas gauche
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+r );
-		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
-		tiny3d_VertexPos(x+r2 - r2*sin(t*PI/180), y+r2 - r2*cos(t*PI/180) , z+e-r );
-		tiny3d_Normal(-sin(t*PI/180), -cos(t*PI/180), 0);
-	}
-	tiny3d_End();
-
-// 	arrondie inferieur bas
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r2   , y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
-		tiny3d_VertexPos(x+wb-r2, y+r - r*sin(t*PI/180) , z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(0, -sin(t*PI/180), cos(t*PI/180));
-	}
-	tiny3d_End();
-
-// arrondie coin inferieur bas droit TORE
-	for(t=270; t<=350; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=0; i<=90; i+=10) {
-			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+wb-r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-	
-// arrondie droit inferieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+r2     , z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
-		tiny3d_VertexPos(x+wb-r + r*sin(t*PI/180), y+hb-r1  , z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(sin(t*PI/180), 0, cos(t*PI/180));
-	}
-	tiny3d_End();
-	
-// arrondie coin inferieur haut droite TORE
-	for(t=0; t<=80; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=0; i<=90; i+=10) {
-			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+wb-r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-
-// arrondie haut inferieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+wb-r1 , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
-		tiny3d_VertexPos(x+r1    , y+hb-r + r*sin(t*PI/180), z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(0, sin(t*PI/180), cos(t*PI/180));
-	}
-	tiny3d_End();
-	
-// arrondie coin inferieur haut gauche TORE
-	for(t=90; t<=170; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=0; i<=90; i+=10) {
-			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+r1 + ((r1-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+hb-r1 + ((r1-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-
-// arrondie gauche inferieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+hb-r1 , z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
-		tiny3d_VertexPos(x+r - r*sin(t*PI/180), y+r2    , z+e-r + r*cos(t*PI/180) );
-		tiny3d_Normal(-sin(t*PI/180), 0, cos(t*PI/180));
-	}
-	tiny3d_End();
-	
-// arrondie coin inferieur haut gauche TORE
-	for(t=180; t<=270; t+=10) {
-		tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-		for(i=0; i<=90; i+=10) {
-			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos(t*PI/180)      , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin(t*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos(t*PI/180), cos(i*PI/180)*sin(t*PI/180), sin(i*PI/180));
-			tiny3d_VertexPos(x+r2 + ((r2-r)+r*cos(i*PI/180))*cos((t+10)*PI/180) , y+r2 + ((r2-r)+r*cos(i*PI/180))*sin((t+10)*PI/180) , z+e-r +  r*sin(i*PI/180) );
-			tiny3d_Normal(cos(i*PI/180)*cos((t+10)*PI/180), cos(i*PI/180)*sin((t+10)*PI/180), sin(i*PI/180));
-		}
-		tiny3d_End();
-	}
-	
-// surface inferieur
-	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos(x+r2    - (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
-		tiny3d_Normal(0, 0, 1);
-		tiny3d_VertexPos(x+wb-r2 + (r2-r)*sin(t*PI/180), y+r2 - (r2-r)*cos(t*PI/180), z+e );
-		tiny3d_Normal(0, 0, 1);
-	}
-	for(t=0; t<=90; t+=10) {
-		tiny3d_VertexPos( x+r1 - (r1-r)*cos(t*PI/180)   , y+hb-r1 + (r1-r)*sin(t*PI/180), z+e );
-		tiny3d_Normal(0, 0, 1);
-		tiny3d_VertexPos( x+wb-r1 + (r1-r)*cos(t*PI/180), y+hb-r1 + (r1-r)*sin((t)*PI/180), z+e );
-		tiny3d_Normal(0, 0, 1);
-	}
-	tiny3d_End();
-
 }
 
 void update_3DFLOW()
@@ -37196,12 +36871,7 @@ void Draw_FLOW_3D()
 					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
 					
 					// Object
-					if(PICType == GAMEPIC_COVER3D)
-						Draw_PS3COVER_3D();
-					else if(PICType == GAMEPIC_COVER2D)
-						Draw_PS3COVER();
-					else if(PICType == GAMEPIC_ICON0) 
-						Draw_PS3ICON0();
+					Draw_PS3PIC_3D(PICType);
 				}
 			}		
 		
@@ -37228,12 +36898,7 @@ void Draw_FLOW_3D()
 					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
 					
 					// Object
-					if(PICType == GAMEPIC_COVER3D)
-						Draw_PS2COVER_3D();
-					else if(PICType == GAMEPIC_COVER2D)
-						Draw_PS2COVER();
-					else if(PICType == GAMEPIC_ICON0)
-						Draw_PS2ICON0();
+					Draw_PS2PIC_3D(PICType);
 				}
 			}
 		} else
@@ -37306,12 +36971,7 @@ void Draw_FLOW_3D()
 					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
 					
 					// Object
-					if(PICType == GAMEPIC_COVER3D)
-						Draw_PSPCOVER_3D();
-					else if(PICType == GAMEPIC_COVER2D)
-						Draw_PSPCOVER();
-					else if(PICType == GAMEPIC_ICON0)
-						Draw_PSPICON0();	
+					Draw_PSPPIC_3D(PICType);
 				}
 			}
 		}
