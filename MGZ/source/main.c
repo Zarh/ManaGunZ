@@ -36662,7 +36662,7 @@ void update_3DFLOW()
 	
 	TranslateTo(&ITEM_moveX[position], 0.0);
 	TranslateTo(&ITEM_moveY[position], 0.0);
-	if(FLOW_Zoom) TranslateTo(&ITEM_moveZ[position], 300.0);
+	if(FLOW_Zoom) TranslateTo(&ITEM_moveZ[position], 400.0);
 	else TranslateTo(&ITEM_moveZ[position], 500.0);
 	
 	RotateTo(&ITEM_angleX[position], 0.0);
@@ -36852,9 +36852,9 @@ void Draw_FLOW_3D()
 
 			// material
 			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
-			tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f); // r,g,b,a
-			tiny3d_DiffuseMaterial( 0.4f, 0.4f, 0.4f, 1.0f); // r,g,b,enable
-			tiny3d_SpecularMaterial(0.5f, 0.5f, 0.5f, 5.0f); // r,g,b,shininess
+			tiny3d_AmbientMaterial( 0.2f, 0.2f, 0.2f, 1.0f); // r,g,b,a
+			tiny3d_DiffuseMaterial( 0.2f, 0.2f, 0.2f, 1.0f); // r,g,b,enable
+			tiny3d_SpecularMaterial(0.2f, 0.2f, 0.2f, 2.0f); // r,g,b,shininess
 			
 			// Object
 			Draw_PS3GAMECASE_3D();
@@ -36952,9 +36952,9 @@ void Draw_FLOW_3D()
 		if( list_game_platform[i] == ISO_PSP || list_game_platform[i] == JB_PSP ) {
 			// material
 			tiny3d_EmissiveMaterial(0.0f, 0.0f, 0.0f, 0.0f); // r,g,b,unused
-			tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f); // r,g,b,a
-			tiny3d_DiffuseMaterial( 0.4f, 0.4f, 0.4f, 1.0f); // r,g,b,enable
-			tiny3d_SpecularMaterial(0.5f, 0.5f, 0.5f, 5.0f); // r,g,b,shininess
+			tiny3d_AmbientMaterial( 0.2f, 0.2f, 0.2f, 1.0f); // r,g,b,a
+			tiny3d_DiffuseMaterial( 0.2f, 0.2f, 0.2f, 1.0f); // r,g,b,enable
+			tiny3d_SpecularMaterial(0.2f, 0.2f, 0.2f, 2.0f); // r,g,b,shininess
 			
 			// Object
 			Draw_PSPGAMECASE_3D();
