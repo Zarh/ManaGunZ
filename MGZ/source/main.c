@@ -35234,16 +35234,16 @@ void Draw_PS3GAMECASE_3D()
 	if(PICTURE_offset[BR_LOGO]) {
 		tiny3d_SetPolygon(TINY3D_QUADS);
 		tiny3d_VertexPos(x+wb-r1-20, y+hb-r   , z);
-		tiny3d_Normal(0, 0, 1);
+		tiny3d_Normal(0, 0, -1);
 		tiny3d_VertexTexture(0.0f, 0.0f);
 		tiny3d_VertexPos(x+wb-r1   , y+hb-r   , z);
-		tiny3d_Normal(0, 0, 1);
+		tiny3d_Normal(0, 0, -1);
 		tiny3d_VertexTexture(1.0f, 0.0f);
 		tiny3d_VertexPos(x+wb-r1   , y+hb-r-10, z);
-		tiny3d_Normal(0, 0, 1);
+		tiny3d_Normal(0, 0, -1);
 		tiny3d_VertexTexture(1.0f, 1.0f);
 		tiny3d_VertexPos(x+wb-r1-20, y+hb-r-10, z);
-		tiny3d_Normal(0, 0, 1);
+		tiny3d_Normal(0, 0, -1);
 		tiny3d_VertexTexture(0.0f, 1.0f);
 		tiny3d_End();
 	}
