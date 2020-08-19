@@ -34797,9 +34797,9 @@ void Draw_COVER3D(u8 type, float w, float h, float e, float r, float x1, float y
 		}
 			
 		// COIN SUPERIEUR (1)
-		for(t=0; t>=-45 ; t-=7.5) {
+		for(t=0; t>-45 ; t-=7.5) {
 			if(t==0) SW += e-2*r;
-			else SW += (PI*r) * 10/180;
+			else SW += (PI*r) * 7.5/180;
 			
 			tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [7] t=0 
 			tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
@@ -34810,9 +34810,14 @@ void Draw_COVER3D(u8 type, float w, float h, float e, float r, float x1, float y
 		}
 	}
 	
+	
 	// COIN SUPERIEUR (2)
 	for(t=-45; t>=-90 ; t-=7.5) {
-		if(t==-45 && GAMEPIC_COVER3D) SW += (PI*r) * 10/180;
+		if(t==-45) {
+			if(GAMEPIC_COVER3D) SW += (PI*r) * 7.5/180;
+		} else {
+			SW += (PI*r) * 7.5/180;
+		}
 		
 		tiny3d_VertexPos(x-w/2+r - r*cos(t*PI/180), y+h/2 , z-e/2+r + r*sin(t*PI/180));	// [9] t=-90
 		tiny3d_Normal(-cos(t*PI/180), 0, sin(t*PI/180));
@@ -34830,7 +34835,8 @@ void Draw_COVER3D(u8 type, float w, float h, float e, float r, float x1, float y
 	tiny3d_VertexPos(x+w/2, y-h/2, z-e/2); // superieur / bas / droite 		// [12]
 	tiny3d_Normal(0, 0, -1);
 	tiny3d_VertexTexture((float) SW / l_tot, 1.0f);
-	
+
+
 	tiny3d_End();
 }
 
@@ -36782,6 +36788,15 @@ here:
 						  
 }
 
+
+void materials_cover()
+{
+	tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
+	tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
+	tiny3d_DiffuseMaterial( 0.6f, 0.6f, 0.6f, 1.0f);
+	tiny3d_SpecularMaterial(0.9f, 0.9f, 0.9f, 1.0f);
+}
+
 void Draw_FLOW_3D()
 {
 	if(position == -1) return;
@@ -36865,10 +36880,7 @@ void Draw_FLOW_3D()
 					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 					
 					// material
-					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					materials_cover();
 					
 					// Object
 					Draw_PS3PIC_3D(PICType);
@@ -36892,10 +36904,7 @@ void Draw_FLOW_3D()
 					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 					
 					// material
-					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					materials_cover();
 					
 					// Object
 					Draw_PS2PIC_3D(PICType);
@@ -36922,10 +36931,7 @@ void Draw_FLOW_3D()
 					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 				
 					// material
-					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					materials_cover();
 					
 					// Object
 					if(PICType == GAMEPIC_ICON0)
@@ -36939,10 +36945,7 @@ void Draw_FLOW_3D()
 					tiny3d_SetTexture(0, PS1BACK_offset[TextSlot], PS1BACK[TextSlot].width, PS1BACK[TextSlot].height, PS1BACK[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 				
 					// material
-					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					materials_cover();
 					
 					// Object
 					Draw_PS1COVER_BACK();
@@ -36965,10 +36968,7 @@ void Draw_FLOW_3D()
 					tiny3d_SetTexture(0, GAMEPIC_offset[TextSlot], GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height, GAMEPIC[TextSlot].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 					
 					// material
-					tiny3d_EmissiveMaterial(0.1f, 0.1f, 0.1f, 0.00f);
-					tiny3d_AmbientMaterial( 0.3f, 0.3f, 0.3f, 1.0f);
-					tiny3d_DiffuseMaterial( 0.5f, 0.5f, 0.5f, 1.0f);
-					tiny3d_SpecularMaterial(1.0f, 1.0f, 1.0f, 13.0f);
+					materials_cover();
 					
 					// Object
 					Draw_PSPPIC_3D(PICType);
