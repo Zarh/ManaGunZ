@@ -1,6 +1,6 @@
 //fflib.c
 
-#include "types.h"
+#include <ppu-types.h>
 #include "storage.h"
 #include <malloc.h>
 #include <sys/file.h>
@@ -311,10 +311,11 @@ int fflib_file_to_sectors(const char *path, uint32_t *sec_out, uint32_t *size_ou
     nsect = size_out;
     pidx = 0;   //current part index reset
     max_parts = max;
-    FATFS fs;     /* Ponter to the filesystem object */
-    int ret = f_mount (&fs, path, 0);                    /* Mount the default drive */
-    if (ret != FR_OK)
-        return -1;
+    
+    //FATFS fs;     /* Ponter to the filesystem object */
+    //int ret = f_mount (&fs, path, 0);                    /* Mount the default drive */
+    //if (ret != FR_OK) return -1;
+    
     FRESULT fr;         /* FatFs function common result code */
     UINT bw;
     FIL fdst;           /* File objects */
@@ -341,7 +342,7 @@ int fflib_file_to_sectors(const char *path, uint32_t *sec_out, uint32_t *size_ou
     }
     f_close(&fdst);
     //
-    f_mount (NULL, path, 0);                    /* UnMount the default drive */
+    //f_mount (NULL, path, 0);                    /* UnMount the default drive */
     //
     return pidx;
 }

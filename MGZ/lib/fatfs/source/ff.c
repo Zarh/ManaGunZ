@@ -25,6 +25,10 @@
 //extern void NPrintf(const char* fmt, ...);
 #define NPrintf(...)
 
+#if PS3_GEKKO
+#include <stdio.h> //sscanf
+#endif
+
 /*--------------------------------------------------------------------------
 
    Module Private Definitions
@@ -457,7 +461,8 @@ typedef struct {
 /*--------------------------------*/
 
 #if FF_VOLUMES < 1 || FF_VOLUMES > 10
-#error Wrong FF_VOLUMES setting
+#define FF_STR_VOLUME_ID 0
+//#error Wrong FF_VOLUMES setting
 #endif
 static FATFS* FatFs[FF_VOLUMES];	/* Pointer to the filesystem objects (logical drives) */
 static WORD Fsid;					/* Filesystem mount ID */
@@ -3164,9 +3169,9 @@ static int get_ldnumber (	/* Returns logical drive number (-1:invalid drive numb
 
 	if (tc == ':') {	/* DOS/Windows style volume ID? */
 		i = FF_VOLUMES;
-		if (IsDigit(*tp) && tp + 2 == tt) {	/* Is there a numeric volume ID + colon? */
-			i = (int)*tp - '0';	/* Get the LD number */
-		}
+		if(IsDigit(tp[0])) sscanf(tp, "%d", &i);
+		else sscanf(tp, "%*[^0123456789]%d", &i);
+		
 #if FF_STR_VOLUME_ID == 1	/* Arbitrary string is enabled */
 		else {
 			i = 0;

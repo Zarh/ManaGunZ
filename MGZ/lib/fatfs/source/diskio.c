@@ -18,17 +18,15 @@
 /* PS3 I/O support */
 #define SYSIO_RETRY	10
 
-#include "types.h"
-#include "storage.h"
+#include <ppu-types.h>
 #include <malloc.h>
 #include <sys/file.h>
 #include <lv2/mutex.h> 
 #include <sys/errno.h>
+#include "storage.h"
 
 #include "fflib.h"
 
-//extern void NPrintf(const char* fmt, ...);
-#define NPrintf(...)
 # if 0
 DWORD get_fattime (void)
 {
@@ -39,8 +37,6 @@ static DSTATUS fatfs_dev_init(int idx)
 {
     int rr;
 	static device_info_t disc_info;
-	disc_info.unknown03 = 0x12345678; // hack for Iris Manager Disc Less
-	disc_info.sector_size = 0;
 	u64 id = fflib_id_get (idx);
 	if (id == 0)
 		return RES_PARERR;
@@ -104,7 +100,6 @@ DRESULT disk_read (
 	int fd = fflib_fd_get (pdrv);
 	int ss = fflib_ss_get (pdrv);
     int flag = ((int) (s64) buff) & 31;
-	NPrintf ("disk_read d %d s %d c %d, df %d ss %d\n", pdrv, sector, count, fd, ss);
 
     if (fd < 0 || !buff || ss < 0)
 		return RES_PARERR;
@@ -119,22 +114,25 @@ DRESULT disk_read (
     if(!my_buff)
 		return RES_ERROR;
 
-    uint32_t sectors_read;
+	u64 storage_flag = 0;
+    u32 sectors_read;
     int r, k;
 	res = RES_OK;
 	for (k = 0; k < SYSIO_RETRY; k++)
 	{
-		r = sys_storage_read (fd, (uint32_t) sector, (uint32_t) count, 
-			(uint8_t *) my_buff, &sectors_read); 
-
-		if(r == 0x80010002 || r == 0)
+		r = sys_storage_read (fd, sector, count, (u8 *) my_buff, &sectors_read, storage_flag); 
+		if (r == 0x80010002 ) {
+			if(storage_flag == 0x22) break;
+			if(storage_flag == 1) storage_flag = 0x22;
+			if(storage_flag == 0) storage_flag = 1;
+		}
+		if(r == 0)
 		{
 			break;
 		}
 
 		usleep (62500);
 	}
-	NPrintf ("disk_read r %d sr %d, d %d s %d c %d, df %d ss %d\n", r, sectors_read, pdrv, sector, count, fd, ss);
 	if(r == 0x80010002) //sys error
 	{
 		if(flag) 
@@ -142,7 +140,6 @@ DRESULT disk_read (
 			free(my_buff);
 		}
 		//drive unplugged? detach?
-		NPrintf ("!disk_read RES_NOTRDY res %d, d %d s %d c %d, df %d ss %d\n", r, pdrv, sector, count, fd, ss);
 		return RES_NOTRDY;
 	}
 	
@@ -158,7 +155,6 @@ DRESULT disk_read (
 
     if(sectors_read != count) 
 	{
-		NPrintf ("!disk_read RES_ERROR res %d, d %d s %d c %d, df %d ss %d\n", r, pdrv, sector, count, fd, ss);
 		return RES_ERROR;
 	}
 
@@ -196,7 +192,7 @@ DRESULT disk_write (
 	else
 		my_buff = (void *) buff;
 
-    uint32_t sectors_read;
+    uint32_t sectors_wrote;
 
     if (!my_buff)
 	{
@@ -205,14 +201,21 @@ DRESULT disk_write (
     if (flag)
 		memcpy (my_buff, buff, ss * count);
 
+	u64 storage_flag = 0;
+	
     int r, k;
 	res = RES_OK;
 	for (k = 0; k < SYSIO_RETRY; k++)
 	{
-		r = sys_storage_write (fd, (uint32_t) sector, (uint32_t) count, 
-			(uint8_t *) my_buff, &sectors_read);
-
-		if (r == 0x80010002 || r ==0)
+		r = sys_storage_write (fd, (uint32_t) sector, (uint32_t) count, (uint8_t *) my_buff, &sectors_wrote, storage_flag);
+		
+		if (r == 0x80010002 ) {
+			if(storage_flag == 0x22) break;
+			if(storage_flag == 1) storage_flag = 0x22;
+			if(storage_flag == 0) storage_flag = 1;
+		}
+		
+		if (r ==0)
 		{
 			break;
 		}
@@ -232,7 +235,7 @@ DRESULT disk_write (
 		return RES_ERROR;
 	}
 
-    if (sectors_read != count)
+    if (sectors_wrote != count)
 	{
 		return RES_ERROR;
 	}
@@ -270,13 +273,13 @@ DRESULT disk_ioctl (
 		case GET_SECTOR_COUNT:	/* Get number of sectors on the drive */
 		{
 			static device_info_t disc_info;
-			disc_info.total_sectors = 0;
+			disc_info.sector_count = 0;
 			int rr = sys_storage_get_device_info (id, &disc_info);
 			if (rr != 0)
 			{
 				return RES_ERROR;
 			}
-			*(LBA_t*)buff = disc_info.total_sectors;
+			*(LBA_t*)buff = (LBA_t) disc_info.sector_count;
 			res = RES_OK;
 		}
 			break;

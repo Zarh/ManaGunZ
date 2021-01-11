@@ -76,11 +76,15 @@ export INCLUDES	=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
+	
+move:
+	@mv -f libfatfs.a  ../libfatfs.a
+	
 shader:
 	@echo "[VPCOMP] $(notdir $<)"
 	@vpcomp shader/vshader_text_normal.vcg shader/vshader_text_normal.rvp
 	@raw2h.exe  shader/vshader_text_normal.rvp source/vshader_text_normal.vcg.h source/vshader_text_normal.vcg.S vshader_text_normal_bin
+
 install: $(BUILD)
 	@echo Copying...
 	@cp include/*.h $(PORTLIBS)/include

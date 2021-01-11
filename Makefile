@@ -185,6 +185,7 @@ clean:
 	
 #---------------------------------------------------------------------------------
 update:
+	cd OffsetFinder; ./OffsetFinder.exe extract
 	cd OffsetFinder; ./OffsetFinder.exe	search
 	cd OffsetFinder; ./OffsetFinder.exe	move
 	@$(MAKE) -C payloads/SKY --no-print-directory

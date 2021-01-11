@@ -20,6 +20,7 @@ extern u64 HTAB_OFFSET;
 extern u64 MMAP_OFFSET1;
 extern u64 MMAP_OFFSET2;
 extern u64 SPE_OFFSET;
+extern size_t ERK_DUMPER_SIZE;
 
 void make_patches(void) {
 	
@@ -58,6 +59,12 @@ int dump_eid_root_key(const char* file_path) {
 	payload_installed = 0;
 
 	print_head("Dumping the eid_root_key");
+	
+	if( ERK_DUMPER_SIZE == 0 ) {
+		print_load("Error : firmware not supported yet.");
+		ret = FAILED;
+		goto error;
+	}
 	
 	print_load("* install_new_poke");
 	if (install_new_poke() == FAILED) {

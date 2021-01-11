@@ -1,8 +1,9 @@
 //fflib.h
 
-#include "types.h"
+#include <ppu-types.h>
+#include "ffconf.h"
 
-#define MAXFDS  128
+#define MAXFDS  FF_VOLUMES
 
 //initialize the fatfs managed lib
 int fflib_init();
@@ -26,6 +27,7 @@ int fflib_detach(int idx);
 u64 fflib_id_get(int idx);
 
 //get file descriptor associated to a drive number/idx
+//fd used with sys_storage_open, sys_storage_read...etc.
 int fflib_fd_get(int idx);
 
 //get sector size associated to a drive number/idx

@@ -62,16 +62,22 @@
 #include <webp/decode.h>
 #include <tiffio.h>
 
+#include "ntfs.h"
+#include "ff.h"
+#include "fflib.h"
+#include "exFAT.h"
+#include "mgz_io.h"
+
 #include "tga_reader.h"
 #include "dds_reader.h"
 #include "makepng.h"
 
 #include "cobra.h"
-#include "ntfs.h"
 #include "ps3mapi.h"
 
 #include "syscall8.h"
 #include "fw.h"
+#include "fw_unk.h"
 #include "ps2vers.h"
 #include "pad.h"
 #include "zlib.h"
@@ -138,6 +144,7 @@
 #define SNAKE		0 // cobra else mamba
 #define IRIS		1
 #define MM			2
+#define NO_PAYLOAD	3
 
 #define _NOT_EXIST		0
 #define	_EXIST			1
@@ -246,6 +253,8 @@ char *PictureViewerSupport[] = {
 
 #define FREE(x) if(x!=NULL) {free(x);x=NULL;}
 #define FCLOSE(x) if(x) {fclose(x);x=NULL;}
+#define print_debug(x) if( DEBUG ) print_load(x)
+//#define print_debug(x) print_load(x); sleep(1);
 
 #define SCENE_FILEMANAGER			0
 #define SCENE_PS3_MENU				1
@@ -347,7 +356,6 @@ u8 eid_root_key[EID_ROOT_KEY_SIZE];
 u64 TOC;
 int firmware = 0;
 u64 SYSCALL_TABLE;
-u64 HV_START_OFFSET;
 u64 HV_START_OFFSET;
 u64 HTAB_OFFSET;
 u64 MMAP_OFFSET1;
@@ -1982,6 +1990,8 @@ static char *STR_SYMLINK_TARGET=NULL;
 #define STR_SYMLINK_TARGET_DEFAULT			"SymLink target"
 static char *STR_LOAD_MAMBA=NULL;
 #define STR_LOAD_MAMBA_DEFAULT				"Load mamba"
+static char *STR_CONVERT_TO_PNG=NULL;
+#define STR_CONVERT_TO_PNG_DEFAULT			"Convert to PNG"
 
 //***********************************************************
 // Functions
@@ -2095,141 +2105,141 @@ func input_MENU = &EmptyFunc;
 //***********************************************************
 // Ugly SpeedFix : Original standard I/O function are slow
 //***********************************************************
-
-#define FILE int
-
-int FAKE_truncate(const char *path, off_t len)
-{
-    int ret;
-    int fd;
-
-    fd = ret = ps3ntfs_open(path, O_RDWR, 0666);
-
-    if(ret < 0) return ret;
-
-    ret = ps3ntfs_ftruncate(fd, len);
-	
-    ps3ntfs_close(fd);
-	
-    return ret;
-}
-
-FILE* FAKE_fopen(char *filepath, const char *mode)
-{
-	int oflags;
-	int m, o;
-	switch (*mode++) {
-		case 'r':	/* open for reading */
-			m = O_RDONLY;
-			o = 0;
-			break;
-		case 'w':	/* open for writing */
-			m = O_WRONLY;
-			o = O_CREAT | O_TRUNC;
-			break;
-		case 'a':	/* open for appending */
-			m = O_WRONLY;
-			o = O_CREAT | O_APPEND;
-			break;
-		default:	/* illegal mode */
-			return (0);
-		}
-		/* [rwa]\+ or [rwa]b\+ means read and write */
-		if (*mode == '+' || (*mode == 'b' && mode[1] == '+')) {
-			m = O_RDWR;
-	}
-	
-	oflags = m | o;
-	
-	int *f = malloc(sizeof(int *));
-	
-	*f = ps3ntfs_open(filepath, oflags, 0777);
-	
-	if(*f<0) {
-		SetFilePerms(filepath);
-		*f = ps3ntfs_open(filepath, oflags, 0777);
-		if(*f<0) {free(f); return NULL;}
-	}
-	
-	return f;
-}
-
-s64 FAKE_fseek(FILE* fp, s64 pos, int dir)
-{
-	return ps3ntfs_seek64(*fp, (s64) pos, dir);
-}
-
-size_t FAKE_fread(void *ptr, size_t size, size_t count, FILE* fp)
-{
-	return ps3ntfs_read(*fp, (char*)ptr, size*count);
-}
-
-size_t FAKE_fwrite(void *ptr, size_t size, size_t count, FILE* fp)
-{
-	return ps3ntfs_write(*fp, (const char *)ptr, size*count);
-}
-
-char *FAKE_fgets(char *str, int length, FILE* fp)
-{
-	char c;
-	int count=0;
-	if(length==0) return NULL;
-	
-	memset(str, 0, length);
-	while(ps3ntfs_read(*fp, &c, 1))
-	{	
-		str[count]=c;
-		if(count==length) break;
-		count++;
-		if(c=='\n' || c==0) break;
-	}
-	if(count == 0) return NULL;
-	
-	return str;
-}
-
-void FAKE_fputs(char *str, FILE* fp)
-{
-	ps3ntfs_write(*fp, str, strlen(str));
-}
-
-int FAKE_fclose(FILE* fp)
-{	
-	int ret = ps3ntfs_close(*fp);
-	FREE(fp);
-	return ret;
-}
-
-u64 FAKE_ftell(FILE* fp)
-{
-	return ps3ntfs_seek64(*fp, 0, SEEK_CUR);
-}
-#define FAKE_EOF 0
-char FAKE_fgetc(FILE* fp)
-{
-	char c;
-	if( ps3ntfs_read(*fp, &c, 1) != 1) return FAKE_EOF;
-	return c;
-}
-
-char FAKE_fputc(char c, FILE* fp)
-{
-	ps3ntfs_write(*fp, (const char *) &c, 1);
-	return c;
-}
-
-#define truncate FAKE_truncate
-#define fputc FAKE_fputc
-#define fgetc FAKE_fgetc
-#define ftell FAKE_ftell
-#define fseek FAKE_fseek
-#define fopen FAKE_fopen
-#define fclose FAKE_fclose
-#define fread FAKE_fread
-#define fwrite FAKE_fwrite
-#define fgets FAKE_fgets
-#define fputs FAKE_fputs
-
+//
+//#define FILE int
+//
+//int FAKE_truncate(const char *path, off_t len)
+//{
+//    int ret;
+//    int fd;
+//
+//    fd = ret = ps3ntfs_open(path, O_RDWR, 0666);
+//
+//    if(ret < 0) return ret;
+//
+//    ret = ps3ntfs_ftruncate(fd, len);
+//	
+//    ps3ntfs_close(fd);
+//	
+//    return ret;
+//}
+//
+//FILE* FAKE_fopen(char *filepath, const char *mode)
+//{
+//	int oflags;
+//	int m, o;
+//	switch (*mode++) {
+//		case 'r':	/* open for reading */
+//			m = O_RDONLY;
+//			o = 0;
+//			break;
+//		case 'w':	/* open for writing */
+//			m = O_WRONLY;
+//			o = O_CREAT | O_TRUNC;
+//			break;
+//		case 'a':	/* open for appending */
+//			m = O_WRONLY;
+//			o = O_CREAT | O_APPEND;
+//			break;
+//		default:	/* illegal mode */
+//			return (0);
+//		}
+//		/* [rwa]\+ or [rwa]b\+ means read and write */
+//		if (*mode == '+' || (*mode == 'b' && mode[1] == '+')) {
+//			m = O_RDWR;
+//	}
+//	
+//	oflags = m | o;
+//	
+//	int *f = malloc(sizeof(int *));
+//	
+//	*f = ps3ntfs_open(filepath, oflags, 0777);
+//	
+//	if(*f<0) {
+//		SetFilePerms(filepath);
+//		*f = ps3ntfs_open(filepath, oflags, 0777);
+//		if(*f<0) {free(f); return NULL;}
+//	}
+//	
+//	return f;
+//}
+//
+//s64 FAKE_fseek(FILE* fp, s64 pos, int dir)
+//{
+//	return ps3ntfs_seek64(*fp, (s64) pos, dir);
+//}
+//
+//size_t FAKE_fread(void *ptr, size_t size, size_t count, FILE* fp)
+//{
+//	return ps3ntfs_read(*fp, (char*)ptr, size*count);
+//}
+//
+//size_t FAKE_fwrite(void *ptr, size_t size, size_t count, FILE* fp)
+//{
+//	return ps3ntfs_write(*fp, (const char *)ptr, size*count);
+//}
+//
+//char *FAKE_fgets(char *str, int length, FILE* fp)
+//{
+//	char c;
+//	int count=0;
+//	if(length==0) return NULL;
+//	
+//	memset(str, 0, length);
+//	while(ps3ntfs_read(*fp, &c, 1))
+//	{	
+//		str[count]=c;
+//		if(count==length) break;
+//		count++;
+//		if(c=='\n' || c==0) break;
+//	}
+//	if(count == 0) return NULL;
+//	
+//	return str;
+//}
+//
+//void FAKE_fputs(char *str, FILE* fp)
+//{
+//	ps3ntfs_write(*fp, str, strlen(str));
+//}
+//
+//int FAKE_fclose(FILE* fp)
+//{	
+//	int ret = ps3ntfs_close(*fp);
+//	FREE(fp);
+//	return ret;
+//}
+//
+//u64 FAKE_ftell(FILE* fp)
+//{
+//	return ps3ntfs_seek64(*fp, 0, SEEK_CUR);
+//}
+//#define FAKE_EOF 0
+//char FAKE_fgetc(FILE* fp)
+//{
+//	char c;
+//	if( ps3ntfs_read(*fp, &c, 1) != 1) return FAKE_EOF;
+//	return c;
+//}
+//
+//char FAKE_fputc(char c, FILE* fp)
+//{
+//	ps3ntfs_write(*fp, (const char *) &c, 1);
+//	return c;
+//}
+//
+//#define truncate FAKE_truncate
+//#define fputc FAKE_fputc
+//#define fgetc FAKE_fgetc
+//#define ftell FAKE_ftell
+//#define fseek FAKE_fseek
+//#define fopen FAKE_fopen
+//#define fclose FAKE_fclose
+//#define fread FAKE_fread
+//#define fwrite FAKE_fwrite
+//#define fgets FAKE_fgets
+//#define fputs FAKE_fputs
+//
 //*******************************************************
 // 
 //*******************************************************
@@ -2748,6 +2758,15 @@ u8 is_ntfs(char *path)
 	return NO;
 }
 
+u8 support_big_files(char *path)
+{
+	if( is_exFAT(path) ) return YES;
+	if( is_ntfs(path) ) return YES;
+	if( strncmp(path, "/dev_hdd0", 9) == 0) return YES;
+	
+	return NO;
+}
+
 u8 path_info(char *path) 
 {
 	struct stat s;
@@ -3249,6 +3268,20 @@ u8 imgLoadFromFile(char *imgPath, imgData *out, u8 gray)
 	return SUCCESS;
 }
 
+
+u8 convert_to_png(char *src, char *dst)
+{
+	imgData DataPic;
+	
+	if( imgLoadFromFile(src, &DataPic, NO) == FAILED ) return FAILED;
+	
+	if( make_png(dst, DataPic) == FAILED )  return FAILED;
+	
+	FREE(DataPic.bmp_out);
+
+	return SUCCESS;
+}
+
 //*******************************************************
 // SCREENSHOT
 //******************************************************
@@ -3491,9 +3524,9 @@ void ScreenShot()
 	u8 *mem = malloc(Video_Resolution.width*Video_Resolution.height*4 + 1);
 	memcpy(mem, Video_buffer[1], Video_Resolution.width*Video_Resolution.height*4);
 	
-	//start_loading();
+	if( DEBUG ) start_loading();
 	
-print_load("Get size scaled...");
+	print_load("Get size scaled...");
 	double sx = (double) Video_Resolution.width;
 	double sy = (double) Video_Resolution.height;
 	double psx = (double) (1000 + videoscale_x)/1000.0;
@@ -3517,12 +3550,198 @@ print_load("Get size scaled...");
 	
 	FREE(mem);
 
-	//end_loading();
+	if( DEBUG ) end_loading();
 }
 
 //*******************************************************
 // TEST ZONE
 //*******************************************************
+
+char *FRESULT_STR[20] = {
+	"Succeeded",
+	"A hard error occurred in the low level disk I/O layer",
+	"Assertion failed",
+	"The physical drive cannot work",
+	"Could not find the file",
+	"Could not find the path",
+	"The path name format is invalid",
+	"Access denied due to prohibited access or directory full",
+	"Access denied due to prohibited access",
+	"The file/directory object is invalid",
+	"The physical drive is write protected",
+	"The logical drive number is invalid",
+	"The volume has no work area",
+	"There is no valid FAT volume",
+	"The f_mkfs() aborted due to any problem",
+	"Could not get a grant to access the volume within defined period",
+	"The operation is rejected according to the file sharing policy",
+	"LFN working buffer could not be allocated",
+	"Number of open files > FF_FS_LOCK",
+	"Given parameter is invalid"
+};
+
+
+void exFAT_test()
+{
+	DEBUG = YES;
+	
+	char root[32];
+	strcpy(root, "exFAT0:/");
+	
+	int ret = exFAT_mount(0);
+	
+	print_load("%d : %s", ret, FRESULT_STR[ret]);;
+	
+	print_load("is_mounted : %d", exFAT_is_mounted(0));
+	
+	if(ret != 0) return;
+	
+	FDIR fdir;
+	
+	ret = f_opendir(&fdir, root);
+	
+	print_load("opendir %s", FRESULT_STR[ret]);
+	
+	if( ret != 0) return;
+	FILINFO fno;
+	
+	while (f_readdir(&fdir, &fno) == FR_OK) {
+		if(fno.fname[0] == 0) break;
+		print_load("f_readdir %s , name %s", FRESULT_STR[ret], fno.fname);
+	}
+	
+	ret = f_closedir(&fdir);
+	
+	print_load("f_closedir %s", FRESULT_STR[ret]);
+	
+	FIL f;
+	char bu[255];
+	u32 br;
+	char test[255];
+	sprintf(test, "%stest.txt", root);
+	
+	print_load(test); sleep(1);
+	
+	ret = f_open(&f, test, FA_READ);
+
+	print_load("f_open %s", FRESULT_STR[ret]);
+	
+	int s = f_size(&f);
+	print_load("f_size = %d", s);
+	
+	ret = f_read(&f, bu, 10, &br);	
+	
+	print_load("f_open %s", FRESULT_STR[ret]);
+	
+	print_load("bu %s", bu);
+	
+	print_load("test %s", test);
+	
+	print_load("f_read %s", FRESULT_STR[ret]);
+	
+	ret = f_close(&f);
+	
+	print_load("f_close %s", FRESULT_STR[ret]);
+
+	print_load("f_stat !");
+	
+	ret = f_stat(test, &fno);
+	
+	print_load("f_stat %s", FRESULT_STR[ret]);
+	
+	print_load("f_size %d, f_stat fno.fsize = %d", s, fno.fsize);
+	
+	sleep(2);
+	
+	struct stat st;
+	print_load("stat !");
+	if(stat(test, &st) != 0) print_load("Error !");
+	else print_load("stat st.st_size %d", st.st_size);
+
+	print_load("MGZ IO");
+	sleep(1);
+	// stdio
+	
+	FILE *fp;
+	
+	fp = fopen(test, "r");
+	if(fp == NULL) return;
+	sleep(1);
+	
+	print_load("fread"); sleep(1);
+	fread(bu, 10, 1, fp);
+	print_load("bu %s", bu);
+	
+	print_load("fgets %s", bu); sleep(1);
+	char lin[255];
+	fgets(lin, 255, fp);
+	print_load("lin 1 : %s", lin);
+	
+	fgets(lin, 255, fp);
+	print_load("lin 2 : %s", lin);
+	
+	print_load("fclose"); sleep(1);
+	fclose(fp);
+	
+	sprintf(test, "%stest2.txt", root);
+	
+	print_load("fopen w"); sleep(1);
+	fp = fopen(test, "w");
+	if(fp==NULL) return
+	
+	print_load("fputs w"); sleep(1);
+	fputs("lolilol", fp);
+	
+	print_load("fwrite w"); sleep(1);
+	fwrite(test, 5, 1, fp);
+	
+	print_load("fclose w"); sleep(1);
+	fclose(fp);
+	
+	sprintf(test, "%stestdir", root);
+	
+	print_load("mkdir"); sleep(1);
+	
+	mkdir(test, 0777);
+	
+	sprintf(test, "%stestdir", root);
+	
+	rename(test, "/exFAT0:/testdirnew");
+	
+	print_load("create file"); sleep(1);
+	fp = fopen("/exFAT0:/testdirnew/todel.txt", "w");
+	if(!fp) return;
+	fclose(fp);
+	
+	print_load("unlink"); sleep(1);
+	unlink("/exFAT0:/testdirnew/todel.txt");
+	
+	DIR *d;
+	struct dirent *dir;
+	
+	print_load("opendir"); sleep(1);
+	d = opendir(root);
+	if(d==NULL) return;
+	
+	print_load("readdir"); sleep(1);
+	while ((dir = readdir(d))) {
+		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+		
+		print_load("readdir : %s", dir->d_name); sleep(1);
+	}
+	print_load("closedir"); sleep(1);
+	closedir(d);
+	
+	print_load("unmount"); sleep(1);
+	ret = exFAT_unmount(0);
+	print_load("f_unmount %s", FRESULT_STR[ret]);
+	
+	print_load("is_mounted : %d", exFAT_is_mounted(0));
+	
+	DEBUG = NO;
+	
+}
+
 
 // http://www.psdevwiki.com/ps3/AIM_Manager#0x19003_-_Get_Device_ID
 
@@ -6594,6 +6813,7 @@ void update_lang()
 	LANG(STR_SYMLINK_SRC, "STR_SYMLINK_SRC", STR_SYMLINK_SRC_DEFAULT);
 	LANG(STR_SYMLINK_TARGET, "STR_SYMLINK_TARGET", STR_SYMLINK_TARGET_DEFAULT);
 	LANG(STR_LOAD_MAMBA, "STR_LOAD_MAMBA", STR_LOAD_MAMBA_DEFAULT);
+	LANG(STR_CONVERT_TO_PNG, "STR_CONVERT_TO_PNG", STR_CONVERT_TO_PNG_DEFAULT);
 	
 	FREE(flang);
 	lang_code_loaded = lang_code;
@@ -9608,7 +9828,7 @@ void Draw_Loading(void *unused)
 	u64 previous_val=0;
 	
 	while(loading) {
-				
+	
 		if(!loading) break;
 		
 		int x=50, y=40;
@@ -9901,8 +10121,10 @@ void Draw_Loading(void *unused)
 			x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		}
 		
-		//x=DrawButton(x, y, "DEBUG", BUTTON_R1);
-		//x=Draw_checkbox(x-3, y, 0, "", DEBUG, YES);
+		if( old_DEBUG ) {
+			x=DrawButton(x, y, "Disable DEBUG temporarily", BUTTON_R1);
+			x=Draw_checkbox(x-3, y, 0, "", DEBUG, YES);
+		}
 		
 		if(!loading) break;
 		
@@ -9914,7 +10136,10 @@ void Draw_Loading(void *unused)
 		
 		ps3pad_read();
 		
-		//if( NewPad(BUTTON_R1) ) DEBUG = !DEBUG;
+		if( old_DEBUG ) {
+			if(OldPad(BUTTON_R1) ) DEBUG = NO;
+			else DEBUG = YES;
+		}
 		
 		if(NewPad(BUTTON_RIGHT)) {
 			bullet_move = 1;
@@ -10013,15 +10238,18 @@ void print_load(char *format, ...)
 		if( mgz_log == NULL ) {
 			mkdir("/dev_hdd0/tmp", 0777);
 			mgz_log = fopen("/dev_hdd0/tmp/mgz.log", "w");
-			if( mgz_log == NULL ) return;
 		}
-		
-		fputs(loading_log[0], mgz_log);
-		fputs("\n", mgz_log);
+		if( mgz_log != NULL) {
+			fputs(loading_log[0], mgz_log);
+			fputs("\n", mgz_log);
+		}
 	}
 	
 	// If it freeze, it allow to display every messages before the freeze (loading screen thread is async)
-	if( DEBUG ) usleep(500000);
+	if( DEBUG ) {
+		if( loading ) sleep(1);
+		else if( LOG ) usleep(100); // just to be sure it's logged if we are not on a loading screen
+	}
 
 }
 
@@ -10037,21 +10265,23 @@ void print_head(char *format2, ...)
 	
 	strcpy(head_title, str2);
 	
-	if( LOG ) {
-		
+	if( LOG ) {	
 		if( mgz_log == NULL ) {
 			mkdir("/dev_hdd0/tmp", 0777);
 			mgz_log = fopen("/dev_hdd0/tmp/mgz.log", "w");
 			if( mgz_log == NULL ) return;
 		}
-		
-		fputs(head_title, mgz_log);
-		fputs("\n", mgz_log);
+		if( mgz_log != NULL ) {
+			fputs(head_title, mgz_log);
+			fputs("\n", mgz_log);
+		}
 	}
 	
 	// If it freeze, it allow to display every messages before the freeze
-	if( DEBUG ) usleep(500000);
-	
+	if( DEBUG ) {
+		if( loading ) sleep(1);
+		else if( LOG ) usleep(100); // just to be sure it's logged if we are not on a loading screen
+	}
 }
 
 void hex_print_load(char *data, size_t len)
@@ -10430,6 +10660,7 @@ typedef struct
 
 u64 lv2peek(u64 addr)
 { 
+	if(addr < 0x8000000000000000ULL) addr += 0x8000000000000000ULL;
 	lv2syscall1(6, (u64) addr >> 0ULL) ;
 	return_to_user_prog(u64);
 }
@@ -10518,27 +10749,39 @@ s32 sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 	return_to_user_prog(s32);
 }
 
-s32 sys_storage_open(u64 device_ID, u32* fd)
+s32 sys_storage_open(u64 device_ID, int* fd)
 {
 	lv2syscall4( 600, device_ID, 0, (u64)fd, 0 );
 	return_to_user_prog(s32);
 }
 
-s32 sys_storage_close( u32 fd)
+s32 sys_storage_close(int fd)
 {
 	lv2syscall1( 601, fd );
 	return_to_user_prog(s32);
 }
 
-s32 sys_storage_read( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *number_byte_read, u64 flags )
+s32 sys_storage_open2(u64 device_ID, int* fd, u64 mode, u64 flag)
 {
-	lv2syscall7( 602, fd, 0, start_sector, nb_sector, (u64)buffer, (u64)number_byte_read, flags );
+	lv2syscall4( 600, device_ID, (u64) mode, (u64)fd, (u64) flag);
 	return_to_user_prog(s32);
 }
 
-s32 sys_storage_write( u32 fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *number_byte_wrote, u64 flags )
+s32 sys_storage_read2(int fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *sectors_read, u64 flags, u64 mode)
 {
-	lv2syscall7( 603, fd, 0, start_sector, nb_sector, (u64)buffer, (u64)number_byte_wrote, flags );
+	lv2syscall7( 602, fd, mode, start_sector, nb_sector, (u64)buffer, (u64)sectors_read, flags );
+	return_to_user_prog(s32);
+}
+
+s32 sys_storage_read(int fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *sectors_read, u64 flags )
+{
+	lv2syscall7( 602, fd, 0, start_sector, nb_sector, (u64)buffer, (u64)sectors_read, flags );
+	return_to_user_prog(s32);
+}
+
+s32 sys_storage_write(int fd, u64 start_sector, u64 nb_sector, const void* buffer, u32 *sectors_wrote, u64 flags )
+{
+	lv2syscall7( 603, fd, 0, start_sector, nb_sector, (u64)buffer, (u64)sectors_wrote, flags );
 	return_to_user_prog(s32);
 }
 
@@ -10560,9 +10803,156 @@ s32 sys_fs_get_mount_info_size(uint64_t *size)
 	return_to_user_prog(s32);
 }
 
+void TestCapFlag()
+{
+	int source;
+	u32 read;
+	
+	char *sector = (char *) malloc(512);
+	if(sector==NULL) return ;
+	
+	int ret = sys_storage_open(USB_MASS_STORAGE(0), &source);
+	if( ret == 0 ) {
+		ret = sys_storage_read(source, 0, 1, sector, &read, 0);
+		print_load("Error : 0x%X", ret);
+	}
+	sys_storage_close(source);
+	
+	
+	device_info_t device_info;
+	memset(&device_info, 0, sizeof(device_info));
+	ret = sys_storage_get_device_info(USB_MASS_STORAGE(0), &device_info);
+	
+	print_load("Error : %X", ret);
+	
+	print_load("Error : Label : %s, sc %016llX, ss %08lX, unk %08ll", 
+			device_info.Label,
+			(long long unsigned int) device_info.sector_count,
+			(long unsigned int) device_info.sector_size,
+			(long unsigned int) device_info.unknown);
+			
+	print_load("Error : %d , %X%X%X%X%X%X%X", 
+					(int) device_info.writable,
+					(int) device_info.unknowns[0],
+					(int) device_info.unknowns[1],
+					(int) device_info.unknowns[2],
+					(int) device_info.unknowns[3],
+					(int) device_info.unknowns[4],
+					(int) device_info.unknowns[5],
+					(int) device_info.unknowns[6]);
+}
+
+void DumpUSB000()
+{
+	int source;
+	u32 read;
+	
+	char *sector = (char *) malloc(512);
+	if(sector==NULL) return ;
+	
+	char res[255];
+	u64 open_flag=0, read_flag=0, open_mode=0, read_mode=0;	
+	uint64_t mode;
+	
+	int i, j, k, l;
+	int w, x;
+	int ret = sys_storage_open(USB_MASS_STORAGE(0), &source);
+	
+	if( ret == 0 ) {
+		memset(sector, 0, 512);
+		
+		for(i = 0; i < 64; i++) {
+			mode = (uint64_t) 1<<i;			
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+			for(x = 0; x < 8; x++)
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+			
+		}
+		
+		for(j = 0; j < 64; j++)
+		for(i = 0; i < 64; i++) {
+			mode = (uint64_t) 1<<i | (uint64_t) 1<<j;			
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+			for(x = 0; x < 8; x++)
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+		}
+		
+		for(k = 0; k < 64; k++)
+		for(j = 0; j < 64; j++)
+		for(i = 0; i < 64; i++) {
+			mode = (uint64_t) 1<<i | (uint64_t) 1<<j | (uint64_t) 1<<k;			
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+			for(x = 0; x < 8; x++)
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+		}
+		
+		for(l = 0; l < 64; l++)
+		for(k = 0; k < 64; k++)
+		for(j = 0; j < 64; j++)
+		for(i = 0; i < 64; i++) {
+			mode = (uint64_t) 1<<i | (uint64_t) 1<<j | (uint64_t) 1<<k | (uint64_t) 1<<l;			
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+			for(x = 0; x < 8; x++)
+			for(w = 0; w < 8; w++) {
+				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
+				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
+				if(ret==0) goto foundu;
+			}
+		}
+		sys_storage_close(source);
+	}	
+
+foundu:
+
+	FILE *f = fopen("/dev_hdd0/flag.txt", "wb");
+	sprintf(res, "\tsys_storage_read2 mode 0x%016llX, flag 0x%02X, ret 0x%X\n", (unsigned long long int) mode, (unsigned int) read_flag, ret);
+	fputs(res, f);
+	fclose(f);
+	
+	/*
+	f = fopen("/dev_hdd0/boot_sector.bin", "wb");
+	fwrite(sector, 512, 1, f);
+	fclose(f);
+	*/
+	FREE(sector);
+	
+	Delete("/dev_hdd0/tmp/turnoff");
+	lv2syscall4(379,0x1100,0,0,0);
+	
+	
+}
+
 u8 DeviceDumpBootSector(u64 device_id, u32 sector_size, u32 first_sector, FAT32_boot_sector_t *boot_sector)
 {
-	u32 source;
+	int source;
 	u32 read;
 	
 	char *sector = (char *) malloc(sector_size);
@@ -10580,17 +10970,19 @@ u8 DeviceDumpBootSector(u64 device_id, u32 sector_size, u32 first_sector, FAT32_
 	memcpy(boot_sector, sector, sizeof(FAT32_boot_sector_t)); 
 	FREE(sector);
 	
-	FILE *f;
-	f = fopen("/dev_hdd0/boot_sector.bin", "wb");
-	fwrite(boot_sector, sizeof(FAT32_boot_sector_t), 1, f);
-	fclose(f);
+	if( DEBUG ) {
+		FILE *f;
+		f = fopen("/dev_hdd0/boot_sector.bin", "wb");
+		fwrite(boot_sector, sizeof(FAT32_boot_sector_t), 1, f);
+		fclose(f);
+	}
 	
 	return SUCCESS;
 }
 
 u8 DeviceDumpMBRInfo(u64 device_id, u32 sector_size, mbr_t *mbr)
 {
-	u32 source;
+	int source;
 	u32 read;
 	
 	char *sector = (char *) malloc(sector_size);
@@ -10613,7 +11005,7 @@ u8 DeviceDumpMBRInfo(u64 device_id, u32 sector_size, mbr_t *mbr)
 
 char *GetVolumeLabel(u64 device_id, u32 sector_size, u32 sector_position)
 {
-	u32 source;
+	int source;
 	u32 read;
 	
 	char *sector = (char *) malloc(sector_size);
@@ -10793,7 +11185,11 @@ u64 GetFreeSpace(char *path)
 		struct statvfs vfs;
         ps3ntfs_statvfs(path, &vfs);
         freeSize = (((u64)vfs.f_bsize * vfs.f_bfree));
-    } else {
+    } else
+	if( is_exFAT(temp) ) {
+		u64 tot;
+		exFAT_get_size(temp, &freeSize, &tot);
+	} else {
         sysFsGetFreeSize(temp, &blockSize, &freeSize);
         freeSize = (((u64)blockSize * freeSize));
     }
@@ -10833,18 +11229,34 @@ void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
 		// interface.feature
 		DeviceInfo->ReadOnly = NO;
 		
-    } else {
+    } else 
+	if(is_exFAT(temp)) {
+		
+		strcpy(DeviceInfo->FileSystem, "CELL_FS_EXFAT");
+		exFAT_get_size(temp, &DeviceInfo->FreeSpace, &DeviceInfo->TotalSpace);
+		exFAT_get_label(temp, DeviceInfo->Label);
+		strcpy(DeviceInfo->MountPoint, temp);
+		
+		int idx = exFAT_get_idx(temp);
+		if(0 <= idx && idx < 128) {
+			sprintf(DeviceInfo->Name, "CELL_FS_IOS:USB_MASS_STORAGE%03d", idx);
+		} else {
+			if(idx==128) strcpy(DeviceInfo->Name, "CELL_FS_IOS:MEMORY_STICK\0"); else
+			if(idx==129) strcpy(DeviceInfo->Name, "CELL_FS_IOS:COMPACT_FLASH\0"); else
+			if(idx==130) strcpy(DeviceInfo->Name, "CELL_FS_IOS:SD_CARD\0");			
+		}
+		DeviceInfo->ReadOnly = NO;
+		
+	} else {
 		
 		sysFsGetFreeSize(temp, &blockSize, &freeSize);
 		DeviceInfo->FreeSpace = (((u64)blockSize * freeSize));
 		temp[n]=0;
 		
-		
 		strcpy(DeviceInfo->MountPoint, temp);
 		
 #ifdef RPCS3
 		if(strcmp(temp, "/app_home")==0 || strcmp(temp, "/dev_flash")==0) {DeviceInfo->ReadOnly = YES; return;}
-			
 		
 		DeviceInfo->TotalSpace = Go(500);
 		strcpy(DeviceInfo->Label, "Device");
@@ -10852,7 +11264,6 @@ void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
 		strcpy(DeviceInfo->Name, "CELL_FS_FAKE:RPCS3");
 		
 		DeviceInfo->ReadOnly = NO;
-		
 #else		
 		sys_fs_mount_info mount_info;
 		if( get_mount_info(temp, &mount_info) == SUCCESS) {
@@ -11055,7 +11466,7 @@ void DumpDevicesData()
 		}
 		
 		
-		u32 source;
+		int source;
 		u32 read;
 	
 		print_load("sys_storage_open");
@@ -11119,12 +11530,14 @@ void DumpDevicesData()
 	free(info);
 }
 
+
+
 #define BDVD_BUFF_SEC_NB		0x400
 #define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
 
 u8 dump_enc_bdvd(char *output)
 {
-	u32 source;
+	int source;
 	
 	device_info_t device_info;
 	memset(&device_info, 0, sizeof(device_info));
@@ -11233,7 +11646,7 @@ u8 dump_dec_bdvd(char *output)
 	print_load("Decryption key :");
 	hex_print_load((char *) key, 16);
 	
-	u32 source;
+	int source;
 	print_load("sys_storage_open BDVD_DRIVE");
 	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
 		print_load("Error : sys_storage_open");
@@ -11488,7 +11901,7 @@ u8 ExtractZip(char* ZipFile, char *dstFolder)
 			return FAILED;
 		}
 
-		if( is_ntfs(FileOUT) == NO ) sysLv2FsChmod(FileOUT, 0777);
+		SetFilePerms(FileOUT);
 
 		int mem_size = 0x1000;
 		char *mem = malloc(mem_size);
@@ -11716,7 +12129,7 @@ int NTFS_Test_Device(char *name)
 	
 }
 
-void MountNTFS()
+void NTFS_mount_all()
 {
 	u8 i;
 	for (i = 0; i < mountCount; i++) ntfsUnmount(mounts[i].name, 1);
@@ -12046,7 +12459,7 @@ void Delete(char* path)
 	
 	d = opendir(path);
 	if(d==NULL) return;
-			
+	
 	while ((dir = readdir(d))) {
 		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
 	
@@ -13002,7 +13415,8 @@ skip:
 
 // Standard I/O - include <stdio.h>
 // fopen/fread/fwrite/fclose
-// NTFS supported with NTFS_init_system_io();
+// see mgz_io.h
+
 u8 CopyFile_stdio(char* src, char* dst)
 {
 	u8 ret = SUCCESS;
@@ -13027,7 +13441,7 @@ u8 CopyFile_stdio(char* src, char* dst)
 	f2 = fopen(dst, "wb");
 	if(f2==NULL) {ret = FAILED; goto skip;}
 	
-	if( is_ntfs(dst) == NO ) sysLv2FsChmod(dst, 0777);
+	SetFilePerms(dst);
 	
 	mem = malloc(BUFFSIZE);
 	
@@ -13078,7 +13492,7 @@ void TestCopy(char *src, char *dst, int i)
 	if(i==5) CopyFile_async(src, dst);
 }
 
-#define CopyFile CopyFile_ps3ntfs
+#define CopyFile CopyFile_stdio
 
 void SpeedTest()
 {
@@ -13482,7 +13896,7 @@ void remove_GAMELIST(s64 pos)
 void get_GAMELIST(char *scan_path)
 {
 	print_load("Scanning : %s", scan_path);
-		
+	
 	DIR *d;
 	struct dirent *dir;
 	
@@ -13892,13 +14306,14 @@ void dump_lv2(char *path)
 	
 	u64 data[DUMPER_BUFFSIZE];
 	
-	for(i=0x8000000000000000ULL ; i < 0x8000000000800000ULL; i+= 0x8 * DUMPER_BUFFSIZE ) {
+	for(i=0 ; i < 0x800000ULL; i+= 0x8 * DUMPER_BUFFSIZE ) {
 		memset(data, 0, DUMPER_BUFFSIZE*8);
 		
 		for( j = 0; j < DUMPER_BUFFSIZE; j++) {
-			data[j]=lv2peek(i+j*0x8);
+			data[j]=lv2peek(0x8000000000000000ULL + i+j*0x8);
 		}
 		fwrite(&data, sizeof(u64), DUMPER_BUFFSIZE, f);
+		
 		
 		prog_bar1_value = ((i+j)*100)/0x800000;
 		if(cancel==YES) break;
@@ -13913,7 +14328,8 @@ void dump_lv2(char *path)
 
 u8 FlashInfo(u64 *flash_id, u8 *mode)
 {
-	u32 sourceR, read;
+	int sourceR;
+	u32 read;
 	u64 offset, sector[ 0x40 ];
 	int ret = 1;
 	
@@ -13944,7 +14360,8 @@ void dump_flash(char *path)
 {
 	FILE* f;
 	
-	u32 source, read;
+	int source;
+	u32 read;
 	u64 sector[0x40];
 	int ret = -1;
 	u64 i;
@@ -13995,7 +14412,7 @@ void dump_flash(char *path)
 
 u8 *Load_from_device(u32 start_offset, u32 size, u32 device_id, u32 sector_size)
 {
-	u32 source;
+	int source;
 	if( sys_storage_open( device_id, &source) != 0) {
 		print_load("Error : Load_from_device sys_storage_open");
 		return NULL;
@@ -14110,7 +14527,7 @@ u8 *Load_from_flash(u32 start_offset, u32 size, u32 source)
 
 u8 *get_eid4()
 {	
-	u32 source;
+	int source;
 	u64 offset;
     
     int ret = 1;
@@ -14189,10 +14606,21 @@ u8 *Load_3Dump()
 
 u8 SetFilePerms(char *path)
 {
+	if(is_ntfs(path)) return SUCCESS;
+	if(is_exFAT(path)) return !f_chmod(path, 0, AM_RDO | AM_ARC | AM_SYS | AM_HID);
 	if(sysLv2FsChmod(path, FS_S_IFMT | 0777)==0 && sys_fs_chown(path, NO_UID, NO_GID)==0) return SUCCESS;
 	
 	return FAILED;
 	
+}
+
+u8 SetDirPerms(char *path)
+{
+	if(is_ntfs(path)) return SUCCESS;
+	if(is_exFAT(path)) return !f_chmod(path, 0, AM_RDO | AM_ARC | AM_SYS | AM_HID);
+	if(sysLv2FsChmod(path, FS_S_IFDIR | 0777)==0 && sys_fs_chown(path, NO_UID, NO_GID)==0) return SUCCESS;
+	
+	return FAILED;
 }
 
 u8 SetPerms(char* path)
@@ -14204,8 +14632,7 @@ u8 SetPerms(char* path)
 	if(f_info == _FILE) return SetFilePerms(path);
 	else if(f_info == _NOT_EXIST) return FAILED;
 	
-	sysLv2FsChmod(path, FS_S_IFDIR | 0777);
-	sys_fs_chown(path, NO_UID, NO_GID);
+	SetDirPerms(path);
 	
 	DIR *d;
 	struct dirent *dir;
@@ -15268,7 +15695,10 @@ void end_MemMonitor()
 
 void getDevices()
 {
-	MountNTFS();
+	print_debug("ntfs_mount_all");
+	NTFS_mount_all();
+	print_debug("exFAT_mount_all");
+	exFAT_mount_all();
 	
 	print_load("Get devices");
 
@@ -15284,6 +15714,13 @@ void getDevices()
 		if(r>=0) {
 			device_number++;
 			sprintf(list_device[device_number], "ntfs%c:", 48+i);
+		}
+	}
+	
+	for(i=0; i < MAXFDS; i++) {
+		if( exFAT_is_mounted(i) ) {
+			device_number++;
+			sprintf(list_device[device_number], "exFAT%d:", i);
 		}
 	}
 	
@@ -15315,10 +15752,10 @@ void getDevices()
 
 // it's used for the notifications only
 #define DEVICE_USB(x) 			x
-#define DEVICE_BDVD_DRIVE		128
-#define DEVICE_MEMORY_STICK		129
-#define DEVICE_COMPACT_FLASH	130
-#define DEVICE_SD_CARD			131
+#define DEVICE_MEMORY_STICK		128
+#define DEVICE_COMPACT_FLASH	129
+#define DEVICE_SD_CARD			130
+#define DEVICE_BDVD_DRIVE		131
 #define DEVICE_NUMBER			132
 
 u8 PluggedDevices[DEVICE_NUMBER] = {[0 ... DEVICE_NUMBER-1] = -1};
@@ -15594,7 +16031,7 @@ void AutoRefresh_GAMELIST()
 			//get game list
 			for(j=0; j<=scan_dir_number; j++) {
 				sprintf(scan_path, "/%s/%s", path_plug[k], scan_dir[j]);
-									
+			
 				get_GAMELIST(scan_path);
 			}	
 		}
@@ -17384,11 +17821,12 @@ void SetPrimaryUSB()
 	}
 }
 
+
 char *LoadFileProg(char *path, int *file_size)
 {
 	*file_size = 0;
 	
-	sysLv2FsChmod(path, FS_S_IFMT | 0777);
+	SetFilePerms(path);
 	
 	struct stat s;
 	if(stat(path, &s) != 0) return NULL;  
@@ -17400,21 +17838,21 @@ char *LoadFileProg(char *path, int *file_size)
 	char *mem = malloc(*file_size);
 	if(mem==NULL) return NULL;
 	
-	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
-	if(f1<0) return NULL;
+	FILE *f1 = fopen(path, "rb");
+	if(f1==NULL) return NULL;
 	
 	prog_bar1_value = 0;
 	int read = 0;
 	while(read < size) {
 		int wrlen = 1024;
 		if(read+wrlen > size) wrlen = size-read;
-		ps3ntfs_read(f1, mem+read, wrlen);
+		fread(mem+read, wrlen, 1, f1);
 		read += wrlen;
 		prog_bar1_value = (read*100) / size;
 	}
 	prog_bar1_value = -1;
 		
-	ps3ntfs_close(f1);
+	fclose(f1);
 	
 	if(read != *file_size) {
 		free(mem); 
@@ -17429,7 +17867,7 @@ char *LoadFile(char *path, int *file_size)
 {
 	*file_size = 0;
 	
-	sysLv2FsChmod(path, FS_S_IFMT | 0777);
+	SetFilePerms(path);
 	
 	struct stat s;
 	if(stat(path, &s) != 0) return NULL;  
@@ -17441,12 +17879,12 @@ char *LoadFile(char *path, int *file_size)
 	if(mem==NULL) return NULL;
 	memset(mem, 0, s.st_size);
 
-	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
+	FILE *f1 = fopen(path, "rb");
 	if(f1<0) return NULL;
 	
-	u64 read = ps3ntfs_read(f1, mem, *file_size);
-		
-	ps3ntfs_close(f1);
+	u64 read = fread(mem, *file_size, 1, f1);
+	
+	fclose(f1);
 	
 	if(read != *file_size) {
 		free(mem); 
@@ -17459,44 +17897,157 @@ char *LoadFile(char *path, int *file_size)
 
 u8 SaveFileProg(char *path, char *mem, int file_size)
 {
-	int fd;
-	
-	fd = ps3ntfs_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0777);
-	if(fd<0) {return FAILED;}
+	FILE *f = fopen(path, "wb");
+	if(f<0) {return FAILED;}
 	
 	prog_bar1_value = 0;
 	int write = 0;
 	while(write < file_size) {
 		int wrlen = 1024;
 		if(write+wrlen > file_size) wrlen = file_size-write;
-		ps3ntfs_write(fd, mem+write, wrlen);
+		fwrite(mem+write, wrlen, 1, f);
 		write += wrlen;
 		prog_bar1_value = (write*100) / file_size;
 	}
 	prog_bar1_value = -1;
 	
-	ps3ntfs_close(fd);
+	fclose(f);
 
-	sysLv2FsChmod(path, FS_S_IFMT | 0777);
+	SetFilePerms(path);
 
 	return SUCCESS;
 }
 
 int SaveFile(char *path, char *mem, int file_size)
 {
-	int fd;
+	FILE *f = fopen(path, "wb");
+	if(f<0) {return FAILED;}
 	
-	fd = ps3ntfs_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0777);
-	if(fd<0) {return FAILED;}
+	fwrite((void *) mem, file_size, 1, f);
 	
-	ps3ntfs_write(fd, (void *) mem, file_size);
-	
-	ps3ntfs_close(fd);
+	fclose(f);
 
-	sysLv2FsChmod(path, FS_S_IFMT | 0777);
+	SetFilePerms(path);;
 
 	return SUCCESS;
 }
+
+// ps3ntfs functions
+//
+//char *LoadFileProg(char *path, int *file_size)
+//{
+//	*file_size = 0;
+//	
+//	SetFilePerms(path);
+//	
+//	struct stat s;
+//	if(stat(path, &s) != 0) return NULL;  
+//	if(S_ISDIR(s.st_mode)) return NULL;
+//	
+//	*file_size = s.st_size;
+//	int size = s.st_size;
+//	
+//	char *mem = malloc(*file_size);
+//	if(mem==NULL) return NULL;
+//	
+//	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
+//	if(f1<0) return NULL;
+//	
+//	prog_bar1_value = 0;
+//	int read = 0;
+//	while(read < size) {
+//		int wrlen = 1024;
+//		if(read+wrlen > size) wrlen = size-read;
+//		ps3ntfs_read(f1, mem+read, wrlen);
+//		read += wrlen;
+//		prog_bar1_value = (read*100) / size;
+//	}
+//	prog_bar1_value = -1;
+//		
+//	ps3ntfs_close(f1);
+//	
+//	if(read != *file_size) {
+//		free(mem); 
+//		*file_size=0;
+//		return NULL;
+//	}
+//	
+//	return mem;
+//}
+//
+//char *LoadFile(char *path, int *file_size)
+//{
+//	*file_size = 0;
+//	
+//	SetFilePerms(path);
+//	
+//	struct stat s;
+//	if(stat(path, &s) != 0) return NULL;  
+//	if(S_ISDIR(s.st_mode)) return NULL;
+//	
+//	*file_size = s.st_size;
+//	
+//	char *mem = malloc(*file_size);
+//	if(mem==NULL) return NULL;
+//	memset(mem, 0, s.st_size);
+//
+//	int f1 = ps3ntfs_open(path, O_RDONLY, 0766);
+//	if(f1<0) return NULL;
+//	
+//	u64 read = ps3ntfs_read(f1, mem, *file_size);
+//		
+//	ps3ntfs_close(f1);
+//	
+//	if(read != *file_size) {
+//		free(mem); 
+//		*file_size=0;
+//		return NULL;
+//	}
+//	
+//	return mem;
+//}
+//
+//u8 SaveFileProg(char *path, char *mem, int file_size)
+//{
+//	int fd;
+//	
+//	fd = ps3ntfs_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+//	if(fd<0) {return FAILED;}
+//	
+//	prog_bar1_value = 0;
+//	int write = 0;
+//	while(write < file_size) {
+//		int wrlen = 1024;
+//		if(write+wrlen > file_size) wrlen = file_size-write;
+//		ps3ntfs_write(fd, mem+write, wrlen);
+//		write += wrlen;
+//		prog_bar1_value = (write*100) / file_size;
+//	}
+//	prog_bar1_value = -1;
+//	
+//	ps3ntfs_close(fd);
+//
+//	SetFilePerms(path);
+//
+//	return SUCCESS;
+//}
+//
+//int SaveFile(char *path, char *mem, int file_size)
+//{
+//	int fd;
+//	
+//	fd = ps3ntfs_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+//	if(fd<0) {return FAILED;}
+//	
+//	ps3ntfs_write(fd, (void *) mem, file_size);
+//	
+//	ps3ntfs_close(fd);
+//
+//	SetFilePerms(path);;
+//
+//	return SUCCESS;
+//}
+
 
 int move_origin_to_bdemubackup(char *path)
 {
@@ -18622,6 +19173,7 @@ u8 is_HEN()
 
 void HEN_game_settings()
 {
+	payload=SNAKE;
 	if( emu==BDEMU ) emu=NONE;
 	use_ex_plug=NO;
 }
@@ -19350,13 +19902,29 @@ u8 can_mount()
 
 u8 can_be_mounted(u8 platform)
 {
-	if(can_mount()) {
-		if(platform == ISO_PS3 || platform == JB_PS3) return YES;
-		if(platform == ISO_PS2 && !HEN) return YES;
-		if(platform) return YES;
-		if(platform == ISO_PSP) return YES;
+	
+	if(platform == ISO_PS3
+	|| platform == ISO_PS2
+	|| platform == ISO_PS1
+	|| platform == ISO_PSP) {
+		if(cobra) return YES;
+		if(mamba) return YES;
+		if(PEEKnPOKE) {
+			if( MAMBA_SIZE != 0 ) return YES;
+		}
+		return NO;
 	}
 	
+	if(platform == JB_PS3) {
+		if(cobra) return YES;
+		if(mamba) return YES;
+		
+		if(PEEKnPOKE) {
+			if(MAMBA_SIZE != 0) return YES;
+			if( PAYLOAD_SKY_SIZE != 0 ) return YES;
+			if( BASE_ADDR != 0 ) return YES;
+		}
+	}
 	return NO;
 }
 
@@ -19364,7 +19932,10 @@ void cobra_MountISO(int EMU)
 {
 	int i;
 
-	if(is_ntfs(GamPath)==YES) {
+	u8 ntfs = is_ntfs(GamPath);
+	u8 exfat = is_exFAT(GamPath);
+
+	if(ntfs || exfat) {
 		uint8_t *plugin_args = malloc(0x20000);
 		uint32_t *sections = malloc(MAX_SECTIONS * sizeof(uint32_t));
 		uint32_t *sections_size = malloc(MAX_SECTIONS * sizeof(uint32_t));
@@ -19373,8 +19944,12 @@ void cobra_MountISO(int EMU)
 		memset(sections_size, 0, MAX_SECTIONS * sizeof(uint32_t));
 		memset(plugin_args, 0, 0x10000);
 
-		int parts = ps3ntfs_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
-
+		int parts = 0;
+		
+		if(ntfs) parts = ps3ntfs_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		else
+		if(exfat) parts = fflib_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		
 		if(is_splitted_iso(GamPath)==YES) {	   
 			int o;
 			for (o = 1; o < 32; o++) {
@@ -19384,13 +19959,18 @@ void cobra_MountISO(int EMU)
 				sprintf(temp_buffer + 2048, "%s%i", temp_buffer + 3072, o);
 				if(parts >= MAX_SECTIONS) break;
 				if(stat(temp_buffer + 2048, &s)!=0) break;
-				parts += ps3ntfs_file_to_sectors(temp_buffer + 2048, sections + parts, sections_size + parts, MAX_SECTIONS - parts, 1);		   
+				
+				if( ntfs ) parts += ps3ntfs_file_to_sectors(temp_buffer + 2048, sections + parts, sections_size + parts, MAX_SECTIONS - parts, 1);
+				else
+				if( exfat ) parts += fflib_file_to_sectors(temp_buffer + 2048, sections + parts, sections_size + parts, MAX_SECTIONS - parts, 1);
 			}
 		}
 
 		if (parts>0 && parts < MAX_SECTIONS) {
 			p_args = (rawseciso_args *)plugin_args;
-			p_args->device = USB_MASS_STORAGE(NTFS_Test_Device(&GamPath[1]));
+			if( ntfs ) p_args->device = USB_MASS_STORAGE(NTFS_Test_Device(&GamPath[1]));
+			else
+			if( exfat ) p_args->device = USB_MASS_STORAGE(exFAT_get_idx(GamPath));
 			p_args->emu_mode = EMU;
 			p_args->num_sections = parts;
 			p_args->num_tracks = 0;
@@ -19685,51 +20265,55 @@ void mamba_MountISO(int EMU)
 		return;
 	}
 	
-	if(is_ntfs(GamPath)) {	
+	u8 ntfs = is_ntfs(GamPath);
+	u8 exfat = is_exFAT(GamPath);
+	
+	if(ntfs || exfat) {
+		uint8_t *plugin_args = malloc(0x20000);
 		uint32_t *sections = malloc(MAX_SECTIONS * sizeof(uint32_t));
 		uint32_t *sections_size = malloc(MAX_SECTIONS * sizeof(uint32_t));
-		rawseciso_args *p_args; 
+		rawseciso_args *p_args;  
 		memset(sections, 0, MAX_SECTIONS * sizeof(uint32_t));
 		memset(sections_size, 0, MAX_SECTIONS * sizeof(uint32_t));
 		memset(plugin_args, 0, 0x10000);
 
-		int parts = ps3ntfs_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		int parts = 0;
 		
-		if(is_splitted_iso(GamPath)==YES) { 
+		if(ntfs) parts = ps3ntfs_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		else
+		if(exfat) parts = fflib_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		
+		if(is_splitted_iso(GamPath)==YES) {	   
 			int o;
-			for (o = 1; o < 64; o++) {
+			for (o = 1; o < 32; o++) {
 				struct stat s;
 				sprintf(temp_buffer + 3072, "%s", GamPath);
 				temp_buffer[3072 + strlen(temp_buffer + 3072) - 1] = 0;
 				sprintf(temp_buffer + 2048, "%s%i", temp_buffer + 3072, o);
 				if(parts >= MAX_SECTIONS) break;
 				if(stat(temp_buffer + 2048, &s)!=0) break;
-				parts += ps3ntfs_file_to_sectors(temp_buffer + 2048, sections + parts, sections_size + parts, MAX_SECTIONS - parts, 1);		   
+				
+				if( ntfs ) parts += ps3ntfs_file_to_sectors(temp_buffer + 2048, sections + parts, sections_size + parts, MAX_SECTIONS - parts, 1);
+				else
+				if( exfat ) parts += fflib_file_to_sectors(temp_buffer + 2048, sections + parts, sections_size + parts, MAX_SECTIONS - parts, 1);
 			}
 		}
 
 		if (parts>0 && parts < MAX_SECTIONS) {
-			
 			p_args = (rawseciso_args *)plugin_args;
-			p_args->device = USB_MASS_STORAGE(NTFS_Test_Device(&GamPath[1]));
+			if( ntfs ) p_args->device = USB_MASS_STORAGE(NTFS_Test_Device(&GamPath[1]));
+			else
+			if( exfat ) p_args->device = USB_MASS_STORAGE(exFAT_get_idx(GamPath));
 			p_args->emu_mode = EMU;
 			p_args->num_sections = parts;
 			p_args->num_tracks = 0;
-			
 			memcpy(plugin_args+sizeof(rawseciso_args), sections, parts*sizeof(uint32_t));
 			memcpy(plugin_args+sizeof(rawseciso_args)+(parts*sizeof(uint32_t)), sections_size, parts*sizeof(uint32_t)); 
-			
 			cobra_unload_vsh_plugin(0);
-			
 			sprintf(temp_buffer + 2048, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
-			
-			if( cobra_load_vsh_plugin(0, temp_buffer + 2048, plugin_args, 0x10000) != 0) {
-				print_load("Error : Failed to load plugin");
-			}
-			sleep(1);
-			return;
+			if (cobra_load_vsh_plugin(0, temp_buffer + 2048, plugin_args, 0x10000) == 0) return;
 		}
-	}
+	} 
 	else {
 		sprintf((char *) plugin_args, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
 		
@@ -19900,6 +20484,11 @@ u8 MountGame(char *GamePath)
 	
 	if(platform == ISO_PS3 || platform == JB_PS3) {
 		
+		if(payload == NO_PAYLOAD) {
+			print_load("Error : can't be mounted, no payload available");
+			return FAILED;
+		}
+		
 		if(PEEKnPOKE) {
 			if(payload==IRIS) iris_Mount(); else
 			if(payload==MM) mm_Mount(); else
@@ -19911,7 +20500,7 @@ u8 MountGame(char *GamePath)
 			if(cobra) cobra_Mount(); else 
 			if(mamba) mamba_Mount();
 		}
-				
+		
 		if(direct_boot) {
 			end_loading();
 			sysModuleUnload(SYSMODULE_PNGDEC);
@@ -20948,7 +21537,10 @@ u8 read_AutoMount_setting()
 	fclose(fp);
 	
 	if(iso) payload=SNAKE;
-	if(PEEKnPOKE==NO) payload=SNAKE;
+	if(!PEEKnPOKE) {
+		if( mamba || cobra ) payload=SNAKE;
+		else payload=NO_PAYLOAD;
+	}
 	
 	if( HEN ) HEN_game_settings();
 	
@@ -21609,6 +22201,8 @@ void write_setting()
 
 void read_game_setting(int pos)
 {
+	print_debug("read_game_setting");
+	
 	FILE* fp=NULL;
 	
 	if(0<=pos) {
@@ -21826,6 +22420,9 @@ void clean_tables()
 
 int init_ManaGunZ()
 {
+	
+	print_debug("start of init mgz");
+	
 	int i;
 
 	cobra = is_cobra();
@@ -21839,7 +22436,9 @@ int init_ManaGunZ()
 		clean_tables();
 	}
 	
+	
 	if(cobra) {
+		print_debug("cobra functions");
 		cobra_lib_init();
 		umount_iso();
 		usleep(4000);
@@ -21855,6 +22454,7 @@ int init_ManaGunZ()
 		cobra_unset_psp_umd();
 	}
 	else if(mamba) {
+		print_debug("mamba functions");
 		umount_iso();
 		usleep(4000);
 		{snake_map((char*)"/dev_bdvd", NULL);}
@@ -21865,9 +22465,11 @@ int init_ManaGunZ()
 		{snake_map("/dev_flash/vsh/module/explore_plugin.sprx", NULL);}
 	}
 
+	print_debug("sys_fs_unmount");
 	sys_fs_umount("/dev_bdvd");
 	sys_fs_umount("/dev_ps2disk");
 
+	print_debug("sys_fs_mount");
 	sys_fs_mount("CELL_FS_IOS:PATA0_BDVD_DRIVE", "CELL_FS_ISO9660", "/dev_bdvd", 1);
 	// usleep(1000);
 	// for(n=0; n<10;n++) {
@@ -21888,19 +22490,23 @@ int init_ManaGunZ()
 	}
 	*/
 
+	print_debug("getDevices");
 	getDevices();
 
+	print_debug("move_bdemubackup_to_origin");
 	char temp[128];
 	for(i=0; i<=device_number; i++) {
 		sprintf(temp, "/%s", list_device[i]);
 		move_bdemubackup_to_origin(temp);
 	}
 	
+	print_debug("path_info changelog");
 	if(path_info("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt") == _FILE) {
 		open_txt_viewer("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt");
 		Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/Changelog.txt");
 	}
 	
+	print_debug("init mgz : return ok");
 	return OK;
 }
 
@@ -23903,7 +24509,7 @@ void RefreshDevices()
 	}
 	closedir(d);
 	
-// can't see NTFS with opendir("/")
+// can't see NTFS / exFAT with opendir("/")
 	int r,i;
 	for(i = 0; i < 8 ; i++) {
 		r = -1;
@@ -23915,6 +24521,15 @@ void RefreshDevices()
 			GetDeviceInfo(temp, &DevicesInfo[DevicesInfo_N]);
 		}
 	}
+
+	for(i=0; i < MAXFDS; i++) {
+		if( exFAT_is_mounted(i) == YES ) {
+			sprintf(temp, "/exFAT%d:/", i);
+			DevicesInfo_N++;
+			GetDeviceInfo(temp, &DevicesInfo[DevicesInfo_N]);
+		}
+	}
+
 }
 
 void RefreshWindow(window_id)
@@ -23952,7 +24567,7 @@ void RefreshWindow(window_id)
 		}
 		
 		window_content_N[window_id]++;
-						
+		
 		if(dir->d_type & DT_DIR) {
 			window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
 			if(strcmp(window_path[window_id], "/") == 0) {
@@ -24007,6 +24622,16 @@ void RefreshWindow(window_id)
 				window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc(temp);
 			}
 		}
+		
+		for(i = 0; i < MAXFDS; i++) {
+			if( exFAT_is_mounted(i) ) {
+				window_content_N[window_id]++;
+				window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
+				sprintf(temp, "exFAT%d:", i);
+				window_content_Name[window_id][window_content_N[window_id]] = strcpy_malloc(temp);	
+			}
+		}
+		
 	} else {
 		window_content_N[window_id]++;
 		window_content_Type[window_id][window_content_N[window_id]] = strcpy_malloc(_SDIR);
@@ -24095,7 +24720,9 @@ void Window(char *directory)
 	}
 #endif
 		
-	MountNTFS();
+	NTFS_mount_all();
+	
+	exFAT_mount_all();
 	
 	if(path_info("/dev_hdd1")==_NOT_EXIST) {
 		sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
@@ -24901,12 +25528,14 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		DumpDevicesData();
+		//DumpUSB000();
+		//exFAT_test();
+		//TestCapFlag();
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
 		start_copy_loading();
-		dump_dec_bdvd("/dev_hdd0/tmp/bdvd.iso");
+		
 		end_copy_loading();
 	} else
 	if(strcmp(item, STR_SYMLINK_SRC) == 0) {
@@ -25521,6 +26150,20 @@ void Option(char *item)
 		Window(".");
 	}
 	else
+	if(strcmp(item, STR_CONVERT_TO_PNG) == 0) { 
+		start_loading();
+		for(i=0; i<=option_sel_N; i++) {
+			print_head("Converting to PNG...");
+			char dst[255];
+			strcpy(dst, option_sel[i]);
+			RemoveExtension(dst);
+			strcat(dst, ".png");
+			convert_to_png(option_sel[i], dst);
+		}
+		end_loading();
+		Window(".");
+	}
+	else	
 	if(strcmp(item, STR_MAKE_APNG) == 0) { 
 		start_loading();
 		char dst[255];
@@ -25647,7 +26290,7 @@ void Open_option()
 				add_option_item(STR_DUMP_LV2);
 			}
 			add_option_item(STR_DUMP_FLASH);
-			//add_option_item("Test");
+			add_option_item("Test");
 			//add_option_item("Test2");
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
@@ -25709,7 +26352,7 @@ void Open_option()
 						if(option_sel_N==0) add_option_item(STR_VIEW);
 						
 						if(strcasecmp(ext, ".png")) {
-							//add_option_item("Convert to PNG");
+							add_option_item(STR_CONVERT_TO_PNG);
 						}
 						if(!strcasecmp(ext, ".png") && option_sel_N < 0) {
 							add_option_item(STR_MAKE_APNG);
@@ -26515,7 +27158,9 @@ void AutoRefresh_Windows()
 	if(PlugAndPlay == NO) {start_PlugAndPlay(); return;}
 	if(do_Refresh == NO) return;
 	
-	MountNTFS();
+	NTFS_mount_all();
+	
+	exFAT_mount_all();
 	
 	RefreshDevices();
 
@@ -29109,35 +29754,35 @@ void PS2_CONFIG_MENU_CROSS()
 			ITEMS_VALUE_POSITION[ITEMS_POSITION]=YES;
 	} else
 	if(item_is(STR_PNACH)) {
-		//start_loading();
+		if( DEBUG ) start_loading();
 		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) 
 			CONFIG_add_PNACH(pnach);
 		else
 			CONFIG_remove_PNACH(pnach);
 			
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PNACH(pnach);
-		//end_loading();
+		if( DEBUG ) end_loading();
 	} else
 	if(item_is(STR_WIDESCREEN)) {
-		//start_loading();
+		if( DEBUG ) start_loading();
 		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) 
 			CONFIG_add_PNACH(WS);
 		else
 			CONFIG_remove_PNACH(WS);
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PNACH(WS);
-		//end_loading();
+		if( DEBUG ) end_loading();
 	} else
 	if(item_is(STR_YFIX)) {
-		//start_loading();
+		if( DEBUG ) start_loading();
 		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) 
 			CONFIG_add_PS2PATCH(PS2PATCH_YFIX_offset+0x24, 0, &PS2PATCH_YFIX_FLAG_ENABLE[0x24], 4);
 		else
 			CONFIG_remove_PS2PATCH(PS2PATCH_YFIX_offset+0x24, 0, 4);
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PS2PATCH(PS2PATCH_YFIX_offset+0x24, 0);
-		//end_loading();
+		if( DEBUG ) end_loading();
 	} else
 	if(item_is(STR_480P)) {
-		//start_loading();
+		if( DEBUG ) start_loading();
 		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) {
 			CONFIG_add_PS2PATCH(PS2PATCH_480P_offset, 0, PS2PATCH_480P_FLAG_ENABLE, 4);
 			CONFIG_add_PS2PATCH(PS2PATCH_480P_offset+8, 0, &PS2PATCH_480P_FLAG_ENABLE[8], 4);
@@ -29149,16 +29794,16 @@ void PS2_CONFIG_MENU_CROSS()
 			CONFIG_remove_PS2PATCH(PS2PATCH_480P_offset+0x10, 0, 4);
 		}
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PS2PATCH(PS2PATCH_480P_offset, 0);
-		//end_loading();
+		if( DEBUG ) end_loading();
 	} else
 	if(item_is(STR_FMV)) {
-		//start_loading();
+		if( DEBUG ) start_loading();
 		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) 
 			CONFIG_add_PS2PATCH(PS2PATCH_FMVSKIP_offset+8, 0, &PS2PATCH_FMVSKIP_FLAG_ENABLE[8], 4);
 		else
 			CONFIG_remove_PS2PATCH(PS2PATCH_FMVSKIP_offset+8, 0, 4);
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PS2PATCH(PS2PATCH_FMVSKIP_offset+8, 0);
-		//end_loading();
+		if( DEBUG ) end_loading();
 	} else
 /*
 	if(item_is("Tri-Ace Hack")) {
@@ -29188,9 +29833,9 @@ void PS2_CONFIG_MENU_CROSS()
 		if(item_value_is(STR_CUSTOM)) {
 			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
 		}
-		//start_loading();
+		if( DEBUG ) start_loading();
 		load_PS2_CONFIG(CONFIG_path);
-		//end_loading();
+		if( DEBUG ) end_loading();
 	} else
 	if(item_is(STR_NEW_CMD)) {
 		show_msg("TODO");
@@ -30855,24 +31500,29 @@ void open_PS1_GAME_MENU()
 
 void peek_IDPS()
 {
-	u8 i;
-	for(i=0; i<0x10; i++) {
-		IDPS[i]=lv2peek8(OFFSET_2_IDPS + i);
+	if (PEEKnPOKE) {
+		u8 i;
+		for(i=0; i<0x10; i++) {
+			IDPS[i]=lv2peek8(OFFSET_2_IDPS + i);
+		}
 	}
 }
 
 void poke_IDPS()
 {
-	u8 i;
-	for(i=0; i<0x10; i++) {
-		lv2poke8(OFFSET_1_IDPS + i, IDPS[i]);
-		lv2poke8(OFFSET_2_IDPS + i, IDPS[i]);
+	if (PEEKnPOKE) {
+		u8 i;
+		for(i=0; i<0x10; i++) {
+			lv2poke8(OFFSET_1_IDPS + i, IDPS[i]);
+			lv2poke8(OFFSET_2_IDPS + i, IDPS[i]);
+		}
 	}
 }
 
 void LoadEID5_IDPS()
 {
-	u32 source, read;
+	int source;
+	u32 read;
 	u64 offset;
     u64 buffer[ 0x40 ];
     int ret = 1;
@@ -31286,6 +31936,9 @@ void close_PS3_GAME_MENU()
 
 void init_PS3_GAME_MENU()
 {
+	
+	print_debug("init_PS3_GAME_MENU");
+	
 	int i, j;
 	
 	init_MENU();
@@ -31306,23 +31959,69 @@ void init_PS3_GAME_MENU()
 	add_item_MENU(STR_EXT_GAME_DATA, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = ext_game_data;
 	
-	
 	if(iso || HEN) {
 		add_item_MENU(STR_PAYLOAD, ITEM_LOCKED);
 		if(cobra) add_item_value_MENU("Cobra");
-		else add_item_value_MENU("Mamba");
+		else {
+			if(mamba) add_item_value_MENU("Mamba");
+			else {
+				if(!PEEKnPOKE) {
+					add_item_value_MENU("Unmountable : PEEK and POKE unavailable, mamba can't be installed");
+				} else {
+					if(MAMBA_SIZE != 0) {
+						add_item_value_MENU("Mamba");
+					} else {
+						add_item_value_MENU("Unmountable : unknown firmware, mamba can't be installed.");
+					}
+				}
+			}
+		}
 	} else {
 		add_item_MENU(STR_PAYLOAD, ITEM_TEXTBOX);
 		if(cobra) add_item_value_MENU("Cobra");
-		else add_item_value_MENU("Mamba");
+		else {
+			if(mamba) add_item_value_MENU("Mamba");
+			else {
+				if(PEEKnPOKE && MAMBA_SIZE != 0) {
+					add_item_value_MENU("Mamba");
+				}				
+			}
+		}
 		if(PEEKnPOKE) {
-			add_item_value_MENU("Iris");
-			add_item_value_MENU("multiMAN");
+			if( PAYLOAD_SKY_SIZE != 0 ) add_item_value_MENU("Iris");
+			if( BASE_ADDR != 0 ) add_item_value_MENU("multiMAN");
+		}
+		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
+			add_item_value_MENU("Unmountable");
+		}
+		
+	}
+	
+	u8 temp_payload=0;
+	for(temp_payload=0; temp_payload<=ITEMS_VALUE_NUMBER[ITEMS_POSITION]; temp_payload++) {
+	
+		if(ITEMS_VALUE[ITEMS_POSITION][temp_payload]==NULL) break;
+		
+		if(payload==SNAKE) {
+			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "Mamba") == 0 ) break;
+			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "Cobra") == 0 ) break;
+		} else
+		if(payload==IRIS) {
+			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "Iris") == 0 ) break;
+		} else
+		if(payload==MM) {
+			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "multiMAN") == 0 ) break;
+		} else
+		if(payload==NO_PAYLOAD) {
+			temp_payload = 0;
 		}
 	}
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = payload;
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = temp_payload;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
-		
+	
+	if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == 0) ITEMS_TYPE[ITEMS_NUMBER]=ITEM_LOCKED;
+	
+	
 	if(iso == NO) {	
 		if(cobra && usb) {
 			add_item_MENU(STR_PRIM_USB, ITEM_TOGGLE);
@@ -31435,9 +32134,6 @@ void PS3_GAME_MENU_UPDATE()
 	if(item_is(STR_CHANGE_IDPS)) {
 		change_IDPS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
-	if(item_is(STR_PAYLOAD)) {
-		payload = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
 	if(item_is(STR_EXT_GAME_DATA)) {
 		ext_game_data = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
@@ -31455,6 +32151,19 @@ void PS3_GAME_MENU_UPDATE()
 	} else 
 	if(item_is(STR_PATCH_EXP)) {
 		use_ex_plug = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is(STR_PAYLOAD)) {
+		if( item_value_is("Cobra") || item_value_is("Mamba")) {
+			payload = SNAKE;
+		} else 
+		if( item_value_is("Iris")) {
+			payload = IRIS;
+		} else 
+		if( item_value_is("multiMAN")) {
+			payload = MM;
+		} else {
+			payload = NO_PAYLOAD;
+		}
 	}
 	
 	init_PS3_GAME_MENU();
@@ -31564,8 +32273,7 @@ u8 PS3_GAME_MENU_CROSS()
 		start_loading();
 		print_head("Converting...");
 		u8 ret;
-		if(is_ntfs(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])==YES
-		|| strstr(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0")) 
+		if( support_big_files(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) ) 
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL); 
 		else 
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);	
@@ -31596,8 +32304,7 @@ u8 PS3_GAME_MENU_CROSS()
 		start_loading();
 		print_head("Converting...");
 		u8 ret;
-		if(is_ntfs(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])==YES
-		|| strstr(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0")) 
+		if(support_big_files(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])) 
 			ret = makeps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL);
 		else 
 			ret = makeps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);
@@ -31605,12 +32312,10 @@ u8 PS3_GAME_MENU_CROSS()
 		if(ret==SUCCESS) {
 			char IsoGame[512];
 						
-			if(is_ntfs(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])==YES
-			|| strstr(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], "/dev_hdd0")) {
+			if(support_big_files(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]])) {
 				sprintf(IsoGame, "%s%s.iso", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], strrchr(list_game_path[position], '/'));
 			} else {
 				sprintf(IsoGame, "%s%s.iso.0", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], strrchr(list_game_path[position], '/'));
-			
 			}
 			
 			add_GAMELIST(IsoGame);
@@ -31894,7 +32599,9 @@ void Draw_PS3_GAME_MENU_input()
 
 void open_PS3_GAME_MENU()
 {
-	//start_loading();
+	if( DEBUG ) {
+		start_loading();
+	}
 	
 	read_game_setting(position);
 	
@@ -31910,7 +32617,9 @@ void open_PS3_GAME_MENU()
 	
 	new_pad = 0;
 	
-	//end_loading();
+	if( DEBUG ) {
+		end_loading();
+	}
 }
 
 void open_GameMenu()
@@ -32754,7 +33463,8 @@ char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo)
 	char Row[255];	
 	
 	u8 format = FM_GetFormat(str_format);
-	u8 NTFS = is_ntfs(MountPoint);			
+	u8 NTFS = is_ntfs(MountPoint);
+	u8 exFAT = is_exFAT(MountPoint);
 	
 	switch(format)
 	{
@@ -32777,12 +33487,13 @@ char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo)
 		{
 			int t;
 			if( NTFS ) sscanf(MountPoint, "ntfs%d" , &t);
+			if( exFAT ) t = exFAT_get_idx(MountPoint);
 					
 			if( strncmp(DeviceInfo.FileSystem, "CELL_FS_", 8) == 0) {
-				if( NTFS ) sprintf(Row, "%s (%d)", &DeviceInfo.FileSystem[8], t);
+				if( NTFS || exFAT ) sprintf(Row, "%s (%d)", &DeviceInfo.FileSystem[8], t);
 				else strcpy(Row, &DeviceInfo.FileSystem[8]);
 			} else {
-				if( NTFS ) sprintf(Row, "%s (%d)", DeviceInfo.FileSystem, t);
+				if( NTFS || exFAT ) sprintf(Row, "%s (%d)", DeviceInfo.FileSystem, t);
 				else strcpy(Row, DeviceInfo.FileSystem);
 			}
 			break;
@@ -32800,7 +33511,11 @@ char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo)
 		{
 			if( NTFS ) {
 				sprintf(Row, "dev_usb%03d", NTFS_Test_Device(MountPoint));
-			} else {
+			} else
+			if( exFAT ) {
+				sprintf(Row, "dev_usb%03d", exFAT_get_idx(MountPoint));
+			} 
+			else {
 				strcpy(Row, MountPoint);
 			}
 			break;
@@ -32809,7 +33524,11 @@ char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo)
 		{
 			if( NTFS ) {
 				sprintf(Row, "dev_usb%03d:%s", NTFS_Test_Device(MountPoint), MountPoint);
-			} else {
+			} else
+			if( exFAT ) {
+				sprintf(Row, "dev_usb%03d;%s", exFAT_get_idx(MountPoint), MountPoint);
+			} 
+			else {
 				strcpy(Row, MountPoint);
 			}
 			break;
@@ -32828,14 +33547,22 @@ char *FM_GetContent(char *str_format, char *MountPoint, DeviceInfo_t DeviceInfo)
 			if(DeviceInfo.Label[0] != 0) {
 				if( NTFS ) {
 					sprintf(Row, "%s (dev_usb%03d:%s)", DeviceInfo.Label, NTFS_Test_Device(MountPoint), MountPoint);
-				} else {
+				} else
+				if( exFAT ) {
+					sprintf(Row, "%s (dev_usb%03d:%s)", DeviceInfo.Label, exFAT_get_idx(MountPoint), MountPoint);
+				} 
+				else {
 					sprintf(Row, "%s (%s)", DeviceInfo.Label, MountPoint);
 				}
 			}
 			else {
 				if( NTFS ) {
 					sprintf(Row, "dev_usb%03d:%s", NTFS_Test_Device(MountPoint), MountPoint);
-				} else {
+				} else
+				if( exFAT ) {
+					sprintf(Row, "dev_usb%03d:%s", exFAT_get_idx(MountPoint), MountPoint);
+				} else
+				{
 					strcpy(Row, MountPoint);
 				}
 			}
@@ -33448,7 +34175,7 @@ void init_SETTINGS()
 		}
 	}
 	
-	/*
+	
 	add_title_MENU("System");
 	
 	add_item_MENU("Logging", ITEM_TOGGLE);
@@ -33457,7 +34184,7 @@ void init_SETTINGS()
 	add_item_MENU("Debugging", ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = DEBUG;
 	
-	add_item_MENU("Dump eid_root_key", ITEM_TEXTBOX);
+	if( ERK_DUMPER_SIZE != 0 ) add_item_MENU("Dump eid_root_key", ITEM_TEXTBOX);
 	
 	add_item_MENU("Dump BD keys", ITEM_TEXTBOX);
 	
@@ -33468,7 +34195,6 @@ void init_SETTINGS()
 	add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
-	*/
 }
 
 void update_SETTINGS()
@@ -37490,10 +38216,9 @@ void input_MAIN()
 			}
 #endif
 		} else {
-			show_msg("TODO");
+			show_msg("Unmountable");
 		}
 	} else
-	
 	if(NewPad(BUTTON_TRIANGLE) && Game_stuff) {
 		open_GameMenu();
 	} else
@@ -37794,6 +38519,13 @@ void Draw_MAIN_input()
 			sprintf(tag_str, "USB%d", NTFS_Test_Device(dev));
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
 		} else 
+		if(is_exFAT(list_game_path[position]) ) {
+			
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "exFAT");
+			
+			sprintf(tag_str, "USB%d", exFAT_get_idx(list_game_path[position]));
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, tag_str);
+		} else
 		if( strstr(list_game_path[position], "/dev_sd") != NULL) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "FAT32");
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "SD");
@@ -37908,7 +38640,8 @@ int main(void)
 {
 	u8 LoopBreak=1;
 
-	NTFS_init_system_io();
+	exFAT_init();
+
 	AutoM = is_AutoMount(); // ManaGunZ_id
 
 	sysModuleLoad(SYSMODULE_PNGDEC);
@@ -37919,7 +38652,6 @@ int main(void)
 	ioPadInit(7);
 	ioPadSetPressMode(0,1);
 	SetCurrentFont(-1);
-	
 	
 #ifdef RPCS3
 #ifdef FILEMANAGER
@@ -37951,10 +38683,14 @@ int main(void)
 		PEEKnPOKE = YES;
 
 	print_load("Initialization");
+	
+	if( DEBUG ) sleep(2);
+	
 	if(PEEKnPOKE) {
-		if(init_fw() == NOK) {
-			//This firmware isn't supported
-			PEEKnPOKE = NO;
+		if(init_fw() == FAILED) {
+			if( init_fw_unk() == FAILED ) {
+				PEEKnPOKE = NO;
+			}
 		}
 	}
 	
@@ -37984,7 +38720,6 @@ int main(void)
 	
 	return 0;
 #endif // FILEMANAGER
-	
 	
 #ifndef RPCS3
 	if(init_ManaGunZ() == FAILED) {
@@ -38018,9 +38753,10 @@ int main(void)
 		}
 	}
 #endif	
-		
+	
 	if(AutoM) AutoMount();	
 
+	
 	print_load(STR_ADJUST);
 	adjust_screen();
 

@@ -1,22 +1,41 @@
 v1.39
 
 TO DO :
+fix shorcut pkg
+support join 666 copy_stdio
 Add Filemanager : Click under the thumb will scroll down/up a page instead of 1 item.
+Add : Get custom PS2 CONFIG files from /dev_hdd0/game/PS2CONFIG
 
-TO FINISH (STR_CONVERT_TO_PNG)
-Add FileManager : Convert any supported picture to PNG.
-
-TO FINISH (add the ird !!)
-Add : Dump eid_root_key, 3Dump.bin, disc.pic and disc.key.
+TO FINISH : add ird / custom path
 Add : Dump decrypted BR.
 
-TO MAKE IT BETTER
-Add : ManaGunZ logs option. It's save loading logs at "/dev_hdd0/tmp/mgz.log".
-Add : ManaGunZ debug option. It slows the messages displayed on screen during the loadings.
-
 DONE
+Add : Support exFAT. See notes (1).
+Add : Settings/System : Dump eid_root_key, 3Dump.bin, disc.pic and disc.key.
+Add FileManager : Convert any supported picture to PNG.
+Add : Support HEN & CFW 4.87C.
+Add : Logs option. It saves loading logs at "/dev_hdd0/tmp/mgz.log".
+Add : Debug option. It slows the messages displayed on screen during the loadings.
+Add : multiMAN payload is now fw independent.
+Fix : No more freeze when the firmware is unknown/new. I'm not sure how I fixed it tho.
+Add : New CUSTOM PS2 CONFIG files from webMAN MOD by aldostools 2020/12/14. Special thanks to kozarovv.
+Add FileManager : Extract RAR files.
 
-Add FileManager: Extract RAR files.
+Notes :
+(1) This note is for devs.
+I used the  FatFs module http://www.elm-chan.org/fsw/ff/00index_e.html ported to ps3 (psl1ght) by tps/lmirel https://github.com/lmirel/fatfs_psx.
+I did few modifications in the lib.
+- enabled GPT with FF_LBA64
+- changed FF_VOLUMES from 8 to 131
+- also modified how the lib 'catch' the volume id to be able to have more than 1 digit id
+- maybe more I don't remember.
+I increased the number of volume support usb device from 0 for dev_usb000 to 127 for dev_usb127, 128 for dev_sd, 129 for dev_cf and 130 for dev_ms.
+Multipartition is disabled.
+To support exFAT without changing to much code in ManaGunZ I included 2 files, exFAT.c and mgz_io.c
+exFAT.c : it allow you to manage the exFAT devices : mount, unmount etc.
+mgz_io.c : it replace several standard functions (some of them are slow/broken in psl1ght anyway) with new ones that support ps3 native file system (ufs2, fat16, fat32), ntfs and exFAT.
+The preffix "exFAT" is used to detect if it's an exFAT device in mgz_io.c 
+
 
 v1.38
 Add : Support CFW/HEN 486C
