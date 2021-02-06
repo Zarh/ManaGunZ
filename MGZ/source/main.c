@@ -24792,12 +24792,12 @@ void open_properties()
 	
 	if( 0 < gathering_nb_directory ) {
 		PROP_ITEM_NUMBER++;
-		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_DIR);
+		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_DIRS);
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%d", gathering_nb_directory);
 	}
 	if(0 < gathering_nb_file) {
 		PROP_ITEM_NUMBER++;
-		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_FILE);
+		PROP_ITEM[PROP_ITEM_NUMBER] = strcpy_malloc(STR_FILES);
 		PROP_ITEM_VALUE[PROP_ITEM_NUMBER] = sprintf_malloc("%d", gathering_nb_file);
 	}
 	
