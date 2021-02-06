@@ -4,7 +4,3 @@
 #ifdef extend_kstack_symbol
 LV2_FUNCTION(extend_kstack, extend_kstack_symbol)
 #endif
-
-
-
-

@@ -28,5 +28,3 @@ LV2_FUNCTION(cellUsbdControlTransfer, cellUsbdControlTransfer_symbol)
 #ifdef cellUsbdBulkTransfer_symbol
 LV2_FUNCTION(cellUsbdBulkTransfer, cellUsbdBulkTransfer_symbol)
 #endif
-
-

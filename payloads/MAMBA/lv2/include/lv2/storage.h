@@ -6,40 +6,40 @@
 #include <lv1/lv1.h>
 
 /* Devices */
-#define ATA_HDD			0x101000000000007
-#define BDVD_DRIVE		0x101000000000006
-#define PATA0_HDD_DRIVE		0x101000000000008
-#define PATA0_BDVD_DRIVE	BDVD_DRIVE
-#define PATA1_HDD_DRIVE		ATA_HDD
-#define BUILTIN_FLASH		0x100000000000001
-#define NAND_FLASH		BUILTIN_FLASH
-#define NOR_FLASH		0x100000000000004
-#define MEMORY_STICK		0x103000000000010
-#define SD_CARD			0x103000100000010
-#define COMPACT_FLASH		0x103000200000010
-#define USB_MASS_STORAGE_1(n)	(0x10300000000000A+n) /* For 0-5 */
+#define ATA_HDD					0x101000000000007
+#define BDVD_DRIVE				0x101000000000006
+#define PATA0_HDD_DRIVE			0x101000000000008
+#define PATA0_BDVD_DRIVE		BDVD_DRIVE
+#define PATA1_HDD_DRIVE			ATA_HDD
+#define BUILTIN_FLASH			0x100000000000001
+#define NAND_FLASH				BUILTIN_FLASH
+#define NOR_FLASH				0x100000000000004
+#define MEMORY_STICK			0x103000000000010
+#define SD_CARD					0x103000100000010
+#define COMPACT_FLASH			0x103000200000010
+#define USB_MASS_STORAGE_1(n)	(0x10300000000000A+n) 	  /* For 0-5 */
 #define USB_MASS_STORAGE_2(n)	(0x10300000000001F+(n-6)) /* For 6-127 */
 
-#define	HDD_PARTITION(n)	(ATA_HDD | (n<<32))
-#define FLASH_PARTITION(n)	(BUILTIN_FLASH | (n<<32))
+#define	HDD_PARTITION(n)		(ATA_HDD | (n<<32))
+#define FLASH_PARTITION(n)		(BUILTIN_FLASH | (n<<32))
 
 /* Commands for storage_send_device_command */
-#define STORAGE_COMMAND_NATIVE		0x01
+#define STORAGE_COMMAND_NATIVE			0x01
 #define STORAGE_COMMAND_GET_DEVICE_SIZE	0x10
 #define STORAGE_COMMAND_GET_DEVICE_TYPE	0x11
 
 /* Device types returned by STORAGE_COMMAND_GET_DEVICE_TYPE and some scsi commands */
-#define DEVICE_TYPE_PS3_DVD	0xFF70
-#define DEVICE_TYPE_PS3_BD	0xFF71
-#define DEVICE_TYPE_PS2_CD	0xFF60
-#define DEVICE_TYPE_PS2_DVD	0xFF61
-#define DEVICE_TYPE_PSX_CD	0xFF50
-#define DEVICE_TYPE_BDROM	0x40
-#define DEVICE_TYPE_BDMR_SR	0x41 /* Sequential record */
+#define DEVICE_TYPE_PS3_DVD		0xFF70
+#define DEVICE_TYPE_PS3_BD		0xFF71
+#define DEVICE_TYPE_PS2_CD		0xFF60
+#define DEVICE_TYPE_PS2_DVD		0xFF61
+#define DEVICE_TYPE_PSX_CD		0xFF50
+#define DEVICE_TYPE_BDROM		0x40
+#define DEVICE_TYPE_BDMR_SR		0x41 /* Sequential record */
 #define DEVICE_TYPE_BDMR_RR 	0x42 /* Random record */
-#define DEVICE_TYPE_BDMRE	0x43
-#define DEVICE_TYPE_DVD		0x10 /* DVD-ROM, DVD+-R, DVD+-RW etc, they are differenced by booktype field in some scsi command */
-#define DEVICE_TYPE_CD		0x08 /* CD-ROM, CD-DA, CD-R, CD-RW, etc, they are differenced somehow with scsi commands */
+#define DEVICE_TYPE_BDMRE		0x43
+#define DEVICE_TYPE_DVD			0x10 /* DVD-ROM, DVD+-R, DVD+-RW etc, they are differenced by booktype field in some scsi command */
+#define DEVICE_TYPE_CD			0x08 /* CD-ROM, CD-DA, CD-R, CD-RW, etc, they are differenced somehow with scsi commands */
 
 
 typedef uint32_t device_handle_t; // Kernel
@@ -47,19 +47,19 @@ typedef uint32_t sys_device_handle_t; // User
 
 typedef struct
 {
-	char *label; // 0
-	uint32_t unk_08; // 8                                                           0xB8   0x90
-	uint32_t unk_0C; // 0x0C                                                        0xBC   0x94
-	uint64_t unk_10;  // 0x10  not copied in sys_storage_get_device_info            0xC0   unused
-	uint64_t sector_count; // 0x18							0xC8   0x98
-	uint32_t sector_size; // 0x20                                                   0xD0   0xA0
-	uint32_t unk_24; // 0x24 not copied in sys_storage_get_device_info		0xD4   unused
-	uint32_t unk_28; // 0x28 not copied in sys_storage_get_device_info		0xD8   unused
-	uint32_t unk_2C; // 0x2C not copied in sys_storage_get_device_info		0xDC   unused
-	uint32_t unk_30; // 0x30							0xE0   0xA4
-	uint32_t unk_34; // 0x34 not copied in sys_storage_get_device_info		0xE4   unused
-	uint64_t unk_38; // 0x38 not copied in sys_storage_get_device_info		0xE8   unused
-	uint8_t unk_40[8]; // 0x40							0xF0   0xA8
+	char *label; 	 		// 0
+	uint32_t unk_08; 		// 8                                                    0xB8   0x90
+	uint32_t unk_0C; 		// 0x0C                                                 0xBC   0x94
+	uint64_t unk_10;  		// 0x10  not copied in sys_storage_get_device_info      0xC0   unused
+	uint64_t sector_count; 	// 0x18													0xC8   0x98
+	uint32_t sector_size; 	// 0x20                                                 0xD0   0xA0
+	uint32_t unk_24; 		// 0x24 not copied in sys_storage_get_device_info		0xD4   unused
+	uint32_t unk_28; 		// 0x28 not copied in sys_storage_get_device_info		0xD8   unused
+	uint32_t unk_2C; 		// 0x2C not copied in sys_storage_get_device_info		0xDC   unused
+	uint32_t unk_30; 		// 0x30													0xE0   0xA4
+	uint32_t unk_34; 		// 0x34 not copied in sys_storage_get_device_info		0xE4   unused
+	uint64_t unk_38; 		// 0x38 not copied in sys_storage_get_device_info		0xE8   unused
+	uint8_t unk_40[8]; 		// 0x40													0xF0   0xA8
 	
 } __attribute__((packed)) device_info_t;
 

@@ -186,14 +186,15 @@ clean:
 #---------------------------------------------------------------------------------
 update:
 	cd OffsetFinder; ./OffsetFinder.exe extract
-	cd OffsetFinder; ./OffsetFinder.exe	search
-	cd OffsetFinder; ./OffsetFinder.exe	move
+	cd OffsetFinder; ./OffsetFinder.exe search
+	cd OffsetFinder; ./OffsetFinder.exe move
 	@$(MAKE) -C payloads/SKY --no-print-directory
-	@$(MAKE) clean -C payloads/MAMBA --no-print-directory
-	@$(MAKE) all -C payloads/MAMBA --no-print-directory
+	@rm -f payloads/MAMBA/bin/*.bin
+	@rm -f payloads/MAMBA/bin/debug/*.bin
+	@$(MAKE) release -C payloads/MAMBA --no-print-directory
 	@$(MAKE) loader -C payloads/MAMBA --no-print-directory
-	@mv -f payloads/MAMBA/mamba_*.lz.bin  MGZ/data
-	@mv -f payloads/MAMBA/mamba_loader_*.bin  MGZ/data
+	@mv -f payloads/MAMBA/bin/mamba_*.lz.bin  MGZ/data
+	@mv -f payloads/MAMBA/bin/mamba_loader_*.bin  MGZ/data
 	@$(MAKE) all -C payloads/PS2_EMU --no-print-directory
 	@mv -f payloads/PS2_EMU/BIN/*.bin  MGZ/data
 	@$(MAKE) -C payloads/rawseciso --no-print-directory

@@ -2,13 +2,80 @@
 MAMBA + PS3M_API + PS2 ISO + PSP ISO SUPPORT = COBRA :D
 =====================================================================
 
-Version of mamba who include ps3m_api_core by NzV and ps2, psp iso support by Ps3ita Team
+Version of mamba that includes ps3m_api_core by NzV and ps2, psp iso support by Ps3ita Team
+
+- Cobra standard features included in MAMBA
+	. ISO Suppport: PS1/PS2/PS3/PSP/DVD/BluRay
+	. Split ISO support on FAT32 drives
+	. Burned/Burnt Optical media support (PS1/PS3 Games for all Models)
+	. NTFS HDD Support
+	. Network ISO & folder Support: PS1/PS3/DVD/BluRay /PKGs (requires ps3netsrv)
+	. Support for system paths redirection (syscall 35)
+	. CFW Syscalls: LV2 peek/poke, LV1 peek/poke, Cobra API (syscall8), LV1 function call, LV2 call to internal functions
+	. Allow modification on Syscall 6/7/8/9/10/11/15.
+	. Load VSH Plugins on system startup or on demand
+	. PS3 MANAGER API commands (syscall management, list processes, attach to processes, load custom modules, etc.)
+	. Kernel plugin support
+	. Backup Protection Removal, Add full PS3 Backup support on all multiMAN/webMAN,IRIS manager forks and Managunz.
+	. Blu Ray Movie region free functionality
+	. webMAN MOD support
+	. PSNPatch stealth plugin support (Disable CFW Syscalls)
+	. Homebrew blocker  – blocks homebrew access while Syscalls are disabled
+
+	*** ISO rips are required to get 100% support, for ex) after disabling syscalls.
+	    Games like Call of Duty will not be able to play unless you use ISO rips,
+	    Please DO NOT expect everything to be fully functional when you are disabling the built-in features from COBRA.
+	    Folder rips are NOT compatible with PSNPatch’s stealth mode due to its ability to disable COBRA’s disc-less feature for folder JB rips****
+
+- New features in 8.2:
+	. On-the-fly reActPSN for activation of PSN content (rap files, edat, act.dat) by habib
+	. Load Kernel Plugins on startup or on demand (static & dynamic addresses) by habib
+	. Advanced QA Flag & Debug Settings Enabler by habib
+	. Custom Syscalls for set / get fan policy by habib
+	. LV2 module patches for download_plugin, autodownload_plugin, nas_plugin, psp remote play, etc. by Joonie/DeViL303
+	. Improvements to PS3MAPI by TheRouletteBoi
+		- Added a better set process memory by using the function used to actually write to process, this will allow user to write to memory where writing permissions are disabled.
+		- Added ps3mapi_process_page_allocate this function will allocate memory into the eboot process allowing your to write/read/execute code into start_address parameter
+		- Added ps3mapi_get_process_module_info which will get the name, module path, module segments, module start and module stop address all in one function
+		- Added ps3mapi_create_process_thread to create thread into the process, This is useful if you want to load a small function into the process without needed make and load a sprx module
+
+- New features in 8.3:
+	. Restore disabled CFW Syscalls without Reboot just entering to Settings > System Update on XMB by aldo
+	. Auto-enable dev_blind by aldo
+	. Integrated fan controller (to control fan when webMAN is unloaded) by aldo
+	. Support Photo GUI integration with webMAN MOD (mount games from Photo column) by aldo/DeViL303
+	. Extended API with additional opcodes for developers by aldo
+		. LV1 Pokes (8bit, 16bit, 32bit, 64bit)
+		. LV2 Pokes (8bit, 16bit, 32bit, 64bit)
+		. Extended Map Path features:
+			. Support for non deletable map path entries (allow updates) /./path/etc
+			. Support for partial map paths (search non existing files in original path) //path/etc
+			. Map Path Callback (experimental)
+			. Get Map Path info
+		. Get / Set fan speed
+		. Enable/disable features: Photo GUI, Auto mount dev_blind, Restore Syscalls
+		. Create CFW Syscalls (6,7,8,9,10,11,15,389,409)
+		. Updated ps3mapi_load_process_modules to load custom modules and system modules (by haxxxen)
+		. Added ps3mapi_get_process_module_info
+	. Increased from 24 to 32 the max number of map paths by aldo
 
 ----------------------------------------------------------------------
 ADD MAMBA TO YOUR BACKUP MANAGER
 ----------------------------------------------------------------------
 
-To avoid that the Backup Manager freezes use NzV mamba loader to install mamba payload
+To boot MAMBA on startup of REBUG 4.84.2 REX / DREX, disable Cobra payload and add the path of the MAMBA payload file to:
+	/dev_hdd0/boot_plugins_kernel_nocobra.txt
+or	/dev_hdd0/boot_plugins_kernel_nocobra_dex.txt
+
+Example: /dev_hdd0/plugins/kernel/mamba_484C.bin
+
+For IRISMAN copy the MAMBA payload files to the folder:
+	/dev_hdd0/game/IRISMAN00/USRDIR/mamba
+
+To update MAMBA/PRX Loader copy the MAMBA payload files to the folder:
+	/dev_hdd0/game/MAMBAPRXL/USRDIR/mamba
+
+To avoid freezes on the Backup Managers use NzV mamba/prx loader to install mamba payload.
 
 ----------------------------------------------------------------------
 ORIGINAL README

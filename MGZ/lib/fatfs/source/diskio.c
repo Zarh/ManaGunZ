@@ -123,8 +123,7 @@ DRESULT disk_read (
 		r = sys_storage_read (fd, sector, count, (u8 *) my_buff, &sectors_read, storage_flag); 
 		if (r == 0x80010002 ) {
 			if(storage_flag == 0x22) break;
-			if(storage_flag == 1) storage_flag = 0x22;
-			if(storage_flag == 0) storage_flag = 1;
+			if(storage_flag == 0) storage_flag = 0x22;
 		}
 		if(r == 0)
 		{
@@ -211,8 +210,7 @@ DRESULT disk_write (
 		
 		if (r == 0x80010002 ) {
 			if(storage_flag == 0x22) break;
-			if(storage_flag == 1) storage_flag = 0x22;
-			if(storage_flag == 0) storage_flag = 1;
+			if(storage_flag == 0) storage_flag = 0x22;
 		}
 		
 		if (r ==0)

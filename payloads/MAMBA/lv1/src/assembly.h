@@ -9,16 +9,16 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #ifndef ASSEMBLY_H
 #define ASSEMBLY_H
 
-#define r0 0
-#define r1 1
-#define r2 2
-#define r3 3
-#define r4 4
-#define r5 5
-#define r6 6
-#define r7 7
-#define r8 8
-#define r9 9
+#define r0 	0
+#define r1 	1
+#define r2 	2
+#define r3 	3
+#define r4 	4
+#define r5 	5
+#define r6 	6
+#define r7 	7
+#define r8 	8
+#define r9 	9
 #define r10 10
 #define r11 11
 #define r12 12
@@ -42,7 +42,7 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #define r30 30
 #define r31 31
 
-#define sp r1
+#define sp 	r1
 #define toc r2
 
 #define cr0 0
@@ -54,16 +54,16 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #define cr6 6
 #define cr7 7
 
-#define fr0 0
-#define fr1 1
-#define fr2 2
-#define fr3 3
-#define fr4 4
-#define fr5 5
-#define fr6 6
-#define fr7 7
-#define fr8 8
-#define fr9 9
+#define fr0  0
+#define fr1  1
+#define fr2  2
+#define fr3  3
+#define fr4  4
+#define fr5  5
+#define fr6  6
+#define fr7  7
+#define fr8  8
+#define fr9  9
 #define fr10 10
 #define fr11 11
 #define fr12 12

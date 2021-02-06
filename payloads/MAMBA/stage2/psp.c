@@ -14,12 +14,13 @@
 #include "psp.h"
 #include "modulespatch.h"
 
-
 uint32_t psp_tag;
-uint8_t psp_keys[16];
-uint8_t psp_code;
-char pspemu_path[36];
-char psptrans_path[37];
+uint8_t  psp_keys[0x10];
+uint8_t  psp_code;
+//char pspemu_path[36];
+//char psptrans_path[37];
+
+static uint32_t base_offset = 0;
 
 #define SPRX_NUM		90
 #define NUM_SCE_PSP_MODULES	5
@@ -58,8 +59,8 @@ SprxPatch psp_drm_patches[] =
 	{ 0 }
 };
 
-SprxPatch *patches_backup;
-uint64_t psp_extra_drm_fix = 0xDEADFACE;
+static SprxPatch *patches_backup;
+static uint64_t psp_extra_drm_fix = 0xDEADFACE;
 
 static INLINE void psp_patches_type()
 {
@@ -445,7 +446,7 @@ static INLINE __attribute__((unused)) int is_sce_psp_module(char *name)
 {
 	for (int i = 0; i < NUM_SCE_PSP_MODULES; i++)
 	{
-		if (strcmp(sce_psp_modules[i], name) == 0)
+		if (strcmp(sce_psp_modules[i], name) == SUCCEEDED)
 			return 1;
 	}
 
@@ -473,17 +474,17 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 
 	pemucorelib_base = 0;
 	emulator_api_base = 0;
-	list = alloc(SPRX_NUM*sizeof(sys_prx_module_info_t), 0x35);
-	unk = alloc(SPRX_NUM*sizeof(uint32_t), 0x35);
+	list = kalloc(SPRX_NUM * sizeof(sys_prx_module_info_t));
+	unk  = kalloc(SPRX_NUM * sizeof(uint32_t));
 	process = get_current_process();
 
 	ret = prx_get_module_list(process, list, unk, SPRX_NUM, &n, &unk2);
-	if (ret == 0)
+	if (ret == SUCCEEDED)
 	{
-		char *filename = alloc(256, 0x35);
-		sys_prx_segment_info_t *segments = alloc(sizeof(sys_prx_segment_info_t), 0x35);
+		char *filename = kalloc(256);
+		sys_prx_segment_info_t *segments = kalloc(sizeof(sys_prx_segment_info_t));
 
-		for (int i = 0; i < SPRX_NUM; i++)
+		for (int i = 0; i < n; i++)
 		{
 			sys_prx_module_info_t modinfo;
 
@@ -491,7 +492,7 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 			modinfo.filename_size = 256;
 			modinfo.segments_num = 1;
 
-			if (prx_get_module_info(process, list[i], &modinfo, filename, segments) == 0)
+			if (prx_get_module_info(process, list[i], &modinfo, filename, segments) == SUCCEEDED)
 			{
 				if (strstr(filename, "/emulator_api.sprx"))
 				{
@@ -513,25 +514,28 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 		if (pemucorelib_base == 0 || emulator_api_base == 0)
 			ret = EABORT;
 
-		dealloc(filename, 0x35);
-		dealloc(segments, 0x35);
+		kfree(filename);
+		kfree(segments);
 	}
 
-	dealloc(list, 0x35);
-	dealloc(unk, 0x35);
+	kfree(list);
+	kfree(unk);
 
-	if (ret != 0)
+	if (ret != SUCCEEDED)
 		return ret;
 
 	ret = cellFsOpen(umd_file, CELL_FS_O_RDONLY, &umd_fd, 0, NULL, 0);
-	if (ret != 0)
+	if (ret != SUCCEEDED)
 		return ret;
 
 	cellFsLseek(umd_fd, 0, SEEK_END, &umd_size);
+
+	umd_size -= base_offset;
+
 	// Fake header. We will write only values actually used
 	memset(buf, 0, 0x100);
-	*(uint32_t *)(buf+0x0c) = 0x10;
-	*(uint32_t *)(buf+0x64) = (umd_size/0x800)-1; // Last sector of umd
+	*(uint32_t *)(buf + 0x0c) = 0x10;
+	*(uint32_t *)(buf + 0x64) = (umd_size/0x800)-1; // Last sector of umd
 	strncpy(buf+0x70, psp_id, 10);
 
 	#ifdef DEBUG
@@ -564,7 +568,7 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 
 		int ret = open_kernel_object(object_table, *(uint32_t *)(emulator_api_base+umd_mutex_offset), (void **)&mutex, &obj_handle, SYS_MUTEX_OBJECT);
 
-		if (ret != 0)
+		if (ret != SUCCEEDED)
 		{
 			#ifdef DEBUG
 			DPRINTF("Cannot open user mutex, using an own one\n");
@@ -583,15 +587,15 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 	}
 
 	mutex_lock(mutex, 0);
-	offset = sector*0x800;
+	offset = sector * 0x800;
 
 	if (ofs != 0)
 	{
-		offset = offset+0x800-ofs;
+		offset = offset + 0x800 - ofs;
 	}
 
-	ret = cellFsLseek(umd_fd, offset, SEEK_SET, &dummy);
-	if (ret != 0)
+	ret = cellFsLseek(umd_fd, base_offset + offset, SEEK_SET, &dummy);
+	if (ret != SUCCEEDED)
 	{
 		mutex_unlock(mutex);
 		return ret;
@@ -600,7 +604,7 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 	ret = cellFsRead(umd_fd, get_secure_user_ptr(buf), size, &dummy);
 	mutex_unlock(mutex);
 
-	if (ret == 0)
+	if (ret == SUCCEEDED)
 		ret = (int)size;
 
 	return ret;
@@ -608,6 +612,9 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 
 int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 {
+	base_offset = 0;
+
+	// get_vsh_offset() is called from main.c before call this function
 	if(vsh_offset == 0)
 		return EINVAL;
 
@@ -620,7 +627,7 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 	{
 		if (umd_file)
 		{
-			dealloc(umd_file, 0x27);
+			free(umd_file);
 			umd_file = NULL;
 		}
 		if (mutex)
@@ -650,12 +657,12 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 				#endif
 			}
 
-			dealloc(patches_backup, 0x27);
+			free(patches_backup);
 			patches_backup = NULL;
 		}
 
-		condition_psp_iso = 0;
-		condition_psp_dec = 0;
+		condition_psp_iso  = 0;
+		condition_psp_dec  = 0;
 		condition_psp_keys = 0;
 		condition_psp_prometheus = 0;
 		return 0;
@@ -668,8 +675,14 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 		return EINVAL;
 
 	ret = pathdup_from_user(file, &umd_file);
-	if (ret != 0)
+	if (ret != SUCCEEDED)
 		return ret;
+
+	int len = strlen(umd_file);
+	if(len > 4)
+	{
+		if(strcmp(file + (len - 4), ".PNG") == 0) base_offset = 0x10000;
+	}
 
 	condition_psp_iso = 1;
 	condition_psp_prometheus = prometheus;
@@ -686,7 +699,7 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 
 	if (!patches_backup)
 	{
-		patches_backup = alloc(sizeof(psp_drm_patches), 0x27);
+		patches_backup = malloc(sizeof(psp_drm_patches));
 		memcpy(patches_backup, &psp_drm_patches, sizeof(psp_drm_patches));
 
 		#ifdef DEBUG
@@ -715,9 +728,9 @@ int sys_psp_set_decrypt_options(int decrypt_patch, uint32_t tag, uint8_t *keys, 
 
 	if (keys)
 	{
-		if (copy_from_user(keys, psp_keys, 0x10) == 0)
+		if (copy_from_user(keys, psp_keys, 0x10) == SUCCEEDED)
 		{
-			psp_tag = tag;
+			psp_tag  = tag;
 			psp_code = code;
 			condition_psp_keys = 1;
 		}
@@ -766,17 +779,17 @@ int sys_psp_set_emu_path(char *path)
 		return 0;
 	}
 
-	//#ifdef DEBUG
-	//DPRINTF("sys_psp_set_emu_path has been deleted\n");
-	//#endif
+	#ifdef DEBUG
+	DPRINTF("sys_psp_set_emu_path has been deleted\n");
+	#endif
 
-	//DPRINTF("pspemu path set to %s\n", path);
+	DPRINTF("pspemu path set to %s\n", path);
 
-	//path = get_secure_user_ptr(path);
-	//condition_psp_change_emu = 1;
+	path = get_secure_user_ptr(path);
+	condition_psp_change_emu = 1;
 
-	//snprintf(pspemu_path, sizeof(pspemu_path), "%s/psp_emulator.self", path);
-	//snprintf(psptrans_path, sizeof(psptrans_path), "%s/psp_translator.self", path);
+	snprintf(pspemu_path, sizeof(pspemu_path), "%s/psp_emulator.self", path);
+	snprintf(psptrans_path, sizeof(psptrans_path), "%s/psp_translator.self", path);
 
 	return 0;
 }
@@ -787,7 +800,7 @@ int sys_psp_post_savedata_initstart(int result, void *param)
 	DPRINTF("Savedata init start\n");
 	#endif
 
-	if (result == 0)
+	if (result == SUCCEEDED)
 	{
 		savedata_param = get_secure_user_ptr(param);
 	}

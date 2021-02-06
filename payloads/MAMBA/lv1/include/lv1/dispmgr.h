@@ -19,7 +19,7 @@
 
 #include <inttypes.h>
 
-#define DISPMGR_VUART_PORT						10
+#define DISPMGR_VUART_PORT 		10
 
 struct dispmgr_header
 {

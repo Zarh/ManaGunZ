@@ -1,0 +1,99 @@
+ifeq ($(OS),Windows_NT)
+	ZLIBUTIL = ./zlibutil.exe
+endif
+ifeq ($(shell uname -s),Linux)
+	ZLIBUTIL = ./zlibutil
+endif
+
+CC        := ppu-gcc
+CXX       := ppu-g++
+LD        := ppu-ld 
+OBJCOPY   := ppu-objcopy
+OBJDUMP   := ppu-objdump
+AR        := ppu-ar
+STRIP     := ppu-strip
+INCLUDE	   = $(PS3DEV)/ppu/ppu/include lv2/include lv1/include debug/include
+LIBSDIR    =
+LIBS       =
+
+MACHDEP    = -DLV2 -DUSE_LV1_PEEK_POKE -DFIRMWARE_$(MAMBA_VER) -DIS_MAMBA 
+#Comment if you don't want it
+MACHDEP   += -DDO_PATCH_COBRA810
+MACHDEP   += -DPS3M_API
+MACHDEP   += -DKW_STEALTH_EXT
+MACHDEP   += -DDO_PHOTO_GUI
+MACHDEP   += -DDO_AUTO_DEV_BLIND
+#MACHDEP   += -DDO_AUTO_EARTH
+MACHDEP   += -DDO_REACTPSN
+MACHDEP   += -DQA_FLAG
+MACHDEP   += -DFAN_CONTROL
+MACHDEP   += -DAPPLY_KERNEL_PATCHES
+MACHDEP   += -DMAKE_RIF
+#MACHDEP   += -DEXT_AUDIO
+
+
+CFLAGS     = -ffunction-sections -fdata-sections -Os -m64 -fno-builtin -fno-exceptions \
+             -Wall -Wno-strict-aliasing -Wno-multichar $(foreach dir,$(INCLUDE),-I$(dir)) -ffreestanding
+CFLAGS += --std=gnu99
+
+CFLAGS += $(MACHDEP)
+
+ifeq ($(BUILD_TYPE), debug)
+CFLAGS += -DDEBUG -DTEST 
+endif
+
+ifeq ($(EMU_SUPPORT), full)
+CFLAGS += -DDO_PATCH_PSP -DDO_PATCH_PS2
+endif
+
+ifeq ($(EMU_SUPPORT), psp)
+CFLAGS += -DDO_PATCH_PSP
+endif
+
+ifeq ($(EMU_SUPPORT), ps2)
+CFLAGS += -DDO_PATCH_PS2
+endif
+
+LDFLAGS= -T stage2/stage2.ld -nostartfiles -nostdlib -nodefaultlibs -Wl,-static -L. $(foreach dir,$(LIBSDIR),-L$(dir)) $(LIBS) \
+	 -Wl,--gc-sections -Wl,-Map=stage2/stage2.map
+
+OBJS = stage2/start.o stage2/sm_ext.o stage2/main.o stage2/ps3mapi_core.o stage2/mappath.o stage2/storage_ext.o stage2/crypto.o stage2/modulespatch.o stage2/config.o stage2/region.o \
+	lv2/src/patch.o lv2/src/interrupt.o lv2/src/interrupt_c.o lv2/src/io.o lv2/src/libc.o \
+	lv2/src/libc_c.o lv2/src/memory.o lv2/src/memory_c.o lv2/src/thread.o lv2/src/thread_c.o lv2/src/process.o \
+	lv2/src/synchronization.o lv2/src/modules.o lv2/src/modules_c.o lv2/src/storage.o lv2/src/object.o \
+	lv2/src/security.o lv2/src/time.o  lv2/src/syscall.o \
+	lv1/src/hvcall.o lv1/src/stor.o lv1/src/device.o 
+
+ifeq ($(EMU_SUPPORT),$(filter $(EMU_SUPPORT),psp full))
+OBJS += stage2/psp_s.o stage2/psp.o
+endif
+
+ifeq ($(BUILD_TYPE), debug)
+OBJS += debug/src/debug.o debug/src/debug_util.o debug/src/printf.o
+endif
+	
+all: mamba_$(MAMBA_VER).bin
+
+objdump: stage$(MAMBA_VER).bin
+	@$(OBJDUMP) -D -EB -b binary -m powerpc:common64 mamba_$(MAMBA_VER).bin
+
+%.bin: %.elf
+	@$(OBJCOPY) -O binary $< $@	
+ifeq ($(COMPRESS), 1)
+	@$(ZLIBUTIL) mamba_$(MAMBA_VER).bin mamba_$(MAMBA_VER).lz.bin
+	@mv mamba_$(MAMBA_VER).lz.bin $(OUTDIR)/mamba_$(MAMBA_VER).lz.bin
+endif
+	@mv mamba_$(MAMBA_VER).bin $(OUTDIR)/mamba_$(MAMBA_VER).bin
+	@rm -f *.o *.elf stage2/*.map stage2/*.o lv2/src/*.o lv1/src/*.o debug/src/*.o  
+
+mamba_$(MAMBA_VER).elf: $(OBJS) stage2/stage2.ld
+	@$(CC) $(LDFLAGS) -o $@ $(OBJS)
+
+%.o: %.S
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+%.o: %.c
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+clean:
+	@rm -f *.o *.elf stage2/*.map stage2/*.o lv2/src/*.o lv1/src/*.o debug/src/*.o  

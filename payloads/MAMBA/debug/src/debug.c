@@ -15,6 +15,13 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #include <lv1/gelic.h>
 #include <lv1/device.h>
 
+#ifdef PS2EMU
+
+#include <ps2emu/libc.h>
+#include <ps2emu/symbols.h>
+#include <ps2emu/patch.h>
+
+#elif defined(LV2)
 
 #include <lv2/patch.h>
 #include <lv2/syscall.h>
@@ -22,7 +29,7 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #include <lv2/libc.h>
 #include <lv2/symbols.h>
 
-
+#endif
 #include "printf.h"
 
 #undef printf
@@ -32,20 +39,24 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 static int bus_id;
 static int dev_id;
 
+uint64_t *ttywrite_sc;
 static u64 bus_addr;
 
-struct ethhdr {
+struct ethhdr
+{
 	uint8_t dest[6];
 	uint8_t src[6];
 	uint16_t type;
 } __attribute__((packed));
 
-struct vlantag {
+struct vlantag
+{
 	uint16_t vlan;
 	uint16_t subtype;
 } __attribute__((packed));
 
-struct iphdr {
+struct iphdr
+{
 	uint8_t ver_len;
 	uint8_t dscp_ecn;
 	uint16_t total_length;
@@ -58,7 +69,8 @@ struct iphdr {
 	uint32_t dest;
 } __attribute__((packed));
 
-struct udphdr {
+struct udphdr
+{
 	uint16_t src;
 	uint16_t dest;
 	uint16_t len;
@@ -74,7 +86,8 @@ static char *pmsg;
 
 #define MAX_MESSAGE_SIZE 1000
 
-struct debug_block {
+struct debug_block
+{
 	volatile struct gelic_descr descr;
 	uint8_t pkt[1520];
 } __attribute__((packed));
@@ -103,16 +116,24 @@ void debug_uninstall(void)
 
 LV2_SYSCALL(int, ttyWrite, (int channel, const char* message, int length, int* written))
 {
-	debug_print(message, length);	
+	debug_print(message, length);
 	if (written)
-		*written = length;	
+		*written = length;
+
+	#ifdef DEBUG
+	f_desc_t f;
+	f.addr = (void*)ttywrite_sc;
+	f.toc = (void*)MKA(TOC);
+	int (*func)(int, const char *, int, int *) = (void *)&f;
+	return func(channel, message, length, written);
+	#endif
+
 	return 0;
 }
 
-LV2_SYSCALL(int, consoleWrite, (const char* message, int length))
+LV2_SYSCALL2(int, consoleWrite, (const char* message, int length))
 {
-	debug_print(message, length);	
-		
+	debug_print(message, length);
 	return 0;
 }
 
@@ -121,15 +142,27 @@ void debug_install(void)
 	suspend_intr();
 	change_function(printf_symbol, debug_printf);
 	change_function(printfnull_symbol, debug_printf);
-	patch_syscall(SYS_TTY_WRITE, ttyWrite);
-	patch_syscall(SYS_CONSOLE_WRITE, consoleWrite);
+	create_syscall2(SYS_TTY_WRITE, ttyWrite);
+	create_syscall2(SYS_CONSOLE_WRITE, consoleWrite);
 	resume_intr();
+}
+
+void debug_hook()
+{
+	change_function(printf_symbol, debug_printf);
+	change_function(printfnull_symbol, debug_printf);
 }
 
 void debug_uninstall(void)
 {
 	suspend_intr();
-	// TODO: unpatch code here
+
+	*(uint32_t *)MKA(printf_symbol) = 0xF821FF51;
+	clear_icache((void *)MKA(printf_symbol), 4);
+
+	*(uint32_t *)MKA(printfnull_symbol) = 0x38600000;
+	clear_icache((void *)MKA(printfnull_symbol), 4);
+
 	resume_intr();
 }
 
@@ -137,6 +170,10 @@ void debug_uninstall(void)
 
 int64_t debug_init(void)
 {
+	uint64_t **table = (uint64_t **)MKA(syscall_table_symbol);
+	f_desc_t *f = (f_desc_t *)table[SYS_TTY_WRITE];
+	ttywrite_sc = (uint64_t *)f->addr;
+
 	s64 result;
 	u64 v2;
 
@@ -154,12 +191,14 @@ int64_t debug_init(void)
 
 	u64 mac;
 	result = lv1_net_control(bus_id, dev_id, GELIC_LV1_GET_MAC_ADDRESS, 0, 0, 0, &mac, &v2);
+
 	if (result)
 		return result;
+
 	mac <<= 16;
 
 	h_eth = (struct ethhdr*)dbg->pkt;
-	
+
 	memset(&h_eth->dest, 0xff, 6);
 	memcpy(&h_eth->src, &mac, 6);
 
@@ -168,7 +207,8 @@ int64_t debug_init(void)
 	u64 vlan_id;
 	result = lv1_net_control(bus_id, dev_id, GELIC_LV1_GET_VLAN_ID, \
 							 GELIC_LV1_VLAN_TX_ETHERNET_0, 0, 0, &vlan_id, &v2);
-	if (result == 0) {
+	if (result == 0)
+	{
 		h_eth->type = 0x8100;
 
 		header_size += sizeof(struct vlantag);
@@ -176,7 +216,9 @@ int64_t debug_init(void)
 		h_vlan->vlan = vlan_id;
 		h_vlan->subtype = 0x0800;
 		h_ip = (struct iphdr*)(h_vlan+1);
-	} else {
+	}
+	else
+	{
 		h_eth->type = 0x0800;
 		h_ip = (struct iphdr*)(h_eth+1);
 	}
@@ -222,8 +264,10 @@ int64_t debug_print(const char* buffer, size_t msgsize)
 	u32 sum = 0;
 	u16 *p = (u16*)h_ip;
 	int i;
-	for (i=0; i<5; i++)
+
+	for (i = 0; i < 5; i++)
 		sum += *p++;
+
 	h_ip->checksum = ~(sum + (sum>>16));
 
 	dbg->descr.dmac_cmd_status = GELIC_DESCR_DMA_CMD_NO_CHKSUM | GELIC_DESCR_TX_DMA_FRAME_TAIL;
@@ -231,6 +275,7 @@ int64_t debug_print(const char* buffer, size_t msgsize)
 	dbg->descr.data_status = 0;
 
 	int ret = lv1_net_start_tx_dma(bus_id, dev_id, bus_addr, 0);
+
 	if (ret)
 		return ret;
 
@@ -240,15 +285,15 @@ int64_t debug_print(const char* buffer, size_t msgsize)
 
 #ifdef PS2EMU
 #ifdef PS2HWEMU
-PS2EMU_PATCHED_FUNCTION(int64_t, debug_printf, (const char *fmt, ...))
+	PS2EMU_PATCHED_FUNCTION(int64_t, debug_printf, (const char *fmt, ...))
 #else
 //#define _debug_printf debug_printf
-int64_t _debug_printf(const char* fmt, ...)
+	int64_t _debug_printf(const char* fmt, ...)
 #endif /* PS2HWEMU */
 #elif defined(LV2)
-LV2_PATCHED_FUNCTION(int64_t,  debug_printf, (const char* fmt, ...))
+	LV2_PATCHED_FUNCTION(int64_t,  debug_printf, (const char* fmt, ...))
 #else
-int64_t debug_printf(const char* fmt, ...)
+	int64_t debug_printf(const char* fmt, ...)
 #endif
 {
 	va_list ap;
@@ -281,11 +326,11 @@ void fatal(const char *msg)
 void debug_print_hex(void *buf, uint64_t size)
 {
 	uint8_t *buf8 = (uint8_t *)buf;
-	
+
 	for (uint64_t i = 0; i < size; i++)
 	{
 		_debug_printf("%02X ", buf8[i]);
-		
+
 		if ((i&0xF) == 0xF || i == (size-1))
 			_debug_printf("\n");
 	}
@@ -294,14 +339,12 @@ void debug_print_hex(void *buf, uint64_t size)
 void debug_print_hex_c(void *buf, uint64_t size)
 {
 	uint8_t *buf8 = (uint8_t *)buf;
-	
+
 	for (uint64_t i = 0; i < size; i++)
 	{
 		_debug_printf("0x%02X, ", buf8[i]);
-		
+
 		if ((i&0xF) == 0xF || i == (size-1))
 			_debug_printf("\n");
 	}
 }
-
-

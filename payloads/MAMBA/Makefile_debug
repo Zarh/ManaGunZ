@@ -1,0 +1,6 @@
+BUILD_TYPE     	= debug
+EMU_SUPPORT		= none
+OUTDIR			= bin/debug/
+COMPRESS		= 1
+
+include makefile_mamba

@@ -20,13 +20,13 @@ SECTIONS {
 		*(.text)
 		*(.text.*)
 	}
-    . = ALIGN(32);
+	. = ALIGN(32);
 	.rodata : {
 		*(.rodata)
 		*(.rodata.*)
 	}
 
-    . = ALIGN(32);
+	. = ALIGN(32);
 	__reloc_start = .;
 
 	.data : {
@@ -53,7 +53,7 @@ SECTIONS {
 		*(.toc.*)
 	}
 	__toc_end = .;
-    . = ALIGN(32);
+	. = ALIGN(32);
 	__opd_start = .;
 	.opd : {
 		*(.opd)

@@ -90,7 +90,6 @@ LV2_FUNCTION(event_port_send_ex, event_port_send_ex_symbol)
 #endif
 
 #ifdef event_queue_create_symbol
-
 LV2_FUNCTION(event_queue_create, event_queue_create_symbol)
 #endif
 

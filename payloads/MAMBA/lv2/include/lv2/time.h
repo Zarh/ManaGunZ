@@ -3,7 +3,7 @@
 
 #include <lv2/lv2.h>
 
-#define SECONDS(s) (s*1000000)
+#define SECONDS(s) 	   (s*1000000)
 #define MILISECONDS(s) (s*1000)
 
 #ifndef time_t

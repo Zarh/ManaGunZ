@@ -1233,6 +1233,8 @@ static u8 PS2PATCH_FMVSKIP_FLAG_ENABLE[] = {
 									  0x01, 0x00, 0x02, 0x24, 0x00, 0x00, 0x00, 0x00
 									};
 
+// todo Skip video 2 : replacing "ChoosePlayMovie" by "AAAAePlayMovie"
+
 //***********************************************************
 // Language
 //***********************************************************
@@ -10850,92 +10852,34 @@ void DumpUSB000()
 	char *sector = (char *) malloc(512);
 	if(sector==NULL) return ;
 	
-	char res[255];
-	u64 open_flag=0, read_flag=0, open_mode=0, read_mode=0;	
-	uint64_t mode;
-	
-	int i, j, k, l;
-	int w, x;
+	u64 read_flag=0;	
+	uint64_t w, x;
 	int ret = sys_storage_open(USB_MASS_STORAGE(0), &source);
-	
 	if( ret == 0 ) {
 		memset(sector, 0, 512);
-		
-		for(i = 0; i < 64; i++) {
-			mode = (uint64_t) 1<<i;			
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-			for(x = 0; x < 8; x++)
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-			
+		for(w = 0; w < 64; w++) {
+			read_flag = (uint64_t) 1<<w;
+			ret = sys_storage_read(source, 0, 1, sector, &read, read_flag);
+			if(ret==0) goto foundu;
 		}
-		
-		for(j = 0; j < 64; j++)
-		for(i = 0; i < 64; i++) {
-			mode = (uint64_t) 1<<i | (uint64_t) 1<<j;			
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-			for(x = 0; x < 8; x++)
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-		}
-		
-		for(k = 0; k < 64; k++)
-		for(j = 0; j < 64; j++)
-		for(i = 0; i < 64; i++) {
-			mode = (uint64_t) 1<<i | (uint64_t) 1<<j | (uint64_t) 1<<k;			
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-			for(x = 0; x < 8; x++)
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-		}
-		
-		for(l = 0; l < 64; l++)
-		for(k = 0; k < 64; k++)
-		for(j = 0; j < 64; j++)
-		for(i = 0; i < 64; i++) {
-			mode = (uint64_t) 1<<i | (uint64_t) 1<<j | (uint64_t) 1<<k | (uint64_t) 1<<l;			
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
-			for(x = 0; x < 8; x++)
-			for(w = 0; w < 8; w++) {
-				read_flag = (uint8_t) 1<<w | (uint8_t) 1<<x;
-				ret = sys_storage_read2(source, 0, 1, sector, &read, read_flag, mode);
-				if(ret==0) goto foundu;
-			}
+		for(x = 0; x < 64; x++)
+		for(w = 0; w < 64; w++) {
+			read_flag = (uint64_t) 1<<w | (uint8_t) 1<<x;
+			ret = sys_storage_read(source, 0, 1, sector, &read, read_flag);
+			if(ret==0) goto foundu;
 		}
 		sys_storage_close(source);
-	}	
+	}
 
 foundu:
-
-	FILE *f = fopen("/dev_hdd0/flag.txt", "wb");
-	sprintf(res, "\tsys_storage_read2 mode 0x%016llX, flag 0x%02X, ret 0x%X\n", (unsigned long long int) mode, (unsigned int) read_flag, ret);
-	fputs(res, f);
-	fclose(f);
+	if( ret == 0 ) {
+		
+		FILE *f = fopen("/dev_hdd0/flag.txt", "wb");
+		char res[255];
+		sprintf(res, "\tsys_storage_read flag 0x%016llX, ret 0x%X\n", (unsigned long long int) read_flag, ret);
+		fputs(res, f);
+		fclose(f);
+	}
 	
 	/*
 	f = fopen("/dev_hdd0/boot_sector.bin", "wb");

@@ -53,5 +53,10 @@ LV2_FUNCTION(process_ea_to_lpar_addr_ex, process_ea_to_lpar_addr_ex_symbol)
 LV2_FUNCTION(set_pte, set_pte_symbol)
 #endif
 
+#ifdef process_read_memory_symbol
+LV2_FUNCTION(process_read_memory, process_read_memory_symbol)
+#endif
 
-
+#ifdef process_write_memory_symbol
+LV2_FUNCTION(process_write_memory, process_write_memory_symbol)
+#endif

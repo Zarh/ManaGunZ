@@ -18,25 +18,25 @@ char *strstr(const char *haystack, const char *needle)
 int strncasecmp (__const char *s1, __const char *s2, size_t n)
 {
 	/* TODO: locale support */
-  int c1, c2;
-  while (n > 0)
-    {
-      /* Use "unsigned char" to make the implementation 8-bit clean */
-      c1 = *((unsigned char *)(s1++));
-      if (c1 >= 'A' && c1 <= 'Z')
-        c1 = c1 + ('a' - 'A');
-      c2 = *((unsigned char *)(s2++));
-      if (c2 >= 'A' && c2 <= 'Z')
-        c2 = c2 + ('a' - 'A');
-      if (c1 != c2)
-        {
-          return (c1 - c2);
-        }
-      if (c1 == '\0')
-        {
-          return 0;
-        }
-      --n;
-    }
-  return 0;
+	int c1, c2;
+	while (n > 0)
+	{
+		/* Use "unsigned char" to make the implementation 8-bit clean */
+		c1 = *((unsigned char *)(s1++));
+		if (c1 >= 'A' && c1 <= 'Z')
+			c1 = c1 + ('a' - 'A');
+		c2 = *((unsigned char *)(s2++));
+		if (c2 >= 'A' && c2 <= 'Z')
+			c2 = c2 + ('a' - 'A');
+		if (c1 != c2)
+		{
+			return (c1 - c2);
+		}
+		if (c1 == '\0')
+		{
+			return 0;
+		}
+		--n;
+	}
+	return 0;
 }

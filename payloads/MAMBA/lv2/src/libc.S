@@ -122,4 +122,3 @@ LV2_FUNCTION2(memcmp, memcmp_symbol)
 #ifdef memchr_symbol
 LV2_FUNCTION2(memchr, memchr_symbol)
 #endif
-

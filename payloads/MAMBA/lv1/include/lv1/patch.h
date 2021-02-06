@@ -17,37 +17,29 @@
 
 static INLINE u8 lv1_peekb(u64 addr)
 {
-	u64 val;
-	
-	lv1_cfw_peek(addr, &val);
-	
+	u64 val;	
+	lv1_cfw_peek(addr, &val);	
 	return (val>>56);
 }
 
 static INLINE u16 lv1_peekh(u64 addr)
 {
-	u64 val;
-	
-	lv1_cfw_peek(addr, &val);
-	
+	u64 val;	
+	lv1_cfw_peek(addr, &val);	
 	return (val>>48);
 }
 
 static INLINE u32 lv1_peekw(u64 addr)
 {
-	u64 val;
-	
-	lv1_cfw_peek(addr, &val);
-	
+	u64 val;	
+	lv1_cfw_peek(addr, &val);	
 	return (val>>32);
 }
 
 static INLINE u64 lv1_peekd(u64 addr)
 {
-	u64 val;
-	
-	lv1_cfw_peek(addr, &val);
-	
+	u64 val;	
+	lv1_cfw_peek(addr, &val);	
 	return val;
 }
 

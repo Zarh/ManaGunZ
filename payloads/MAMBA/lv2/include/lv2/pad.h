@@ -8,25 +8,25 @@
 // Note values in this file are different than user mode functions
 
 #define PAD_BTN_OFFSET_DIGITAL		1
-#define PAD_CTRL_LEFT			(1 << 15)
-#define PAD_CTRL_DOWN			(1 << 14)
-#define PAD_CTRL_RIGHT			(1 << 13)
-#define PAD_CTRL_UP			(1 << 12)
-#define PAD_CTRL_START			(1 << 11)
-#define PAD_CTRL_R3			(1 << 10)
-#define PAD_CTRL_L3			(1 << 9)
-#define PAD_CTRL_SELECT			(1 << 8)
-#define PAD_CTRL_SQUARE			(1 << 7)
-#define PAD_CTRL_CROSS			(1 << 6)
-#define PAD_CTRL_CIRCLE			(1 << 5)
-#define PAD_CTRL_TRIANGLE		(1 << 4)
-#define PAD_CTRL_R1			(1 << 3)
-#define PAD_CTRL_L1			(1 << 2)
-#define PAD_CTRL_R2			(1 << 1)
-#define PAD_CTRL_L2			(1 << 0)
+#define PAD_CTRL_LEFT				(1 << 15)
+#define PAD_CTRL_DOWN				(1 << 14)
+#define PAD_CTRL_RIGHT				(1 << 13)
+#define PAD_CTRL_UP					(1 << 12)
+#define PAD_CTRL_START				(1 << 11)
+#define PAD_CTRL_R3					(1 << 10)
+#define PAD_CTRL_L3					(1 << 9)
+#define PAD_CTRL_SELECT				(1 << 8)
+#define PAD_CTRL_SQUARE				(1 << 7)
+#define PAD_CTRL_CROSS				(1 << 6)
+#define PAD_CTRL_CIRCLE				(1 << 5)
+#define PAD_CTRL_TRIANGLE			(1 << 4)
+#define PAD_CTRL_R1					(1 << 3)
+#define PAD_CTRL_L1					(1 << 2)
+#define PAD_CTRL_R2					(1 << 1)
+#define PAD_CTRL_L2					(1 << 0)
 
-#define PAD_BTN_OFFSET_PS		2
-#define PAD_CTRL_PS			(1 << 8)
+#define PAD_BTN_OFFSET_PS			2
+#define PAD_CTRL_PS					(1 << 8)
 
 #define PAD_BTN_OFFSET_ANALOG_LEFT	3
 #define PAD_BTN_OFFSET_ANALOG_RIGHT	4

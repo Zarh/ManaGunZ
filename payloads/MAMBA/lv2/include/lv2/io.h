@@ -53,7 +53,8 @@ typedef int CellFsMode;
 #endif
 
 
-typedef struct {
+typedef struct
+{
 	CellFsMode st_mode;
 	int st_uid;
 	int st_gid;
@@ -65,7 +66,8 @@ typedef struct {
 	uint64_t dummy[1];
 } __attribute__((__packed__)) CellFsStat;
 
-typedef struct {
+typedef struct
+{
 	time_t actime;
 	time_t modtime;
 } __attribute__((packed)) CellFsUtimbuf;
@@ -91,13 +93,22 @@ LV2_EXPORT int cellFsUtime(const char *path, CellFsUtimbuf *timep);
 
 #ifdef io_sub_rtoc_entry_1
 
+#ifdef cellFsRename_internal_symbol
+LV2_EXPORT int cellFsRename_internal(void *structure, const char *from, const char *to, uint64_t unk);
+static INLINE int cellFsRename(const char *from, const char *to)
+{
+uint64_t *structure = (uint64_t *) *(uint64_t *)MKA(TOC+io_rtoc_entry_1);
+structure = (uint64_t *)structure[io_sub_rtoc_entry_1];
+return cellFsRename_internal(structure, from, to, 0);
+}
+#endif
+
 static INLINE int cellFsUnlink(const char *path)
 {
-	uint64_t *structure = (uint64_t *) *(uint64_t *)MKA(TOC+io_rtoc_entry_1);
+	uint64_t *structure = (uint64_t *) *(uint64_t *)MKA(TOC + io_rtoc_entry_1);
 	structure = (uint64_t *)structure[io_sub_rtoc_entry_1];
 	return cellFsUnlink_internal(structure, path, 0);
 }
-
 #endif
 
 LV2_EXPORT int cellFsUtilMount(const char *block_dev, const char *filesystem, const char *mount_point, int unk, int read_only, int unk2, char *argv[], int argc);
@@ -113,5 +124,6 @@ LV2_EXPORT int pathdup_from_user(char *path, char **out);
 LV2_EXPORT int open_fs_object(void *unk, char *path, void **fs_object, void **unkret1, fs_object_handle_t *handle, void *unk2);
 LV2_EXPORT int close_fs_object(void *unk, fs_object_handle_t handle);
 
-#endif /* __LV2_IO_H__ */
+LV2_EXPORT int get_path_by_fd(int fd, char *path);
 
+#endif /* __LV2_IO_H__ */

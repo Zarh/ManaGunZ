@@ -11,7 +11,9 @@ extern "C" {
 /** The operation is successfully executed.*/
 
 #define SUCCEEDED    0
-#define CELL_OK	     0
+#define CELL_OK      0
+#define FAILED      -1
+#define UNDEFINED   -1
 
 /** The resource is temporarily unavailable. 
  *

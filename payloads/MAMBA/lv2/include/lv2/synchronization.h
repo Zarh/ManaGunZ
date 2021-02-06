@@ -5,18 +5,18 @@
 #include <sys/types.h>
 #include <lv2/lv2.h>
 
-#define EVENT_PORT_REMOTE	0x00
-#define EVENT_PORT_LOCAL	0x01
+#define EVENT_PORT_REMOTE		0x00
+#define EVENT_PORT_LOCAL		0x01
 
 /* Values for attr_protocol */
-#define SYNC_FIFO		0x00001
-#define SYNC_PRIORITY		0x00002
+#define SYNC_FIFO				0x00001
+#define SYNC_PRIORITY			0x00002
 #define SYNC_PRIORITY_INHERIT	0x00003
-#define SYNC_RETRY		0x00004
+#define SYNC_RETRY				0x00004
 
 /* Values for attr_recursive */
-#define SYNC_RECURSIVE		0x00010
-#define SYNC_NOT_RECURSIVE	0x00020
+#define SYNC_RECURSIVE			0x00010
+#define SYNC_NOT_RECURSIVE		0x00020
 
 /* Values for attr_pshared */
 #define SYNC_NOT_PROCESS_SHARED	0x00200

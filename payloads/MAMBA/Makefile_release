@@ -1,0 +1,6 @@
+BUILD_TYPE     	= release
+EMU_SUPPORT		= full
+OUTDIR			= bin/
+COMPRESS		= 1
+
+include makefile_mamba

@@ -12,7 +12,8 @@ see file COPYING or http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #include <stdio.h>
 #include <lv1/lv1.h>
 
-enum {
+enum 
+{
 	DEV_TYPE_STOR_DISK = 0,
 	DEV_TYPE_GELIC = 3,
 	DEV_TYPE_USB = 4,
