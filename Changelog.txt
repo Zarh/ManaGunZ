@@ -22,6 +22,9 @@ Fix : No more freeze when the firmware is unknown/new. I'm not sure how I fixed 
 Add : New CUSTOM PS2 CONFIG files from webMAN MOD by aldostools December 14, 2020. Special thanks to kozarovv.
 Add : New ps2 widescreen pnatchs from pcsx2.net forum (January 13, 2021).
 Add FileManager : Extract RAR files.
+Add : Reset position of filter box.
+Fix : XMB UI won't display 'adjust your filters' on boot of mgz if you uncheck PS3 inside the filter box.
+
 
 Notes :
 (1) This note is for devs.

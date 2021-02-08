@@ -621,7 +621,7 @@ static u8 GRID_KEEP_PROP = YES;
 #define XMB_COLUMN_NUMBER		6
 
 
-static u8 XMB_H_position = 2;
+static u8 XMB_H_position = XMB_COLUMN_PS3;
 static s16 XMB_nb_line = -1;
 static u16 XMB_value_line[MAX_GAME] = {0};
 static u16 XMB_V_position[XMB_COLUMN_NUMBER] = {0};
@@ -1996,6 +1996,8 @@ static char *STR_LOAD_MAMBA=NULL;
 #define STR_LOAD_MAMBA_DEFAULT				"Load mamba"
 static char *STR_CONVERT_TO_PNG=NULL;
 #define STR_CONVERT_TO_PNG_DEFAULT			"Convert to PNG"
+static char *STR_UNMOUNT_DEVBLIND=NULL;
+#define STR_UNMOUNT_DEVBLIND_DEFAULT		"Unmount /dev_blind"
 
 //***********************************************************
 // Functions
@@ -6818,6 +6820,7 @@ void update_lang()
 	LANG(STR_SYMLINK_TARGET, "STR_SYMLINK_TARGET", STR_SYMLINK_TARGET_DEFAULT);
 	LANG(STR_LOAD_MAMBA, "STR_LOAD_MAMBA", STR_LOAD_MAMBA_DEFAULT);
 	LANG(STR_CONVERT_TO_PNG, "STR_CONVERT_TO_PNG", STR_CONVERT_TO_PNG_DEFAULT);
+	LANG(STR_UNMOUNT_DEVBLIND, "STR_UNMOUNT_DEVBLIND", STR_UNMOUNT_DEVBLIND_DEFAULT);
 	
 	FREE(flang);
 	lang_code_loaded = lang_code;
@@ -10723,7 +10726,7 @@ int sys_fs_mount(char const* deviceName, char const* deviceFileSystem, char cons
 	return_to_user_prog(int);
 }
 
-int sys_fs_umount(char const* devicePath) 
+int sys_fs_unmount(char const* devicePath) 
 {
 	lv2syscall3(838,  (u64) devicePath, 0, 0 );
 	return_to_user_prog(int);
@@ -22412,8 +22415,8 @@ int init_ManaGunZ()
 	}
 
 	print_debug("sys_fs_unmount");
-	sys_fs_umount("/dev_bdvd");
-	sys_fs_umount("/dev_ps2disk");
+	sys_fs_unmount("/dev_bdvd");
+	sys_fs_unmount("/dev_ps2disk");
 
 	print_debug("sys_fs_mount");
 	sys_fs_mount("CELL_FS_IOS:PATA0_BDVD_DRIVE", "CELL_FS_ISO9660", "/dev_bdvd", 1);
@@ -23337,6 +23340,22 @@ u8 GetWindowLocation()
 	
 }
 
+u8 is_dev_blind(char *path)
+{
+	if( !strncmp(path, "/dev_blind", 10) ) return YES;
+	if( !strncmp(path, "/dev_rebug", 10) ) return YES;
+	
+	return NO;
+}
+
+u8 dev_blind_exist()
+{
+	if(path_info("/dev_blind") != _NOT_EXIST || path_info("/dev_rebug") != _NOT_EXIST) 
+		return YES;
+	
+	return NO;
+}
+
 // *** Window ***
 void Draw_window()
 {
@@ -23378,6 +23397,13 @@ void Draw_window()
 					TOP_str[strlen(TOP_str)] = '.';
 					TOP_str[strlen(TOP_str)] = '.';
 				}
+			}
+			if( is_dev_blind(TOP_str) ) {
+				TOP_str[5]='f';
+				TOP_str[6]='l';
+				TOP_str[7]='a';
+				TOP_str[8]='s';
+				TOP_str[9]='h';
 			}
 		}
 		DrawString(window_x[n]+BORDER+5, window_y[n]+BORDER+3, TOP_str);
@@ -23484,6 +23510,17 @@ void Draw_window()
 					}
 				}
 				
+				
+				char mount_point[32];
+				strcpy(mount_point, window_content_Name[n][window_scroll_P[n]+i]);
+				if( is_dev_blind(mount_point) ) {
+					mount_point[5]='f';
+					mount_point[6]='l';
+					mount_point[7]='a';
+					mount_point[8]='s';
+					mount_point[9]='h';
+				}
+				
 				// ------------------------------------------------------------
 				// TODO give a LABEL to dev_hdd0, dev_hdd1, dev_flash... etc. 
 				// Save them in mgz directory.
@@ -23502,10 +23539,10 @@ void Draw_window()
 					char *RowRight =NULL;
 					
 					if(found) {
-						RowLeft = FM_GetContent(fm_Format[0], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);
-						RowRight = FM_GetContent(fm_Format[1], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);
+						RowLeft = FM_GetContent(fm_Format[0], mount_point, DevicesInfo[j]);
+						RowRight = FM_GetContent(fm_Format[1], mount_point, DevicesInfo[j]);
 					} else {
-						RowLeft = strcpy_malloc(window_content_Name[n][window_scroll_P[n]+i]);
+						RowLeft = strcpy_malloc(mount_point);
 					}
 					
 					float wrl = WidthFromStr(RowLeft);
@@ -23564,11 +23601,11 @@ void Draw_window()
 							char *RowRight= NULL;
 							
 							if( found ) {
-								RowLeft = FM_GetContent(fm_Format[k], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);							
-								RowRight = FM_GetContent(fm_Format[k+1], window_content_Name[n][window_scroll_P[n]+i], DevicesInfo[j]);
+								RowLeft = FM_GetContent(fm_Format[k], mount_point, DevicesInfo[j]);							
+								RowRight = FM_GetContent(fm_Format[k+1], mount_point, DevicesInfo[j]);
 							} else {
 								if(FM_FORMAT_MOUNTPOINT<=f) {
-									RowLeft = strcpy_malloc(window_content_Name[n][window_scroll_P[n]+i]);
+									RowLeft = strcpy_malloc(mount_point);
 								}
 							}
 							float wrl = WidthFromStr(RowLeft);
@@ -24442,12 +24479,16 @@ void RefreshDevices()
 	DIR *d;
 	struct dirent *dir;
 	
+	u8 hide_dev_flash=dev_blind_exist();
+	
 	d = opendir("/");
 	if(d==NULL) return;
 	while ((dir = readdir(d))) {
 		if(strcmp(dir->d_name, ".")==0) continue;
 		if(strcmp(dir->d_name, "..")==0) continue; 
 		if(!strncmp(dir->d_name, "$", 1)) continue;
+		
+		if( !strcmp(dir->d_name, "dev_flash") && hide_dev_flash ) continue;
 		
 		DevicesInfo_N++;
 		sprintf(temp, "/%s/", dir->d_name);
@@ -24665,7 +24706,7 @@ void Window(char *directory)
 		return;
 	}
 #endif
-		
+	
 	NTFS_mount_all();
 	
 	exFAT_mount_all();
@@ -25608,6 +25649,10 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_MOUNT_DEVBLIND)==0) {
 		sys_fs_mount("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0);
+		Window(".");
+	} else
+	if(strcmp(item, STR_UNMOUNT_DEVBLIND)==0) {
+		sys_fs_unmount("/dev_blind");
 		Window(".");
 	} else
 	if(strcmp(item, STR_PROPS) == 0) {
@@ -37727,6 +37772,15 @@ void init_XMB()
 	XMB_nb_line=-1;
 	memset(XMB_value_line, 0, sizeof(XMB_value_line));
 	
+	
+	if(XMB_H_position==XMB_COLUMN_PS3 && !Show_PS3) {
+		if(Show_PS2) XMB_H_position=XMB_COLUMN_PS2; else
+		if(Show_PS1) XMB_H_position=XMB_COLUMN_PS1; else
+		if(Show_PSP) XMB_H_position=XMB_COLUMN_PSP; else
+		if(Only_FAV) XMB_H_position=XMB_COLUMN_FAVORITES; else
+		XMB_H_position=XMB_COLUMN_SETTINGS;
+	}
+	
 	int i;
 	for(i = 0 ; i <= game_number ; i++) {
 		if(XMB_H_position==XMB_COLUMN_SETTINGS) continue;
@@ -38191,7 +38245,7 @@ void input_MAIN()
 				if(XMB_H_position==XMB_COLUMN_PSP && !Show_PSP) XMB_H_position--;
 				if(XMB_H_position==XMB_COLUMN_PS1 && !Show_PS1) XMB_H_position--;
 				if(XMB_H_position==XMB_COLUMN_PS2 && !Show_PS2) XMB_H_position--;
-				if(XMB_H_position==XMB_COLUMN_PS3 && !Show_PS3) XMB_H_position--;	
+				if(XMB_H_position==XMB_COLUMN_PS3 && !Show_PS3) XMB_H_position--;
 				if(XMB_H_position==XMB_COLUMN_FAVORITES && !Only_FAV) XMB_H_position--;
 				
 				MOVE_animated=NO; 
@@ -38501,9 +38555,9 @@ void Draw_MAIN_input()
 void Draw_MAIN()
 {
 	if(MENU==YES && MENU_SIDE == NO) return;
-		
+	
 	SetFontZ(10);
-		
+	
 	if( game_number < 0 ) {
 		Game_stuff = NO;
 		DrawFormatString(50, 40, "%s", STR_NOGAME);
