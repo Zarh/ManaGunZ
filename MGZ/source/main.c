@@ -552,8 +552,10 @@ static u32 COLOR_4 = RED;
 static u8 Display_PIC1 = NO;
 static u8 Show_Waves = YES;
 static u32 WAVES_COLOR = WHITE-0xFF+0x20;
-static float filter_x = 700.0;
-static float filter_y = 300.0;
+#define FILTER_X_DEFAULT 700.0
+#define FILTER_Y_DEFAULT 300.0
+static float filter_x = FILTER_X_DEFAULT;
+static float filter_y = FILTER_Y_DEFAULT;
 static u8 root_display = 1;
 static u8 LOG = NO;
 static u8 DEBUG = NO;
