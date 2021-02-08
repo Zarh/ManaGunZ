@@ -35098,6 +35098,11 @@ void input_filter()
 	filter_x += R2JoyStick_X(BUTTON_L);
 	filter_y += R2JoyStick_Y(BUTTON_L);
 	
+	if(NewPad(BUTTON_SQUARE)) {
+		filter_x = FILTER_X_DEFAULT;
+		filter_y = FILTER_Y_DEFAULT;
+	}
+	
 	if(NewPad(BUTTON_UP)) {
 		if(filter_position==0) filter_position=4;
 		else filter_position--;
@@ -35143,6 +35148,7 @@ void Draw_filter_input()
 	if(is_checked) x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
 	else x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);
 	x=DrawButton(x, y, STR_MOVE, BUTTON_L);
+	x=DrawButton(x, y, STR_RESET, BUTTON_SQUARE);
 	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
