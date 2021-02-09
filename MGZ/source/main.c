@@ -527,6 +527,7 @@ static u8 emu = NONE;
 static u8 libfs_from = MM;
 static u8 mount_app_home = NO;
 static u8 use_ex_plug = NO;
+static u8 bt_audio = NO;
 
 //*************** GLOBAL SETTINGS *******************
 #ifdef FILEMANAGER
@@ -559,6 +560,7 @@ static float filter_y = FILTER_Y_DEFAULT;
 static u8 root_display = 1;
 static u8 LOG = NO;
 static u8 DEBUG = NO;
+
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -1560,8 +1562,6 @@ static char *STR_DL_UPDATE_DESC=NULL;
 #define STR_DL_UPDATE_DESC_DEFAULT			"Download your backup's updates to /dev_hdd0/packages."
 static char *STR_OPEN_WINDOW=NULL;
 #define STR_OPEN_WINDOW_DEFAULT				"Open New Window"
-static char *STR_MOUNT_DEVBLIND=NULL;
-#define STR_MOUNT_DEVBLIND_DEFAULT			"Mount /dev_blind"
 static char *STR_DUMP_LV1=NULL;
 #define STR_DUMP_LV1_DEFAULT				"Dump lv1"
 static char *STR_DUMP_LV2=NULL;
@@ -1996,8 +1996,15 @@ static char *STR_LOAD_MAMBA=NULL;
 #define STR_LOAD_MAMBA_DEFAULT				"Load mamba"
 static char *STR_CONVERT_TO_PNG=NULL;
 #define STR_CONVERT_TO_PNG_DEFAULT			"Convert to PNG"
+static char *STR_MOUNT_DEVBLIND=NULL;
+#define STR_MOUNT_DEVBLIND_DEFAULT			"Unlock dev_flash"
 static char *STR_UNMOUNT_DEVBLIND=NULL;
-#define STR_UNMOUNT_DEVBLIND_DEFAULT		"Unmount /dev_blind"
+#define STR_UNMOUNT_DEVBLIND_DEFAULT		"Lock dev_flash"
+static char *STR_BT_AUDIO=NULL;
+#define STR_BT_AUDIO_DEFAULT				"Gamepad audio out"
+static char *STR_BT_AUDIO_DESC=NULL;
+#define STR_BT_AUDIO_DESC_DEFAULT			"Play sound through the gamepad while playing. Tested with a DS4."
+
 
 //***********************************************************
 // Functions
@@ -6821,6 +6828,8 @@ void update_lang()
 	LANG(STR_LOAD_MAMBA, "STR_LOAD_MAMBA", STR_LOAD_MAMBA_DEFAULT);
 	LANG(STR_CONVERT_TO_PNG, "STR_CONVERT_TO_PNG", STR_CONVERT_TO_PNG_DEFAULT);
 	LANG(STR_UNMOUNT_DEVBLIND, "STR_UNMOUNT_DEVBLIND", STR_UNMOUNT_DEVBLIND_DEFAULT);
+	LANG(STR_BT_AUDIO, "STR_BT_AUDIO", STR_BT_AUDIO_DEFAULT);
+	LANG(STR_BT_AUDIO_DESC, "STR_BT_AUDIO_DESC", STR_BT_AUDIO_DESC_DEFAULT);
 	
 	FREE(flang);
 	lang_code_loaded = lang_code;
@@ -18702,6 +18711,63 @@ int patch_exp_plug()
 	return OK;
 }
 
+char *get_libaudio_path() 
+{
+	char *libaudio_path = sprintf_malloc("/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.sprx", ManaGunZ_id, firmware);
+	
+	if( path_info(libaudio_path) == _FILE ) return libaudio_path;
+	
+	char ori_prx[128];
+	char patched_prx[128];
+	sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/libaudio_%X.prx", ManaGunZ_id, firmware);
+	sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.prx", ManaGunZ_id, firmware);
+	
+	if( Extract("/dev_flash/sys/external/libaudio.sprx", ori_prx) == FAILED ) {
+		FREE(libaudio_path);
+		return NULL;
+	}
+	
+	int size=0;
+	char *mem = LoadFile(ori_prx, &size);
+	if(mem==NULL) {
+		print_load("Error : can't read the original_libaudio_%X.prx", firmware);
+		FREE(libaudio_path);
+		return NULL;
+	}
+	
+	//patch
+	//https://blog.madnation.net/ps3-bt-usb-audio-passthrough/
+	u8 bt_usb_audio_offset_flag[] = {0xE8, 0x03, 0x00, 0x00, 0x2F, 0xA0, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x0C, 0x2F, 0xA0, 0x00, 0x02, 0x40, 0x9E, 0x01, 0x44, 0xE8, 0x7E, 0x00, 0x08, 0x2F, 0xA3, 0x00, 0x02, 0x41, 0x9E, 0x00, 0x1C};
+	u8 bt_usb_audio_offset_repl[] = {0x38, 0x00, 0x00, 0x01, 0xF8, 0x1E, 0x00, 0x10, 0xE8, 0x03, 0x00, 0x00, 0x2F, 0xA0, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x28, 0xE8, 0x7E, 0x00, 0x08};
+	int n;
+	for(n=0; n<size-0x20 ; n++) {
+		if(!memcmp((char *) &mem[n], (char *) bt_usb_audio_offset_flag, sizeof(bt_usb_audio_offset_flag))) {
+			memcpy(&mem[n], bt_usb_audio_offset_repl, sizeof(bt_usb_audio_offset_repl));
+			break;
+		}
+	}
+	
+	//write
+	u8 ret = SaveFile(patched_prx, mem, size);
+	FREE(mem);
+	if(ret  == FAILED) {
+		print_load("Error : cannot save patched_libaudio_%X.prx", firmware);
+		FREE(libaudio_path);
+		return NULL;
+	}
+	
+	if(Sign_PRX(patched_prx, libaudio_path) == NOK) {
+		print_load("Error : : cannot sign prx, patched_libaudio_%X.sprx", firmware);
+		FREE(libaudio_path);
+		return NULL;
+	}
+	
+	Delete(ori_prx);
+	Delete(patched_prx);
+	
+	return libaudio_path;
+}
+
 static char *get_blank_iso_path(void)
 {
 	char *s = malloc(32);
@@ -19465,6 +19531,14 @@ void iris_Mount()
 		add_sys8_bdvd(GamPath, NULL);
 	}
 	
+	if( bt_audio ) {
+		char *libaudio_path = get_libaudio_path();
+		if(libaudio_path) {
+			add_sys8_path_table("/dev_flash/sys/external/libaudio.sprx", libaudio_path);
+			FREE(libaudio_path);
+		}
+	}
+	
 	if(mount_app_home == YES) {
 		if(emu == BDMIRROR) {
 			add_sys8_bdvd(NULL, "/dev_bdvd");
@@ -19662,6 +19736,14 @@ void mm_Mount()
 	} else 
 	if(emu==NONE) {
 		add_to_map("/dev_bdvd", path);
+	}
+	
+	if( bt_audio ) {
+		char *libaudio_path = get_libaudio_path();
+		if(libaudio_path) {
+			add_to_map("/dev_flash/sys/external/libaudio.sprx", libaudio_path);
+			FREE(libaudio_path);
+		}
 	}
 	
 	if(mount_app_home == YES)	{
@@ -20034,6 +20116,14 @@ void cobra_Mount()
 			cobra_map_game(GamPath, (char*) GamID, &i);
 		}
 		
+		if( bt_audio ) {
+			char *libaudio_path = get_libaudio_path();
+			if(libaudio_path) {
+				{sys_map_path("/dev_flash/sys/external/libaudio.sprx", libaudio_path);}
+				FREE(libaudio_path);
+			}
+		}
+		
 		if(mount_app_home == YES)	{
 			if(emu == BDMIRROR) {
 				{sys_map_path("/app_home", "/dev_bdvd");}
@@ -20396,6 +20486,15 @@ void mamba_Mount()
 		if(emu == NONE) {
 			{snake_map("/dev_bdvd", GamPath);}
 		}
+		
+		if( bt_audio ) {
+			char *libaudio_path = get_libaudio_path();
+			if(libaudio_path) {
+				{snake_map("/dev_flash/sys/external/libaudio.sprx", libaudio_path);}
+				FREE(libaudio_path);
+			}
+		}
+		
 		
 		if(mount_app_home == YES)	{
 			if(emu == BDMIRROR) {
@@ -21478,6 +21577,7 @@ u8 read_AutoMount_setting()
 	fread(&libfs_from, sizeof(u8), 1, fp);
 	fread(&mount_app_home, sizeof(u8), 1, fp);
 	fread(&use_ex_plug, sizeof(u8), 1, fp);	
+	fread(&bt_audio, sizeof(u8), 1, fp);	
 	
 	fread(&path_size, sizeof(u16), 1, fp);
 	list_game_path = (char **) malloc(sizeof(char *));
@@ -21518,6 +21618,7 @@ u8 write_AutoMount_setting(char *path)
 	fwrite(&libfs_from, sizeof(u8), 1, fp);
 	fwrite(&mount_app_home, sizeof(u8), 1, fp);
 	fwrite(&use_ex_plug, sizeof(u8), 1, fp);
+	fwrite(&bt_audio, sizeof(u8), 1, fp);
 	fwrite(&path_size, sizeof(u16), 1, fp);
 	fwrite(path, path_size, 1, fp);
 	fclose(fp);
@@ -22182,6 +22283,7 @@ void read_game_setting(int pos)
 		fread(&libfs_from, sizeof(u8), 1, fp);
 		fread(&mount_app_home, sizeof(u8), 1, fp);
 		fread(&use_ex_plug, sizeof(u8), 1, fp);
+		fread(&bt_audio, sizeof(u8), 1, fp);
 		fclose(fp);
 	} else {
 		direct_boot = NO;
@@ -22196,6 +22298,7 @@ void read_game_setting(int pos)
 		libfs_from=MM;
 		mount_app_home=NO;
 		use_ex_plug=NO;
+		bt_audio=NO;
 	}
 	
 	if(iso) payload=SNAKE;
@@ -22229,6 +22332,7 @@ void write_game_setting(int pos)
 		fwrite(&libfs_from, sizeof(u8), 1, fp);
 		fwrite(&mount_app_home, sizeof(u8), 1, fp);
 		fwrite(&use_ex_plug, sizeof(u8), 1, fp);
+		fwrite(&bt_audio, sizeof(u8), 1, fp);
 		fclose(fp);
 	}
 	
@@ -27425,6 +27529,9 @@ void Draw_HELP()
 	FontColor(COLOR_1);
 	FontSize(13);
 
+	if(item_is(STR_BT_AUDIO)) {
+		DrawString(x, y, STR_BT_AUDIO_DESC);
+	} else
 	if(item_is(STR_3D)) {
 		DrawString(x, y, STR_3D_DESC);
 	} else
@@ -32048,7 +32155,10 @@ void init_PS3_GAME_MENU()
 		add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
 	}
-
+	
+	add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = bt_audio;
+	
 	add_title_MENU(STR_GAME_OPTION);
 		
 	if(is_favorite(list_game_path[position]) == NO) {
@@ -32142,6 +32252,9 @@ void PS3_GAME_MENU_UPDATE()
 	} else 
 	if(item_is(STR_PATCH_EXP)) {
 		use_ex_plug = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is(STR_BT_AUDIO)) {
+		bt_audio = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
 	if(item_is(STR_PAYLOAD)) {
 		if( item_value_is("Cobra") || item_value_is("Mamba")) {
