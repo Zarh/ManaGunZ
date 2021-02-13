@@ -441,7 +441,7 @@ static u8 Load_GAMEPIC_init=NO;
 //****** Thread LoadTMP ******************
 static u8 Load_CURPIC_flag=NO;
 
-//********** Backup LIST ******************
+//********** Backup LIST *****************
 
 
 #define MAX_GAME 		512*64
@@ -1134,12 +1134,12 @@ static u8 picture_viewer_activ = NO;
 #define MENU_MAX_ITEMS				64
 #define MENU_MAX_ITEMS_VALUE		128
 
-#define ITEM_TEXTBOX	0
-#define ITEM_CHECKBOX	1
-#define ITEM_COLORBOX	2
-#define ITEM_COMMAND	3
-#define ITEM_TOGGLE		4
-#define ITEM_LOCKED		5
+#define ITEM_TEXTBOX				0
+#define ITEM_CHECKBOX				1
+#define ITEM_COLORBOX				2
+#define ITEM_COMMAND				3
+#define ITEM_TOGGLE					4
+#define ITEM_LOCKED					5
 
 static u8 MENU=NO;
 
@@ -2004,6 +2004,16 @@ static char *STR_BT_AUDIO=NULL;
 #define STR_BT_AUDIO_DEFAULT				"Gamepad audio out"
 static char *STR_BT_AUDIO_DESC=NULL;
 #define STR_BT_AUDIO_DESC_DEFAULT			"Play sound through the gamepad while playing. Tested with a DS4."
+static char *STR_GAME_UPDATE_TITLE=NULL;
+#define STR_GAME_UPDATE_TITLE_DEFAULT		"PS3 game updates downloader"
+static char *STR_CURRENT_VERS=NULL;
+#define STR_CURRENT_VERS_DEFAULT			"Current version"
+static char *STR_CANT_MOUNT_PEEKPOKE=NULL;
+#define STR_CANT_MOUNT_PEEKPOKE_DEFAULT		"Unmountable : PEEK and POKE unavailable, mamba can't be installed"
+static char *STR_CANT_MOUNT_UNKFW=NULL;
+#define STR_CANT_MOUNT_UNKFW_DEFAULT		"Unmountable : unknown firmware, mamba can't be installed."
+static char *STR_CANT_MOUNT=NULL;
+#define STR_CANT_MOUNT_DEFAULT				"Unmountable"
 
 
 //***********************************************************
@@ -2742,9 +2752,9 @@ float Draw_checkbox(float x, float y, float z, char *str, u8 state, u8 active)
 	return DrawString(x+20, y, str);
 }
 
-float Draw_itembox(float x, float y, float z, char *str, u8 state, u8 active, u8 error)
+float Draw_itembox(float x, float y, float z, char *str, u8 state, u8 active, u8 error, u32 color)
 {
-	if( error ) Draw_Box(x-1.5, y-1.5, 0, 0, 17, 17, RED, NO);
+	if( error ) Draw_Box(x-1.5, y-1.5, 0, 0, 17, 17, color, NO);
 	
 	return Draw_checkbox(x, y, z, str, state, active);
 }
@@ -6829,8 +6839,12 @@ void update_lang()
 	LANG(STR_CONVERT_TO_PNG, "STR_CONVERT_TO_PNG", STR_CONVERT_TO_PNG_DEFAULT);
 	LANG(STR_UNMOUNT_DEVBLIND, "STR_UNMOUNT_DEVBLIND", STR_UNMOUNT_DEVBLIND_DEFAULT);
 	LANG(STR_BT_AUDIO, "STR_BT_AUDIO", STR_BT_AUDIO_DEFAULT);
-	LANG(STR_BT_AUDIO_DESC, "STR_BT_AUDIO_DESC", STR_BT_AUDIO_DESC_DEFAULT);
-	
+	LANG(STR_BT_AUDIO_DESC, "STR_BT_AUDIO_DESC", STR_BT_AUDIO_DESC_DEFAULT);	
+	LANG(STR_CURRENT_VERS, "STR_CURRENT_VERS", STR_CURRENT_VERS_DEFAULT);	    
+	LANG(STR_CANT_MOUNT_PEEKPOKE, "STR_CANT_MOUNT_PEEKPOKE", STR_CANT_MOUNT_PEEKPOKE_DEFAULT);	
+	LANG(STR_CANT_MOUNT_UNKFW, "STR_CANT_MOUNT_UNKFW", STR_CANT_MOUNT_UNKFW_DEFAULT);	
+	LANG(STR_CANT_MOUNT, "STR_CANT_MOUNT", STR_CANT_MOUNT_DEFAULT);
+
 	FREE(flang);
 	lang_code_loaded = lang_code;
 }
@@ -9816,6 +9830,8 @@ void task_End()
 	task_ProgressBar1_val=0;
 }
 
+u8 loading_can_turnoff=NO;
+
 void Draw_Loading(void *unused)
 {
 // bullet
@@ -9823,12 +9839,13 @@ void Draw_Loading(void *unused)
 	int speed = 3;
 	int boost=100;
 	int h=20, v=70;
-	
+		
 	u32 color=GREEN;
 	u8 have_log=NO;
 	int i=0;
 	int show_log=YES;
 	u8 old_DEBUG = DEBUG;
+	u8 shutdown=NO;
 	
 	cancel=NO;
 	LoadIconRot=0;
@@ -10130,6 +10147,11 @@ void Draw_Loading(void *unused)
 		
 		if(!loading) break;
 		
+		if(loading_can_turnoff) {
+			x=DrawButton(x, y, STR_TURNOFF, BUTTON_L1);
+			x=Draw_checkbox(x-3, y, 0, "", shutdown, YES);
+		}
+		
 		if(AutoM == YES) {
 			x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
 		}
@@ -10157,6 +10179,9 @@ void Draw_Loading(void *unused)
 			else DEBUG = YES;
 		}
 		
+		if(loading_can_turnoff && NewPad(BUTTON_L1)) {
+			shutdown= !shutdown;
+		}
 		if(NewPad(BUTTON_RIGHT)) {
 			bullet_move = 1;
 		}
@@ -10200,6 +10225,11 @@ void Draw_Loading(void *unused)
 	
 	cls();
 	tiny3d_Flip();
+	
+	if(!cancel == NO && shutdown) {
+		Delete("/dev_hdd0/tmp/turnoff");
+		lv2syscall4(379,0x1100,0,0,0);
+	}	
 	
 	DEBUG = old_DEBUG;
 	
@@ -13779,7 +13809,7 @@ void add_GAMELIST(char *path)
 	u8 plat = get_platform(path);
 	
 	if(plat == UNK) return;
-		
+	
 	game_number++;
 	list_game_path = (char **) realloc(list_game_path, (game_number+1) * sizeof(char *));
 	list_game_title = (char **) realloc(list_game_title, (game_number+1) * sizeof(char *));
@@ -15229,19 +15259,19 @@ int download(char *url, char *dst)
 		}
 	}
 	fclose(fp);
-	
-	if(cancel==YES) {
-		Delete(dst);
-		ret=FAILED;
-		cancel=NO;
-	}
-	
+		
 	if(prog_bar2_value!=-1) prog_bar2_value=-1;
 	else prog_bar1_value=-1;
 	
 //END of TRANSFERT
 
 	ret=SUCCESS;
+	
+	if(cancel==YES) {
+		Delete(dst);
+		ret=FAILED;
+		cancel=NO;
+	}
 	
 end:
 	if(caList) free(caList);
@@ -15263,178 +15293,6 @@ end:
 	if(cert_buffer) free(cert_buffer);
 	
 	return ret;
-}
-
-typedef struct
-{
-	float pkgVers;
-	u64 size;
-	char url[255];
-	float sysVers;
-} update_data;
-
-void get_game_update()
-{
-	
-	start_loading();
-	
-	int shutdown=NO;
-	char url[128];
-	char dst[128];
-	int file_size=0;
-	int n=0;
-	int k=0;
-	int nPKG = -1;
-	char *xml;
-	int d_position=0;
-	char *size_str[512];
-		
-	sprintf(url, "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml", list_game_ID[position], list_game_ID[position]);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/%s.xml", ManaGunZ_id, list_game_ID[position]);
-
-	if(download(url, dst)==FAILED) {
-		print_load("Error: Download xml failed");
-		goto screen;
-	}
-	
-	if(path_info(dst)==_NOT_EXIST) goto screen; //0 update, status code = 0
-	
-	xml = LoadFile(dst, &file_size);
-	
-	Delete(dst);
-	if(file_size==0) {
-		print_load("Error: Load xml failed");
-		goto screen;
-	}
-	
-	update_data data[512];
-	
-	print_load("Search Flags");
-	for(n=0 ; n<file_size; n++) {
-		if(strncmp(&xml[n], "package version", 15)==0) {
-			nPKG++;
-			sscanf(&xml[n+17], "%f", &data[nPKG].pkgVers);
-		}
-		if(strncmp(&xml[n], "size", 4)==0) {
-			sscanf(&xml[n+6], "%lld", (long long int *) &data[nPKG].size);
-		}
-		if(strncmp(&xml[n], "url", 3)==0) {
-			k=n+5;
-		}
-		if(strncmp(&xml[n], ".pkg", 4)==0) {
-			memcpy(data[nPKG].url, &xml[k], n+4-k);
-		}
-		if(strncmp(&xml[n], "ps3_system_ver", 14)==0) {
-			sscanf(&xml[n+16], "%f", &data[nPKG].sysVers);
-		}
-	}
-	
-	for(n=0 ; n<=nPKG; n++) {
-		size_str[n] = get_unit(data[n].size);
-	}
-	
-screen:
-
-	end_loading();
-	
-	u8 LoopBreak=1;
-	while(LoopBreak)
-	{
-		cls();		
-		
-		Draw_BGS();
-		Draw_Notification();
-		
-		int x=50, y=40, xt;
-		
-		FontSize(20);
-		FontColor(COLOR_3);
-		
-		Draw_Box(x, y+5, 0, 0, 10, 10, COLOR_3, NO);
-		
-		xt=DrawString(x+15, y, list_game_title[position]);
-		y+=new_line(1);
-		Draw_Box(x, y, 0, 0, xt-x, 2, COLOR_3, NO);
-		
-		y+=new_line(2);
-
-		FontColor(COLOR_4);
-		
-		DrawFormatString(x, y, "%s = %d", STR_UPDATE_FOUND, nPKG+1);
-		
-		y+=new_line(2);
-		
-		for(n=0 ; n<=nPKG; n++) {
-			if(n==d_position) FontColor(COLOR_2); else FontColor(COLOR_1);
-			DrawFormatString(x, y, "%s: %1.2f  -  %s: %s  - %s: %1.2f", STR_UPDATE, data[n].pkgVers, STR_SIZE, size_str[n], STR_SYSTEM, data[n].sysVers);
-			y+=new_line(1);
-		}
-		
-		x=INPUT_X;
-		y=INPUT_Y;
-		FontColor(COLOR_1);
-		SetFontZ(0);
-	
-		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
-		
-		if(nPKG!=-1)  {
-			x=DrawButton(x, y, STR_DL, BUTTON_CROSS);
-		} 
-		if(nPKG>0) {
-			x=DrawButton(x, y, STR_DL_ALL, BUTTON_SQUARE);
-		}
-		if(nPKG!=-1)  {
-			x=DrawButton(x, y, STR_TURNOFF, BUTTON_L1);
-			x=Draw_checkbox(x-3, y, 0, "", shutdown, YES);
-		}
-		
-		tiny3d_Flip();
-		ScreenShot();
-		ps3pad_read();
-		
-		if(NewPad(BUTTON_L1) && nPKG!=-1) {
-			shutdown= !shutdown;
-		}
-		if(NewPad(BUTTON_UP)) {
-			if(d_position>0) d_position--;
-		}
-		if(NewPad(BUTTON_DOWN)) {
-			if(d_position<nPKG) d_position++;
-		}
-		if(NewPad(BUTTON_CIRCLE)) {
-			LoopBreak=0;
-			return;
-		}
-		if(NewPad(BUTTON_CROSS) && nPKG!=-1) { 
-			sprintf(dst, "/dev_hdd0/packages%s", strrchr(data[d_position].url, '/'));
-			if(path_info(dst) == _FILE) show_msg(STR_DONE);
-			else {
-				start_loading();
-				if(download(data[d_position].url, dst) == SUCCESS) show_msg(STR_DONE); 
-				else show_msg(STR_FAILED);
-				end_loading();
-				if(shutdown==YES) {
-					Delete("/dev_hdd0/tmp/turnoff");
-					lv2syscall4(379,0x1100,0,0,0);
-				}
-			}
-		}
-		if(NewPad(BUTTON_SQUARE) && nPKG>0) {
-			start_loading();
-			for(n=0; n<=nPKG; n++) {
-				sprintf(dst, "/dev_hdd0/packages%s", strrchr(data[n].url, '/'));
-				if(path_info(dst) == _FILE) continue;
-				if(download(data[n].url, dst) == SUCCESS)  show_msg(STR_DONE); 
-				else show_msg(STR_FAILED);
-			}
-			end_loading();
-			if(shutdown==YES) {
-				Delete("/dev_hdd0/tmp/turnoff");
-				lv2syscall4(379,0x1100,0,0,0);
-			}
-		}
-	}
-	
 }
 
 int read_scan_dir() 
@@ -27847,7 +27705,8 @@ void Draw_MENU()
 				else FontColor(COLOR_1);
 				DrawString(x3, y1, TITLES[i]);
 				y1+=new_line(1);
-			} else {
+			} 
+			else {
 				y+=10;
 				Draw_title(x1, y, TITLES[i]);
 				
@@ -27881,8 +27740,6 @@ void Draw_MENU()
 			if( !(TITLE_MENU_FIRST_ITEM<=i && i<=TITLE_MENU_LAST_ITEM) ) continue;
 			if( i == TITLE_MENU_FIRST_ITEM ) y = 40;
 		}
-		
-		if(i==MENU_TABLE_START) y1=y;
 		
 		if(ITEMS_TYPE[i] == ITEM_TOGGLE) {
 			u8 active=YES;
@@ -27934,7 +27791,7 @@ void Draw_MENU()
 				color = COLOR_1;
 				FontColor(COLOR_1);
 			}
-						
+			
 			if( strcmp(ITEMS[i], STR_PATCH_LIBFS) == 0 ) {
 				DrawChildArrow(x1+5, y, 9, 10, 7, color);
 				DrawFormatString(x1+20, y, ITEMS[i]);
@@ -27988,19 +27845,19 @@ void Draw_MENU()
 		} else
 		if(ITEMS_TYPE[i] == ITEM_CHECKBOX) {
 			if(i>0) {
-				if(ITEMS_TYPE[i-1] == ITEM_TEXTBOX) { y+=10; y1=y; }
+				if(ITEMS_TYPE[i-1] != ITEM_CHECKBOX) { y+=10; y1=y; }
 			}
-		
-			Draw_checkbox(x1, y, 0, ITEMS[i], ITEMS_VALUE_POSITION[i], ITEMS_POSITION==i && MENU_LVL != LVL_TITLE);
+			
+			Draw_itembox(x1, y, 0, ITEMS[i], ITEMS_VALUE_POSITION[i], ITEMS_POSITION==i && MENU_LVL != LVL_TITLE, ITEMS_VALUE_SHOW[i], COLOR_3);
 			
 			y+=new_line(1);
 		} else
 		if(ITEMS_TYPE[i] == ITEM_COMMAND) {
 			if(i>0) {
-				if(ITEMS_TYPE[i-1] == ITEM_TEXTBOX) { y+=10; y1=y; }
+				if(ITEMS_TYPE[i-1] != ITEM_COMMAND) { y+=10; y1=y; }
 			}
 			
-			Draw_itembox(x1, y, 0, ITEMS[i], ITEMS_VALUE_POSITION[i], ITEMS_POSITION==i, ITEMS_VALUE_SHOW[i]==YES);
+			Draw_itembox(x1, y, 0, ITEMS[i], ITEMS_VALUE_POSITION[i], ITEMS_POSITION==i, ITEMS_VALUE_SHOW[i], RED);
 			
 			y+=new_line(1);
 			
@@ -28038,7 +27895,7 @@ void Draw_MENU()
 			y+=new_line(1);
 		}
 			
-		if(MENU_COLUMN_ITEMS_NUMBER != -1) {
+		if(MENU_COLUMN_ITEMS_NUMBER != -1 && MENU_TABLE_START != -1) {
 			if(MENU_TABLE_START<i && i<=MENU_TABLE_END ) {
 				if( (i-MENU_TABLE_START)%MENU_COLUMN_ITEMS_NUMBER == 0 ) {
 					x1+=MENU_COLUMN_ITEMS_W;
@@ -28051,6 +27908,7 @@ void Draw_MENU()
 					x2=MENU_ITEMS_VALUE_X;
 				}
 			}
+			if(MENU_TABLE_START == i) y1=y;
 		}
 		
 		if(y>450 && !USE_TITLE_MENU) {
@@ -31596,6 +31454,403 @@ void open_PS1_GAME_MENU()
 // PS3 MENU
 //*******************************************************
 
+void open_PS3_GAME_MENU();
+void close_PS3_GAME_MENU();
+
+typedef struct
+{
+	float pkgVers;
+	u64 size;
+	char url[255];
+	float sysVers;
+	char str[64];
+	u8 to_dl;
+	char pkg_path[255];
+	u8 pkg_exist;
+} update_data;
+
+update_data *ps3_game_updates;
+int ps3_game_updates_number=-1;
+char ps3_game_current_version[4]={0};
+
+void get_current_version(char *gameID)
+{
+	char sfo_path[255];
+	sprintf(sfo_path, "/dev_hdd0/game/%s/USRDIR/param.sfo", gameID);
+	
+	memset(ps3_game_current_version, 0, 4);
+	if( GetParamSFO("APP_VER", ps3_game_current_version, -1, sfo_path)== FAILED) {
+		strcpy(ps3_game_current_version, "01.00");
+	}
+}
+
+update_data *download_upd_xml(char *gameID, int *nPKG)
+{
+	char url[128];
+	char dst[128];
+	u32 n;
+	u32 k=0;
+	update_data *data=NULL;
+	int size;
+	
+	*nPKG = -1;
+	
+	sprintf(url, "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml", gameID, gameID);
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/temp", ManaGunZ_id);
+	mkdir(dst, 0777);
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/temp/%s.xml", ManaGunZ_id, list_game_ID[position]);
+	
+	print_load("Downloading xml...");
+	if(download(url, dst) == FAILED) {
+		print_load("Error: Failed to download xml");
+		return NULL;
+	}
+	
+	print_load("Loading xml...");
+	char *xml = LoadFile(dst, &size);
+	if(!xml) {
+		print_load("Error: Failed to load xml");
+		return NULL;
+	}
+	
+	print_load("Parsing xml...");
+	for(n=0 ; n<size; n++) {
+		if(strncmp(&xml[n], "package version", 15)==0) {
+			*nPKG = *nPKG + 1;
+			data = (update_data *) realloc(data, (*nPKG+1) * sizeof(update_data));
+			sscanf(&xml[n+17], "%f", &data[*nPKG].pkgVers);
+		}
+		if(strncmp(&xml[n], "size", 4)==0) {
+			sscanf(&xml[n+6], "%lld", (long long int *) &data[*nPKG].size);
+		}
+		if(strncmp(&xml[n], "url", 3)==0) {
+			k=n+5;
+		}
+		if(strncmp(&xml[n], ".pkg", 4)==0) {
+			memcpy(data[*nPKG].url, &xml[k], n+4-k);
+		}
+		if(strncmp(&xml[n], "ps3_system_ver", 14)==0) {
+			sscanf(&xml[n+16], "%f", &data[*nPKG].sysVers);
+			char *unit = get_unit(data[*nPKG].size);
+			sprintf(data[*nPKG].str, "%02.2f (%s)", data[*nPKG].pkgVers, unit);
+			data[*nPKG].to_dl=NO;
+			sprintf(data[*nPKG].pkg_path, "/dev_hdd0/packages%s", strrchr(data[*nPKG].url, '/'));
+			if(path_info(data[*nPKG].pkg_path) == _FILE) data[*nPKG].pkg_exist = YES;
+			else data[*nPKG].pkg_exist = NO;			
+		}
+	}
+	FREE(xml);
+	
+	if(*nPKG==-1) return NULL;
+	
+	return data;
+}
+
+void close_PS3_UPDATE_MENU()
+{
+	Draw_MENU_input = &EmptyFunc;
+	input_MENU = &EmptyFunc;
+	free_MENU();
+	
+	FREE(ps3_game_updates);
+	ps3_game_updates_number=-1;
+	
+	open_PS3_GAME_MENU();
+}
+
+void init_PS3_UPDATE_MENU()
+{
+	init_MENU();
+
+	add_title_MENU(STR_GAME_UPDATE_TITLE);
+	
+	add_item_MENU(STR_GAME_TITLE, ITEM_LOCKED);
+	add_item_value_MENU(list_game_title[position]);
+	
+	add_item_MENU(STR_GAMEID, ITEM_LOCKED);
+	add_item_value_MENU(list_game_ID[position]);
+	
+	add_item_MENU(STR_CURRENT_VERS, ITEM_LOCKED);
+	add_item_value_MENU(ps3_game_current_version);
+	
+	add_item_MENU(STR_UPDATE_FOUND, ITEM_LOCKED);
+	char temp[8];
+	sprintf(temp, "%d", ps3_game_updates_number+1);
+	add_item_value_MENU(temp);
+	
+	MENU_TABLE_START=ITEMS_NUMBER;
+	
+	int n;
+	for(n=0; n<=ps3_game_updates_number; n++){
+		add_item_MENU(ps3_game_updates[n].str, ITEM_CHECKBOX);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER]=ps3_game_updates[n].to_dl;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER]=ps3_game_updates[n].pkg_exist;
+	}
+	
+	MENU_TABLE_END=ITEMS_NUMBER;
+	MENU_COLUMN_ITEMS_NUMBER = 1+(ITEMS_NUMBER-MENU_TABLE_START)/4;
+}
+
+u8 PS3_UPDATE_MENU_CROSS()
+{
+	
+	if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX) {
+		ITEMS_VALUE_POSITION[ITEMS_POSITION] = !ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		ps3_game_updates[ITEMS_POSITION - MENU_TABLE_START-1].to_dl = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	}
+	
+	init_PS3_UPDATE_MENU();
+	
+	return CONTINUE;
+}
+
+u8 PS3_UPDATE_MENU_R1()
+{
+	return CONTINUE;	
+}
+
+u8 PS3_UPDATE_MENU_L1()
+{
+	Delete(ps3_game_updates[ITEMS_POSITION - MENU_TABLE_START-1].pkg_path);
+	
+	ps3_game_updates[ITEMS_POSITION - MENU_TABLE_START-1].pkg_exist = NO;
+	
+	init_PS3_UPDATE_MENU();
+	
+	return CONTINUE;
+}
+
+u8 PS3_UPDATE_MENU_SQUARE()
+{
+	int n;
+	for(n=0; n<=ps3_game_updates_number; n++) {
+		ps3_game_updates[n].to_dl = YES;
+	}
+	
+	init_PS3_UPDATE_MENU();
+	
+	return CONTINUE;
+}
+
+u8 PS3_UPDATE_MENU_TRIANGLE()
+{
+	int n;
+	for(n=0; n<=ps3_game_updates_number; n++) {
+		ps3_game_updates[n].to_dl = NO;
+	}
+	
+	init_PS3_UPDATE_MENU();
+	
+	return CONTINUE;
+}
+
+u8 PS3_UPDATE_MENU_START()
+{
+	loading_can_turnoff = YES;
+	start_loading();
+	
+	int n;
+	for(n=0; n<=ps3_game_updates_number; n++) {
+		if( ps3_game_updates[n].to_dl && !ps3_game_updates[n].pkg_exist ) {
+			print_head("Downloading update v%f", ps3_game_updates[n].pkgVers);
+			if( download(ps3_game_updates[n].url, ps3_game_updates[n].pkg_path) ) {
+				ps3_game_updates[n].pkg_exist = YES;
+			}
+		}
+	}
+	
+	end_loading();
+	loading_can_turnoff =  NO;
+	
+	init_PS3_UPDATE_MENU();
+	
+	return CONTINUE;
+}
+
+void input_PS3_UPDATE_MENU()
+{
+	if(MENU==NO) return;
+	
+	get_R2speed();
+	
+	if(MENU_TABLE_START < ITEMS_POSITION && ITEMS_POSITION <=MENU_TABLE_END) {
+		if(R2pad(BUTTON_RIGHT)) {
+			if(ITEMS_POSITION + MENU_COLUMN_ITEMS_NUMBER <= MENU_TABLE_END) ITEMS_POSITION += MENU_COLUMN_ITEMS_NUMBER;
+		} else
+		if(R2pad(BUTTON_LEFT)) {
+			if(ITEMS_POSITION - MENU_COLUMN_ITEMS_NUMBER > MENU_TABLE_START) ITEMS_POSITION -= MENU_COLUMN_ITEMS_NUMBER;
+		}
+		if(MENU_TABLE_END < ITEMS_NUMBER) {
+			if(R2pad(BUTTON_DOWN)) {
+				if( (ITEMS_POSITION-MENU_TABLE_START)%MENU_COLUMN_ITEMS_NUMBER == 0 ) ITEMS_POSITION=MENU_TABLE_END;
+			}
+		}
+		if(0<MENU_TABLE_START) {
+			if(R2pad(BUTTON_UP)) {
+				if( (ITEMS_POSITION-MENU_TABLE_START)%MENU_COLUMN_ITEMS_NUMBER == 1 ) ITEMS_POSITION=MENU_TABLE_START+1;
+			}
+		}
+	}
+	
+	int i;
+	for(i=0; i<=ITEMS_NUMBER; i++) {
+		if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+		if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+		else ITEMS_POSITION++;
+	}
+	
+	if(R2pad(BUTTON_UP)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				u8 twice=NO;
+				if(TITLES[ITEMS_POSITION]==NULL) twice=YES;
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos = ITEMS_POSITION-i;
+					if( i_pos < 0 ) i_pos+=ITEMS_NUMBER+1;
+					if(TITLES[i_pos] != NULL) {
+						if(twice==NO) {
+							ITEMS_POSITION = i_pos;
+							break;
+						} else twice=NO;
+					}
+				}
+			} else if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION==TITLE_MENU_FIRST_ITEM) ITEMS_POSITION=TITLE_MENU_LAST_ITEM;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
+		}
+	} else
+	if(R2pad(BUTTON_DOWN)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL==LVL_TITLE) {
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos=ITEMS_POSITION+i;
+					if(ITEMS_NUMBER<i_pos) i_pos-=ITEMS_NUMBER+1;
+					if(TITLES[i_pos]!=NULL) {
+						ITEMS_POSITION=i_pos;
+						break;
+					}
+				}
+			} else
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION == TITLE_MENU_LAST_ITEM) ITEMS_POSITION = TITLE_MENU_FIRST_ITEM;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}				
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_CROSS)) {
+		if(PS3_UPDATE_MENU_CROSS() == BREAK) close_PS3_UPDATE_MENU();
+	} else
+	if(NewPad(BUTTON_SQUARE)) {
+		if( PS3_UPDATE_MENU_SQUARE() == BREAK) close_PS3_UPDATE_MENU();
+	} else
+	if(NewPad(BUTTON_TRIANGLE)) {
+		if( PS3_UPDATE_MENU_TRIANGLE() == BREAK) close_PS3_UPDATE_MENU();
+	} else
+	if(NewPad(BUTTON_R1)) {
+		if( PS3_UPDATE_MENU_R1() == BREAK) close_PS3_UPDATE_MENU();
+	} else
+	if(NewPad(BUTTON_L1)) {
+		if( PS3_UPDATE_MENU_L1() == BREAK) close_PS3_UPDATE_MENU();
+	} else
+	if(NewPad(BUTTON_START)) {
+		if( PS3_UPDATE_MENU_START() == BREAK) close_PS3_UPDATE_MENU();
+	} else
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(MENU_LVL == LVL_ITEMS) close_PS3_UPDATE_MENU();
+		else {
+			init_PS3_UPDATE_MENU();
+			MENU_LVL = LVL_ITEMS;
+		}
+	}
+}
+
+void Draw_PS3_UPDATE_MENU_input()
+{
+	if(MENU==NO) return;
+	if(txt_viewer_activ) return;
+	
+	float x=INPUT_X;
+	float y=INPUT_Y;
+	FontColor(COLOR_1);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, STR_DL, BUTTON_START);
+	
+	x=DrawButton(x, y, STR_SELECT_ALL, BUTTON_SQUARE);
+	x=DrawButton(x, y, STR_UNSELECT_ALL, BUTTON_TRIANGLE);
+	
+	if(ITEMS_VALUE_SHOW[ITEMS_POSITION]) x=DrawButton(x, y, STR_DELETE, BUTTON_L1);
+	
+	if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) {
+		x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
+	} else { 
+		x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);			
+	}
+	
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+}
+
+u8 open_PS3_UPDATE_MENU()
+{
+	start_loading();
+	
+	close_PS3_GAME_MENU();
+	
+	USE_TITLE_MENU=NO;
+	MENU_SIDE = NO;
+	new_MENU();
+	
+	ps3_game_updates = download_upd_xml(list_game_ID[position], &ps3_game_updates_number);
+	
+	get_current_version(list_game_ID[position]);
+	
+	init_PS3_UPDATE_MENU();
+	
+	Draw_MENU_input = &Draw_PS3_UPDATE_MENU_input;
+	input_MENU = &input_PS3_UPDATE_MENU;
+	
+	end_loading();
+	
+	return BREAK;
+}
+
 void peek_IDPS()
 {
 	if (PEEKnPOKE) {
@@ -32042,10 +32297,10 @@ void init_PS3_GAME_MENU()
 	init_MENU();
 	
 	add_title_MENU(STR_GAME_SETTINGS);
-		
+	
 	add_item_MENU(STR_DIRECT_BOOT, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = direct_boot;
-		
+	
 	if(PEEKnPOKE) {
 		add_item_MENU(STR_CLEAN_SYSCALL, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = clean_syscall;
@@ -32053,7 +32308,7 @@ void init_PS3_GAME_MENU()
 		add_item_MENU(STR_CHANGE_IDPS, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = change_IDPS;
 	}
-		
+	
 	add_item_MENU(STR_EXT_GAME_DATA, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = ext_game_data;
 	
@@ -32064,12 +32319,12 @@ void init_PS3_GAME_MENU()
 			if(mamba) add_item_value_MENU("Mamba");
 			else {
 				if(!PEEKnPOKE) {
-					add_item_value_MENU("Unmountable : PEEK and POKE unavailable, mamba can't be installed");
+					add_item_value_MENU(STR_CANT_MOUNT_PEEKPOKE);
 				} else {
 					if(MAMBA_SIZE != 0) {
 						add_item_value_MENU("Mamba");
 					} else {
-						add_item_value_MENU("Unmountable : unknown firmware, mamba can't be installed.");
+						add_item_value_MENU(STR_CANT_MOUNT_UNKFW);
 					}
 				}
 			}
@@ -32090,10 +32345,11 @@ void init_PS3_GAME_MENU()
 			if( BASE_ADDR != 0 ) add_item_value_MENU("multiMAN");
 		}
 		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
-			add_item_value_MENU("Unmountable");
-		}
-		
+			add_item_value_MENU(STR_CANT_MOUNT);
+		}	
 	}
+	
+	u8 have_payload = YES;
 	
 	u8 temp_payload=0;
 	for(temp_payload=0; temp_payload<=ITEMS_VALUE_NUMBER[ITEMS_POSITION]; temp_payload++) {
@@ -32111,56 +32367,63 @@ void init_PS3_GAME_MENU()
 			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "multiMAN") == 0 ) break;
 		} else
 		if(payload==NO_PAYLOAD) {
+			have_payload = NO;
 			temp_payload = 0;
 		}
 	}
+	
+	if(have_payload == NO ) {
+		init_MENU();
+		add_title_MENU(STR_GAME_SETTINGS);
+	}
+	
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = temp_payload;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	if(ITEMS_VALUE_NUMBER[ITEMS_NUMBER] == 0) ITEMS_TYPE[ITEMS_NUMBER]=ITEM_LOCKED;
 	
-	if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == 0) ITEMS_TYPE[ITEMS_NUMBER]=ITEM_LOCKED;
-	
-	
-	if(iso == NO) {	
-		if(cobra && usb) {
-			add_item_MENU(STR_PRIM_USB, ITEM_TOGGLE);
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = prim_USB;
-		}
-		
-		if( HEN ) {
-			add_item_MENU("BDMIRROR", ITEM_TOGGLE);
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
-		} else {
-			add_item_MENU(STR_BDEMU, ITEM_TEXTBOX);
-			add_item_value_MENU(STR_NONE);
-			add_item_value_MENU("BDMIRROR");
-			add_item_value_MENU("BDEMU");
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
-			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	if(have_payload) {
+		if(iso == NO) {	
+			if(cobra && usb) {
+				add_item_MENU(STR_PRIM_USB, ITEM_TOGGLE);
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = prim_USB;
+			}
 			
-			if(emu==BDEMU) {
-				add_item_MENU(STR_PATCH_LIBFS, ITEM_TEXTBOX);
-				add_item_value_MENU("reactPSN");
-				add_item_value_MENU("Iris");
-				add_item_value_MENU("multiMAN");
-				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = libfs_from;
+			if( HEN ) {
+				add_item_MENU("BDMIRROR", ITEM_TOGGLE);
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
+			} else {
+				add_item_MENU(STR_BDEMU, ITEM_TEXTBOX);
+				add_item_value_MENU(STR_NONE);
+				add_item_value_MENU("BDMIRROR");
+				add_item_value_MENU("BDEMU");
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
 				ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+				
+				if(emu==BDEMU) {
+					add_item_MENU(STR_PATCH_LIBFS, ITEM_TEXTBOX);
+					add_item_value_MENU("reactPSN");
+					add_item_value_MENU("Iris");
+					add_item_value_MENU("multiMAN");
+					ITEMS_VALUE_POSITION[ITEMS_NUMBER] = libfs_from;
+					ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+				}
 			}
 		}
+		
+		add_item_MENU(STR_MOUNT_APPHOME, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = mount_app_home;
+		
+		if(mount_app_home && !HEN) {
+			add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
+		}
+		
+		add_item_MENU(STR_BT_AUDIO, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = bt_audio;	
 	}
-	
-	add_item_MENU(STR_MOUNT_APPHOME, ITEM_TOGGLE);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = mount_app_home;
-	
-	if(mount_app_home && !HEN) {
-		add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
-		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
-	}
-	
-	add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = bt_audio;
 	
 	add_title_MENU(STR_GAME_OPTION);
-		
+	
 	if(is_favorite(list_game_path[position]) == NO) {
 		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
 	} else {
@@ -32429,7 +32692,7 @@ u8 PS3_GAME_MENU_CROSS()
 			init_Load_GAMEPIC();
 		
 			read_fav();
-						
+			
 			show_msg(STR_DONE);
 		} 
 		else 
@@ -32462,7 +32725,7 @@ u8 PS3_GAME_MENU_CROSS()
 		}
 	} else 
 	if(item_is(STR_DL_UPDATE)) {
-		get_game_update();
+		open_PS3_UPDATE_MENU();
 	} else 
 	if(item_is(STR_PROPS)) {
 		start_gathering();
@@ -34848,7 +35111,6 @@ void input_SETTINGS()
 					else ITEMS_POSITION--;
 					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
 				}
-				
 			} else if(MENU_LVL == LVL_VALUE) {
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
@@ -34896,9 +35158,8 @@ void input_SETTINGS()
 		if(MENU_LVL == LVL_TITLE) {
 			MENU_LVL = LVL_ITEMS;
 		} else 
-		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE || ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX ) {
+			ITEMS_VALUE_POSITION[ITEMS_POSITION] = !ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
 		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			MENU_LVL = LVL_VALUE;
@@ -34910,9 +35171,8 @@ void input_SETTINGS()
 		if(MENU_LVL == LVL_TITLE) {
 			//nothing
 		} else
-		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE || ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX ) {
+			ITEMS_VALUE_POSITION[ITEMS_POSITION] = !ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
 		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
@@ -34927,9 +35187,8 @@ void input_SETTINGS()
 		if(MENU_LVL == LVL_TITLE) {
 			//nothing
 		} else
-		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
-			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE && ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX ) {
+			ITEMS_VALUE_POSITION[ITEMS_POSITION] = !ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
 		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
 			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
