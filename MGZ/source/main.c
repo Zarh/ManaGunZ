@@ -1325,7 +1325,7 @@ static char *STR_SETTINGS=NULL;
 static char *STR_MOUNTGAME=NULL;
 #define STR_MOUNTGAME_DEFAULT				"Mount Game"
 static char *STR_FILTER=NULL;
-#define	STR_FILTER_DEFAULT					"Filter"
+#define	STR_FILTER_DEFAULT					"Filters"
 static char *STR_FAVORITE=NULL;
 #define STR_FAVORITE_DEFAULT				"Favorite"
 static char *STR_FILEMANAGER=NULL;
@@ -1997,9 +1997,9 @@ static char *STR_LOAD_MAMBA=NULL;
 static char *STR_CONVERT_TO_PNG=NULL;
 #define STR_CONVERT_TO_PNG_DEFAULT			"Convert to PNG"
 static char *STR_MOUNT_DEVBLIND=NULL;
-#define STR_MOUNT_DEVBLIND_DEFAULT			"Unlock dev_flash"
+#define STR_MOUNT_DEVBLIND_DEFAULT			"Unprotect dev_flash"
 static char *STR_UNMOUNT_DEVBLIND=NULL;
-#define STR_UNMOUNT_DEVBLIND_DEFAULT		"Lock dev_flash"
+#define STR_UNMOUNT_DEVBLIND_DEFAULT		"Protect dev_flash"
 static char *STR_BT_AUDIO=NULL;
 #define STR_BT_AUDIO_DEFAULT				"Gamepad audio out"
 static char *STR_BT_AUDIO_DESC=NULL;
@@ -2014,6 +2014,12 @@ static char *STR_CANT_MOUNT_UNKFW=NULL;
 #define STR_CANT_MOUNT_UNKFW_DEFAULT		"Unmountable : unknown firmware, mamba can't be installed."
 static char *STR_CANT_MOUNT=NULL;
 #define STR_CANT_MOUNT_DEFAULT				"Unmountable"
+static char *STR_ONLY_FAV=NULL;
+#define STR_ONLY_FAV_DEFAULT				"Only favorites"
+static char *STR_ALL_GAMES=NULL;
+#define STR_ALL_GAMES_DEFAULT				"All games"
+static char *STR_DISPLAY=NULL;
+#define STR_DISPLAY_DEFAULT					"Display"
 
 
 //***********************************************************
@@ -6844,6 +6850,9 @@ void update_lang()
 	LANG(STR_CANT_MOUNT_PEEKPOKE, "STR_CANT_MOUNT_PEEKPOKE", STR_CANT_MOUNT_PEEKPOKE_DEFAULT);	
 	LANG(STR_CANT_MOUNT_UNKFW, "STR_CANT_MOUNT_UNKFW", STR_CANT_MOUNT_UNKFW_DEFAULT);	
 	LANG(STR_CANT_MOUNT, "STR_CANT_MOUNT", STR_CANT_MOUNT_DEFAULT);
+	LANG(STR_ONLY_FAV, "STR_ONLY_FAV", STR_ONLY_FAV_DEFAULT);	
+	LANG(STR_ALL_GAMES, "STR_ALL_GAMES", STR_ALL_GAMES_DEFAULT);	
+	LANG(STR_DISPLAY, "STR_DISPLAY", STR_DISPLAY_DEFAULT);
 
 	FREE(flang);
 	lang_code_loaded = lang_code;
@@ -35474,6 +35483,7 @@ void input_filter()
 	if(filter==NO) return;
 	
 	if(NewPad(BUTTON_CROSS)) {
+		
 		if(filter_position==0) {
 			if(Only_FAV==YES) Only_FAV=NO;
 			else Only_FAV=YES;
@@ -35564,8 +35574,14 @@ void Draw_filter_input()
 		if(Show_PSP==YES) is_checked=YES;
 	}
 	
-	if(is_checked) x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
-	else x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);
+	if(filter_position==0 && UI_position != XMB) {
+		x=DrawButton(x, y, STR_CHANGE, BUTTON_CROSS);
+	}
+	else {
+		if(is_checked) x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
+		else x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);
+	}
+	
 	x=DrawButton(x, y, STR_MOVE, BUTTON_L);
 	x=DrawButton(x, y, STR_RESET, BUTTON_SQUARE);
 	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
@@ -35578,46 +35594,86 @@ void Draw_filter()
 	SetFontZ(0);
 	float x=filter_x;
 	float y=filter_y;
-	
+	float w=120;
+	float h=115;
 	u32 color = COLOR_BOXBODY_DEFAULT;
+	
+	if(UI_position!=XMB) h=160;
 	
 	if(PICTURE_offset[BOXBODY]) {
 		if(FILTER_BOXBODY == ENABLED) color = COLOR_BOXBODY;
 		else color = WHITE;
 		
 		tiny3d_SetTexture(0, PICTURE_offset[BOXBODY], PICTURE[BOXBODY].width, PICTURE[BOXBODY].height, PICTURE[BOXBODY].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, 0, 0, 100, 115, color, YES);
+		
+		Draw_Box(x, y, 0, 0, w, h, color, YES);
 	} else {
 		if(FILTER_BOXBODY == ENABLED) {
-			Draw_Box(x, y, 0, 0, 100, 115, COLOR_BOXBODY, NO);
+			Draw_Box(x, y, 0, 0, w, h, COLOR_BOXBODY, NO);
 		} else {
-			Draw_Box(x, y, 0, 0, 100, 115, COLOR_BOXBODY_DEFAULT, NO);
+			Draw_Box(x, y, 0, 0, w, h, COLOR_BOXBODY_DEFAULT, NO);
 		}
-		
 	}
+	
 	if(PICTURE_offset[BOXHEAD]) {
 		if(FILTER_BOXHEAD == ENABLED) color = COLOR_BOXHEAD;
 		else color = WHITE;
 		
 		tiny3d_SetTexture(0, PICTURE_offset[BOXHEAD], PICTURE[BOXHEAD].width, PICTURE[BOXHEAD].height, PICTURE[BOXHEAD].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, 0, 0, 100, 25, color, YES);
+		Draw_Box(x, y, 0, 0, w, 25, color, YES);
+		
+		if(UI_position != XMB) {
+			tiny3d_SetTexture(0, PICTURE_offset[BOXHEAD], PICTURE[BOXHEAD].width, PICTURE[BOXHEAD].height, PICTURE[BOXHEAD].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x, y+25+30, 0, 0, w, 25, color, YES);		
+		}
 	} else {
 		if(FILTER_BOXHEAD == ENABLED) {
-			Draw_Box(x, y, 0, 0, 100, 25, COLOR_BOXHEAD, NO);
+			Draw_Box(x, y, 0, 0, w, 25, COLOR_BOXHEAD, NO);
+			if(UI_position != XMB) {
+				Draw_Box(x, y+25+30, 0, 0, w, 25, COLOR_BOXHEAD, NO);
+			}
 		} else {
-			Draw_BoxGradiant(VERTICAL, x, y, 0, 100, 25,  COLOR_BOXHEAD_DEFAULT, 0x101010FF, NO);
+			Draw_BoxGradiant(VERTICAL, x, y, 0, w, 25,  COLOR_BOXHEAD_DEFAULT, 0x101010FF, NO);
+			if(UI_position != XMB) {
+				Draw_BoxGradiant(VERTICAL, x, y+25+30, 0, w, 25,  COLOR_BOXHEAD_DEFAULT, 0x101010FF, NO);
+			}
 		}
-		
 	}
+	
 	
 	FontSize(18);
 	FontColor(COLOR_3);
-	DrawStringFromCenterX(x+50, y+5, STR_FILTER);
+	if( UI_position == XMB) {
+		DrawStringFromCenterX(x+w/2, y+5, STR_FILTER);
+	} else {
+		DrawStringFromCenterX(x+w/2, y+5, STR_DISPLAY);
+	}
 	
-	FontSize(15);
 	x+=8;
 	y+=30;
-	Draw_checkbox(x+5, y, 0, STR_FAVORITE, Only_FAV, filter_position==0);
+	if( UI_position != XMB) {
+		if(filter_position==0) FontColor(COLOR_2);
+		else FontColor(COLOR_1);
+		
+		if( Only_FAV ) DrawString(x+5, y, STR_ONLY_FAV);
+		else DrawString(x+5, y, STR_ALL_GAMES);
+		
+		y+=25;
+		x-=8;
+		
+		FontSize(18);
+		FontColor(COLOR_3);
+		DrawStringFromCenterX(x+w/2, y+5, STR_FILTER);
+		
+		FontSize(15);
+		x+=8;
+		y+=15;
+	} else {
+		FontSize(15);
+		
+		Draw_checkbox(x+5, y, 0, STR_FAVORITE, Only_FAV, filter_position==0);
+	}
+	
 	y+=15;
 	Draw_checkbox(x+5, y, 0, "PS3", Show_PS3, filter_position==1);
 	y+=15;
@@ -38554,7 +38610,7 @@ void input_MAIN()
 	
 	if(ComboNewPad(BUTTON_L3, BUTTON_R3)) {
 		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
-	}	
+	}
 	
 	if(OldPad(BUTTON_R1)) Display_PIC1=YES;
 	else Display_PIC1=NO;
