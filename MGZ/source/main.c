@@ -721,9 +721,16 @@ enum
 	TOGGLE_OFF,
 	CHECKBOX_FALSE,
 	CHECKBOX_TRUE,
-	CLOSE,
+	RESET,
+	RESET_HOVER,
 	MAXIMIZE,
-	MINIMIZE,
+	MAXIMIZE_HOVER,
+	CLOSE,
+	CLOSE_HOVER,
+	DOCK_R,
+	DOCK_R_HOVER,
+	DOCK_L,
+	DOCK_L_HOVER,
 	FRAME,
 	HEADER,
 	COLUMN_HEADER,
@@ -749,26 +756,89 @@ enum
 
 #define _BG_			255
 
-char *PICTURE_NAME[PICTURE_NUMBER] = { "ALL", 
-										"UP", "LEFT", "DOWN", "RIGHT",
-										"SELECT", "START",
-										"SQUARE", "CROSS", "CIRCLE", "TRIANGLE",
-										"NOT", 
-										"L1", "L2", "L3", "L",
-										"R1", "R2", "R3", "R",
-										"DEFAULT", "DEFAULT_ISO", "DEFAULT_JB", "TAG",
-										"PS1_CASE", "PS2_CASE", "PS3_CASE", "PSP_CASE",
-										"FOLDER", "FILES", "GAME",
-										"DISC", "DISC_PS1", "DISC_PS2", "DISC_PS3", "DISC_PSP", "DISC_VIDEO", "DISC_DATA",
-										"CF", "FLASH", "HDD", "MS", "SD", "USB", "VIRTUAL", "LOCK",
-										"BR_LOGO", "PS_LOGO",
-										"TOGGLE_ON", "TOGGLE_OFF",
-										"CHECKBOX_FALSE", "CHECKBOX_TRUE",
-										"CLOSE", "MAXIMIZE", "MINIMIZE", "FRAME",
-										"HEADER", "COLUMN_HEADER", "CONTENT", 
-										"CURSOR", "CURSOR_D1", "CURSOR_D2", "CURSOR_H", "CURSOR_V",
-										"APP_HOME", "HOST_ROOT",
-										"NOTIF", "BOXHEAD", "BOXBODY", "SIDEBAR", "BGS", "BGF"};
+char *PICTURE_NAME[PICTURE_NUMBER] = {
+	"ALL",
+	"UP",
+	"LEFT",
+	"DOWN",
+	"RIGHT",
+	"SELECT",
+	"START",
+	"SQUARE",
+	"CROSS",
+	"CIRCLE",
+	"TRIANGLE",
+	"NOT",
+	"L1",
+	"L2",
+	"L3",
+	"L",
+	"R1",
+	"R2",
+	"R3",
+	"R",
+	"DEFAULT",
+	"DEFAULT_ISO",
+	"DEFAULT_JB",
+	"TAG",
+	"PS1_CASE",
+	"PS2_CASE",
+	"PS3_CASE",
+	"PSP_CASE",
+	"FOLDER",
+	"FILES",
+	"GAME",
+	"DISC",
+	"DISC_PS1",
+	"DISC_PS2",
+	"DISC_PS3",
+	"DISC_PSP",
+	"DISC_VIDEO",
+	"DISC_DATA",
+	"CF",
+	"FLASH",
+	"HDD",
+	"MS",
+	"SD",
+	"USB",
+	"VIRTUAL",
+	"LOCK",
+	"BR_LOGO",
+	"PS_LOGO",
+	"TOGGLE_ON",
+	"TOGGLE_OFF",
+	"CHECKBOX_FALSE",
+	"CHECKBOX_TRUE",
+	"RESET",
+	"RESET_HOVER",
+	"MAXIMIZE",
+	"MAXIMIZE_HOVER",
+	"CLOSE",
+	"CLOSE_HOVER",
+	"DOCK_R",
+	"DOCK_R_HOVER",
+	"DOCK_L",
+	"DOCK_L_HOVER",
+	"FRAME",
+	"HEADER",
+	"COLUMN_HEADER",
+	"CONTENT",
+	"CURSOR",
+	"CURSOR_D1",
+	"CURSOR_D2",
+	"CURSOR_H",
+	"CURSOR_V",
+	"APP_HOME",
+	"HOST_ROOT",
+
+// with color filter
+	"NOTIF",
+	"BOXHEAD",
+	"BOXBODY",
+	"SIDEBAR",
+	"BGS",
+	"BGF",
+};
 
 
 imgData PICTURE[PICTURE_NUMBER];
@@ -951,10 +1021,9 @@ float COL_H=COL_H1;
 #define SCROLL_W1					10
 float SCROLL_W=SCROLL_W1;
 #define SCROLL_H_MIN				10
-#define CLOSEBOX_W 					40.0
-#define CLOSEBOX_H 					TOP_H_FONT
-#define DOCKBOX_W					20.0
-#define DOCKBOX_H					TOP_H_FONT
+#define CONTROLBOX_W				20.0
+#define CONTROLBOX_H				TOP_H_FONT
+#define CONTROLBOX_GAP					BORDER
 #define WINDOW_MIN					(COL_W_MIN*2+BORDER*2)
 #define WINDOW_MAX					4
 #define WINDOW_MAX_ITEMS			4096
@@ -23158,82 +23227,13 @@ void DrawIcon(float x, float y, float z, u8 pic, u32 color, u8 lock)
 	}
 }
 
-void Draw_CloseBox(float x, float y, float z, float w, float h) 
-{
-	if(PICTURE_offset[CLOSE] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[CLOSE], PICTURE[CLOSE].width, PICTURE[CLOSE].height, PICTURE[CLOSE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
-	} else {
-		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
-		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
-		
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+4 , y+3 , z);
-		tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(x+10, y+9 , z);
-		tiny3d_VertexPos(x+16, y+3 , z);
-		tiny3d_VertexPos(x+17, y+4 , z);
-		tiny3d_VertexPos(x+11, y+10, z);
-		tiny3d_VertexPos(x+17, y+16, z);
-		tiny3d_VertexPos(x+16, y+17, z);
-		tiny3d_VertexPos(x+10, y+11, z);
-		tiny3d_VertexPos(x+4 , y+17, z);
-		tiny3d_VertexPos(x+3 , y+16, z);
-		tiny3d_VertexPos(x+9 , y+10, z);
-		tiny3d_VertexPos(x+3 , y+4 , z);
-		tiny3d_End();
-		
-	}
-}
-
-void Draw_MinimizeBox(float x, float y, float z, float w, float h) 
-{
-	if(PICTURE_offset[MINIMIZE] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[MINIMIZE], PICTURE[MINIMIZE].width, PICTURE[MINIMIZE].height, PICTURE[MINIMIZE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
-	} else {
-		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
-		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
-		
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+3 , y+7  , z);
-		tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(x+5 , y+7  , z);
-		tiny3d_VertexPos(x+10, y+12 , z);
-		tiny3d_VertexPos(x+15, y+7  , z);
-		tiny3d_VertexPos(x+17, y+7  , z);
-		tiny3d_VertexPos(x+10, y+14 , z);
-	}
-}
-
-void Draw_MaximizeBox(float x, float y, float z, float w, float h) 
-{
-	if(PICTURE_offset[MAXIMIZE] != 0) {
-		tiny3d_SetTexture(0, PICTURE_offset[MAXIMIZE], PICTURE[MAXIMIZE].width, PICTURE[MAXIMIZE].height, PICTURE[MAXIMIZE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
-	} else {
-		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
-		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
-		
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+3 , y+13 , z);
-		tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(x+10, y+6  , z);
-		tiny3d_VertexPos(x+17, y+13 , z);
-		tiny3d_VertexPos(x+15, y+13 , z);
-		tiny3d_VertexPos(x+10, y+8  , z);
-		tiny3d_VertexPos(x+5 , y+13 , z);
-	}
-}
-
-
 //**** DOCK ****
 
 #define WINDOW_LOC_UNK			0
 #define WINDOW_LOC_DEFAULT		1
 #define WINDOW_LOC_RIGHT		2
 #define WINDOW_LOC_LEFT			3
-#define WINDOW_LOC_FULL			4
+#define WINDOW_LOC_MAX			4
 
 #define WINDOW_LOC_W_DEFAULT	(500)
 #define WINDOW_LOC_H_DEFAULT	(TOP_H + COL_H1 + LINE_H1 * 15 + BORDER)
@@ -23268,7 +23268,7 @@ void SetWindowLocation(int WINDOW_LOC)
 			window_h[window_activ]=Y_MAX-45;
 			break;
 		}
-		case WINDOW_LOC_FULL:
+		case WINDOW_LOC_MAX:
 		{
 			window_x[window_activ]=0;
 			window_y[window_activ]=0;
@@ -23305,11 +23305,192 @@ u8 GetWindowLocation()
 	&&	window_y[window_activ]==0
 	&&	window_w[window_activ]==X_MAX
 	&&	window_h[window_activ]==Y_MAX-45)
-		return WINDOW_LOC_FULL;
+		return WINDOW_LOC_MAX;
 	
 	return WINDOW_LOC_UNK;
 	
 }
+
+void Draw_OnlyCloseBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[CLOSE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[CLOSE], PICTURE[CLOSE].width, PICTURE[CLOSE].height, PICTURE[CLOSE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
+		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexPos(x+4 , y+3 , z);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos(x+10, y+9 , z);
+		tiny3d_VertexPos(x+16, y+3 , z);
+		tiny3d_VertexPos(x+17, y+4 , z);
+		tiny3d_VertexPos(x+11, y+10, z);
+		tiny3d_VertexPos(x+17, y+16, z);
+		tiny3d_VertexPos(x+16, y+17, z);
+		tiny3d_VertexPos(x+10, y+11, z);
+		tiny3d_VertexPos(x+4 , y+17, z);
+		tiny3d_VertexPos(x+3 , y+16, z);
+		tiny3d_VertexPos(x+9 , y+10, z);
+		tiny3d_VertexPos(x+3 , y+4 , z);
+		tiny3d_End();
+		
+	}
+}
+
+void Draw_CloseBox(float x, float y, float z, float w, float h, u8 mouse_over) 
+{
+	if( mouse_over ) {
+		if(PICTURE_offset[CLOSE_HOVER] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[CLOSE_HOVER], PICTURE[CLOSE_HOVER].width, PICTURE[CLOSE_HOVER].height, PICTURE[CLOSE_HOVER].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		} else {
+			Draw_Box(x, y, z, 0, w, h, RED, NO);
+			Draw_OnlyCloseBox(x, y, z, w, h);	
+		}
+	} else {
+		Draw_OnlyCloseBox(x, y, z, w, h);
+	}
+}
+
+void Draw_OnlyResetBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[RESET] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[RESET], PICTURE[RESET].width, PICTURE[RESET].height, PICTURE[RESET].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
+		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexPos(x+3 , y+7  , z);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos(x+5 , y+7  , z);
+		tiny3d_VertexPos(x+10, y+12 , z);
+		tiny3d_VertexPos(x+15, y+7  , z);
+		tiny3d_VertexPos(x+17, y+7  , z);
+		tiny3d_VertexPos(x+10, y+14 , z);
+	}
+}
+
+void Draw_ResetBox(float x, float y, float z, float w, float h, u8 mouse_over)
+{
+	if( mouse_over ) {
+		if(PICTURE_offset[RESET_HOVER] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[RESET_HOVER], PICTURE[RESET_HOVER].width, PICTURE[RESET_HOVER].height, PICTURE[RESET_HOVER].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		} else {
+			Draw_Box(x, y, z, 0, w, h, GREY, NO);
+			Draw_OnlyResetBox(x, y, z, w, h);	
+		}
+	} else {
+		Draw_OnlyResetBox(x, y, z, w, h);
+	}
+}
+
+void Draw_OnlyDockMaxBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[MAXIMIZE] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[MAXIMIZE], PICTURE[MAXIMIZE].width, PICTURE[MAXIMIZE].height, PICTURE[MAXIMIZE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
+		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		
+		tiny3d_SetPolygon(TINY3D_POLYGON);
+		tiny3d_VertexPos(x+3 , y+13 , z);
+		tiny3d_VertexColor(WHITE);
+		tiny3d_VertexPos(x+10, y+6  , z);
+		tiny3d_VertexPos(x+17, y+13 , z);
+		tiny3d_VertexPos(x+15, y+13 , z);
+		tiny3d_VertexPos(x+10, y+8  , z);
+		tiny3d_VertexPos(x+5 , y+13 , z);
+	}
+}
+
+void Draw_DockMaxBox(float x, float y, float z, float w, float h, u8 mouse_over)
+{
+	if( GetWindowLocation() == WINDOW_LOC_MAX ) {
+		Draw_ResetBox(x, y, z, w, h, mouse_over);
+		return;
+	}
+	
+	if( mouse_over ) {
+		if(PICTURE_offset[MAXIMIZE_HOVER] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[MAXIMIZE_HOVER], PICTURE[MAXIMIZE_HOVER].width, PICTURE[MAXIMIZE_HOVER].height, PICTURE[MAXIMIZE_HOVER].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		} else {
+			Draw_Box(x, y, z, 0, w, h, GREY, NO);
+			Draw_OnlyDockMaxBox(x, y, z, w, h);	
+		}
+	} else {
+		Draw_OnlyDockMaxBox(x, y, z, w, h);
+	}
+}
+
+void Draw_OnlyDockRightBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[DOCK_R] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[DOCK_R], PICTURE[DOCK_R].width, PICTURE[DOCK_R].height, PICTURE[DOCK_R].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 0, w, h, WHITE, NO);
+		Draw_Box(x+2, y+2, z, 0, w/3, h-4, BLACK, NO);
+	}
+}
+
+void Draw_DockRightBox(float x, float y, float z, float w, float h, u8 mouse_over)
+{
+	if( GetWindowLocation() == WINDOW_LOC_RIGHT ) {
+		Draw_ResetBox(x, y, z, w, h, mouse_over);
+		return;
+	}
+	
+	if( mouse_over ) {
+		if(PICTURE_offset[DOCK_R_HOVER] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[DOCK_R_HOVER], PICTURE[DOCK_R_HOVER].width, PICTURE[DOCK_R_HOVER].height, PICTURE[DOCK_R_HOVER].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		} else {
+			Draw_Box(x, y, z, 0, w, h, GREY, NO);
+			Draw_OnlyDockRightBox(x, y, z, w, h);	
+		}
+	} else {
+		Draw_OnlyDockRightBox(x, y, z, w, h);
+	}
+}
+
+void Draw_OnlyDockLeftBox(float x, float y, float z, float w, float h) 
+{
+	if(PICTURE_offset[DOCK_L] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[DOCK_L], PICTURE[DOCK_L].width, PICTURE[DOCK_L].height, PICTURE[DOCK_L].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 0, w, h, WHITE, NO);
+		Draw_Box(x+w-w/3-2, y+2, z, 0, w/3, h-4, BLACK, NO);
+	}
+}
+
+void Draw_DockLeftBox(float x, float y, float z, float w, float h, u8 mouse_over)
+{
+	if( GetWindowLocation() == WINDOW_LOC_LEFT ) {
+		Draw_ResetBox(x, y, z, w, h, mouse_over);
+		return;
+	}
+	
+	if( mouse_over ) {
+		if(PICTURE_offset[DOCK_L_HOVER] != 0) {
+			tiny3d_SetTexture(0, PICTURE_offset[DOCK_L_HOVER], PICTURE[DOCK_L_HOVER].width, PICTURE[DOCK_L_HOVER].height, PICTURE[DOCK_L_HOVER].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+			Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+		} else {
+			Draw_Box(x, y, z, 0, w, h, GREY, NO);
+			Draw_OnlyDockLeftBox(x, y, z, w, h);	
+		}
+	} else {
+		Draw_OnlyDockLeftBox(x, y, z, w, h);
+	}
+}
+
 
 u8 is_dev_blind(char *path)
 {
@@ -23357,9 +23538,9 @@ void Draw_window()
 		} else {
 			COL_H = COL_H1;
 			LINE_H = LINE_H1;
-			if( WidthFromStr(TOP_str) > window_w[n] - BORDER-CLOSEBOX_W-DOCKBOX_W-5) {
+			if( WidthFromStr(TOP_str) > window_w[n] - BORDER-CONTROLBOX_W-CONTROLBOX_W-5) {
 				sprintf(TOP_str, "...%s", strrchr(window_path[n], '/'));
-				while(WidthFromStr(TOP_str) > window_w[n] - BORDER-CLOSEBOX_W-DOCKBOX_W-5) {
+				while(WidthFromStr(TOP_str) > window_w[n] - BORDER-CONTROLBOX_W-CONTROLBOX_W-5) {
 					TOP_str[strlen(TOP_str)-1] = 0;
 					TOP_str[strlen(TOP_str)-1] = 0;
 					TOP_str[strlen(TOP_str)-1] = 0;
@@ -23379,30 +23560,62 @@ void Draw_window()
 		}
 		DrawString(window_x[n]+BORDER+5, window_y[n]+BORDER+3, TOP_str);
 		
-		//CLOSE BOX
+		
 		if(n==window_activ) {
-			if( is_float_window() == NO) {
-				if( window_x[n]+window_w[n]-BORDER-CLOSEBOX_W < curs_x && curs_x < window_x[n]+window_w[n]-BORDER
-				&&  window_y[n]+BORDER						 	< curs_y && curs_y < window_y[n]+BORDER+CLOSEBOX_H )
-				{
-					Draw_Box(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W, window_y[n]+BORDER, window_z[n], 0, CLOSEBOX_W, CLOSEBOX_H, RED, NO);
-				}
-			}
-			Draw_CloseBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W/2-CLOSEBOX_H/2, window_y[n]+BORDER, window_z[n], CLOSEBOX_H, CLOSEBOX_H);
+			//CLOSE
+			float CONTROLBOX_X = window_x[n]+window_w[n]-BORDER-CONTROLBOX_W;
+			float CONTROLBOX_Y = window_y[n]+BORDER;
 			
-			//DOCK BOX
+			u8 mouse_over = NO;
 			if( is_float_window() == NO) {
-				if( window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W < curs_x && curs_x < window_x[n]+window_w[n]-BORDER-CLOSEBOX_W
-				&&  window_y[n]+BORDER						 	< curs_y && curs_y < window_y[n]+BORDER+DOCKBOX_H )
+				if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+				&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
 				{
-					Draw_Box(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W, window_y[n]+BORDER, window_z[n], 0, DOCKBOX_W, DOCKBOX_H,  OVERLAY_COLOR, NO);
+					mouse_over = YES;
 				}
 			}
-			if( GetWindowLocation() == WINDOW_LOC_FULL ) {
-				Draw_MinimizeBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W/2-DOCKBOX_H/2, window_y[n]+BORDER, window_z[n], DOCKBOX_H, DOCKBOX_H);		
-			} else {
-				Draw_MaximizeBox(window_x[n]+window_w[n]-BORDER-CLOSEBOX_W-DOCKBOX_W/2-DOCKBOX_H/2, window_y[n]+BORDER, window_z[n], DOCKBOX_H, DOCKBOX_H);
+			Draw_CloseBox(CONTROLBOX_X, CONTROLBOX_Y, window_z[n], CONTROLBOX_W, CONTROLBOX_H, mouse_over);
+			
+			//DOCK_R
+			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
+			mouse_over = NO;
+			
+			if( is_float_window() == NO) {
+				if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+				&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
+				{
+					mouse_over = YES;
+				}
 			}
+			Draw_DockRightBox(CONTROLBOX_X, CONTROLBOX_Y, window_z[n], CONTROLBOX_W, CONTROLBOX_H, mouse_over);
+			
+			//DOCK_FULL
+			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
+			mouse_over = NO;
+			
+			if( is_float_window() == NO) {
+				if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+				&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
+				{
+					mouse_over = YES;
+				}
+			}
+			Draw_DockMaxBox(CONTROLBOX_X, CONTROLBOX_Y, window_z[n], CONTROLBOX_W, CONTROLBOX_H, mouse_over);
+			
+			//DOCK_LEFT
+			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
+			mouse_over = NO;
+			
+			if( is_float_window() == NO) {
+				if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+				&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
+				{
+					mouse_over = YES;
+				}
+			}
+			Draw_DockLeftBox(CONTROLBOX_X, CONTROLBOX_Y, window_z[n], CONTROLBOX_W, CONTROLBOX_H, mouse_over);
+			
+			
 		}
 		
 		//CONTENT BOX
@@ -26171,7 +26384,7 @@ void Option(char *item)
 	}
 	else
 	if(strcmp(item, STR_DOCK_FULL) == 0) {
-		SetWindowLocation(WINDOW_LOC_FULL);
+		SetWindowLocation(WINDOW_LOC_MAX);
 	} 
 	else
 	if(strcmp(item, STR_DOCK_LEFT) == 0) {
@@ -26238,7 +26451,7 @@ void Open_option()
 		if( window_x[window_activ] + BORDER < curs_x && curs_x < window_x[window_activ] + window_w[window_activ] - BORDER - 40
 		&&  window_y[window_activ] + BORDER < curs_y && curs_y < window_y[window_activ] + TOP_H ) {
 			u8 loc = GetWindowLocation();
-			if(loc!=WINDOW_LOC_FULL) add_option_item(STR_DOCK_FULL);
+			if(loc!=WINDOW_LOC_MAX) add_option_item(STR_DOCK_FULL);
 			if(loc!=WINDOW_LOC_LEFT) add_option_item(STR_DOCK_LEFT);
 			if(loc!=WINDOW_LOC_RIGHT) add_option_item(STR_DOCK_RIGHT);
 			if(loc!=WINDOW_LOC_DEFAULT) add_option_item(STR_RESTORE);
@@ -26707,19 +26920,55 @@ u8 window_input()
 				}
 			}
 			
-			// Close
-			if( window_x[window_activ]+window_w[window_activ]-BORDER-CLOSEBOX_W < curs_x && curs_x < window_x[window_activ]+window_w[window_activ]-BORDER
-			&&  window_y[window_activ]+BORDER						 	        < curs_y && curs_y < window_y[window_activ]+BORDER+CLOSEBOX_H )
+			// CLOSE
+			float CONTROLBOX_X = window_x[window_activ]+window_w[window_activ]-BORDER-CONTROLBOX_W;
+			float CONTROLBOX_Y = window_y[window_activ]+BORDER;
+			
+			u8 mouse_over = NO;
+			if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+			&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
 			{
 				CloseWindow(window_activ);
 				return CONTINUE;
 			}
-			// Maximize / Minimize
-			if( window_x[window_activ]+window_w[window_activ]-BORDER-CLOSEBOX_W-DOCKBOX_W < curs_x && curs_x < window_x[window_activ]+window_w[window_activ]-BORDER-CLOSEBOX_W
-			&&  window_y[window_activ]+BORDER						 	< curs_y && curs_y < window_y[window_activ]+BORDER+DOCKBOX_H )
+			
+			//DOCK_R
+			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
+			mouse_over = NO;
+			if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+			&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
 			{
-				if(GetWindowLocation() != WINDOW_LOC_FULL) {
-					SetWindowLocation(WINDOW_LOC_FULL);
+				if(GetWindowLocation() != WINDOW_LOC_RIGHT) {
+					SetWindowLocation(WINDOW_LOC_RIGHT);
+				} else {
+					SetWindowLocation(WINDOW_LOC_DEFAULT);
+				}
+				return CONTINUE;
+			}
+			
+			//DOCK_MAX
+			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
+			mouse_over = NO;
+			if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+			&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
+			{
+				if(GetWindowLocation() != WINDOW_LOC_MAX) {
+					SetWindowLocation(WINDOW_LOC_MAX);
+				} else {
+					SetWindowLocation(WINDOW_LOC_DEFAULT);
+				}
+				return CONTINUE;
+			}
+			
+			
+			//DOCK_LEFT
+			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
+			mouse_over = NO;
+			if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
+			&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
+			{
+				if(GetWindowLocation() != WINDOW_LOC_MAX) {
+					SetWindowLocation(WINDOW_LOC_LEFT);
 				} else {
 					SetWindowLocation(WINDOW_LOC_DEFAULT);
 				}
@@ -26974,7 +27223,7 @@ u8 window_input()
 			return CONTINUE;
 		} else
 		if(NewPad(BUTTON_UP)) {
-			SetWindowLocation(WINDOW_LOC_FULL);
+			SetWindowLocation(WINDOW_LOC_MAX);
 			return CONTINUE;
 		} else
 		if(NewPad(BUTTON_RIGHT)) {
