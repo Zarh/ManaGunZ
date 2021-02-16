@@ -23206,6 +23206,16 @@ void DrawIcon_TXT(float x, float y, float z, u32 color)
 
 }
 
+void Draw_Lock(float x, float y, float z, float w, float h)
+{
+	if(PICTURE_offset[LOCK] != 0) {
+		tiny3d_SetTexture(0, PICTURE_offset[LOCK], PICTURE[LOCK].width, PICTURE[LOCK].height, PICTURE[LOCK].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
+		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
+	} else {
+		Draw_Box(x, y, z, 0, w, h, RED, YES);
+	}
+}
+
 void DrawIcon(float x, float y, float z, u8 pic, u32 color, u8 lock)
 {
 	float k = LINE_H/LINE_H1;
@@ -23217,14 +23227,7 @@ void DrawIcon(float x, float y, float z, u8 pic, u32 color, u8 lock)
 		DrawIcon_File(x, y, z, color);
 	}
 	
-	if(lock) {
-		if(PICTURE_offset[LOCK] != 0) {
-			tiny3d_SetTexture(0, PICTURE_offset[LOCK], PICTURE[LOCK].width, PICTURE[LOCK].height, PICTURE[LOCK].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(x+(3*LINE_H)/4-LINE_H/8, y+(3*LINE_H)/4-LINE_H/8, z, 0, LINE_H/4, LINE_H/4, WHITE, YES);
-		} else {
-			Draw_Box(x+(3*LINE_H)/4-LINE_H/8, y+(3*LINE_H)/4-LINE_H/8, z, 0, LINE_H/4, LINE_H/4, RED, YES);
-		}
-	}
+	if(lock) Draw_Lock(x + LINE_H - LINE_H1/2, y + LINE_H - LINE_H1/2, z, LINE_H1/2, LINE_H1/2);
 }
 
 //**** DOCK ****
@@ -23508,6 +23511,77 @@ u8 dev_blind_exist()
 	return NO;
 }
 
+void Draw_RootIcon(char *mount_point, char *type, float x, float y, float z, u8 readonly)
+{
+	if( fm_CustomIcons == NO) {
+	
+		if( is_folder(type) ) {
+			DrawIcon_Directory(x, y, z);
+		} else {
+			DrawIcon_File(x, y, z, WHITE);
+		}
+	} else {
+		if( strncmp(mount_point, "dev_hdd", 7)==0) {
+			DrawIcon(x, y, z, HDD, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_usb", 7)==0) {
+			DrawIcon(x, y, z, USB, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "ntfs", 4)==0) {
+			DrawIcon(x, y, z, USB, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_bdvd", 8)==0) {
+			if( !strcmp(type, _JB_PS3)) {
+				DrawIcon(x, y, z, DISC_PS3, WHITE, readonly);
+			} else
+			if( !strcmp(type, _JB_PS1)) {
+				DrawIcon(x, y, z, DISC_PS1, WHITE, readonly);
+			} else {
+				DrawIcon(x, y, z, DISC, WHITE, readonly);
+			}
+		} else
+		if( strncmp(mount_point, "dev_ps2disk", 11)==0) {
+			DrawIcon(x, y, z, DISC_PS2, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_flash", 9)==0) {
+			DrawIcon(x, y, z, FLASH, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_blind", 9)==0) {
+			DrawIcon(x, y, z, FLASH, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_rebug", 9)==0) {
+			DrawIcon(x, y, z, FLASH, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_rewrite", 9)==0) {
+			DrawIcon(x, y, z, FLASH, WHITE, readonly);
+		} else 
+		if( strncmp(mount_point, "app_home", 8)==0) {
+			if( !strcmp(type, _JB_PS3)) {
+				DrawIcon(x, y, z, DISC_PS3, WHITE, readonly);
+			} else {
+				DrawIcon(x, y, z, APP_HOME, WHITE, readonly);
+			}
+		} else
+		if( strncmp(mount_point, "host_root", 8)==0) {
+			DrawIcon(x, y, z, HOST_ROOT, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_cf", 6)==0) {
+			DrawIcon(x, y, z, CF, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_ms", 6)==0) {
+			DrawIcon(x, y, z, MS, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_sd", 6)==0) {
+			DrawIcon(x, y, z, SD, WHITE, readonly);
+		} else
+		if( strncmp(mount_point, "dev_simple_hdd", 14)==0) {
+			DrawIcon(x, y, z, HDD, WHITE, readonly);
+		} else {
+			DrawIcon_File(x, y, z, WHITE);
+		}
+	}
+}
+
 // *** Window ***
 void Draw_window()
 {
@@ -23528,6 +23602,20 @@ void Draw_window()
 		FontSize(TOP_H_FONT);
 		FontColor(WHITE);
 		
+		// TOP LEFT ICON
+		
+		u8 read_only=NO;
+		int e;
+		for(e=0; e<=DevicesInfo_N; e++) {
+			if( strncmp(DevicesInfo[e].MountPoint, window_path[n], strlen(DevicesInfo[e].MountPoint)) == 0) {								
+				read_only = DevicesInfo[e].ReadOnly;
+				break;
+			}
+		}
+		LINE_H=LINE_H1;
+		Draw_RootIcon(&window_path[n][1], _SDIR, window_x[n]+BORDER, window_y[n]+BORDER, window_z[n], read_only);
+		
+		// title	
 		strcpy(TOP_str, window_path[n]);
 		if(strcmp(TOP_str, "/") == 0) {
 			if(fm_LineSize==BIG) LINE_H = LINE_H1*2.0;
@@ -23538,6 +23626,7 @@ void Draw_window()
 		} else {
 			COL_H = COL_H1;
 			LINE_H = LINE_H1;
+			
 			if( WidthFromStr(TOP_str) > window_w[n] - BORDER-CONTROLBOX_W-CONTROLBOX_W-5) {
 				sprintf(TOP_str, "...%s", strrchr(window_path[n], '/'));
 				while(WidthFromStr(TOP_str) > window_w[n] - BORDER-CONTROLBOX_W-CONTROLBOX_W-5) {
@@ -23558,7 +23647,7 @@ void Draw_window()
 				TOP_str[9]='h';
 			}
 		}
-		DrawString(window_x[n]+BORDER+5, window_y[n]+BORDER+3, TOP_str);
+		DrawString(window_x[n]+BORDER+LINE_H1+CONTROLBOX_GAP, window_y[n]+BORDER+1.5, TOP_str);
 		
 		
 		if(n==window_activ) {
@@ -23868,80 +23957,11 @@ void Draw_window()
 				}
 				
 				// ICONS
-				if( fm_CustomIcons == NO) {
-				
-					char *ext = window_content_Type[n][window_scroll_P[n]+i];
-					
-					if( is_folder(ext) ) {
-						DrawIcon_Directory(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n]);
-					} else {
-						DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
-					}
-				} else {
-				
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_hdd", 7)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], HDD, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_usb", 7)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], USB, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "ntfs", 4)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], USB, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_bdvd", 8)==0) {
-						if( !strcmp(window_content_Type[n][window_scroll_P[n]+i], _JB_PS3)) {
-							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS3, WHITE, DevicesInfo[j].ReadOnly);
-						} else
-						if( !strcmp(window_content_Type[n][window_scroll_P[n]+i], _JB_PS1)) {
-							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS1, WHITE, DevicesInfo[j].ReadOnly);
-						} else {
-							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC, WHITE, DevicesInfo[j].ReadOnly);
-						}
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_ps2disk", 11)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS2, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_flash", 9)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_blind", 9)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_rebug", 9)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_rewrite", 9)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], FLASH, WHITE, DevicesInfo[j].ReadOnly);
-					} else 
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "app_home", 8)==0) {
-						if( !strcmp(window_content_Type[n][window_scroll_P[n]+i], _JB_PS3)) {
-							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DISC_PS3, WHITE, DevicesInfo[j].ReadOnly);
-						} else {
-							DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], APP_HOME, WHITE, DevicesInfo[j].ReadOnly);
-						}
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "host_root", 8)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], HOST_ROOT, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_cf", 6)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], CF, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_ms", 6)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], MS, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_sd", 6)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], SD, WHITE, DevicesInfo[j].ReadOnly);
-					} else
-					if( strncmp(window_content_Name[n][window_scroll_P[n]+i], "dev_simple_hdd", 14)==0) {
-						DrawIcon(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], HDD, WHITE, DevicesInfo[j].ReadOnly);
-					} else {
-						DrawIcon_File(window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], WHITE);
-					}
-				}
+				Draw_RootIcon(window_content_Name[n][window_scroll_P[n]+i], window_content_Type[n][window_scroll_P[n]+i], window_x[n]+BORDER+2, window_y[n]+TOP_H+COL_H+LINE_H*i, window_z[n], DevicesInfo[j].ReadOnly);
 				
 				continue;
 			}
-						
+				
 			DrawTXTInBox(window_x[n]+BORDER+LINE_H+5, 
 						 window_y[n]+TOP_H+COL_H+LINE_H*i + 2, 
 						 window_z[n], 
