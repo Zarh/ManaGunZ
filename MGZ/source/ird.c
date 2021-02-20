@@ -1,33 +1,3 @@
-// ****************
-// IRD SPEC
-// ****************
-//
-//	u32 Magic; // 0x33495244 = "3IRD"
-//	u8 GAME_ID_size;
-//	char GAME_ID[GAME_ID_size];
-//	u8 GAME_NAME_size;
-//	char GAME_NAME[GAME_NAME_size];
-//	char UPDATE[5];
-//	char GAME_VERS[6];
-//	char APP_VERS[6];
-//	u32 iso_header_compressed_size;
-//	u8 iso_header_compressed_data[iso_header_compressed_size];
-//  u32 iso_footer_compressed_size;
-//	u8 iso_footer_compressed_data[iso_footer_compressed_size];
-//  u8 unknown[0x30]; // 3 md5 ?
-//  u8 item_size;
-//  u32 file_number;
-//  item[file_number] 
-//  { 
-//    u64 sector;
-//    u8 md5[0x10];
-//  }
-//  u32 unknown;
-//  u32 unknown; //??offset??
-//  u32 unknown; //??value??
-//  u8 *unknown;
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,7 +22,7 @@ extern void print_load(char *format, ...);
 extern void Delete(char* path);
 extern u8 cancel;
 extern u8 md5_file(char *path, unsigned char output[16] );
-extern u8 md5_filefromISO(char *path, char *filename, u8 *output);
+extern u8 md5_FromISO_WithFileOffset(char *iso_path, u64 file_offset, u32 file_size, unsigned char output[16]);
 extern char *LoadFile(char *path, int *file_size);
 extern u8 *LoadMEMfromISO(char *iso_file, u32 sector, u32 offset, u32 size);
 extern u8 is_iso(char *file_name);
@@ -810,7 +780,7 @@ int Check_IRDMD5(char *IRD_PATH, char *GAME_PATH, FILE *log)
 					
 					memset(real_MD5, 0, sizeof(real_MD5));
 					
-					if(gameiso) md5_filefromISO(GAME_PATH, fileInfo.FILE_PATH, (u8 *) real_MD5);
+					if(gameiso) md5_FromISO_WithFileOffset(GAME_PATH, fileInfo.sector * 0x800, fileInfo.size, (u8 *) real_MD5);
 					else md5_file(GAMEFILE_PATH, (u8 *) real_MD5);
 					
 					if(cancel == YES) goto err;

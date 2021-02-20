@@ -16,19 +16,98 @@
 #include <string.h>
 #include <assert.h>
 #include <zlib.h>
-
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>
-#  include <io.h>
-#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#else
-#  define SET_BINARY_MODE(file)
-#endif
+#include <malloc.h>
 
 #define CHUNK 16384
 
 #define windowBits 15
 #define ENABLE_ZLIB_GZIP 32
+#define GZIP_ENCODING 16
+
+int GZ_compress(char *source, int sourceLen, char **dest, int *destLen)
+{
+    z_stream stream;
+    int err;
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
+    stream.next_in = (Bytef *)source;
+    stream.avail_in = (uInt)sourceLen;
+    stream.next_out = (Bytef *) *dest;
+    stream.avail_out = (uInt) *destLen;
+    
+    err = deflateInit2(&stream, Z_BEST_COMPRESSION, Z_DEFLATED, windowBits | GZIP_ENCODING, 8, Z_DEFAULT_STRATEGY);
+    if (err != Z_OK) return err;
+
+    *destLen = deflateBound(&stream, sourceLen);
+    *dest = malloc(*destLen);
+    if(*dest == NULL) {
+        deflateEnd(&stream);
+        return Z_BUF_ERROR;
+    }
+   
+    stream.next_out = (Bytef *) *dest;
+    stream.avail_out = (uInt) *destLen;
+
+    err = deflate(&stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        deflateEnd(&stream);
+        free(*dest);
+        *destLen=0;
+        return err == Z_OK ? Z_BUF_ERROR : err;
+    }
+    *destLen = stream.total_out;
+
+    err = deflateEnd(&stream);
+    if (err != Z_OK) {
+        free(*dest);
+        *destLen=0;
+    }
+    
+    return err;
+}
+
+int GZ_decompress(char *source, int sourceLen, char **dest, int *destLen)
+{
+//https://stackoverflow.com/questions/9715046/find-the-size-of-the-file-inside-a-gzip-file/9727599#9727599    
+    memcpy(destLen, source+sourceLen-4, 4);
+    *dest = (char *) malloc(*destLen);
+    if(*dest==NULL) return Z_BUF_ERROR;
+    
+   int err;
+    z_stream stream;
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
+    stream.next_in = (Bytef *)source;
+    stream.avail_in = (uInt)sourceLen;
+    stream.next_out = (Bytef *) *dest;
+    stream.avail_out = (uInt) *destLen;
+    
+    err = inflateInit2(&stream, windowBits | ENABLE_ZLIB_GZIP);
+    if (err != Z_OK) {
+        free(*dest);
+        *destLen=0;
+        return err;
+    }
+    
+    err = inflate(&stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        inflateEnd(&stream);
+        free(*dest);
+        *destLen=0;
+        return err == Z_OK ? Z_BUF_ERROR : err;
+    }
+    
+    err = inflateEnd(&stream);
+    if( err != Z_OK ) {
+        free(*dest);
+        *destLen=0;
+        return err;
+    }
+    
+    return err;
+}
  
 /* Compress from file source to file dest until EOF on source.
    def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
@@ -48,7 +127,8 @@ int def(FILE *source, FILE *dest, int level)
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
-    ret = deflateInit(&strm, level);
+    
+    ret = deflateInit2(&strm, level, Z_DEFLATED, windowBits | GZIP_ENCODING, 8, Z_DEFAULT_STRATEGY);
     if (ret != Z_OK)
         return ret;
 
@@ -107,7 +187,7 @@ int inf(FILE *source, FILE *dest)
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
 	//ret = inflateInit(&strm);
-    ret = inflateInit2 (& strm, windowBits | ENABLE_ZLIB_GZIP);
+    ret = inflateInit2(&strm, windowBits | ENABLE_ZLIB_GZIP);
     if (ret != Z_OK)
         return ret;
 

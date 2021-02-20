@@ -100,6 +100,7 @@
 #include "md5.h"
 #include "sha1.h"
 #include "ird.h"
+#include "build_ird.h"
 #include "trpex.h"
 #include "ciso.h"
 
@@ -239,10 +240,6 @@ char *PictureViewerSupport[] = {
 #define P3T 1
 #define THM 2
 
-#define ENDIAN_SWAP_16(x)		(((x) & 0xFF) << 8 | ((x) & 0xFF00) >> 8)
-#define ENDIAN_SWAP_32(x)		(((x) & 0xFF) << 24 | ((x) & 0xFF00) << 8 | ((x) & 0xFF0000) >> 8 | ((x) & 0xFF000000) >> 24)
-#define ENDIAN_SWAP(x)			(sizeof(x) == 2 ? ENDIAN_SWAP_16(x) : ENDIAN_SWAP_32(x))
-
 #define X_MAX		848.0f
 #define Y_MAX		512.0f
 
@@ -251,8 +248,6 @@ char *PictureViewerSupport[] = {
 
 #define MAX_SECTIONS	((0x10000-sizeof(rawseciso_args))/8)
 
-#define FREE(x) if(x!=NULL) {free(x);x=NULL;}
-#define FCLOSE(x) if(x) {fclose(x);x=NULL;}
 #define print_debug(x) if( DEBUG ) print_load(x)
 //#define print_debug(x) print_load(x); sleep(1);
 
@@ -16482,33 +16477,25 @@ int search_IRD(char *titleID, char *dir_path, char *IRD_path)
 	return NOT_FOUND;
 }
 
-u8 md5_filefromISO(char *path, char *filename, unsigned char output[16])
+u8 md5_FromISO_WithFileOffset(char *iso_path, u64 file_offset, u32 file_size, unsigned char output[16])
 {
 	FILE* f;
-	f = fopen(path, "rb");	
+	f = fopen(iso_path, "rb");	
 	if(f==NULL) {
 		memset(output, 0, sizeof(output));
 		return FAILED;
 	}
 	
-	u64 file_offset=0;
-	u8 ret=0;
-	u32 file_size=0;
-
-	ret = get_FileOffset(f, filename, &file_offset, (u32 *) &file_size);
-	//print_load("Warning : %s offset %llX, size %llX, ret %d", filename, file_offset, file_size, ret);
-	if(file_offset==0 || file_size==0 || ret == FAILED) {fclose(f);return FAILED;}
-	
-	u8 split666 = is_66600(path);
-	if(is_splitted_iso(path)==YES || split666) {
-	
+	u8 split666 = is_66600(iso_path);
+	if(is_splitted_iso(iso_path)==YES || split666) {
+		
 		char iso_path[128];
 		char temp[128];
 		u64 fsize=0;
 		int i;
-		int l = strlen(path);
+		int l = strlen(iso_path);
 		
-		strcpy(iso_path, path);
+		strcpy(iso_path, iso_path);
 		iso_path[l-1]=0;
 		if(split666) iso_path[l-2]=0;
 		strcpy(temp, iso_path);
@@ -16559,8 +16546,6 @@ u8 md5_filefromISO(char *path, char *filename, unsigned char output[16])
 		if(cancel) break;
 	}
 	
-	fclose(f);
-	
 	prog_bar1_value=-1;
 	
     md5_finish(&ctx, output);
@@ -16573,6 +16558,30 @@ u8 md5_filefromISO(char *path, char *filename, unsigned char output[16])
 	}
 	
     return SUCCESS;
+}
+
+u8 md5_FromISO_WithFileName(char *iso_path, char *filename, unsigned char output[16])
+{	
+	
+	FILE* f;
+	f = fopen(iso_path, "rb");	
+	if(f==NULL) {
+		memset(output, 0, sizeof(output));
+		return FAILED;
+	}
+	
+	u64 file_offset=0;
+	u8 ret=0;
+	u32 file_size=0;
+
+	ret = get_FileOffset(f, filename, &file_offset, (u32 *) &file_size);
+	//print_load("Warning : %s offset %llX, size %llX, ret %d", filename, file_offset, file_size, ret);
+	
+	if(file_offset==0 || file_size==0 || ret == FAILED) {fclose(f);return FAILED;}
+	
+	fclose(f);
+	
+	return md5_FromISO_WithFileOffset(iso_path, file_offset, file_size, output);
 }
 
 u8 CheckIRD(char *G_PATH)
@@ -17740,7 +17749,7 @@ char *LoadFileProg(char *path, int *file_size)
 	while(read < size) {
 		int wrlen = 1024;
 		if(read+wrlen > size) wrlen = size-read;
-		fread(mem+read, wrlen, 1, f1);
+		fread(mem+read, sizeof(char), wrlen, f1);
 		read += wrlen;
 		prog_bar1_value = (read*100) / size;
 	}
@@ -17767,24 +17776,23 @@ char *LoadFile(char *path, int *file_size)
 	if(stat(path, &s) != 0) return NULL;  
 	if(S_ISDIR(s.st_mode)) return NULL;
 	
-	*file_size = s.st_size;
-	
-	char *mem = malloc(*file_size);
+	char *mem = malloc(s.st_size);
 	if(mem==NULL) return NULL;
 	memset(mem, 0, s.st_size);
 
 	FILE *f1 = fopen(path, "rb");
-	if(f1<0) return NULL;
+	if(f1==NULL) return NULL;
 	
-	u64 read = fread(mem, *file_size, 1, f1);
+	u64 read = fread(mem, sizeof(char), s.st_size, f1);
 	
 	fclose(f1);
 	
-	if(read != *file_size) {
+	if(read != s.st_size) {
 		free(mem); 
-		*file_size=0;
 		return NULL;
 	}
+	
+	*file_size = s.st_size;
 	
 	return mem;
 }
@@ -17792,7 +17800,7 @@ char *LoadFile(char *path, int *file_size)
 u8 SaveFileProg(char *path, char *mem, int file_size)
 {
 	FILE *f = fopen(path, "wb");
-	if(f<0) {return FAILED;}
+	if(f==NULL) {return FAILED;}
 	
 	prog_bar1_value = 0;
 	int write = 0;
@@ -17815,9 +17823,9 @@ u8 SaveFileProg(char *path, char *mem, int file_size)
 int SaveFile(char *path, char *mem, int file_size)
 {
 	FILE *f = fopen(path, "wb");
-	if(f<0) {return FAILED;}
+	if(f==NULL) {return FAILED;}
 	
-	fwrite((void *) mem, file_size, 1, f);
+	fwrite((void *) mem, sizeof(char), file_size, f);
 	
 	fclose(f);
 

@@ -1,6 +1,11 @@
 #ifndef ZPIPE_H
 #define ZPIPE_H
 
+//don't forget to free(dest)
+int GZ_compress(char *source, int sourceLen, char **dest, int *destLen);
+int GZ_decompress(char *source, int sourceLen, char **dest, int *destLen);
+
+
 /* Compress from file source to file dest until EOF on source.
    def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_STREAM_ERROR if an invalid compression
