@@ -98,9 +98,9 @@ ird_t *IRD_load(char *IRD_PATH)
 	
 	if(ird->Version == 7) {
 		print_verbose("IRD_Load fread ID = ");
-		fread(&ird->ID, sizeof(u32) , 1, irdu);
-		ird->ID = ENDIAN_SWAP(ird->ID);
-		print_verbose("%d\n",  ird->ID);
+		fread(&ird->UniqueIdentifier_v7, sizeof(u32) , 1, irdu);
+		ird->UniqueIdentifier_v7 = ENDIAN_SWAP(ird->UniqueIdentifier_v7);
+		print_verbose("%d\n",  ird->UniqueIdentifier_v7);
 	}
 	
 	print_verbose("IRD_Load fread headerlenght = ");

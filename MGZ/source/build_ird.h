@@ -70,31 +70,34 @@ typedef struct
 
 typedef struct
 {
-	char MAGIC[4]; 
-	u8 Version;
-	char gameId[9];
-	u8 GameName_lenght;
-	char *GameName;
-	char UpdateVersion[5]; // +0
-	char gameVersion[6]; // +0
-	char AppVersion[6]; // +0
-	u32 ID; // v7 only
-	u32 HeaderLenght;
-	u8 *Header;
-	u32 FooterLenght;
-	u8 *Footer;
-	u8 RegionHashesNumber;
-	u8 **RegionHashes; 
-	u32 FileHashesNumber;
-	FileHash_t *FileHashes; 
-	u16 extraConfig;
-	u16 attachments;
-	u8 PIC[0x73];
-	u8 Data1[0x10];
-	u8 Data2[0x10];
-// I have no idea how it's calculated, it's probably a CRC32.
-	u32 UniqueIdentifier; //v7+
-	u32 crc;
+	char MAGIC[4]; // "3IRD" = 3key Iso Rebuild Data
+	u8 Version;  // Ird version (lastest is 9)
+	char gameId[9]; // TITLE_ID from param.sfo
+	u8 GameName_lenght; // Lenght of TITLE from param.sfo
+	char *GameName; // TITLE from param.sfo
+	char UpdateVersion[5]; // +0 // PS3UPDATE.PUP version
+	char gameVersion[6]; // +0 // VERSION from param.sfo
+	char AppVersion[6]; // +0 // APP_VER from param.sfo
+	u32 UniqueIdentifier_v7; // v7 only 
+	u32 HeaderLenght; // Lenght of iso header. it's equal to the first file's offset.
+	u8 *Header; // iso's header
+	u32 FooterLenght; // Lenght of iso footer (just after the last file which is always PS3UPDATE.PUP
+	u8 *Footer; // iso's footer
+	u8 RegionHashesNumber; // without the 1st and the last region
+	u8 **RegionHashes; // md5
+	u32 FileHashesNumber; // ..
+	FileHash_t *FileHashes; // md5
+	u16 extraConfig; // unused
+	u16 attachments; // unused
+	u8 PIC[0x73]; // extra disc info. AFAIK, it's unused by anyone (?)
+	u8 Data1[0x10]; // decryption key
+	u8 Data2[0x10]; // per-disc key. Also, unused (?). To avoid any risk, 3key team change the 4 last bytes
+	u32 UniqueIdentifier;   //v7+ 
+							// From IsoTools' sources, reversed
+							// UniqueIdentifier is used as a unique 'signature' to identify (anonymously) the user who dumped the disc
+							// It's the CRC of 'InstallationId' which is the md5 of guid.newguid ; UniqueIdentifier = guid.newguid.md5.crc
+							// it was probably used by their server to manage the uploaded ird 
+	u32 crc; // crc of ird_t
 } ird_t;
 
 u8 IRD_gz(u8 task, char *file_in, char *file_out);
