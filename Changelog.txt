@@ -1,45 +1,48 @@
-v1.39
-
 TO DO :
-fix_permission() on /dev_hdd0*
-fix shorcut pkg
-support join 666 copy_stdio
-Add Filemanager : Click under the thumb will scroll down/up a page instead of 1 item.
+fix shortcut pkg
+Add FileManager : Click under the thumb will scroll down/up a page instead of 1 item.
 Add : Get custom PS2 CONFIG files from /dev_hdd0/game/PS2CONFIG
 
-TO FINISH : add ird / custom path
-Add : Dump decrypted BR.
-
-DONE
-Add : Support exFAT. See notes (1).
-Add : Settings/System : Dump eid_root_key, 3Dump.bin, disc.pic and disc.key.
+v1.39
+Add : dev_bdvd is displayed.
+Add BDVD option: Dump encrypted Blu-Ray disc.
+Add BDVD option: Dump disc key.
+Add BDVD option: Dump decrypted Blu-Ray disc with its IRD. see NOTE (1).
+Fix : Display issue with title containing new line character '\n'.
+Add : Now to download the ird, the TITLE_ID, APP_VER and VERSION must match.
+Add : Updated mamba to 8.3 from https://github.com/aldostools/Mamba
+Add : OffsetFinder support every symbols/hash needed to build cobra & mamba 8.3
+Add : Support exFAT. See notes (2).
+Add Settings/System tools : Dump eid_root_key, 3Dump.bin, lv1, lv2 and fix permission for dev_hdd0.
 Add FileManager : Convert any supported picture to PNG.
 Add : Support HEN & CFW 4.87C.
 Add : Logs option. It saves loading logs at "/dev_hdd0/tmp/mgz.log".
-Add : Debug option. It slows the messages displayed on screen during the loadings.
-Add : multiMAN payload is now fw independent.
+Add : Debug option. It slows the messages displayed on screen during loadings.
+Add : multiMAN payload is now firmware independent.
 Fix : No more freeze when the firmware is unknown/new. I'm not sure how I fixed it tho.
 Add : New CUSTOM PS2 CONFIG files from webMAN MOD by aldostools December 14, 2020. Special thanks to kozarovv.
-Add : New ps2 widescreen pnatchs from pcsx2.net forum (January 13, 2021).
+Add : New ps2 widescreen pnatchs from pcsx2.net forum January 13, 2021.
 Add FileManager : Extract RAR files.
 Add : Reset position of filter box.
-Fix : XMB UI won't display 'adjust your filters' on boot of mgz if you uncheck PS3 inside the filter box.
+Fix : XMB UI won't display 'adjust your filters' on boot of MGZ if you unchecked 'PS3' filter.
 
 
 Notes :
-(1) This note is for devs.
+(1) When you use the option 'Dump decrypted Blu-Ray disc', it will also generate an ird.
+The ird file is automatically uploaded to an online database if it's a new one.
+If you don't want to upload the ird then disable internet ;)
+(2) It's very slow ! It still needs some improvement/fix : ~1MB/s instead of ~10MB/s.
 I used the  FatFs module http://www.elm-chan.org/fsw/ff/00index_e.html ported to ps3 (psl1ght) by tps/lmirel https://github.com/lmirel/fatfs_psx.
 I did few modifications in the lib.
 - enabled GPT with FF_LBA64
 - changed FF_VOLUMES from 8 to 131
 - modified how the lib 'catch' the volume id to be able to have more than 1 digit id
 I increased the number of volume to support usb device from 0 for dev_usb000 to 127 for dev_usb127, 128 for dev_sd, 129 for dev_cf and 130 for dev_ms.
-Multipartition is disabled.
+Multi-partition is disabled.
 To support exFAT without changing to much code in ManaGunZ I included 2 files, exFAT.c and mgz_io.c
 exFAT.c : it allows you to manage the exFAT devices : mount, unmount etc.
 mgz_io.c : it replaces several standard functions (some of them are slow/broken in psl1ght anyway) with new ones that support ps3 native file system (ufs2, fat16, fat32), ntfs and exFAT.
-The preffix "exFAT" is used to detect if it's an exFAT device in mgz_io.c 
-
+The prefix "exFAT" is used to detect if it's an exFAT device in mgz_io.c 
 
 v1.38
 Add : Support CFW/HEN 486C

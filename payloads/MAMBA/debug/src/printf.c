@@ -908,7 +908,7 @@ static void fmtint(char *str, size_t *len, size_t size, INTMAX_T value, int base
 
 	if (sign != 0)	/* Sign. */
 		OUTCHAR(str, *len, size, sign);
-	if (hexprefix != 0) 
+	if (hexprefix)
 	{	
 		/* A "0x" or "0X" prefix. */
 		OUTCHAR(str, *len, size, '0');

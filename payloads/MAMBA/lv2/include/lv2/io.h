@@ -6,6 +6,8 @@
 #include <lv2/lv2.h>
 #include <lv2/symbols.h>
 
+#define CELL_FS_SUCCEEDED	0
+
 #define CELL_FS_O_CREAT		000100
 #define CELL_FS_O_EXCL		000200
 #define CELL_FS_O_TRUNC		001000

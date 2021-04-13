@@ -40,6 +40,9 @@ int MGZ_fclose(MGZ_FILE* mgz_file);
 u64 MGZ_ftell(MGZ_FILE* mgz_file);
 char MGZ_fgetc(MGZ_FILE* mgz_file);
 char MGZ_fputc(char c, MGZ_FILE* mgz_file);
+//int MGZ_ferror(FILE * mgz_file);
+//int feof(MGZ_FILE *mgz_file);
+
 
 #define FILE		MGZ_FILE
 #define fopen		MGZ_fopen
@@ -53,6 +56,8 @@ char MGZ_fputc(char c, MGZ_FILE* mgz_file);
 #define fgets 		MGZ_fgets
 #define fputs 		MGZ_fputs
 #define truncate 	MGZ_truncate
+//#define ferror		MGZ_ferror
+//#define feof			MGZ_feof
 
 //*******************************************************************************************
 //*******************************************************************************************

@@ -252,7 +252,7 @@ u8 init_fw_unk()
 {		
 	if( read_fw_unk() == SUCCESS) return SUCCESS;
 	
-	print_head("New firmware ! Please wait while MGZ search for the new offsets...");
+	print_load("New firmware ! Please wait while MGZ search for the new offsets...");
 	
 	u8 flag_htab[0x8] = {0x41, 0xDA, 0x00, 0x54, 0xE9, 0x7F, 0x00, 0xA8};
 	u8 flag_mmap1[0x8] = {0x88, 0x1F, 0x00, 0x99, 0x54, 0x00, 0x06, 0x3E};

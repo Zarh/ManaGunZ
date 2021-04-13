@@ -19,11 +19,11 @@ int lv1_stor_wrapper_open(u64 dev_id, void *dma_buf, u64 dma_buf_lpar_addr, u64 
 	int result;
 
 	result = map_dma_mem(STOR_BUS_ID, dev_id, (void *)dma_buf_lpar_addr, (1<<dma_size_log), &dma_bus_addr);	
-	if (result != 0)
+	if (result)
 		return result;	
 	
 	result = lv1_get_repository_node_value(PS3_LPAR_ID_PME, FIELD_FIRST("bus", STOR_BUS_ID), FIELD("dev", dev_id), FIELD("blk_size", 0), 0, &stor_var->block_size, &v2);
-	if (result != 0)
+	if (result)
 	{
 		unmap_dma_mem(STOR_BUS_ID, dev_id, dma_bus_addr, dma_size_log);		
 		return result;
@@ -50,13 +50,13 @@ int lv1_stor_wrapper_read(lv1_stor_wrapper_var *stor_var, u64 region_id, u64 sta
 
 	result = lv1_storage_read(stor_var->dev_id, region_id, start_sector, num_sectors,
 		flags, stor_var->dma_lpar_addr, &tag);
-	if (result != 0)
+	if (result)
 		return result;
 
 	for (;;)
 	{
 		result = lv1_storage_check_async_status(stor_var->dev_id, tag, &status);
-		if (result != 0)
+		if (result)
 			continue;
 
 		if (status == 0)
@@ -67,5 +67,3 @@ int lv1_stor_wrapper_read(lv1_stor_wrapper_var *stor_var, u64 region_id, u64 sta
 
 	return 0;
 }
-
-

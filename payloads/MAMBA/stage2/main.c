@@ -26,12 +26,14 @@
 #include <lv2/syscall.h>
 #include <lv1/stor.h>
 #include <lv1/patch.h>
+#include <lv2/ctrl.h>
 #include "common.h"
 #include "syscall8.h"
-#include "storage_ext.h"
 #include "modulespatch.h"
 #include "mappath.h"
+#include "storage_ext.h"
 #include "region.h"
+#include "psp.h"
 #include "config.h"
 #include "sm_ext.h"
 //#include "laboratory.h"
@@ -39,7 +41,6 @@
 #ifdef PS3M_API
 #include "ps3mapi_core.h"
 #endif
-#include "psp.h"
 
 #include "kernel_payload.h"
 #include "lv2_patches.h"
@@ -52,7 +53,8 @@
 #include "reactPSN.h"
 #endif
 #ifdef QA_FLAG
-#include "qa_flag.h"
+//#include "qa_flag.h"
+#include "qa.h"
 #endif
 //----------------------------------------
 //VERSION
@@ -170,7 +172,7 @@ extern f_desc_t open_path_callback;
 
 extern uint8_t allow_restore_sc; // homebrew_blocker.h
 
-#ifdef DO_AUTO_DEV_BLIND
+#ifdef DO_AUTO_MOUNT_DEV_BLIND
 extern uint8_t auto_dev_blind;	// homebrew_blocker.h
 #endif
 
@@ -493,7 +495,7 @@ LV2_SYSCALL2(int64_t, syscall8, (uint64_t function, uint64_t param1, uint64_t pa
 				//----------
 				//MISC
 				//----------
-				#ifdef DO_AUTO_DEV_BLIND
+				#ifdef DO_AUTO_MOUNT_DEV_BLIND
 				case PS3MAPI_OPCODE_AUTO_DEV_BLIND:
 					auto_dev_blind = (uint8_t)param2;
 					return auto_dev_blind;
@@ -536,6 +538,28 @@ LV2_SYSCALL2(int64_t, syscall8, (uint64_t function, uint64_t param1, uint64_t pa
 					return sm_get_fan_speed();
 				break;
 				#endif
+
+				#ifdef sm_ring_buzzer_symbol
+				case PS3MAPI_OPCODE_RING_BUZZER:
+					return sm_ring_buzzer((uint16_t)param2);
+				break;
+				#endif
+
+				//----------
+				//QA
+				//----------
+				#ifdef QA_FLAG
+				case PS3MAPI_OPCODE_CHECK_QA:
+					return read_qa_flag();
+				break;
+				case PS3MAPI_OPCODE_ENABLE_QA:
+					return set_qa_flag(1);
+				break;
+				case PS3MAPI_OPCODE_DISABLE_QA:
+					return set_qa_flag(0);
+				break;
+				#endif
+
 				//----------
 				//DEFAULT
 				//----------
@@ -889,10 +913,6 @@ void create_syscalls(void)
 	create_syscall2(10, sys_cfw_lv1_call);
 	create_syscall2(11, sys_cfw_lv1_peek);
 	create_syscall2(15, sys_cfw_lv2_func);
-	#ifdef FAN_CONTROL
-	create_syscall2(389, sm_set_fan_policy_sc);
-	create_syscall2(409, sm_get_fan_policy_sc);
-	#endif
 }
 
 //----------------------------------------
@@ -931,6 +951,9 @@ int main(void)
 
 	#ifdef DO_PATCH_PS2
 	ps2_vsh_patches();
+	#endif
+	#ifdef FAN_CONTROL
+	fan_patches();
 	#endif
 
 	//Check if Iris (sky) payload is loaded

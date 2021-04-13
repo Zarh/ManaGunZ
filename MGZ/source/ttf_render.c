@@ -29,7 +29,7 @@ int TTFLoadFont(int set, char * path, void * from_memory, int size_from_memory)
         if(FT_New_Face(freetype, path, 0, &face[set])<0) return -1;
     } else {
         if(FT_New_Memory_Face(freetype, from_memory, size_from_memory, 0, &face[set])) return -1;
-        }
+    }
 
     f_face[set] = 1;
 

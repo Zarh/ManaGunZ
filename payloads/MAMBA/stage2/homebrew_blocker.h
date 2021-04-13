@@ -5,12 +5,19 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
-extern int disc_emulation; // storage_ext.c
+//extern int disc_emulation; // storage_ext.c
 
+#ifdef DO_AUTO_RESTORE_SC
 uint8_t allow_restore_sc = 1; // allow re-create cfw syscalls accessing system update on XMB
+#endif
+#ifdef DO_AUTO_MOUNT_DEV_BLIND
 uint8_t auto_dev_blind  = 1;  // auto-mount dev_blind
 
 static uint8_t mount_dev_blind  = 1;
+#endif
+#ifdef DO_CFW2OFW_FIX
+uint8_t CFW2OFW_game = 0;
+#endif
 
 #define BLACKLIST_FILENAME	"/dev_hdd0/tmp/blacklist.cfg"
 #define WHITELIST_FILENAME	"/dev_hdd0/tmp/whitelist.cfg"
@@ -37,7 +44,7 @@ static uint8_t init_list(char *list, const char *path)
 {
 	int f;
 
-	if (cellFsOpen(path, CELL_FS_O_RDONLY, &f, 0666, NULL, 0) != CELL_OK) return 0; // failed to open
+	if (cellFsOpen(path, CELL_FS_O_RDONLY, &f, 0666, NULL, 0) != CELL_FS_SUCCEEDED) return 0; // failed to open
 
 	if(!list) list = alloc(9 * MAX_LIST_ENTRIES, 0x2F);
 
@@ -108,19 +115,19 @@ static inline int block_homebrew(const char *path)
 		uint8_t syscalls_disabled = ((*(uint64_t *)MKA(syscall_table_symbol + 8 * 6)) == (*(uint64_t *)MKA(syscall_table_symbol)));
 
 //		if(!syscalls_disabled && (!strncmp(path + 15, "ENSTONEXX", 9) || !strncmp(path + 15, "IDPSET000", 9))) syscalls_disabled = 1;
-/*
-		// Check CFW2OFW: /dev_hdd0/game/NPEB12345/LICDIR/LIC.EDAT
-		if ((disc_emulation != EMU_OFF) && !strncmp(path + 24, "/LICDIR/LIC.EDAT", 16))
+
+		// CFW2OFW fix by Evilnat
+		// Fixes black screen while a CFW2OFW game is loaded with a mounted JB folder game
+		#ifdef DO_CFW2OFW_FIX
+		if (strstr(path + 15, "/LIC.EDAT")) // Check CFW2OFW: /dev_hdd0/game/NPEB12345/LICDIR/LIC.EDAT
 		{
 			#ifdef DEBUG
-			DPRINTF("CFW2OFW detected: Unmounting DISC\n");
+			DPRINTF("CFW2OFW detected\n");
 			#endif
-			sys_storage_ext_umount_discfile();
-			sys_map_path("/dev_bdvd", NULL);
-			sys_map_path("//dev_bdvd", NULL);
+			CFW2OFW_game = 1; // unmount in post_cellFsUtilMount of storage_ext.c
 		}
 		else
-*/
+		#endif
 		if (syscalls_disabled && strstr(path + 15, "/EBOOT.BIN"))
 		{
 			// syscalls are disabled and an EBOOT.BIN is being called from hdd. Let's test it.
@@ -158,7 +165,9 @@ static inline int block_homebrew(const char *path)
 			if (!allow)
 			{
 				set_patched_func_param(1, (uint64_t)no_exists); // redirect to invalid path
+				#ifdef DO_AUTO_MOUNT_DEV_BLIND
 				mount_dev_blind = 1;
+				#endif
 				return FAILED;
 			}
 		}
@@ -169,9 +178,10 @@ static inline int block_homebrew(const char *path)
 		make_rif(path);
 	}
 	#endif
+	#if defined(DO_AUTO_MOUNT_DEV_BLIND) || defined(DO_AUTO_RESTORE_SC)
 	else if(path[1] == 'd' && path[6] == 'l') // /dev_flash || /dev_blind
 	{
-		#ifdef DO_AUTO_DEV_BLIND
+		#ifdef DO_AUTO_MOUNT_DEV_BLIND
 		if(auto_dev_blind && !strncmp(path, "/dev_blind/", 11))
 		{
 			if(mount_dev_blind)
@@ -183,6 +193,7 @@ static inline int block_homebrew(const char *path)
 		}
 		else
 		#endif
+		#ifdef DO_AUTO_RESTORE_SC
 		if(allow_restore_sc)
 		{
 			if(!strcmp(path, "/dev_flash/vsh/module/software_update_plugin.sprx"))
@@ -196,8 +207,12 @@ static inline int block_homebrew(const char *path)
 				#endif
 			}
 		}
+		#endif
 	}
+	#endif
 
+	#ifdef DO_AUTO_MOUNT_DEV_BLIND
 	mount_dev_blind = 1;
+	#endif
 	return SUCCEEDED;
 }

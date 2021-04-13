@@ -20,8 +20,6 @@ uint8_t  psp_code;
 //char pspemu_path[36];
 //char psptrans_path[37];
 
-static uint32_t base_offset = 0;
-
 #define SPRX_NUM		90
 #define NUM_SCE_PSP_MODULES	5
 
@@ -44,7 +42,7 @@ static uint64_t emulator_api_base;
 static uint32_t *savedata_param;
 
 /* vsh.self */
-static SprxPatch psp_drm_patches[] =
+SprxPatch psp_drm_patches[] =
 {
 	{ psp_drm_patch1, LI(R3, 0) 	},
 	{ psp_drm_patch2, LI(R3, 0) 	},
@@ -108,7 +106,7 @@ static INLINE void psp_patches_type()
 	}
 }
 
-static int patches_found;
+int patches_found;
 
 static INLINE int get_psp_patches()
 {
@@ -452,7 +450,24 @@ static INLINE __attribute__((unused)) int is_sce_psp_module(char *name)
 
 	return 0;
 }
+#define EXPERIMENTAL_CSO
+#ifdef EXPERIMENTAL_CSO
+typedef struct
+{
+	char magic[4];
+	uint8_t blocks;
+} CsoHeader; // this is not a real CSO
 
+typedef struct
+{
+	uint32_t start_sector;
+	uint32_t end_sector;
+} CsoIndex;
+
+static uint8_t is_cso = 0;
+static uint8_t blocks = 0;
+static CsoIndex cso_index[0x10];
+#endif
 int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 {
 	int ret;
@@ -521,17 +536,27 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 	kfree(list);
 	kfree(unk);
 
-	if (ret) // (ret != SUCCEEDED)
+	if (ret != SUCCEEDED)
 		return ret;
 
 	ret = cellFsOpen(umd_file, CELL_FS_O_RDONLY, &umd_fd, 0, NULL, 0);
-	if (ret) // (ret != SUCCEEDED)
+	if (ret != SUCCEEDED)
 		return ret;
-
+#ifdef EXPERIMENTAL_CSO
+	// check compacted ISO
+	cellFsLseek(umd_fd, 0, SEEK_SET, &umd_size);
+	cellFsRead(umd_fd, get_secure_user_ptr(buf), 6, &umd_size);
+	CsoHeader *header = (CsoHeader *)buf;
+	is_cso = !strcmp(header->magic, "=PSP") && (header->blocks <= 0x10);
+	blocks = is_cso ? header->blocks : 0;
+	// read cso_index
+	if(blocks)
+	{
+		cellFsLseek(umd_fd, 0x18, SEEK_SET, &umd_size);
+		cellFsRead(umd_fd, &cso_index, sizeof(CsoIndex) * blocks, &umd_size);
+	}
+#endif
 	cellFsLseek(umd_fd, 0, SEEK_END, &umd_size);
-
-	umd_size -= base_offset;
-
 	// Fake header. We will write only values actually used
 	memset(buf, 0, 0x100);
 	*(uint32_t *)(buf + 0x0c) = 0x10;
@@ -568,7 +593,7 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 
 		int ret = open_kernel_object(object_table, *(uint32_t *)(emulator_api_base+umd_mutex_offset), (void **)&mutex, &obj_handle, SYS_MUTEX_OBJECT);
 
-		if (ret) // (ret != SUCCEEDED)
+		if (ret != SUCCEEDED)
 		{
 			#ifdef DEBUG
 			DPRINTF("Cannot open user mutex, using an own one\n");
@@ -585,17 +610,46 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 			close_kernel_object_handle(object_table, obj_handle);
 		}
 	}
-
 	mutex_lock(mutex, 0);
 	offset = sector * 0x800;
 
-	if (ofs) // (ofs != 0)
+	if (ofs != 0)
 	{
 		offset = offset + 0x800 - ofs;
 	}
 
-	ret = cellFsLseek(umd_fd, base_offset + offset, SEEK_SET, &dummy);
-	if (ret) // (ret != SUCCEEDED)
+#ifdef EXPERIMENTAL_CSO
+	if(is_cso)
+	{
+		size = 0x800;
+		uint32_t base = 0;
+		for(ret = 0; ret < blocks; ret++)
+		{
+			if((sector >= cso_index[ret].start_sector) && (sector <= cso_index[ret].end_sector))
+			{
+				sector = base + (sector - cso_index[ret].start_sector);
+				offset = sector * 0x800;
+
+				if (ofs != 0)
+				{
+					offset = offset + 0x800 - ofs;
+				}
+				ret = 0;
+				break;
+			}
+			base += cso_index[ret].end_sector - cso_index[ret].start_sector + 1;
+		}
+		if(ret >= blocks)
+		{
+			memset(buf, 0, size); // return blank sector
+			mutex_unlock(mutex);
+			return (int)size;
+		}
+	}
+#endif
+
+	ret = cellFsLseek(umd_fd, offset, SEEK_SET, &dummy);
+	if (ret != SUCCEEDED)
 	{
 		mutex_unlock(mutex);
 		return ret;
@@ -612,8 +666,6 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 
 int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 {
-	base_offset = 0;
-
 	// get_vsh_offset() is called from main.c before call this function
 	if(vsh_offset == 0)
 		return EINVAL;
@@ -649,7 +701,7 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 			DPRINTF("[PSP VSH PATCHES] Restore original data\n");
 			#endif
 
-			for (int i = 0; patches_backup[i].offset; i++)
+			for (int i = 0; patches_backup[i].offset != 0; i++)
 			{
 				lv1_pokew(patches_backup[i].offset, patches_backup[i].data);
 				#ifdef DEBUG
@@ -675,14 +727,8 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 		return EINVAL;
 
 	ret = pathdup_from_user(file, &umd_file);
-	if (ret) // (ret != SUCCEEDED)
+	if (ret != SUCCEEDED)
 		return ret;
-
-	int len = strlen(umd_file);
-	if(len > 4)
-	{
-		if(strcmp(file + (len - 4), ".PNG") == 0) base_offset = 0x10000;
-	}
 
 	condition_psp_iso = 1;
 	condition_psp_prometheus = prometheus;
@@ -706,7 +752,7 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 		DPRINTF("Making patches..\n");
 		#endif
 
-		for (int i = 0; psp_drm_patches[i].offset; i++)
+		for (int i = 0; psp_drm_patches[i].offset != 0; i++)
 		{
 			patches_backup[i].data = lv1_peekw(patches_backup[i].offset);
 			lv1_pokew(psp_drm_patches[i].offset, psp_drm_patches[i].data);

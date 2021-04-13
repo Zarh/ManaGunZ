@@ -7,12 +7,15 @@
 #include <openssl/des.h>
 #include "storage.h"
 #include "ioctl.h"
+#include "bd.h"
 
 #define SG_DXFER_TO_DEV		ATAPI_PIO_DATA_OUT_PROTO, ATAPI_DIR_WRITE
 #define SG_DXFER_FROM_DEV		ATAPI_PIO_DATA_IN_PROTO, ATAPI_DIR_READ
 
 #define SUCCESS 	1
 #define FAILED 		0
+#define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
+
 
 extern void print_load(char *format, ...);
 extern void print_head(char *format, ...);
@@ -89,16 +92,30 @@ int test_unit_ready()
 
 int read_pic(unsigned char* ret)
 {
-	print_load("Read pic: ");
 	unsigned char cdb[]= { 0xad, 1, 0, 0, 0, 0, 0, 0, 0x10, 0x04, 0, 0 };
-	return do_cdb(cdb, 12, ret, 4100, SG_DXFER_FROM_DEV);
+	return do_cdb(cdb, 12, ret, PIC_LEN, SG_DXFER_FROM_DEV);
 }
 
-u8 *get_d1()
+u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 {
-	u8* d_3dump = Load_3Dump();
+	u8 ret = FAILED;
+	u8* d_3dump = NULL;
 	
-	if(d_3dump==NULL) return NULL;
+	/* Start the drive communication */
+	if(sys_storage_open(BD_DEVICE, &g_fd) != 0) {
+		print_load("Error : sys_storage_open failed...");
+		return FAILED;
+	}
+
+	if(test_unit_ready()==FAILED) {
+		print_load("Error : Test unit failed, are you sure a disc is in the drive?");
+		goto error;	
+	}
+	
+	d_3dump = Load_3Dump();
+	if(d_3dump==NULL) {
+		goto error;
+	}
 	
 	u8* eid4=d_3dump;
 	u8* cmac=d_3dump+0x20;
@@ -107,202 +124,51 @@ u8 *get_d1()
 	
 	load_keys(eid4, cmac, ke, ie);
 	
-	/* Start the drive communication */
-	if(sys_storage_open(BD_DEVICE, &g_fd) != 0) {
-		print_load("Error : sys_storage_open failed...");
-		free(d_3dump);
-		return NULL;
-	}
-
-	if(test_unit_ready()!=SUCCESS) {
-		print_load("Error : Test unit failed, are you sure a disc is in the drive?");
-		sys_storage_close(g_fd);
-		free(d_3dump);
-		return NULL;	
+	memset(d1,  0, 0x10);
+	memset(d1,  0, 0x10);
+	memset(pic, 0, PIC_LEN);
+	
+	print_load("Getting PIC");
+	if( read_pic(pic) == FAILED ) {
+		print_load("Error : failed to get PIC");
+		goto error;
 	}
 	
-	u8 d2[16];
-	u8* d1=(u8*) malloc(16);
-	if( d1 == NULL) {
-		print_load("Error : malloc d1");
-		sys_storage_close(g_fd);
-		free(d_3dump);
-		return NULL;
-	
+	print_load("Getting D1 and D2");
+	if( get_dec_key(d1, d2)==FAILED ) {
+		print_load("Error : failed to get d1 and d2");
+		goto error;
 	}
 	
-	if(get_dec_key(d1, d2)==FAILED) {
-		print_load("Error : get_dec_key");
-		sys_storage_close(g_fd);
-		free(d_3dump);
-		free(d1);
-		return NULL;
-	}
+	ret=SUCCESS;
+error:
 	
 	sys_storage_close(g_fd);
-	free(d_3dump);
-		
-	return d1;
+	FREE(d_3dump);
+	
+	return ret;
 }
 
-int Dump_BD_keys()
-{
-	FILE* file_io;
-
-	unsigned char d_3dump[0x60];
-	unsigned char* eid4=d_3dump;
-	unsigned char* cmac=d_3dump+0x20;
-	unsigned char* ke=d_3dump+0x30;
-	unsigned char* ie=d_3dump+0x50;
-	unsigned char d1[16];
-	unsigned char d2[16];
-
-	unsigned char* pic;
-	int pic_len;
-	unsigned char all=3;
-
-	print_load("[MGZ] GetKey r%u", version);
-
-	memset(d1, 0, 16);
-	memset(d2, 0, 16);
-
-	/*Read 3Dump.bin*/
-	if( (file_io=fopen("/dev_hdd0/tmp/3Dump.bin", "rb"))==NULL ) {
-		print_load("Error : opening 3Dump.bin");
-		return FAILED;
-	}
-
-	if( fread(d_3dump, 1, 0x60, file_io)!=0x60 ) {
-		print_load("Error : reading 3Dump.bin");
-		return FAILED;
-	}
-	fclose(file_io);
-
-	load_keys(eid4, cmac, ke, ie);
-
-	/* Start the drive communication */
-	if(sys_storage_open(BD_DEVICE, &g_fd) != 0) {
-		print_load("Error : sys_storage_open failed...");
-		return FAILED;
-	}
-
-	if(test_unit_ready()!=SUCCESS)
-	{
-		print_load("Error : Test unit failed, are you sure a disc is in the drive?");
-		sys_storage_close(g_fd);
-		return FAILED;
-	}
-
-	/*get PIC*/
-	pic=malloc(4100);
-	memset(pic, 0, 4100);
-	read_pic(pic);
-	pic_len=0x83;
+u8 dump_disc_key(char *outfile)
+{	
+	u8 d1[0x10];
+	u8 d2[0x20];
+	u8 pic[0x73];
 	
-	while(pic[pic_len]==0 && pic_len>=0) --pic_len;
-	++pic_len;
-	if(pic_len==0) {
-		print_load("Warning : Empty PIC, probably wrong. Continuing anyway to try and get key");
-		all-=1;
-	}
-
-	if(get_dec_key(d1, d2)==SUCCESS) {
-		print_load("get_dec_key succeeded!");
-		print_load("writing disc.key binary header...");
-		if( ( g_file_binlog = fopen("/dev_usb000/disc.key" , "wb") )==NULL ) {
-			print_load("Error : Failed to open disc.key for writing");
-			fclose(g_file_binlog);
-			return FAILED;
-		}
-
-		fprintf(g_file_binlog, "Encrypted 3K RIP");
-
-		if(fwrite(d1, 1, 16, g_file_binlog) != 16) {
-			print_load("Error : Failed writing binary key 1 to disk.key");
-		}
-
-		if(fwrite(d2, 1, 16, g_file_binlog) != 16) {
-			print_load("Error : Failed writing binary key 2 to disk.key");
-		}
-
-		if(fwrite(pic, 1, 0x73, g_file_binlog) != 0x73) {
-			print_load("Error : Failed writing binary pic data to disk.key");
-		}
-
-		fclose(g_file_binlog);
-
-		dec_d1(d1);
-		dec_d2(d2);
-	}
-	else
-	{
-		print_load("Error : get_dec_key failed, key was not dumped");
-		if(pic_len==0) {
-			print_load("Error : Nothing could be dumped. Your drive may be unsupported, please report it.");
-			sys_storage_close(g_fd);
-			return FAILED;
-		}
-		all-=2;
-	}
-
-	if(all>1) {
-		print_load("disc_key");
-		hex_print_load((char *)d1, 16);
-		print_load("disc_id: ");
-		if(d2[12]==0 && d2[13]==0 && d2[14]==0 && d2[15]==0) {
-			hex_print_load((char *)d2, 16);
-		}
-		else {
-			hex_print_load((char *)d2, 12);
-			print_load("XXXXXXXX");
-		}
-		print_load("disc_id (d2 enc): ");
-		hex_print_load((char *)d2, 16);
-	}
-	if(pic_len!=0)
-	{
-		print_load("PIC:");
-		hex_print_load((char *)pic, 0x84);
-	}
-
-	/*dump pic in full*/
-	if( (file_io=fopen("/dev_usb000/disc.pic", "wb"))==NULL )
-	{
-		print_load("Error : Failed to open big.pic for writing");
-		sys_storage_close(g_fd);
+	if( get_keys(d1, d2, pic) == FAILED ) return FAILED;
+	
+	FILE *f;
+	f = fopen(outfile, "wb");
+	if(f==NULL) {
+		print_load("Error : failed to fopen %s", outfile);
 		return FAILED;
 	}
-	if(fwrite(pic, 1, 4100, file_io)!=4100)
-	{
-		print_load("Error : Failed to write to big.pic");
-		sys_storage_close(g_fd);
-		return FAILED;
-	}
-	fclose(file_io);
-
-	free(pic);
-	if(all==3)
-	{
-		print_load("SUCCESS: Everything was correctly dumped.");
-		sys_storage_close(g_fd);
-		return SUCCESS;
-	}
-	else if(all==2)
-	{
-		print_load("WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING");
-		print_load("Warning : Not everything was correctly dumped (PIC missing)");
-		sys_storage_close(g_fd);
-		return FAILED;
-	}
-	else if(all==1)
-	{
-		print_load("WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING");
-		print_load("Warning : Not everything was correctly dumped (d1 missing)");
-		sys_storage_close(g_fd);
-		return FAILED;
-	}
-
-	sys_storage_close(g_fd);
+	fputs("Encrypted 3K RIP", f);
+	fwrite(&d1, 1, 0x10, f);
+	fwrite(&d2, 1, 0x10, f);
+	fwrite(&pic, 1, 0x73, f);
+	fclose(f);
+	
 	return SUCCESS;
 }
 

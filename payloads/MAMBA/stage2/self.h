@@ -106,7 +106,8 @@ typedef struct
 {
 	uint32_t type; // 1==control flags; 2==file digest        0
 	uint32_t size; // 4
-	union {
+	union
+	{
 		// type 1
 		struct
 		{

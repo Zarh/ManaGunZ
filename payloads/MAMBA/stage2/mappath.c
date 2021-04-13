@@ -6,7 +6,6 @@
 #include <lv2/security.h>
 #include <lv2/io.h>
 #include <lv2/error.h>
-#include <lv1/patch.h>
 #include "common.h"
 #include "mappath.h"
 #include "storage_ext.h"
@@ -33,6 +32,16 @@ MapEntry map_table[MAX_TABLE_ENTRIES];
 // TODO: map_path and open_path_hook should be mutexed...
 
 f_desc_t open_path_callback;
+
+#ifdef DO_PHOTO_GUI
+uint8_t photo_gui = 1;
+static uint8_t libft2d_access = 0;
+#endif
+
+#ifdef DO_AUTO_EARTH
+uint8_t auto_earth = 0;
+uint8_t earth_id = 0;
+#endif
 
 static int8_t avoid_recursive_calls = 0;
 static int8_t max_table_entries = 0;
@@ -80,7 +89,7 @@ void map_first_slot(char *oldpath, char *newpath)
 	return;
 }
 */
-static int map_path(char *oldpath, char *newpath, uint32_t flags)
+int map_path(char *oldpath, char *newpath, uint32_t flags)
 {
 	int8_t i, firstfree = UNDEFINED, is_dev_bdvd = 0;
 
@@ -105,11 +114,11 @@ static int map_path(char *oldpath, char *newpath, uint32_t flags)
 	}
 
 	// unmap if both paths are the same
-	if (newpath && strcmp(oldpath, newpath) == 0)
+	if (newpath && (strcmp(oldpath, newpath) == SUCCEEDED))
 		newpath = NULL;
 
 	// sys_aio_copy_root
-	if (strcmp(oldpath, "/dev_bdvd") == 0)
+	if (strcmp(oldpath, "/dev_bdvd") == SUCCEEDED)
 	{
 		condition_apphome = (newpath != NULL);
 		condition_apphome_index = first_slot, is_dev_bdvd = 1; //AV 20190405
@@ -119,7 +128,7 @@ static int map_path(char *oldpath, char *newpath, uint32_t flags)
 	{
 		if (map_table[i].oldpath)
 		{
-			if (strcmp(oldpath, map_table[i].oldpath) == 0)
+			if (strcmp(oldpath, map_table[i].oldpath) == SUCCEEDED)
 			{
 				if (newpath && (*newpath != 0))
 				{
@@ -204,21 +213,21 @@ int map_path_user(char *oldpath, char *newpath, uint32_t flags)
 	//DPRINTF("map_path_user, called by process %s: %s -> %s\n", get_process_name(get_current_process_critical()), oldpath, newpath);
 	#endif
 
-	if (oldpath == 0)
+	if (!oldpath)
 		return FAILED;
 
 	int ret = pathdup_from_user(get_secure_user_ptr(oldpath), &oldp);
-	if (ret != SUCCEEDED)
+	if (ret) // (ret != SUCCEEDED)
 		return ret;
 
-	if (newpath == 0)
+	if (!newpath)
 	{
 		newp = NULL;
 	}
 	else
 	{
 		ret = pathdup_from_user(get_secure_user_ptr(newpath), &newp);
-		if (ret != SUCCEEDED)
+		if (ret) // (ret != SUCCEEDED)
 		{
 			free(oldp);
 			return ret;
@@ -286,7 +295,7 @@ int sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 		for (unsigned int i = 0; i < num; i++)
 		{
 			ret = map_path_user((char *)(uint64_t)u_paths[i], (char *)(uint64_t)u_new_paths[i], FLAG_TABLE);
-			if (ret != SUCCEEDED)
+			if (ret) // (ret != SUCCEEDED)
 			{
 				unmap = 1;
 				break;
@@ -306,16 +315,6 @@ int sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 
 	return ret;
 }
-
-#ifdef DO_PHOTO_GUI
-uint8_t photo_gui = 1;
-static uint8_t libft2d_access = 0;
-#endif
-
-#ifdef DO_AUTO_EARTH
-uint8_t auto_earth = 0;
-uint8_t earth_id = 0;
-#endif
 
 void clear_key(void *key)
 {
@@ -347,7 +346,7 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 		if(path[1] == '/') path++; //if(!path) {avoid_recursive_calls = 0; return;}
 
 		// Disabled due to the issue with multiMAN can't copy update files from discs.
-		/*if (path && ((strcmp(path, "/dev_bdvd/PS3_UPDATE/PS3UPDAT.PUP") == 0)))  // Blocks FW update from Game discs!
+		/*if (path && ((strcmp(path, "/dev_bdvd/PS3_UPDATE/PS3UPDAT.PUP") == SUCCEEDED)))  // Blocks FW update from Game discs!
 		{
 			char not_update[40];
 			sprintf(not_update, "/dev_bdvd/PS3_NOT_UPDATE/PS3UPDAT.PUP");
@@ -373,7 +372,7 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 				sprintf(new_earth, "%s/%i.qrc", "/dev_hdd0/tmp/earth", ++earth_id);
 
 				CellFsStat stat;
-				if(cellFsStat(new_earth, &stat) == SUCCEEDED)
+				if(cellFsStat(new_earth, &stat) == CELL_FS_SUCCEEDED)
 					set_patched_func_param(1, (uint64_t)new_earth);
 				else
 					earth_id = 0;
@@ -418,15 +417,16 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 				{
 					int16_t len = map_table[i].oldpath_len;
 
-					if(strncmp(path, map_table[i].oldpath, len) == 0)
+					if(strncmp(path, map_table[i].oldpath, len) == SUCCEEDED)
 					{
 						strcpy(map_table[i].newpath + map_table[i].newpath_len, path + len);
 
+						#ifdef DO_PARTIAL_MAP_PATH
 						// -- AV: use partial folder remapping when newpath starts with double '/' like //dev_hdd0/blah...
 						if(map_table[i].newpath[1] == '/')
 						{
 							CellFsStat stat;
-							if( (cellFsStat(map_table[i].newpath, &stat) != SUCCEEDED) && (cellFsStat(path0, &stat) == SUCCEEDED) )
+							if(cellFsStat(map_table[i].newpath, &stat) != CELL_FS_SUCCEEDED)
 							{
 								#ifdef DEBUG
 								DPRINTF("open_path %s\n", path0);
@@ -435,6 +435,7 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 								return; // Do not remap / Use the original file when redirected file does not exist
 							}
 						}
+						#endif
 
 						set_patched_func_param(1, (uint64_t)map_table[i].newpath);
 
@@ -491,7 +492,7 @@ int sys_aio_copy_root(char *src, char *dst)
 	}
 
 	// Here begins custom part of the implementation
-	if (condition_apphome && (strcmp(dst, "/dev_bdvd") == 0)) // if dev_bdvd and jb game mounted
+	if (condition_apphome && (strcmp(dst, "/dev_bdvd") == SUCCEEDED)) // if dev_bdvd and jb game mounted
 	{
 		// find /dev_bdvd
 		for (int8_t i = condition_apphome_index; i < max_table_entries; i++)
@@ -505,7 +506,7 @@ int sys_aio_copy_root(char *src, char *dst)
 					if (dst[j] == 0)
 						break;
 
-					if (dst[j] == '/' && (j >= 9))
+					if (dst[j] == '/' && (j >= 7))
 					{
 						dst[j] = 0;
 						break;
@@ -524,41 +525,39 @@ int sys_aio_copy_root(char *src, char *dst)
 	return SUCCEEDED;
 }
 /*
-extern uint64_t LV2_OFFSET_ON_LV1;
+static uint_8 cpy_oper = 0;
+static char *path_buff = NULL;
 
-LV2_HOOKED_FUNCTION_PRECALL_1(int, cellFsUnlink_hook, (char *path))
+LV2_HOOKED_FUNCTION_POSTCALL_1(int, cellFsUnlink_hook, (char *path))
 {
-	int ret = DO_POSTCALL;
-	if(strncmp(path, "/dev_hdd0/DVDISO", 16) == 0)
+	if(cpy_oper == 1)
 	{
-		ret = strlen(path);
-		for(int a = 0; a >= ret; a+=8)
-		{
-			lv1_poked(MKA(0xA00 + LV2_OFFSET_ON_LV1) + a, (uint64_t)(path + a));
-		}
-		ret = -1;
+		int ret = pathdup_from_user(get_secure_user_ptr(path), &path_buff);
 	}
-	return ret;
+	else if(cpy_oper == 1)
+		{
+		if(path_buff) free(path_buff);
+	}
 }
 */
 void unhook_all_map_path(void)
 {
 	suspend_intr();
 	unhook_function_with_postcall(open_path_symbol, open_path_hook, 2);
-	//unhook_function_with_precall(get_syscall_address(814), cellFsUnlink_hook, 1);
+	//unhook_function_with_postcall(get_syscall_address(814), cellFsUnlink_hook, 1);
 	resume_intr();
 }
 
 void map_path_patches(int syscall)
 {
 	hook_function_with_postcall(open_path_symbol, open_path_hook, 2);
-	//hook_function_with_precall(get_syscall_address(814), cellFsUnlink_hook, 1);
+	//hook_function_with_postcall(get_syscall_address(814), cellFsUnlink_hook, 1);
 
 	open_path_callback.addr = NULL;
 
 	#ifdef DO_AUTO_EARTH
 	CellFsStat stat;
-	auto_earth = (cellFsStat("/dev_hdd0/tmp/earth", &stat) == SUCCEEDED); // auto rotare 1.qrc to 255.qrc each time earth.qrc is accessed
+	auto_earth = (cellFsStat("/dev_hdd0/tmp/earth", &stat) == CELL_FS_SUCCEEDED); // auto rotare 1.qrc to 255.qrc each time earth.qrc is accessed
 	#endif
 
 	if (syscall)

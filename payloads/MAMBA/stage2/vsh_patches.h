@@ -5,9 +5,9 @@ static INLINE void get_rebug_vsh()
 {
 	CellFsStat stat;
 
-	if(cellFsStat("/dev_flash/vsh/module/vsh.self.cexsp", &stat) == SUCCEEDED)
+	if(cellFsStat("/dev_flash/vsh/module/vsh.self.cexsp", &stat) == CELL_FS_SUCCEEDED)
 		vsh_type = 0xDE;
-	else if(cellFsStat("/dev_flash/vsh/module/vsh.self.dexsp", &stat) == SUCCEEDED)
+	else if(cellFsStat("/dev_flash/vsh/module/vsh.self.dexsp", &stat) == CELL_FS_SUCCEEDED)
 		vsh_type = 0xCE;
 
 	#ifdef DEBUG

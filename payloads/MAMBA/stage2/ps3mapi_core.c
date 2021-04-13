@@ -189,7 +189,7 @@ int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page
 	int ret;
 	void *kbuf, *vbuf;
 	ret = page_allocate(process, size, flags, page_size, &kbuf);
-	if (ret != SUCCEEDED)
+	if (ret) // (ret != SUCCEEDED)
 	{
 		return ENOMEM;
 	}
@@ -197,7 +197,7 @@ int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page
 	if (is_executable == 0)
 	{
 		ret = page_export_to_proc(process, kbuf, 0x40000, &vbuf);
-		if (ret != SUCCEEDED)
+		if (ret) // (ret != SUCCEEDED)
 		{
 			page_free(process, kbuf, flags);
 			return ENOMEM;
@@ -211,7 +211,7 @@ int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page
 
 		ret = page_export_to_proc(process, kbuf, 0x40000, &vbuf);
 
-		if (ret != SUCCEEDED)
+		if (ret) // (ret != SUCCEEDED)
 		{
 			page_free(process, kbuf, flags);
 			return ENOMEM;
@@ -224,7 +224,7 @@ int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page
 	uint64_t temp_address = (uint64_t)vbuf;
 	ret = copy_to_user(&temp_address, get_secure_user_ptr(page_address), sizeof(uint64_t));
 
-	if (ret != SUCCEEDED)
+	if (ret) // (ret != SUCCEEDED)
 	{
 		page_unexport_from_proc(process, vbuf);
 		page_free(process, kbuf, flags);
@@ -321,7 +321,7 @@ int ps3mapi_get_process_module_segments(process_id_t pid, sys_prx_id_t prx_id, s
 
 	int ret = copy_from_user(info, &modinfo, 0x48);
 
-	if (ret != SUCCEEDED)
+	if (ret) // (ret != SUCCEEDED)
 		return EINVAL;
 
 	if ((modinfo.segments == 0) || (modinfo.filename == 0) || (modinfo.segments_num == 0) || (modinfo.filename_size == 0))
@@ -460,7 +460,7 @@ int ps3mapi_load_process_modules(process_id_t pid, char *path, void *arg, uint32
 		free_page(process, kbuf);
 	}
 
-	if (ret != SUCCEEDED)
+	if (ret) // (ret != SUCCEEDED)
 	{
 		prx_stop_module_with_thread(prx, process, 0, 0);
 		prx_unload_module(prx, process);
@@ -504,7 +504,7 @@ int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entr
 
 	ret = ppu_user_thread_create(process, thread, entry, arg, prio, stacksize, PPU_THREAD_CREATE_JOINABLE, (const char *)threadname);
 
-	if (ret != 0)
+	if (ret) // (ret != SUCCEEDED)
 		return ret;
 
 	ppu_thread_join(*thread, &exit_code);

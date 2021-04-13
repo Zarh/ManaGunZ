@@ -12,19 +12,19 @@ typedef struct
 
 static Patch kernel_patches[] =
 {
-#if defined(patch_data1_offset) && defined(patch_func8_offset1)
+	#if defined(patch_data1_offset) && defined(patch_func8_offset1)
 	{ patch_data1_offset, 0x01000000 },
 	{ patch_func8_offset1, LI(R3, 0) }, // force lv2open return 0
-#endif
-#if defined(patch_func8_offset2) && defined(patch_func9_offset)
+	#endif
+	#if defined(patch_func8_offset2) && defined(patch_func9_offset)
 	// disable calls in lv2open to lv1_send_event_locally which makes the system crash
 	{ patch_func8_offset2, NOP },
 	{ patch_func9_offset, NOP }, // 4.30 - watch: additional call after
-#endif
-#ifdef DO_PATCH_PS2
+	#endif
+	#ifdef DO_PATCH_PS2
 	// sys_sm_shutdown, for ps2 let's pass to copy_from_user a fourth parameter
 	{ shutdown_patch_offset, MR(R6, R31) },
-#endif
+	#endif
 	// User thread prio hack (needed for netiso)
 	{ user_thread_prio_patch, NOP },
 	{ user_thread_prio_patch2, NOP },
@@ -35,6 +35,13 @@ static Patch kernel_patches[] =
 	#ifdef ode_patch
 	{ ode_patch, LI(R3, 0) },
 	{ ode_patch + 4, STD(R3, 0, R9) },
+	#endif
+
+	// Fan patches
+	#ifdef FAN_CONTROL
+	{ sm_get_temperature_patch, LI(R3, 0) },
+	{ sm_get_fan_policy_patch, LI(R3, 1) },
+	{ sm_set_fan_policy_patch, LI(R3, 1) },
 	#endif
 };
 

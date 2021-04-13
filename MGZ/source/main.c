@@ -99,8 +99,7 @@
 
 #include "md5.h"
 #include "sha1.h"
-#include "ird.h"
-#include "build_ird.h"
+#include "ird_iso.h"
 #include "trpex.h"
 #include "ciso.h"
 
@@ -138,6 +137,8 @@
 #define FULL		0
 #define SPLIT		1
 
+#define NET_ERROR	2
+
 #define CONTINUE	0
 #define BREAK		1
 
@@ -161,7 +162,7 @@
 #define	ISO_PS2			6
 #define	ISO_PS1			7
 #define	ISO_PSP			8
-
+#define BDVD			9
 
 #define _SDIR			".mgz_sdir"	 // simple directory
 #define _SFILE			".mgz_sfile" // simple file (without extension)
@@ -174,11 +175,14 @@
 #define	_ISO_PS2		".mgz_isops2"
 #define	_ISO_PS1		".mgz_isops1"
 #define	_ISO_PSP		".mgz_isopsp"
+#define _BDVD			".mgz_bdvd"
 
 #define	_EBOOT_BIN		"eboot.bin"
 #define	_EBOOT_ELF		"eboot.elf"
 #define	_XREG			"xRegistry.sys"
 
+#define IRD_SERVER "http://ps3ird.free.fr"
+#define IRD_SCRIPT IRD_SERVER "/script.php"
 
 char *TXTViewerSupport[] = {".txt", ".xml", ".js", ".md5", ".sha1", ".log", ".ini", ".nfo"};
 
@@ -248,7 +252,7 @@ char *PictureViewerSupport[] = {
 
 #define MAX_SECTIONS	((0x10000-sizeof(rawseciso_args))/8)
 
-#define print_debug(x) if( DEBUG ) print_load(x)
+#define print_debug(...) if( DEBUG ) print_load(__VA_ARGS__)
 //#define print_debug(x) print_load(x); sleep(1);
 
 #define SCENE_FILEMANAGER			0
@@ -554,7 +558,7 @@ static float filter_x = FILTER_X_DEFAULT;
 static float filter_y = FILTER_Y_DEFAULT;
 static u8 root_display = 1;
 static u8 LOG = NO;
-static u8 DEBUG = NO;
+u8 DEBUG = NO;
 
 
 #define STYLE_CUSTOM	0
@@ -835,7 +839,6 @@ char *PICTURE_NAME[PICTURE_NUMBER] = {
 	"BGF",
 };
 
-
 imgData PICTURE[PICTURE_NUMBER];
 static u32 PICTURE_offset[PICTURE_NUMBER];
 
@@ -980,7 +983,6 @@ static u32 XMB_MMTHM_XMB_offset;
 
 imgData XMB_MMTHM_XMB2;
 static u32 XMB_MMTHM_XMB2_offset;
-
 
 // ****************** FILE MANAGER ***************
 
@@ -1142,27 +1144,26 @@ u8 SFO_NB;
 
 u64 txt_line;
 int txt_scroll;
-static u8 txt_viewer_activ = NO;
+u8 txt_viewer_activ = NO;
 char *txt_viewer_content=NULL;
 char *txt_viewer_path=NULL;
 
 //************************ COPY ************************
 
-static char copy_file[128];
-static char copy_src[128];
-static char copy_dst[128];
+char copy_file[128];
+char copy_src[128];
+char copy_dst[128];
 
-static u64 copy_current_size;
-static u64 copy_file_prog_bar;
-static u8 copy_flag=NO;
-static u8 copy_cancel=NO;
+u64 copy_current_size;
+u64 copy_file_prog_bar;
+u8 copy_flag=NO;
+u8 copy_cancel=NO;
 
-
-static u8 gathering=NO;
-static s64 gathering_nb_file = 0;
-static s64 gathering_nb_directory = 0;
-static u8 gathering_cancel=NO;
-static u64 gathering_total_size;
+u8 gathering=NO;
+s64 gathering_nb_file = 0;
+s64 gathering_nb_directory = 0;
+u8 gathering_cancel=NO;
+u64 gathering_total_size;
 
 
 //************************** PAD ************************
@@ -2084,6 +2085,20 @@ static char *STR_ALL_GAMES=NULL;
 #define STR_ALL_GAMES_DEFAULT				"All games"
 static char *STR_DISPLAY=NULL;
 #define STR_DISPLAY_DEFAULT					"Display"
+static char *STR_DUMP_DEC=NULL;
+#define STR_DUMP_DEC_DEFAULT				"Dump decrypted Blu-Ray disc"
+static char *STR_DUMP_DEC_DESC=NULL;
+#define STR_DUMP_DEC_DESC_DEFAULT			"Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished."
+static char *STR_DUMP_ENC=NULL;
+#define STR_DUMP_ENC_DEFAULT				"Dump encrypted Blu-Ray disc"
+static char *STR_DUMP_DISC_KEY=NULL;
+#define STR_DUMP_DISC_KEY_DEFAULT			"Dump Blu-Ray disc key"
+static char *STR_DUMP_ERK=NULL;
+#define STR_DUMP_ERK_DEFAULT				"Dump eid root key"
+static char *STR_DUMP_3DUMP=NULL;
+#define STR_DUMP_3DUMP_DEFAULT				"Dump 3Dump.bin"
+static char *STR_SYSTEM_TOOLS=NULL;
+#define STR_SYSTEM_TOOLS_DEFAULT			"System tools"
 
 
 //***********************************************************
@@ -2097,7 +2112,7 @@ void print_load(char *format, ...);
 u8 Show_it(int pos);
 char *LoadFile(char *path, int *file_size);
 char *LoadFileProg(char *path, int *file_size);
-u8 GetParamSFO(const char *name, char *value, int position, char *path);
+u8 GetParamSFO(const char *name, char *value, char *path);
 u8 Get_ID(char *isopath, u8 platform, char *game_ID);
 u8 is_apng(char *file);
 u8 Load_APNG(char* filename);
@@ -2176,6 +2191,10 @@ s8 MagickLoadFromBuffer(const void *buffer, int file_size, imgData *data);
 u8 make_png(char *outfile, imgData data);
 char *GetTimeStr(u64 secTime);
 char *sprintf_malloc(char *format, ...);
+u8 SetPerms(char* path);
+u32 crc_file2(char *path, u32 current_crc);
+int upload(char *url, char *src);
+int http_response(char *url);
 
 void Draw_MENU();
 
@@ -2581,6 +2600,7 @@ void LoadFont()
 	TTFLoadFont(3, "/dev_flash/data/font/SCE-PS3-YG-R-KOR.TTF", NULL, 0);
 	
 	texture_pointer = (u32 *) init_ttf_table((u16 *) texture_pointer);
+	
 	//TEXTURE_FONT_SIZE = texture_pointer;
 }
 
@@ -2713,7 +2733,7 @@ void Draw_BoxLine(float x, float y, float z, float w, float h, u32 color)
 	tiny3d_End();
 }
 
-void Draw_LineBox(float x, float y, float z, float e, float w, float h, u32 color)
+void Draw_LineBoxOutside(float x, float y, float z, float e, float w, float h, u32 color)
 {
 	Draw_Box(x-e, y-e, z, 0, e, h+2*e, color, NO);
 	Draw_Box(x+w, y-e, z, 0, e, h+2*e, color, NO);
@@ -2722,6 +2742,16 @@ void Draw_LineBox(float x, float y, float z, float e, float w, float h, u32 colo
 	Draw_Box(x, y+h, z, 0, w, e, color, NO);
 }
 
+void Draw_LineBoxInside(float x, float y, float z, float e, float w, float h, u32 color)
+{
+	//VERTICALS
+	Draw_Box(x, y, z, 0, e, h, color, NO);
+	Draw_Box(x+w-e, y, z, 0, e, h, color, NO);
+	
+	//HORIZONTALS
+	Draw_Box(x+e, y, z, 0, w-2*e, e, color, NO);
+	Draw_Box(x+e, y+h-e, z, 0, w-2*e, e, color, NO);
+}
 
 void DrawCapacityBar(float x, float y, float z, float w, float h, u64 TotalSpace, u64 FreeSpace)
 {
@@ -3643,7 +3673,7 @@ void ScreenShot()
 	
 	FREE(mem);
 
-	if( DEBUG ) end_loading();
+	end_loading();
 }
 
 //*******************************************************
@@ -4187,7 +4217,7 @@ char *GetPath_GAMEPIC_COVER2D(int game_pos, int n)
 	if(n==10) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
 	if(n==11) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
 	
-	if( list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3) return NULL;
+	if( list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) return NULL;
 	
 	if(n==12) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
 	if(n==13) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
@@ -4217,7 +4247,7 @@ u8 Have_GAMEPIC(int game_pos)
 {
 	u8 ret = GAMEPIC_NONE;
 	
-	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3
+	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD
 	|| list_game_platform[game_pos] == ISO_PSP || list_game_platform[game_pos] == JB_PSP) ret += GAMEPIC_ICON0;
 	
 // 3D
@@ -4378,7 +4408,7 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 		if(mem==NULL) return FAILED;
 		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0) {free(mem); return SUCCESS;}
 	} else	
-	if(list_game_platform[game_pos] == JB_PS3) {
+	if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
 		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
@@ -4682,7 +4712,7 @@ void Draw_CASE(int pos, float xi, float yi, float z, float wi, float hi)
 	float xj,yj,wj,hj;
 	float xl,yl,wl,hl;
 	
-	if(list_game_platform[pos] == ISO_PS3 || list_game_platform[pos] == JB_PS3) {
+	if(list_game_platform[pos] == ISO_PS3 || list_game_platform[pos] == JB_PS3 || list_game_platform[pos] == BDVD ) {
 		if(PICTURE_offset[PS3_CASE] != 0) {
 			tiny3d_SetTexture(0, PICTURE_offset[PS3_CASE], PICTURE[PS3_CASE].width, PICTURE[PS3_CASE].height, PICTURE[PS3_CASE].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			
@@ -4774,7 +4804,7 @@ void Draw_COVER(int pos, float x, float y, float z, float w, float h, u32 CoverO
 		yj -= hj/2;
 	}
 	
-	if(list_game_platform[pos] == ISO_PS3 || list_game_platform[pos] == JB_PS3) {
+	if(list_game_platform[pos] == ISO_PS3 || list_game_platform[pos] == JB_PS3 || list_game_platform[pos] == BDVD) {
 		plat = PS3_CASE;
 		xl = 0;
 		yl = 30;
@@ -5010,7 +5040,7 @@ void Extract_IconParam()
 		}
 		if(path_info(PARAM_OUT)==_NOT_EXIST) {
 			if(ExtractFromISO(list_game_path[i], PARAM_IN, PARAM_OUT) == SUCCESS) {
-				if(GetParamSFO("TITLE", list_game_title[i], i, NULL)==FAILED) {
+				if(GetParamSFO("TITLE", list_game_title[i], list_game_path[i])==FAILED) {
 					strcpy(list_game_title[i], list_game_path[i]);
 					strcpy(list_game_title[i], &strrchr(list_game_title[i], '/')[1]);
 					RemoveExtension(list_game_title[i]);
@@ -5026,7 +5056,7 @@ void Draw_DEFAULT(int pos, float x , float y, float z,  float w, float h, u8 cen
 	
 	int type = list_game_platform[pos];
 	u8 plat = 222;
-	if(type == JB_PS1 || type == JB_PS2 || type == JB_PS3 || type == JB_PSP) {
+	if(type == JB_PS1 || type == JB_PS2 || type == JB_PS3 || type == JB_PSP || type == BDVD) {
 		if(PICTURE_offset[DEFAULT_JB] != 0) {
 			plat = DEFAULT_JB;
 		}
@@ -6917,6 +6947,13 @@ void update_lang()
 	LANG(STR_ONLY_FAV, "STR_ONLY_FAV", STR_ONLY_FAV_DEFAULT);	
 	LANG(STR_ALL_GAMES, "STR_ALL_GAMES", STR_ALL_GAMES_DEFAULT);	
 	LANG(STR_DISPLAY, "STR_DISPLAY", STR_DISPLAY_DEFAULT);
+	LANG(STR_DUMP_DEC, "STR_DUMP_DEC", STR_DUMP_DEC_DEFAULT);
+	LANG(STR_DUMP_DEC_DESC, "STR_DUMP_DEC_DESC", STR_DUMP_DEC_DESC_DEFAULT);
+	LANG(STR_DUMP_ENC, "STR_DUMP_ENC", STR_DUMP_ENC_DEFAULT);
+	LANG(STR_DUMP_DISC_KEY, "STR_DUMP_DISC_KEY", STR_DUMP_DISC_KEY_DEFAULT);
+	LANG(STR_DUMP_ERK, "STR_DUMP_ERK", STR_DUMP_ERK_DEFAULT);
+	LANG(STR_DUMP_3DUMP, "STR_DUMP_3DUMP", STR_DUMP_3DUMP_DEFAULT);
+	LANG(STR_SYSTEM_TOOLS, "STR_SYSTEM_TOOLS", STR_SYSTEM_TOOLS_DEFAULT);
 
 	FREE(flang);
 	lang_code_loaded = lang_code;
@@ -8462,7 +8499,7 @@ void LOAD_PIC1()
 	TMP_PIC_offset=0;
 	
 	if( list_game_platform[position_CURPIC] != ISO_PS3 && list_game_platform[position_CURPIC] != ISO_PSP &&
-		list_game_platform[position_CURPIC] != JB_PS3 ) return;
+		list_game_platform[position_CURPIC] != JB_PS3 && list_game_platform[position_CURPIC] != BDVD) return;
 		
 	if( list_game_platform[position_CURPIC] == ISO_PS3 ) {
 		mem = LoadFileFromISO(YES, list_game_path[position_CURPIC], "/PS3_GAME/PIC1.PNG", &size);
@@ -8470,7 +8507,7 @@ void LOAD_PIC1()
 	if( list_game_platform[position_CURPIC] == ISO_PSP ) {
 		mem = LoadFileFromISO(YES, list_game_path[position_CURPIC], "/PSP_GAME/PIC1.PNG", &size);
 	} else
-	if( list_game_platform[position_CURPIC] == JB_PS3 ) {
+	if( list_game_platform[position_CURPIC] == JB_PS3 || list_game_platform[position_CURPIC] == BDVD) {
 		char temp[255];
 		sprintf(temp, "%s/PS3_GAME/PIC1.PNG", list_game_path[position_CURPIC]);
 		mem = LoadFileProg(temp, &size);
@@ -9882,9 +9919,10 @@ void task_Init(const u64 max)
 	if(task_ProgressBar1_max==0) {
 		task_ProgressBar1_val = 0;
 		task_ProgressBar1_max=max;
+	} else {
+		task_ProgressBar2_val= 0;
+		task_ProgressBar2_max=max;
 	}
-	task_ProgressBar2_val= 0;
-	task_ProgressBar2_max=max;
 }
 
 void task_Update(u64 val)
@@ -9895,12 +9933,13 @@ void task_Update(u64 val)
 
 void task_End()
 {
-	if(task_ProgressBar1_max == task_ProgressBar1_val || cancel) {
+	if(task_ProgressBar2_max != 0) {
+		task_ProgressBar2_max=0;
+		task_ProgressBar2_val=0;
+	} else {
 		task_ProgressBar1_max=0;
 		task_ProgressBar1_val=0;
 	}
-	task_ProgressBar1_max=0;
-	task_ProgressBar1_val=0;
 }
 
 u8 loading_can_turnoff=NO;
@@ -10417,8 +10456,7 @@ void hex_print_load(char *data, size_t len)
             memset(line, 0, 33);
         }
         i++;
-   }
-    
+   } 
 }
 
 void start_loading()
@@ -10545,6 +10583,7 @@ float DrawStringFromCenterX(float x, float y, char *txt)
 {
 	return DrawString(x-WidthFromStr(txt)/2, y, txt);
 }
+
 
 
 //*******************************************************
@@ -11591,13 +11630,24 @@ void DumpDevicesData()
 	free(info);
 }
 
-
-
 #define BDVD_BUFF_SEC_NB		0x400
 #define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
 
-u8 dump_enc_bdvd(char *output)
+u8 dump_enc_bdvd(char *outdir)
 {
+	char ISO_PATH[512];
+	char TITLE_ID[10];
+	
+	char *date = get_date();
+	if(date == NULL) return FAILED;
+	
+	if( GetParamSFO("TITLE_ID", TITLE_ID, "/dev_bdvd") == FAILED) return FAILED;
+	TITLE_ID[9]=0;
+	
+	sprintf(ISO_PATH, "%s/%s_%s.enc.iso%c", outdir, TITLE_ID, date, '\0');
+	
+	free(date);
+	
 	int source;
 	
 	device_info_t device_info;
@@ -11621,7 +11671,7 @@ u8 dump_enc_bdvd(char *output)
 	}
 	
 	FILE *f;
-	f = fopen(output, "wb");
+	f = fopen(ISO_PATH, "wb");
 	if(f==NULL) {
 		free(buff);
 		sys_storage_close(source);
@@ -11630,7 +11680,7 @@ u8 dump_enc_bdvd(char *output)
 	}
 	
 	strcpy( copy_src, "/dev_bdvd");
-	strcpy( copy_dst, output);
+	strcpy( copy_dst, ISO_PATH);
 
 	u64 count = device_info.sector_count;
 	u32 read;
@@ -11683,90 +11733,528 @@ void reset_iv(unsigned char* iv, unsigned int j)
   iv[15] = (j & 0x000000FF)>> 0;
 }
 
-u8 dump_dec_bdvd(char *output)
+FILE *openPUP(char *path, u64 *offset, char *mode)
 {
-	print_load("Get decryption key d1");
-	u8 *key = get_d1();
-	if(key == NULL ) {
-		print_load("Error : get_d1 ");
-		return FAILED;
+	FILE *pup=NULL;
+	
+	char *ext = get_ext(path);
+	
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcasecmp(ext, ".pup")) return NULL;
+	
+	if(!strcasecmp(ext, ".pup")) {
+		pup = fopen(path, mode);
+		if(pup==NULL) {
+			SetPerms(path);
+			pup = fopen(path, mode);
+			if(pup==NULL) return NULL;
+		}
+		*offset=0;
+		return pup;
+	} else
+	if(!strcmp(ext, _ISO_PS3)) {
+		pup = fopen(path, mode);
+		if(pup==NULL) {
+			SetPerms(path);
+			pup = fopen(path, mode);
+			if(pup==NULL) return NULL;
+		}
+		
+		u64 file_offset=0;
+		u8 ret=0;
+		int file_size=0;
+		ret = get_FileOffset(pup, "/PS3_UPDATE/PS3UPDAT.PUP",  &file_offset,  (u32 *) &file_size);
+		if(file_offset==0 || file_size==0 || ret == FAILED) {fclose(pup); return NULL;}
+		*offset=file_offset;
+		return pup;	
+	} else
+	if(!strcmp(ext, _JB_PS3)) {
+		char PUP_path[255];
+		sprintf(PUP_path, "%s/PS3_UPDATE/PS3UPDAT.PUP", path);
+		
+		pup = fopen(PUP_path, mode);
+		if(pup==NULL) {
+			SetPerms(PUP_path);
+			pup = fopen(PUP_path, mode);
+			if(pup==NULL) return NULL;
+		}
+		
+		*offset=0;
+		return pup;
 	}
+	return NULL;
+}
+
+u8 Get_PUPVersion(char *source, char *UpdateVersion)
+{
+	strcpy(UpdateVersion, "0000");
+	u64 pup_offset=0;
+	u16 offset;
+	FILE *f = openPUP(source, &pup_offset, "rb");
+	if(f==NULL) return FAILED;
+	fseek(f, pup_offset+0x3E, SEEK_SET);
+	fread(&offset, sizeof(u16), 1, f);
+	fseek(f, pup_offset+offset, SEEK_SET);
+	fread(UpdateVersion, sizeof(char), 4, f);
+	fclose(f);
+	return SUCCESS;
+}
+
+ird_t *IRD_new(char *source)
+{
+	int ret=FAILED;
+
+	print_debug("IRD_new init");
+	ird_t *ird=MALLOC_IRD();
+	if(ird==NULL) return NULL;
+	
+	strcpy(ird->MAGIC, MAGIC_IRD);
+	ird->Version = 9;
+	ird->UniqueIdentifier = 0;
+	ird->ExtraConfig = 0;
+	ird->Attachments = 0;
+	
+	char value[255] = {0};
+	
+	print_debug("IRD_new TITLE");
+	memset(value, 0, 255);
+	ret = GetParamSFO("TITLE", value, source);
+	if(ret==FAILED) {
+		print_debug("Error : ird_new failed to get TITLE");
+		goto error;
+	}
+	ird->GameName_length = (u8) strlen(value);	
+	ird->GameName = (char *) malloc(ird->GameName_length + 1);
+	memset(ird->GameName, 0, ird->GameName_length + 1);
+	memcpy(ird->GameName, value, ird->GameName_length);
+	
+
+	print_debug("IRD_new TITLE_ID");
+	memset(value, 0, 255);
+	ret = GetParamSFO("TITLE_ID", value, source);
+	if(ret==FAILED) {
+		print_debug("Error : ird_new failed to get TITLE_ID");
+		goto error;
+	}
+	memset(ird->GameVersion, 0, 10);
+	memcpy(ird->GameId, value, 9);
+	
+	print_debug("IRD_new VERSION");
+	ret = GetParamSFO("VERSION", value, source);
+	if(ret==FAILED) {
+		print_debug("Error : ird_new failed to get VERSION");
+		goto error;
+	}
+	memset(ird->GameVersion, 0, 6);
+	memcpy(ird->GameVersion, value, 5);
+
+	print_debug("IRD_new APP_VER");
+	memset(value, 0, 255);
+	ret = GetParamSFO("APP_VER", value, source);
+	if(ret==FAILED) {
+		print_debug("Error : ird_new failed to get APP_VER");
+		goto error;
+	}
+	memset(ird->AppVersion, 0, 6);
+	memcpy(ird->AppVersion, value, 5);
+	
+	print_debug("IRD_new PUP_VER");
+	memset(ird->UpdateVersion, 0, 5);
+	ret = Get_PUPVersion(source, ird->UpdateVersion);
+	if(ret==FAILED) {
+		print_debug("Can't get PUP_VERSION, looking for PS3_SYSTEM_VERS");
+		memset(value, 0, 255);
+		ret = GetParamSFO("PS3_SYSTEM_VER", value, source);
+		if(ret==FAILED) {
+			print_load("Error : failed to get SYSTEM_VERS");
+			goto error;
+		}
+		memcpy(ird->UpdateVersion, &value[1], 4);
+	}
+	
+	ret = SUCCESS;
+error:
+	
+	if(ret==FAILED)	FREE_IRD(ird);
+	
+	return ird;
+}
+
+/*	
+The goal of IRD_meta_sig is to get a 'fast and trustable' way to get unique signature of an ird/backup.
+I wanted to be able to calculate this signature from IRD, ISO and JB.
+I decided to use several value from the param.sfo which are also used in the ird.
+IRD_meta_sig is the CRC2 of these values :
+-TITLE_ID
+-PS3_SYSTEM_VER
+-VERSION
+-APP_VER
+
+I didn't include the TITLE because sometimes it's modified by the user.
+The value PS3_SYSTEM_VER from param.sfo is used if PS3UPDAT.PUP doesn't exist.
+Otherwise, it will get the version from the PUP like it's done by 3key tools.
+
+IRD_files_sig is used when mgz check md5 of file,
+It won't download 2 ird with the same IRD_meta_sig+IRD_file_sig
+IRD_file_sig is the CRC of 
+-FileSector+FileMD5
+
+IRD_extra_sig is be used when mgz check an iso only.
+IRD_extra_sig is the CRC of
+-Header (decompressed)
+-Footer (decompressed)
+
+IRD_keys_sig is never used by mgz, it's just to be sure it have an unique file name per ird.
+IRD_keys_sig is the CRC of
+-Data1
+-Data2 (without the 4 last bytes)
+-PIC
+
+IRD files are named with the following pattern [IRD_META_SIG]_[IRD_FILES_SIG]_[IRD_EXTRA_SIG]_[IRD_KEYS_SIG].ird
+
+This unique file name allows me to manage the uploads/download in/from the server without any duplicates.
+*/
+
+u32 IRD_keys_sig(ird_t *ird)
+{
+	u32 crc = crc32(0L, Z_NULL, 0);
+	crc = crc32(crc,  (const unsigned char*) ird->Data1 , 0x10);
+	crc = crc32(crc,  (const unsigned char*) ird->Data2 , 0xC);
+	crc = crc32(crc,  (const unsigned char*) ird->PIC   , 0x73);
+	return crc;
+}
+
+u32 IRD_extra_sig(ird_t *ird)
+{
+	char TempDir[512];
+	char header_path[512];
+	char footer_path[512];
+	
+	sprintf(TempDir, "/dev_hdd0/game/%s/USRDIR/sys/temp", ManaGunZ_id);
+	mkdir(TempDir, 0777);
+	
+	sprintf(header_path, "%s/%s.header.bin", TempDir, ird->GameId);
+	Delete(header_path);
+	sprintf(footer_path, "%s/%s.footer.bin", TempDir, ird->GameId);
+	Delete(footer_path);
+	
+	u32 crc = crc32(0L, Z_NULL, 0);
+	
+	print_debug("Decompress header");
+	int ret = GZ_decompress7((char *) ird->Header, ird->HeaderLength, header_path);
+	if( ret != Z_OK) {
+		print_load("Error : IRD_extra_sig failed to extract (%d) : %s", ret, header_path);
+		goto error;
+	}
+	
+	print_debug("Decompress footer");
+	ret = GZ_decompress7((char *) ird->Footer, ird->FooterLength, footer_path);
+	if( ret != Z_OK) {
+		print_load("Error : IRD_extra_sig failed to extract (%d) : %s", ret, footer_path);
+		goto error;
+	}
+		
+	crc = crc_file2(header_path, crc);
+	if( crc == 0 ) {
+		print_load("Error : IRD_extra_sig failed to get crc of %s", ret, header_path);
+		goto error;
+	}
+	
+	crc = crc_file2(footer_path, crc);
+	if( crc == 0 ) {
+		print_load("Error : IRD_extra_sig failed to get crc of %s", ret, footer_path);
+		goto error;
+	}
+	
+error :
+	Delete(header_path);
+	Delete(footer_path);
+	
+	return crc;
+}
+
+u32 IRD_files_sig(ird_t *ird)
+{
+	u32 crc = crc32(0L, Z_NULL, 0);
+	int i;
+	for(i=0; i<ird->FileHashesNumber; i++) {
+		crc = crc32(crc,  (const unsigned char*) &ird->FileHashes[i].Sector , 0x8);
+		crc = crc32(crc,  (const unsigned char*) ird->FileHashes[i].FileHash , 0x10);
+	}
+	
+	return crc;
+}
+
+u32 IRD_meta_sig2(char *TITLE_ID, char *PS3_SYSTEM_VER, char *APP_VER, char *VERSION)
+{
+	u32 crc = crc32(0L, Z_NULL, 0);
+	
+	crc = crc32(crc,  (const unsigned char*) TITLE_ID                , 9);
+	crc = crc32(crc,  (const unsigned char*) PS3_SYSTEM_VER          , 4);
+	crc = crc32(crc,  (const unsigned char*) VERSION                 , 5);
+	crc = crc32(crc,  (const unsigned char*) APP_VER                 , 5);
+	
+	return crc;
+}
+
+u32 IRD_meta_sig3(ird_t *ird)
+{
+	return IRD_meta_sig2(ird->GameId, ird->UpdateVersion, ird->GameVersion, ird->AppVersion);
+}
+
+u32 IRD_meta_sig(char *source)
+{
+	u32 crc = crc32(0L, Z_NULL, 0);
+	
+	char *mem=NULL;
+	ird_t *ird=NULL;
+	
+	char *ext = get_ext(source);
+	
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcasecmp(ext, ".ird")) return 0;
+	
+	if( !strcasecmp(ext, ".ird") ) {
+		int ret = GZ_decompress8(source, &mem, 1024);
+		if(  ret != Z_OK) {
+			print_load("Error : GZ_decompress6 error %d", ret);
+			goto error;
+		}
+		
+		u8 GameName_length=0;
+		memcpy(&GameName_length, mem + 4 + 1 + 9, 1);
+		
+		crc = crc32(crc,  (const unsigned char*) mem + 4 + 1                          , 9);
+		crc = crc32(crc,  (const unsigned char*) mem + 4 + 1 + 9 + 1 + GameName_length, 4 + 5 + 5);
+	} else {
+		ird = IRD_new(source);
+		
+		crc = IRD_meta_sig3(ird);
+	}
+	
+error:
+	
+	FREE(ird);
+	FREE(mem);
+	
+	return crc;
+}
+
+char *IRD_sig2(ird_t *ird)
+{	
+	u32 meta_sig = IRD_meta_sig3(ird);
+	u32 files_sig = IRD_files_sig(ird);
+	u32 extra_sig = IRD_extra_sig(ird);
+	u32 keys_sig = IRD_keys_sig(ird);
+	
+	if( !meta_sig || !files_sig || !extra_sig || !keys_sig) {
+		print_load("Error : failed to get IRD signatures");
+		return NULL;
+	}
+	
+	return sprintf_malloc("%08X_%08X_%08X_%08X\0", meta_sig, files_sig, extra_sig, keys_sig);
+}
+
+char *IRD_sig(char *ird_path)
+{
+	print_debug("IRD_load");
+	ird_t *ird = IRD_load(ird_path);
+	if(ird==NULL) return NULL;
+	
+	print_debug("IRD_sig2");
+	char *sig = IRD_sig2(ird);
+	
+	print_load("IRD_sig %s", sig);
+	
+	print_debug("FREE_IRD");
+	FREE_IRD(ird);
+	
+	return sig;
+}
+
+u8 IRD_DB_upload(char *IRD_PATH, char *IRD_SIG)
+{
+	char URL[128]={0};
+	sprintf(URL, IRD_SCRIPT "?ird=%s", IRD_SIG);
+	
+	print_head("Uploading...");
+	return upload(URL, IRD_PATH);
+}
+
+u8 IRD_DB_exist(char *IRD_SIG)
+{
+	// sanity
+	int l = strlen(IRD_SIG);
+	if( l != 35 ) {
+		print_load("Error : strlen(IRD_SIG) = %d != 35", l);
+		return YES;
+	}
+	if(IRD_SIG[8]!='_' || IRD_SIG[17]!='_' || IRD_SIG[26]!='_') {
+		print_load("Error : error sanity");
+		return YES;
+	}
+	
+	char URL[128]={0};
+	sprintf(URL, IRD_SERVER "/%s.ird", IRD_SIG);
+	
+	print_debug("http_exist");
+	
+	int httpCode = http_response(URL);
+	
+	if(httpCode == HTTP_STATUS_CODE_OK) { // 200
+		return YES;
+	}
+		
+	if(httpCode == HTTP_STATUS_CODE_Not_Found) { // 404
+		return NO;
+	}
+	
+	return NET_ERROR;	
+}
+
+u8 IRD_upload(char *IRD_PATH)
+{
+	u8 ret=FAILED;
+	char *IRD_NAME = NULL;
+	
+	IRD_NAME = IRD_sig(IRD_PATH);
+	if(IRD_NAME==NULL) {
+		print_load("Error : IRD_upload, failed to get IRD_sig");
+		goto error;
+	}
+	
+	print_debug("IRD_DB_exist");
+	ret = IRD_DB_exist(IRD_NAME); 
+	if( ret == NET_ERROR) {
+		goto error;
+	} else
+	if( ret == YES ) {
+		print_load("The ird already exists in DB");
+		goto error;
+	}
+	
+	ret = IRD_DB_upload(IRD_PATH, IRD_NAME);
+	if( ret == FAILED ) {
+		print_load("Error : failed to upload IRD");
+		goto error;
+	}
+	
+error:
+	
+	FREE(IRD_NAME);
+	
+	return ret;
+}
+
+u8 dump_dec_bdvd(char *outdir)
+{
+	print_head("Initialization...");
+	u8 ret=FAILED;
+	u8 *iv=NULL;
+	FILE *f=NULL;
+	int source=0;
+	u32 read;
+	u8 *buff=NULL;
+	ird_t *ird=NULL;
+	char ISO_PATH[512];
+	char IRD_PATH[512];
+	char *IRD_NAME = NULL;
+	char *DATE=NULL;	
+	aes_context aes_d1;
+	u8 *sec0sec1=NULL;
+	u32 i;
 	
 	unsigned char key_d1[] = {0x38, 11, 0xcf, 11, 0x53, 0x45, 0x5b, 60, 120, 0x17, 0xab, 0x4f, 0xa3, 0xba, 0x90, 0xed};
 	unsigned char iv_d1[] = {0x69, 0x47, 0x47, 0x72, 0xaf, 0x6f, 0xda, 0xb3, 0x42, 0x74, 0x3a, 0xef, 170, 0x18, 0x62, 0x87};
 	
-	aes_context aes_d1;
+	print_debug("IRD_new");
+	ird = IRD_new("/dev_bdvd");
+	if(ird==NULL) {
+		print_load("Error : failed to IRD_new");
+		goto error;
+	}
+		
+	print_debug("Get decryption keys");
+	if( get_keys(ird->Data1, ird->Data2, ird->PIC)==FAILED) {
+		print_load("Error : failed to get_keys");
+		goto error;
+	}
+	
+	print_debug("aes_setkey_enc");
     if( aes_setkey_enc(&aes_d1, key_d1, 128 )!=0 ){
 		print_load(" Error : aes_setkey_enc aes_d1 ");
-		return FAILED;
+		goto error;
 	}
-    if(aes_crypt_cbc(&aes_d1, AES_ENCRYPT, 16, iv_d1, key, key)!=0){
-		print_load(" Error : aes_crypt_cbc aes_d1 ");
-		return FAILED;
-	}
-	print_load("Decryption key :");
-	hex_print_load((char *) key, 16);
 	
-	int source;
-	print_load("sys_storage_open BDVD_DRIVE");
+	print_debug("aes_crypt_cbc");
+    if( aes_crypt_cbc(&aes_d1, AES_ENCRYPT, 16, iv_d1, ird->Data1, ird->Data1)!=0){
+		print_load(" Error : aes_crypt_cbc aes_d1 ");
+		goto error;
+	}
+	
+	print_debug("Decryption key (d1) :");
+	hex_print_load((char *) ird->Data1, 16);
+
+	print_debug("sys_storage_open BDVD_DRIVE");
 	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
 		print_load("Error : sys_storage_open");
-		return FAILED;
+		goto error;
 	}
 
-	print_load("sys_storage_open BDVD_DRIVE");
-	u8 *buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	print_load("malloc BDVD_BUFFSIZE");
+	buff = (u8 *) malloc(BDVD_BUFFSIZE);
 	if(buff==NULL) {
 		print_load("Error : malloc BDVD_BUFFSIZE");
-		sys_storage_close(source);
-		return FAILED;
+		goto error;
 	}
 	
-	print_load("fopen %s", output);
-	FILE *f = fopen(output, "wb");
+	print_load("Get current date");
+	DATE = get_date();
+	if( DATE == NULL) {
+		print_load("Error : dump_bdvd, failed to get_date");
+		goto error;
+	}
+	sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
+	sprintf(IRD_PATH, "%s/%s_%s.ird%c", outdir, ird->GameId, DATE, '\0');
+	
+	print_load("fopen %s", ISO_PATH);
+	f = fopen(ISO_PATH, "wb");
 	if(f==NULL) {
-		free(buff);
-		sys_storage_close(source);
 		print_load("Error : fopen");
-		return FAILED;
+		goto error;
 	}
 	
 	print_load("init aes");
 	aes_context aes;
-	if( aes_setkey_dec(&aes, key, 128 )!=0 ) {
+	if( aes_setkey_dec(&aes, ird->Data1, 128 )!=0 ) {
 		print_load(" Error : aes_setkey_dec ");
-		return FAILED;
+		goto error;
 	}
 	
 	print_load("malloc iv");
-	u8 *iv = (u8 *) malloc(0x10);
+	iv = (u8 *) malloc(0x10);
 	if( iv == NULL ) {
 		print_load(" Error : malloc iv ");
-		return FAILED;
-	}	
-	
-	print_load("malloc sec0sec1");
-	u8 *sec0sec1 = (u8 *) malloc( 0x800 * 2 );
-	if( sec0sec1 == NULL ) {
-		print_load(" Error : malloc sec0sec1 ");
-		return FAILED;
+		goto error;
 	}
 	
+	print_load("malloc sec0sec1");
+	sec0sec1 = (u8 *) malloc( 0x800 * 2 );
+	if( sec0sec1 == NULL ) {
+		print_load(" Error : malloc sec0sec1 ");
+		goto error;
+	}
 	
-	u32 read;
 	print_load("sys_storage_read sec0sec1");
 	sys_storage_read(source, 0, 2, sec0sec1, &read, 0);
-		
+	
 	u32 regions=(u8_to_u32(sec0sec1)*2)-1;
 	u32 total_sectors=1+u8_to_u32(sec0sec1+12+((regions-1)*4));
 	
-	print_load("gethering data");	
+	print_load("gathering data");	
 	strcpy( copy_src, "/dev_bdvd");
-	strcpy( copy_dst, output);
+	strcpy( copy_dst, ISO_PATH);
 	gathering_nb_file = -1;
 	gathering_nb_directory = -1;
 	gathering_total_size = total_sectors * 0x800;
-	
 	
 	u64 current_sector=0;
 	u64 sector_nb;
@@ -11776,32 +12264,53 @@ u8 dump_dec_bdvd(char *output)
 	print_load("total_sectors :  0x%X\n", total_sectors);
 	print_load("gathering_total_size :  0x%X\n", gathering_total_size);
 	
-	u32 i=0;
+	ird->RegionHashesNumber=regions;
+	ird->RegionHashes = (u8 **) malloc(ird->RegionHashesNumber * sizeof(u8*));
+	if(ird->RegionHashes == NULL)  {
+		print_load("Error : dump_dec Failed to malloc region hashes");
+		goto error;
+	}
+	
+	for(i=0; i<ird->RegionHashesNumber; i++) {
+		ird->RegionHashes[i] = (u8 *) malloc( 0x10 * sizeof(u8));
+		if(ird->RegionHashes[i] == NULL)  {
+			print_load("Error : dump_dec Failed to malloc regionhashes[%d]", i);
+			goto error;
+		}
+	}
+	
+	print_head("Dumping...");
+	i=0;
 	while(i<regions)
 	{	
 		u32 region_last_sector=u8_to_u32(sec0sec1+12+(i*4)) + 1;
 		
-		print_load("Region #%02d\n", i);
+		print_load("Region #%02d", i);
 		
 		if( plain == YES ) {
-			print_load("Copying offset 0x%llX to 0x%llX\n", 
+			print_load("Copying offset 0x%llX to 0x%llX", 
 						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
 		} else {
 			region_last_sector -= 1;
-			print_load("Decripting offset 0x%llX to 0x%llX\n", 
+			print_load("Decrypting offset 0x%llX to 0x%llX\n", 
 						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
 		}
-		 
+		
+		md5_context ctx;
+		
+		md5_starts( &ctx );
+		memset( &ctx, 0, sizeof( md5_context ) );
+		
 		while( current_sector < region_last_sector ) {
 		
 			memset(buff, 0, BDVD_BUFFSIZE);
-				
+			
 			if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
 			else sector_nb = BDVD_BUFF_SEC_NB;
 			
 			sys_storage_read(source, current_sector, sector_nb, buff, &read, 0);
 			
-			if(copy_cancel) break;
+			if(copy_cancel) goto error;
 			
 			if( plain == NO ) {
 				u32 k;
@@ -11809,40 +12318,113 @@ u8 dump_dec_bdvd(char *output)
 					reset_iv(iv, current_sector+k);
 					if(aes_crypt_cbc(&aes, AES_DECRYPT, 0x800, iv, buff+0x800*k , buff+0x800*k )!=0) {
 						printf("Error : aes_crypt_cbc ");
-						fclose(f);
-						sys_storage_close(source);
-						free(buff);
-						free(iv);
-						free(sec0sec1);
-						return FAILED;
+						goto error;
 					}
 				}
 			}
 			
-			if(copy_cancel) break;
-						
+			if(copy_cancel) goto error;
+			
+			md5_update(&ctx, buff, 0x800*sector_nb);
+			
 			fwrite(buff, sector_nb, 0x800, f);
 			
 			current_sector += sector_nb;
 			
 			copy_current_size += sector_nb*0x800;
 		
-			if(copy_cancel) break;
+			if(copy_cancel) goto error;
 		}
+		
+		md5_finish(&ctx, ird->RegionHashes[i]);
 		
 		plain = !plain;
 		++i;
 	}
+	FCLOSE(f);
 	
-	fclose(f);
-	sys_storage_close(source);
-	free(buff);
-	free(iv);
-	free(sec0sec1);
+	print_head("Building IRD...");
+	u64 footer_offset;
+	u64 header_lenght;
 	
-	if( copy_cancel) return FAILED;
+	strcpy( copy_src, ISO_PATH);
+	strcpy( copy_dst, IRD_PATH);
+	print_load("Gathering data...");
+	if( IRD_FilesInfo(ISO_PATH, &gathering_nb_file, &gathering_total_size) == FAILED) {
+		print_load("Error : failed to IRD_FilesInfo");
+		goto error;
+	}
 	
-	return SUCCESS;
+	print_load("Calculating files' MD5...");
+	if( IRD_FilesHashes(ISO_PATH, ird, &header_lenght, &footer_offset) == FAILED) {
+		print_load("Error : failed to get filehashes");
+		goto error;
+	}
+	
+	u64 footer_lenght = total_sectors * 0x800 - footer_offset;
+	gathering_nb_file = -1;
+	
+	f = fopen(ISO_PATH, "rb");
+	if(f==NULL) {
+		print_load("Error : failed to fopen ISO to load footer and header");
+		goto error;
+	}
+	
+	print_load("Compressing header...");
+	GZ_compress2(f, (int) header_lenght, (char **) &ird->Header, (int *) &ird->HeaderLength);
+	
+	print_load("Compressing footer...");
+	fseek(f, footer_offset, SEEK_SET);
+	gathering_total_size = footer_lenght;
+	GZ_compress2(f, (int) footer_lenght, (char **) &ird->Footer, (int *) &ird->FooterLength);
+	
+	FCLOSE(f);
+	
+	print_load("GameName_length %d", ird->GameName_length);
+	print_load("GameName %s", ird->GameName);
+	
+	gathering_total_size = SIZEOF_IRD(ird);
+	print_load("Saving IRD");
+	if(IRD_save(IRD_PATH, ird)==FAILED) {
+		print_load("Error : failed to save IRD");
+		goto error;
+	}
+	
+	print_head("Uploading IRD");
+	
+	IRD_NAME = IRD_sig2(ird);
+	if(IRD_NAME == NULL) {
+		print_load("Error : failed  to get IRD_sig");
+		goto error;
+	}
+	
+	if( IRD_DB_exist(IRD_NAME) ) {
+		print_load("This ird already exist in DB");
+		goto end;
+	}
+	
+	if( IRD_DB_upload(IRD_PATH, IRD_NAME) == FAILED ) {
+		print_load("Error : failed to upload IRD");
+		goto error;
+	}
+
+	
+end:
+	ret=SUCCESS;
+error:
+	
+	if( copy_cancel ) ret=FAILED;
+	
+	if(!source) sys_storage_close(source);
+	FCLOSE(f);
+	FREE(DATE);
+	FREE(IRD_NAME);
+	FREE_IRD(ird);
+	FREE(buff);
+	FREE(iv);
+	FREE(sec0sec1);
+	
+	return ret;
 }
 
 //*******************************************************
@@ -12372,6 +12954,62 @@ u8 md5_file(char *path, unsigned char output[16])
     return SUCCESS;
 }
 
+u32 crc_file2(char *path, u32 current_crc)
+{
+	FILE *f;
+    u32 crc=current_crc;
+    u64 file_size;
+	u64 read=0;
+	u64 n;
+	
+	u8 *buf = (u8 *) malloc(MD5_BUFFER_SIZE);
+	if(buf == NULL) {
+		return 0;
+	}
+	
+	f = fopen( path, "rb");
+    if( f == NULL ) {
+		FREE(buf);
+		return 0;
+	}
+	
+	fseek (f , 0 , SEEK_END);
+	file_size = (u64) ftell (f);
+	fseek(f, 0, SEEK_SET);
+	
+	task_Init(file_size);
+	
+	while(read < file_size) {
+		if( read + MD5_BUFFER_SIZE > file_size) n = file_size-read;
+		else n = MD5_BUFFER_SIZE;
+		
+		fread(buf, sizeof(u8), n, f);
+		read += n;
+		
+		task_Update(n);
+		
+		crc = crc32(crc, (const unsigned char*) buf, n);
+		
+		if(cancel) {
+			crc = 0;
+			break;
+		}
+	}
+	FREE(buf);
+    FCLOSE(f);
+	
+	task_End();
+	
+    return crc;
+}
+
+u32 crc_file(char *path)
+{
+	u32 crc = crc32(0L, Z_NULL, 0);
+	crc = crc_file2(path, crc);
+    return crc;
+}
+
 //*******************************************************
 // Game OPTION
 //*******************************************************
@@ -12464,7 +13102,7 @@ u64 get_size(char *path)
 	struct stat s;
 	
 	if(stat(path, &s) != 0) {
-		print_load("Error : %s", path);
+		print_load("Error : %s doesn't exist", path);
 		return 0;
 	} else 
 	if(!S_ISDIR(s.st_mode)) { //FILE
@@ -12627,17 +13265,17 @@ char *get_unit(u64 nb)
 	
 	if(nb >= 1073741824) {
 		size = (float) nb / 1073741824;
-		sprintf(unit, " G%c", STR_UNIT[0]);
+		sprintf(unit, " Gi%c", STR_UNIT[0]);
 	}
 	else
 	if(nb >= 1048576) {
 		size = (float) nb / 1048576;
-		sprintf(unit, " M%c", STR_UNIT[0]);
+		sprintf(unit, " Mi%c", STR_UNIT[0]);
 	}
 	else
 	if(nb >= 1024) {
 		size = (float) nb / 1024;
-		sprintf(unit, " K%c", STR_UNIT[0]);
+		sprintf(unit, " Ki%c", STR_UNIT[0]);
 	} 
 	else {
 		size = (float) nb;
@@ -12713,7 +13351,7 @@ void Draw_Copy_screen(void *unused)
 		
 		FontColor(COLOR_4);
 		
-		DrawString(x , y, STR_COPYING);
+		DrawString(x , y, head_title);
 		
 		FontColor(COLOR_1);
 		
@@ -12774,11 +13412,10 @@ void Draw_Copy_screen(void *unused)
 		y+=new_line(1);
 			
 		if( gathering_total_size != 0 && gathering_cancel == NO) {
-		
 			DrawFormatString(x, y, remaining_STR);
 			y+=new_line(1);
 		}
-				
+		
 		char *size_current = get_unit(copy_current_size);
 		if(size_current) DrawString(x, y, size_current);
 		FREE(size_current);
@@ -12882,6 +13519,7 @@ void Draw_Copy_screen(void *unused)
 
 void start_copy_loading()
 {
+	print_head(STR_COPYING);
 	if( copy_flag==NO) {
 		copy_flag=YES;
 		sysThreadCreate(&Copy_id, Draw_Copy_screen, NULL, 999, 0x2000, THREAD_JOINABLE, "copying");	
@@ -13485,9 +14123,32 @@ u8 CopyFile_stdio(char* src, char* dst)
 	char *mem = NULL;
 	u64 pos = 0ULL;
 	u64 read = 0, writed = 0;
+	u8 join=NO;
+	u8 split=NO;
+	u8 cur_file=0;
+	char temp[1024];
+	char source[1024];
+	char destination[1024];
+	
 
-	FILE* f;
-	FILE* f2;
+	FILE* f1=NULL;
+	FILE* f2=NULL;
+	
+	u64 SPLITSIZE = 0xFFFFFFFFULL;
+	
+	// create a duplicate instead of erase
+	strcpy(source, src);
+	strcpy(destination, dst);
+	if(strcmp(src, dst)==0) {
+		RemoveExtension(destination);
+		char *temp_str = strcpy_malloc(destination);
+		int o;
+		for(o=0; o<1000; o++) {
+			sprintf(destination, "%s_%03d%s", temp_str, o, GetExtension(dst));
+			if(path_info(destination) == _NOT_EXIST) break;
+		}
+		free(temp_str);
+	}
 	
 	copy_file_prog_bar=0;
 	
@@ -13496,23 +14157,52 @@ u8 CopyFile_stdio(char* src, char* dst)
 	if(S_ISDIR(s.st_mode)) return FAILED;
 	lenght = s.st_size;
 	
-	f = fopen(src, "rb");
-	if(f==NULL) {ret = FAILED; goto skip;}
+	if(lenght>SPLITSIZE) split = is_FAT32(dst);
 	
-	f2 = fopen(dst, "wb");
-	if(f2==NULL) {ret = FAILED; goto skip;}
-	
-	SetFilePerms(dst);
+	if(is_66600(src)==YES && is_66600(dst)==NO) join = YES;
 	
 	mem = malloc(BUFFSIZE);
+	if(mem == NULL) return FAILED;
+
+next_file:
+	
+	if(split) sprintf(destination, "%s.666%02d", dst, cur_file);
+	
+	if(join) {
+		strcpy(temp, src);
+		temp[strlen(temp)-2]=0;
+		sprintf(source, "%s%02d", temp, cur_file);	
+		
+		if(0<cur_file) {
+			if(stat(source, &s) != 0) {
+				join=NO; 
+				goto skip;
+			}
+			lenght = s.st_size;
+			pos=0;
+		}
+	}
+	
+	if(f1==NULL) f1 = fopen(source, "rb");
+	if(f1==NULL) goto skip;
+	
+	if(f2==NULL) f2 = fopen(destination, "wb");
+	if(f2==NULL) goto skip;
 	
 	while(pos < lenght) {
 		
+		if(split && pos == SPLITSIZE*(cur_file+1) ) break;
+		
 		if(copy_cancel==YES) {ret = FAILED; goto skip;}
 		
-		read = lenght - pos; if(read > BUFFSIZE) read = BUFFSIZE;
+		read = lenght - pos; 
+		if(split) {
+			if(lenght > SPLITSIZE*(cur_file+1))
+				read = SPLITSIZE*(cur_file+1) - pos;
+		}
+		if(read > BUFFSIZE) read = BUFFSIZE;
 		
-		writed = fread(mem, 1, read, f);
+		writed = fread(mem, 1, read, f1);
 		if(writed<0) {ret = FAILED; goto skip;}
 		
 		if(copy_cancel==YES) {ret = FAILED; goto skip;}
@@ -13520,8 +14210,7 @@ u8 CopyFile_stdio(char* src, char* dst)
 		if(read != writed) {ret = FAILED; goto skip;}
 		
 		writed = fwrite(mem, 1, read, f2);
-		if(writed<0) {ret = FAILED; goto skip;}
-		
+
 		if(read != writed) {ret = FAILED; goto skip;}
 		
 		pos += read;
@@ -13529,16 +14218,30 @@ u8 CopyFile_stdio(char* src, char* dst)
 		copy_file_prog_bar=pos*100/lenght;
 		
 		copy_current_size+=read;
-	
 	}
 	
+	if(join) {
+		FCLOSE(f1);
+		cur_file++; 
+		goto next_file; 
+	}
+	if(split) {
+		if(pos==lenght) goto skip;
+		FCLOSE(f2);
+		SetFilePerms(destination);
+		cur_file++; 
+		goto next_file; 
+	}
+
 skip:
 	
 	copy_file_prog_bar=0;
 	
-	if(mem) free(mem);
-	if(f) fclose(f);
-	if(f2) fclose(f2);
+	FREE(mem);
+	FCLOSE(f1);
+	FCLOSE(f2);
+	
+	SetFilePerms(destination);
 	
 	return ret;
 }
@@ -13894,15 +14597,18 @@ void add_GAMELIST(char *path)
 	list_game_platform[game_number] = plat;
 	
 	char title[512];
+	memset(title, 0, 512);
 	strcpy(title, &strrchr(path, '/')[1]);
 	RemoveExtension(title);
 	
 	if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP) {
-		GetParamSFO("TITLE", title, game_number, NULL);
+		if( GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
+			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);	
+		}
 	}
 	list_game_title[game_number] = strcpy_malloc(title);
 	
-	char ID[20];
+	char ID[20]={0};
 	if( Get_ID(list_game_path[game_number], list_game_platform[game_number], ID) == SUCCESS) {
 		list_game_ID[game_number] = strcpy_malloc(ID);
 	} else {
@@ -14019,6 +14725,9 @@ void Load_GAMELIST()
 	free_GAMELIST();
 	game_number=-1;
 	
+	if( path_info("/dev_bdvd") != _NOT_EXIST ) add_GAMELIST("/dev_bdvd");
+	//if( path_info("/dev_ps2dvd") != _NOT_EXIST ) add_GAMELIST("/dev_ps2dvd");
+	
 	int i, j;
 	char scan_path[128];
 	//get game list
@@ -14051,7 +14760,6 @@ void Copy_Game(char *src, char *dst)
 	
 	
 	start_copy_loading();
-	
 	u8 ret = FAILED;
 	u8 split666 = is_66600(copy_src);		  
 	
@@ -14131,9 +14839,9 @@ void Draw_GameProperties()
 	char *tot_size = get_unit(gathering_total_size);
 	char sys_vers[64];
 	memset(sys_vers, 0, 64);
-	if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
+	if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3 || list_game_platform[position] == BDVD) {
 		char tmp[10];
-		if(GetParamSFO("PS3_SYSTEM_VER", tmp, position, NULL)==SUCCESS) {
+		if(GetParamSFO("PS3_SYSTEM_VER", tmp, list_game_path[position])==SUCCESS) {
 			float f;
 			sscanf(tmp, "%f", &f);
 			sprintf(sys_vers, "%.2f", f);
@@ -14181,7 +14889,7 @@ void Draw_GameProperties()
 		FontColor(COLOR_3);
 		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_PLATFORM);
 		FontColor(COLOR_1);
-		if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
+		if(list_game_platform[position] == BDVD || list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 			DrawString(xt+10 , y,  "PlayStation 3");
 		} else
 		if(list_game_platform[position] == JB_PS2 || list_game_platform[position] == ISO_PS2) {
@@ -14230,7 +14938,7 @@ void Draw_GameProperties()
 		}
 		
 		
-		if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
+		if(list_game_platform[position] == BDVD || list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 			FontColor(COLOR_3);
 			xt=DrawFormatString(x1 , y, "%s :", STR_SYSVERS);
 			FontColor(COLOR_1);
@@ -14672,7 +15380,6 @@ u8 SetFilePerms(char *path)
 	if(sysLv2FsChmod(path, FS_S_IFMT | 0777)==0 && sys_fs_chown(path, NO_UID, NO_GID)==0) return SUCCESS;
 	
 	return FAILED;
-	
 }
 
 u8 SetDirPerms(char *path)
@@ -14717,14 +15424,14 @@ u8 SetPerms(char* path)
 		}
 		
 		if (dir->d_type & DT_DIR) {
-			print_load("Dir = %s", dir->d_name);
+			print_load("Fix permissions dir = %s", dir->d_name);
 			if(SetPerms(newpath) == FAILED) {
 				closedir(d);
 				return FAILED;
 			}
 		}
 		else {
-			print_load("File = %s", dir->d_name);
+			print_load("Fix permissions file = %s", dir->d_name);
 			SetFilePerms(newpath);
 		}
 	}
@@ -14751,17 +15458,20 @@ uint16_t convert16(char * bytes) {
 	return (uint16_t) bytes[0]<<8 | (uint16_t) bytes[1];
 }
 
-FILE* openSFO(char *path, u32 *start_offset, u32 *size)
+FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 {
 	FILE* sfo=NULL;
-	
 	
 	char *ext = get_ext(path);
 	
 	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _ISO_PSP) && strcmp(ext, _JB_PS3) && strcmp(ext, _JB_PSP) && strcasecmp(ext, ".sfo")) return NULL;
 	
 	if(!strcasecmp(ext, ".sfo")) {
-		sfo = fopen(path, "rb+");
+		sfo = fopen(path, mode);
+		if(sfo==NULL) {
+			SetPerms(path);
+			sfo = fopen(path, mode);
+		}
 		if(sfo==NULL) return NULL;
 		
 		fseek(sfo , 0 , SEEK_END);
@@ -14773,8 +15483,12 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		return sfo;
 	} else 
 	if(!strcmp(ext, _ISO_PS3)) {
-		sfo = fopen(path, "rb+");
-		if(sfo==NULL) return NULL;
+		sfo = fopen(path, mode);
+		if(sfo==NULL) {
+			SetPerms(path);
+			sfo = fopen(path, mode);
+			if(sfo == NULL) return NULL;
+		}
 		u64 file_offset=0;
 		u8 ret=0;
 		int file_size=0;
@@ -14789,8 +15503,12 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		return sfo;
 	} else
 	if(!strcmp(ext, _ISO_PSP)) {
-		sfo = fopen(path, "rb+");
-		if(sfo==NULL) return NULL;
+		sfo = fopen(path, mode);
+		if(sfo==NULL) {
+			SetPerms(path);
+			sfo = fopen(path, mode);
+			if(sfo == NULL) return NULL;
+		}
 		u64 file_offset=0;
 		u8 ret=0;
 		int file_size=0;
@@ -14811,8 +15529,12 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		if(path_info(SFO_path) == _NOT_EXIST) sprintf(SFO_path, "%s/PS3_GAME/PARAM.SFO", path);
 		if(path_info(SFO_path) == _NOT_EXIST) return NULL;
 		
-		sfo = fopen(SFO_path, "rb+");
-		if(sfo==NULL) return NULL;
+		sfo = fopen(SFO_path, mode);
+		if(sfo==NULL) {
+			SetPerms(SFO_path);
+			sfo = fopen(SFO_path, mode);
+		}
+		if(sfo == NULL) return NULL;		
 		
 		fseek(sfo , 0 , SEEK_END);
 		*size = ftell (sfo);
@@ -14826,8 +15548,12 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 		char SFO_path[255];
 		
 		sprintf(SFO_path, "%s/PSP_GAME/PARAM.SFO", path);
-				
-		sfo = fopen(SFO_path, "rb+");
+		
+		sfo = fopen(SFO_path, mode);
+		if(sfo==NULL) {
+			SetPerms(SFO_path);
+			sfo = fopen(SFO_path, mode);
+		}
 		if(sfo==NULL) return NULL;
 		
 		fseek(sfo , 0 , SEEK_END);
@@ -14842,7 +15568,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size)
 	return NULL;
 }
 
-u8 SetParamSFO(const char *name, char *value, int pos, char *path)
+u8 SetParamSFO(const char *name, char *value, char *path)
 {	
 	uint32_t key_start;
 	uint32_t data_start;
@@ -14858,14 +15584,10 @@ u8 SetParamSFO(const char *name, char *value, int pos, char *path)
 	u32 sfo_start=0;
 	u32 sfo_size=0;
 	
-	if(path == NULL) {
-		sfo = openSFO(list_game_path[pos], &sfo_start, &sfo_size);
-		if(sfo==NULL) return FAILED;
-	}
-	else {
-		sfo = openSFO(path, &sfo_start, &sfo_size);
-		if(sfo==NULL) return FAILED;
-	}
+	if(path==NULL) return FAILED;
+	
+	sfo = openSFO(path, &sfo_start, &sfo_size, "rb+");
+	if(sfo==NULL) return FAILED;
 	
 	fseek(sfo, 0x8 + sfo_start, SEEK_SET); 
 	fread(&key_start, sizeof(uint32_t), 1, sfo);
@@ -14938,85 +15660,34 @@ out:
 	return SUCCESS;
 }
 
-u8 GetParamSFO(const char *name, char *value, int pos, char *path)
-{	
-	FILE* sfo=NULL;
-	u32 sfo_start=0;
-	u32 sfo_size=0;
-
-	if(path == NULL) {
-		sfo = openSFO(list_game_path[pos], &sfo_start, &sfo_size);
-		if(sfo==NULL) return FAILED;
-	}
-	else {
-		sfo = openSFO(path, &sfo_start, &sfo_size);
-		if(sfo==NULL) return FAILED;
-	}
-	
-	uint32_t key_start;
-	uint32_t data_start;
-	uint32_t key_name = 0;
-	uint32_t data_name = 0;
-	uint32_t temp32 = 0;
-	uint16_t temp16 = 0;
-	int i, c;
-	
-	fseek(sfo, 0x8 + sfo_start, SEEK_SET);
-	fread(&key_start, sizeof(uint32_t), 1, sfo);
-	fread(&data_start, sizeof(uint32_t), 1, sfo);
-	key_start=reverse32(key_start);
-	data_start=reverse32(data_start);
-	fseek(sfo, key_start + sfo_start, SEEK_SET);
-	
-	do {
-		c=fgetc(sfo);
-		for(i=0; i <=strlen(name)-1 ; i++) {
-			if(c == name[i]) {
-				if (i==strlen(name)-1) {
-					key_name = ftell(sfo) - strlen(name) - sfo_start;
-					goto out1;
-				}
-				c=fgetc(sfo);
-			} else break;
-		}
-	} while (ftell(sfo) - sfo_start < sfo_size);
-	{fclose(sfo); return FAILED;}
-	out1:
-	if(key_name==0) {fclose(sfo); return FAILED;}
-	key_name -= key_start;
-	fseek(sfo, 0x14 + sfo_start, SEEK_SET);
-	
-	while(temp16 < key_name) {
-		fread(&temp16, sizeof(uint16_t), 1, sfo);
-		temp16=reverse16(temp16);
-		if(key_name == temp16) break;
-		fseek(sfo, 0xE, SEEK_CUR);
-	}
-	
-	if(temp16 > key_name)  {fclose(sfo);return FAILED;}
-	fseek(sfo, 0xA, SEEK_CUR);
-	fread(&temp32, sizeof(uint32_t), 1, sfo);
-	temp32 = reverse32(temp32);
-	data_name = data_start + temp32;
-	fseek(sfo, data_name + sfo_start, SEEK_SET);
-	fgets(value, 128, sfo);
-	if(strstr(value, "\n") != NULL ) strtok(value, "\n");
-	if(strstr(value, "\r") != NULL ) strtok(value, "\r");
-	fclose(sfo);
-	
-	return SUCCESS;
-}
-
-FILE* openEBOOT(int pos, u32 *start_offset) 
+FILE* openEBOOT(char *path, u32 *start_offset, char *mode) 
 {
 	FILE* eboot=NULL;
 	
-	u8 type = list_game_platform[pos];
-	if(type != ISO_PS3 && type != JB_PS3)	return FAILED;
+	char *ext = get_ext(path);
 	
-	if(type == ISO_PS3) {
-		eboot = fopen(list_game_path[pos], "rb+");
-		if(eboot==NULL) return NULL;
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _EBOOT_BIN)) return NULL;
+	
+	if(!strcmp(ext, _EBOOT_BIN)) {
+		eboot = fopen(path, mode);
+		if(eboot==NULL) {
+			SetPerms(path);
+			eboot = fopen(path, mode);
+			if(eboot==NULL) return NULL;
+		}
+		*start_offset=0;
+		
+		return eboot;
+	
+	} else 
+	if(!strcmp(ext, _ISO_PS3))
+	{
+		eboot = fopen(path, mode);
+		if(eboot==NULL) {
+			SetPerms(path);
+			eboot = fopen(path, mode);
+			if(eboot==NULL) return NULL;
+		}
 		u64 file_offset=0;
 		u8 ret=0;
 		int file_size=0;
@@ -15028,13 +15699,16 @@ FILE* openEBOOT(int pos, u32 *start_offset)
 
 		return eboot;
 	} else
-	if(type == JB_PS3) {
+	if(!strcmp(ext, _JB_PS3)) {
 		char EBOOT_path[255];
-		sprintf(EBOOT_path, "%s/PS3_GAME/USRDIR/EBOOT.BIN", list_game_path[pos]);
+		sprintf(EBOOT_path, "%s/PS3_GAME/USRDIR/EBOOT.BIN", path);
 		
-		eboot = fopen(EBOOT_path, "rb+");
-		if(eboot==NULL) return NULL;
-		
+		eboot = fopen(EBOOT_path, mode);
+		if(eboot==NULL) {
+			SetPerms(EBOOT_path);
+			eboot = fopen(EBOOT_path, mode);
+			if(eboot==NULL) return NULL;
+		}
 		*start_offset=0;
 		
 		return eboot;
@@ -15043,14 +15717,14 @@ FILE* openEBOOT(int pos, u32 *start_offset)
 	return NULL;
 }
 
-u8 patch_EBOOT(int position)
+u8 patch_EBOOT(char *path)
 {
 	FILE* eboot=NULL;
 	u32 fw_in_eboot;
 	u32 start_offset=0;
 	//u32 cur_fw = (u32) (c_firmware*10000);
 	
-	eboot = openEBOOT(position, &start_offset);
+	eboot = openEBOOT(path, &start_offset, "rb+");
 	if(eboot==NULL) return FAILED;
 	
 	fseek(eboot, 0x40C+start_offset, SEEK_SET);
@@ -15070,7 +15744,7 @@ u8 patch_EBOOT(int position)
 	
 	fclose(eboot);
 	
-	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", position, NULL) == FAILED) return FAILED;
+	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", list_game_path[position]) == FAILED) return FAILED;
 	
 	return SUCCESS;
 }
@@ -15103,7 +15777,8 @@ static char github_cert[] __attribute__((aligned(64))) =
 	"+OkuE6N36B9K\n"
 	"-----END CERTIFICATE-----\n";
 	
-static char getBuffer[1024];
+#define HTTP_BUFFSIZE 1024
+static char getBuffer[HTTP_BUFFSIZE];
 
 int download(char *url, char *dst)
 {
@@ -15264,7 +15939,7 @@ int download(char *url, char *dst)
 
 	ret = httpUtilParseUri(&uri, url, uri_pool, size, 0);
 	if (ret < 0) {
-		print_load("Error : httpUtilParseUri() failed (%x)", ret);
+		print_load("Error : httpUtilParseUri() failed (%x), %s", ret, url);
 		ret=FAILED;
 		goto end;
 	}
@@ -15285,7 +15960,7 @@ int download(char *url, char *dst)
 	*/
 	ret = httpSendRequest(httpTrans, NULL, 0, NULL);
 	if (ret < 0) {
-		print_load("Error : httpSendRequest() failed (%x)", ret);
+		print_load("Error : httpSendRequest() failed (%x), %s", ret, url);
 		ret=FAILED;
 		goto end;
 	}
@@ -15342,6 +16017,451 @@ int download(char *url, char *dst)
 	
 	if(cancel==YES) {
 		Delete(dst);
+		ret=FAILED;
+		cancel=NO;
+	}
+	
+end:
+	if(caList) free(caList);
+	if(httpTrans) httpDestroyTransaction(httpTrans);
+	if(httpClient) httpDestroyClient(httpClient);
+	if(https_init) httpsEnd();
+	if(ssl_init) sslEnd();
+	if(http_init) httpEnd();
+	if(net_init) netDeinitialize();
+	
+	if(module_http_loaded) sysModuleUnload(SYSMODULE_HTTP);
+	if(module_https_loaded) sysModuleUnload(SYSMODULE_HTTPS);
+	if(module_net_loaded) sysModuleUnload(SYSMODULE_NET);
+	if(module_ssl_loaded) sysModuleUnload(SYSMODULE_SSL);
+	
+	if(uri_pool) free(uri_pool);
+	if(http_pool) free(http_pool);
+	if(ssl_pool) free(ssl_pool);
+	if(cert_buffer) free(cert_buffer);
+	
+	return ret;
+}
+
+int http_response(char *url)
+{
+	int ret = 0, httpCode = 0;
+	s32 cert_size=0;
+	httpUri uri;
+	httpClientId httpClient = 0;
+	httpTransId httpTrans = 0;
+	s32 size = 0;
+	void *http_pool = NULL;
+	void *uri_pool = NULL;
+	void *ssl_pool = NULL;
+	void *cert_buffer = NULL;
+	httpsData *caList=NULL;
+	
+	u8 module_https_loaded=NO;
+	u8 module_http_loaded=NO;
+	u8 module_net_loaded=NO;
+	u8 module_ssl_loaded=NO;
+	
+	u8 https_init=NO;
+	u8 http_init=NO;
+	u8 net_init=NO;
+	u8 ssl_init=NO;
+
+	//init
+	ret = sysModuleLoad(SYSMODULE_NET);
+	if (ret < 0) {
+		print_load("Error : sysModuleLoad(SYSMODULE_NET) failed (%x)", ret);
+		goto end;
+	} else module_net_loaded=YES;
+
+	ret = netInitialize();
+	if (ret < 0) {
+		print_load("Error : netInitialize failed (%x)", ret);
+		goto end;
+	} else net_init=YES;
+
+	ret = sysModuleLoad(SYSMODULE_HTTP);
+	if (ret < 0) {
+		print_load("Error : sysModuleLoad(SYSMODULE_HTTP) failed (%x)", ret);
+		goto end;
+	} else module_http_loaded=YES;
+
+	http_pool = malloc(0x10000);
+	if (http_pool == NULL) {
+		print_load("Error : out of memory (http_pool)");
+		goto end;
+	}
+
+	ret = httpInit(http_pool, 0x10000);
+	if (ret < 0) {
+		print_load("Error : httpInit failed (%x)", ret);
+		goto end;
+	} else http_init=YES;
+
+	// init SSL
+	if(strstr(url, "https")) {
+		ret = sysModuleLoad(SYSMODULE_HTTPS);
+		if (ret < 0) {
+			print_load("Error : sysModuleLoad(SYSMODULE_HTTP) failed (%x)", ret);
+			goto end;
+		} else module_https_loaded=YES;
+
+		ret = sysModuleLoad(SYSMODULE_SSL);
+		if (ret < 0) {
+			print_load("Error : sysModuleLoad(SYSMODULE_HTTP) failed (%x)", ret);
+			goto end;
+		} else module_ssl_loaded=YES;
+
+		ssl_pool = malloc(0x40000);
+		if (ret < 0) {
+			print_load("Error : out of memory (http_pool)");
+			goto end;
+		}
+
+		ret = sslInit(ssl_pool, 0x40000);
+		if (ret < 0) {
+			print_load("Error : sslInit failed (%x)", ret);
+			goto end;
+		} else ssl_init=YES;
+
+		caList = (httpsData *)malloc(sizeof(httpsData));
+		ret = sslCertificateLoader(SSL_LOAD_CERT_ALL, NULL, 0, &cert_size);
+		if (ret < 0) {
+			print_load("Error : sslCertificateLoader failed (%x)", ret);
+			goto end;
+		}
+
+		cert_buffer = malloc(cert_size);
+		if (cert_buffer==NULL) {
+			print_load("Error : out of memory (cert_buffer)");
+				goto end;
+		}
+
+		ret = sslCertificateLoader(SSL_LOAD_CERT_ALL, cert_buffer, cert_size, NULL);
+		if (ret < 0) {
+			print_load("Error : sslCertificateLoader failed (%x)", ret);
+				goto end;
+		}
+
+		(&caList[0])->ptr = cert_buffer;
+		(&caList[0])->size = cert_size;
+		
+		(&caList[1])->ptr = github_cert;
+		(&caList[1])->size = sizeof(github_cert);
+
+		ret = httpsInit(2, (httpsData *) caList);
+		if (ret < 0) {
+			print_load("Error : httpsInit failed (%x)", ret);
+				goto end;
+		} else https_init=YES;
+
+	}
+	// END of SSL
+	httpClient = 0;
+	httpTrans = 0;
+ 
+	ret = httpCreateClient(&httpClient);
+	if (ret < 0) {
+		print_load("Error : httpCreateClient failed (%x)", ret);
+		goto end;
+	}
+	// End of init
+
+	//URI
+	ret = httpUtilParseUri(&uri, url, NULL, 0, &size);
+	if (ret < 0) {
+		print_load("Error : httpUtilParseUri() failed (%x)", ret);
+		goto end;
+	}
+
+	uri_pool = malloc(size);
+	if (uri_pool == NULL) {
+		print_load("Error : out of memory (uri_pool)");
+		goto end;
+	}
+
+	ret = httpUtilParseUri(&uri, url, uri_pool, size, 0);
+	if (ret < 0) {
+		print_load("Error : httpUtilParseUri() failed (%x)", ret);
+		goto end;
+	}
+	//END of URI	
+
+	//SEND REQUEST
+	ret = httpCreateTransaction(&httpTrans, httpClient, HTTP_METHOD_GET, &uri);
+	if (ret < 0) {
+		print_load("Error : httpCreateTransaction() failed (%x)", ret);
+		goto end;
+	}
+	
+	print_debug("httpSendRequest");
+	ret = httpSendRequest(httpTrans, NULL, 0, NULL);
+	if (ret < 0) {
+		print_load("Error : httpSendRequest() failed (%x), %s", ret, url);
+		goto end;
+	}
+	
+	print_debug("httpResponseGetStatusCode");
+	ret = httpResponseGetStatusCode(httpTrans, &httpCode);
+	if (ret < 0) {
+		print_load("Error : cellHttpResponseGetStatusCode() failed (%x)", ret);
+		goto end;
+	}
+	
+	ret = httpCode;
+	
+end:
+	if(caList) free(caList);
+	if(httpTrans) httpDestroyTransaction(httpTrans);
+	if(httpClient) httpDestroyClient(httpClient);
+	if(https_init) httpsEnd();
+	if(ssl_init) sslEnd();
+	if(http_init) httpEnd();
+	if(net_init) netDeinitialize();
+	
+	if(module_http_loaded) sysModuleUnload(SYSMODULE_HTTP);
+	if(module_https_loaded) sysModuleUnload(SYSMODULE_HTTPS);
+	if(module_net_loaded) sysModuleUnload(SYSMODULE_NET);
+	if(module_ssl_loaded) sysModuleUnload(SYSMODULE_SSL);
+	
+	if(uri_pool) free(uri_pool);
+	if(http_pool) free(http_pool);
+	if(ssl_pool) free(ssl_pool);
+	if(cert_buffer) free(cert_buffer);
+	
+	return ret;
+}
+
+int upload(char *url, char *src)
+{
+	int ret = 0;
+	//int httpCode = 0;
+	s32 cert_size=0;
+	httpUri uri;
+	httpClientId httpClient = 0;
+	httpTransId httpTrans = 0;
+	FILE* fp=NULL;
+	s64 toSend=-1;
+	s32 nSent=-1;
+	s32 size = 0;
+	u64 ul=0;
+	u64 length = 0;
+	void *http_pool = NULL;
+	void *uri_pool = NULL;
+	void *ssl_pool = NULL;
+	void *cert_buffer = NULL;
+	httpsData *caList=NULL;
+	
+	u8 module_https_loaded=NO;
+	u8 module_http_loaded=NO;
+	u8 module_net_loaded=NO;
+	u8 module_ssl_loaded=NO;
+	
+	u8 https_init=NO;
+	u8 http_init=NO;
+	u8 net_init=NO;
+	u8 ssl_init=NO;
+
+	//init
+	ret = sysModuleLoad(SYSMODULE_NET);
+	if (ret < 0) {
+		print_load("Error : sysModuleLoad(SYSMODULE_NET) failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	} else module_net_loaded=YES;
+
+	ret = netInitialize();
+	if (ret < 0) {
+		print_load("Error : netInitialize failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	} else net_init=YES;
+
+	ret = sysModuleLoad(SYSMODULE_HTTP);
+	if (ret < 0) {
+		print_load("Error : sysModuleLoad(SYSMODULE_HTTP) failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	} else module_http_loaded=YES;
+
+	http_pool = malloc(0x10000);
+	if (http_pool == NULL) {
+		print_load("Error : out of memory (http_pool)");
+		ret=FAILED;
+		goto end;
+	}
+
+	ret = httpInit(http_pool, 0x10000);
+	if (ret < 0) {
+		print_load("Error : httpInit failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	} else http_init=YES;
+
+	// init SSL
+	if(strstr(url, "https")) {
+		ret = sysModuleLoad(SYSMODULE_HTTPS);
+		if (ret < 0) {
+			print_load("Error : sysModuleLoad(SYSMODULE_HTTP) failed (%x)", ret);
+			ret=FAILED;
+			goto end;
+		} else module_https_loaded=YES;
+
+		ret = sysModuleLoad(SYSMODULE_SSL);
+		if (ret < 0) {
+			print_load("Error : sysModuleLoad(SYSMODULE_HTTP) failed (%x)", ret);
+			ret=FAILED;
+			goto end;
+		} else module_ssl_loaded=YES;
+
+		ssl_pool = malloc(0x40000);
+		if (ret < 0) {
+			print_load("Error : out of memory (http_pool)");
+			ret=FAILED;
+			goto end;
+		}
+
+		ret = sslInit(ssl_pool, 0x40000);
+		if (ret < 0) {
+			print_load("Error : sslInit failed (%x)", ret);
+			ret=FAILED;
+			goto end;
+		} else ssl_init=YES;
+
+		caList = (httpsData *)malloc(sizeof(httpsData));
+		ret = sslCertificateLoader(SSL_LOAD_CERT_ALL, NULL, 0, &cert_size);
+		if (ret < 0) {
+			print_load("Error : sslCertificateLoader failed (%x)", ret);
+			ret=FAILED;
+			goto end;
+		}
+
+		cert_buffer = malloc(cert_size);
+		if (cert_buffer==NULL) {
+			print_load("Error : out of memory (cert_buffer)");
+			ret=FAILED;
+			goto end;
+		}
+
+		ret = sslCertificateLoader(SSL_LOAD_CERT_ALL, cert_buffer, cert_size, NULL);
+		if (ret < 0) {
+			print_load("Error : sslCertificateLoader failed (%x)", ret);
+			ret=FAILED;
+			goto end;
+		}
+
+		(&caList[0])->ptr = cert_buffer;
+		(&caList[0])->size = cert_size;
+		
+		(&caList[1])->ptr = github_cert;
+		(&caList[1])->size = sizeof(github_cert);
+
+		ret = httpsInit(2, (httpsData *) caList);
+		if (ret < 0) {
+			print_load("Error : httpsInit failed (%x)", ret);
+			ret=FAILED;
+			goto end;
+		} else https_init=YES;
+
+	}
+	// END of SSL
+	httpClient = 0;
+	httpTrans = 0;
+ 
+	ret = httpCreateClient(&httpClient);
+	if (ret < 0) {
+		print_load("Error : httpCreateClient failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	}
+	// End of init
+
+	//URI
+	ret = httpUtilParseUri(&uri, url, NULL, 0, &size);
+	if (ret < 0) {
+		print_load("Error : httpUtilParseUri() failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	}
+
+	uri_pool = malloc(size);
+	if (uri_pool == NULL) {
+		print_load("Error : out of memory (uri_pool)");
+		ret=FAILED;
+		goto end;
+	}
+
+	ret = httpUtilParseUri(&uri, url, uri_pool, size, 0);
+	if (ret < 0) {
+		print_load("Error : httpUtilParseUri() failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	}
+	//END of URI	
+
+	//SEND REQUEST
+	ret = httpCreateTransaction(&httpTrans, httpClient, HTTP_METHOD_POST, &uri);
+	if (ret < 0) {
+		print_load("Error : httpCreateTransaction() failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	}
+
+// FILE UPLOAD
+	fp=fopen(src, "rb");
+	if(fp==NULL) {
+		print_load("Error : fopen() failed : %s", src);
+		ret=FAILED;
+		goto end;
+	}
+	fseek(fp, 0, SEEK_END);	
+	length = (u64) ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	
+	print_debug("httpRequestSetContentLength");
+	ret = httpRequestSetContentLength(httpTrans, length);
+	if( ret < 0) {
+		print_load("Error : httpRequestSetContentLength() failed (%x)", ret);
+		ret=FAILED;
+		goto end;
+	}
+	
+	if(length != 0) {
+		if(prog_bar1_value!=-1) prog_bar2_value=0;
+		else prog_bar1_value=0;
+	}
+	
+	print_debug("Sending data...");
+	while(nSent != 0 ) {
+		toSend = HTTP_BUFFSIZE; 
+		if(length < ul + toSend) toSend = length - ul;
+		
+		fread((char *) getBuffer, toSend, 1, fp);
+		
+		if(httpSendRequest(httpTrans, (void*) getBuffer, toSend, &nSent) > 0) break;
+		
+		ul+=toSend;
+		
+		if(length <= ul ) break;
+		if(cancel==YES) break;
+		if(nSent == 0)	break;
+		if(nSent != toSend) print_load(" Warning : nSent != toSend | %d != %d", toSend, nSent);
+		
+		if(length != 0) {
+			if(prog_bar2_value!=-1) prog_bar2_value=(ul*100)/length;
+			else prog_bar1_value = (ul*100)/length;
+		}
+	}
+	fclose(fp);
+		
+	if(prog_bar2_value!=-1) prog_bar2_value=-1;
+	else prog_bar1_value=-1;
+	
+//END of TRANSFERT
+
+	ret=SUCCESS;
+	
+	if(cancel==YES) {
 		ret=FAILED;
 		cancel=NO;
 	}
@@ -16168,35 +17288,7 @@ u8 CheckCRC32(char *path)
 	
 	print_head("Getting CRC32");
 	
-    FILE* f;
-    size_t n;
-	
-    unsigned char buf[1024];
-	uint64_t read=0;
-	uint64_t file_size;
-	f = fopen(path, "rb");
-    if(f==NULL) return FAILED;
-
-	prog_bar1_value=0;
-	
-	fseek (f , 0 , SEEK_END);
-	file_size = ftell (f);
-	fseek(f, 0, SEEK_SET);
-	
-	u32 crc = crc32(0L, Z_NULL, 0);
-	
-    while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 ) {
-		read+=n;
-		prog_bar1_value=(read*100)/file_size;
-		
-		crc = crc32(crc, (const unsigned char*) buf, n);
-		
-		if(cancel==YES) break;
-	}
-	
-	prog_bar1_value=-1;
-
-    fclose( f );
+	u32 crc = crc_file(path);
 	
 	char dst[255];
 	strcpy(dst, path);
@@ -16208,7 +17300,7 @@ u8 CheckCRC32(char *path)
 	char realPS2CRC_STR[10];
 	sprintf(realPS2CRC_STR, "%X", crc);
 	
-	f = fopen(dst, "wb");
+	FILE *f = fopen(dst, "wb");
 	if(f == NULL) {
 		print_load("Error : cannot create CHECK.crc");
 		return FAILED;
@@ -16379,104 +17471,6 @@ uint8_t patch_PS2()
 // IRD
 //*******************************************************
 
-int Download_IRD(char *titleID) 
-{
-	
-	print_head("Downloading IRD ...");
-	FILE* f;
-	char url[255]="http://jonnysp.bplaced.net/data.php?columns%5B0%5D%5Bdata%5D=id&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=";
-	strcat(url, titleID);
-	if( download(url, "/dev_hdd0/tmp/ird.tmp") == FAILED ) {
-		return FAILED;
-	}
-	
-	f = fopen("/dev_hdd0/tmp/ird.tmp", "rb");
-	if(f == NULL) {
-		print_load("Error : ird.tmp not found");
-		return FAILED;
-	}
-	fseek (f , 0 , SEEK_END);
-	u32 size = ftell (f);
-	fseek(f, 0, SEEK_SET);
-	
-	char *mem = (char *) malloc(size);
-	fread(mem,1,size, f);
-	fclose(f);
-	Delete("/dev_hdd0/tmp/ird.tmp");
-	
-	char IRD_url[128];
-	char IRD_dst[128];
-	int n;
-	strcpy(IRD_url, "http://jonnysp.bplaced.net/ird/");
-	
-	for(n=0; n<size ; n++) {
-		if(!memcmp((char *) &mem[n], (char *) titleID, 9)) {
-			if( mem[n+9] == '-' ) {
-				strncat(IRD_url, &mem[n], 46);
-				break;
-			}
-		}
-	}
-	free(mem);
-	
-	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
-	
-	if(path_info(IRD_dst) == _NOT_EXIST) mkdir(IRD_dst, 0777);
-	
-	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.ird", ManaGunZ_id, titleID);
-	
-	if( download(IRD_url, IRD_dst) == FAILED) {
-		Delete(IRD_dst);
-		return FAILED;
-	}
-	
-	//check
-	if(IRD_match(titleID, IRD_dst) == YES ) return SUCCESS;
-	
-	Delete(IRD_dst);
-	return FAILED;
-
-}
-
-int search_IRD(char *titleID, char *dir_path, char *IRD_path)
-{
-	char temp[128];
-	
-	sprintf(temp, "%s/%s.ird", dir_path, titleID);
-	
-	if(path_info(temp) == _FILE) {
-		if ( IRD_match(titleID, temp) == YES ) {
-			strcpy(IRD_path, temp);
-			return FOUND;
-		}
-	}
-	
-	
-	DIR *d;
-	struct dirent *dir;
-	
-	d = opendir(dir_path);
-	if(d==NULL) return NOT_FOUND;
-	
-	while ((dir = readdir(d))) {
-		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
-		if(dir->d_type & DT_DIR) continue;
-			
-		sprintf(temp, "%s/%s", dir_path, dir->d_name);
-		
-		if(strstr(dir->d_name, ".ird")) {
-			if ( IRD_match(titleID, temp) == YES ) {
-				strcpy(IRD_path, temp);
-				closedir(d);
-				return FOUND;
-			}
-		}
-	}
-	closedir(d);
-	
-	return NOT_FOUND;
-}
-
 u8 md5_FromISO_WithFileOffset(char *iso_path, u64 file_offset, u32 file_size, unsigned char output[16])
 {
 	FILE* f;
@@ -16556,6 +17550,52 @@ u8 md5_FromISO_WithFileOffset(char *iso_path, u64 file_offset, u32 file_size, un
 		memset(output, 0, sizeof(output));
 		return FAILED;
 	}
+
+	fclose(f);
+	
+	return SUCCESS;
+}
+
+u8 md5_FromStreamISO_WithFileOffset(FILE *f, u64 file_offset, u32 file_size, unsigned char output[16])
+{	
+	u64 val64;
+	fseek(f, file_offset-0x14, SEEK_SET);
+	fread(&val64, sizeof(u64), 1, f);
+	
+	u8 is_bin=NO;
+	if(val64==0xFFFFFFFFFFFFFF00) is_bin=YES;
+	
+	fseek(f, file_offset, SEEK_SET);
+	
+    md5_context ctx;
+	u32 wrlen = 2048;
+    unsigned char buf[wrlen];
+	u64 read = 0;
+	
+	prog_bar1_value=0;
+	
+	md5_starts( &ctx );	
+	
+	while(read < file_size) {
+		if(read+wrlen > file_size) wrlen = (u32)file_size-read;
+		fread(buf, sizeof(u8), wrlen, f);
+		if(is_bin) fseek(f, 0x130, SEEK_CUR);
+		read += wrlen;
+		prog_bar1_value = (read*100)/file_size;
+		md5_update(&ctx, buf, wrlen);
+		if(cancel) break;
+	}
+	
+	prog_bar1_value=-1;
+	
+    md5_finish(&ctx, output);
+
+    memset(&ctx, 0, sizeof(md5_context));
+	
+	if(cancel==YES) {
+		memset(output, 0, sizeof(output));
+		return FAILED;
+	}
 	
     return SUCCESS;
 }
@@ -16584,45 +17624,261 @@ u8 md5_FromISO_WithFileName(char *iso_path, char *filename, unsigned char output
 	return md5_FromISO_WithFileOffset(iso_path, file_offset, file_size, output);
 }
 
-u8 CheckIRD(char *G_PATH)
+void IRD_search(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
 {
-	char IRD_path[128]={0};
-	char IRD_dir[128];
-	char titleID[32];
-	int i;
-	
 	print_head("Searching IRD...");
+	char IRD_dir[512]={0};
+	char meta_sig_str[8];
+	char filepath[512]={0};
+	int i, j;
 	
-	if(GetParamSFO("TITLE_ID", titleID, -1, G_PATH) == FAILED ) {
-		print_load("Error : Cannot get title ID");
-		return FAILED;
-	}
-
-	sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
-	
-	if( search_IRD(titleID, IRD_dir, IRD_path) == FOUND ) goto check;
+	u32 files_sigs[128]={0};
+	sprintf(meta_sig_str, "%08X", meta_sig);
+	print_debug("meta sig %X", meta_sig);
 	
 	for(i=0; i<=device_number; i++) {
-	
-		if(strstr(list_device[i], "dev_usb")  || strstr(list_device[i], "dev_hdd0")) {
+		memset(IRD_dir, 0, 512);
+		if(strstr(list_device[i], "dev_usb")) {
 			sprintf(IRD_dir, "/%s/IRD", list_device[i]);
+		} else 
+		if(strstr(list_device[i], "dev_hdd0")) {
+			sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
 		} else continue;
 		
-		if( search_IRD(titleID, IRD_dir, IRD_path) == FOUND ) goto check;
+		DIR *d;
+		struct dirent *dir;
 		
+		d = opendir(IRD_dir);
+		if(d==NULL) continue;
+		
+		while ((dir = readdir(d))) {
+			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+			if(dir->d_type & DT_DIR) continue;
+				
+			memset(filepath, 0, 512);
+			sprintf(filepath, "%s/%s", IRD_dir, dir->d_name);
+			print_debug(filepath);
+			
+			if(strncmp(meta_sig_str, dir->d_name, 8) == 0 || strncmp(ird->GameId, dir->d_name, 9) == 0) {
+				
+				ird_t *ird = IRD_load(filepath);
+				if(ird==NULL) continue;
+				
+				print_debug("IRD_meta_sig3");
+				u32 cur_meta_sig = IRD_meta_sig3(ird);
+				print_debug("cur_meta_sig %X", cur_meta_sig);
+				
+				print_debug("cur_files_sig");
+				
+				u32 cur_files_sig = IRD_files_sig(ird);
+				print_debug("cur_files_sig %X", cur_files_sig);
+				
+				print_debug("FREE_IRD");
+				FREE_IRD(ird);
+				print_debug("cur_meta_sig==meta_sig");
+				
+				if(cur_meta_sig==meta_sig) 
+					print_debug("OK");
+				
+					u8 found = NO;
+					for(j=0; j<*IRD_nPath; j++) {
+						if( files_sigs[j]==cur_files_sig) {
+							found=YES;
+							break;
+						}
+					}
+					print_debug("FOUND %d", found);
+					if(found==NO) {
+						*IRD_nPath = *IRD_nPath + 1;
+						print_debug("realloc");
+						*IRD_Path = (char **) realloc(*IRD_Path, *IRD_nPath * sizeof(char*));
+						print_debug("strcpy_malloc");
+						*IRD_Path[*IRD_nPath-1] = strcpy_malloc(filepath);
+						files_sigs[*IRD_nPath-1]=cur_files_sig;
+					}
+			} else print_debug("NOK");
+		}
+		closedir(d);
+	}
+	print_debug("End of search IRD");
+}
+
+void IRD_download2(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
+{
+	
+	print_head("Downloading IRD ...");
+	FILE* f;
+	char url[512]= "http://jonnysp.bplaced.net/data.php?";
+	
+	strcat(url, "columns%5B"  "0"  "%5D%5Bdata%5D="  "id"            "&columns%5B" "0"  "%5D%5Bsearchable%5D=true&columns%5B" "0" "%5D%5Bsearch%5D%5Bvalue%5D=");
+	strcat(url, ird->GameId);
+	strcat(url, "&columns%5B" "1"  "%5D%5Bdata%5D="  "app_version"   "&columns%5B" "1"  "%5D%5Bsearchable%5D=true&columns%5B" "1" "%5D%5Bsearch%5D%5Bvalue%5D=");
+	strcat(url, ird->AppVersion);
+	strcat(url, "&columns%5B" "2"  "%5D%5Bdata%5D="  "game_version"  "&columns%5B" "2"  "%5D%5Bsearchable%5D=true&columns%5B" "2" "%5D%5Bsearch%5D%5Bvalue%5D=");
+	strcat(url, ird->GameVersion);
+	strcat(url, "&columns%5B" "3"  "%5D%5Bdata%5D="  "update_version" "&columns%5B" "3"  "%5D%5Bsearchable%5D=true&columns%5B" "3" "%5D%5Bsearch%5D%5Bvalue%5D=");
+	strcat(url, ird->UpdateVersion);
+	
+	
+	if( download(url, "/dev_hdd0/tmp/ird.tmp") == FAILED ) {
+		return;
 	}
 	
-	if( Download_IRD(titleID) == SUCCESS) {
-		sprintf(IRD_path, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.ird", ManaGunZ_id, titleID);
-		goto check;
+	f = fopen("/dev_hdd0/tmp/ird.tmp", "rb");
+	if(f == NULL) {
+		print_load("Error : ird.tmp not found");
+		return;
+	}
+	fseek (f , 0 , SEEK_END);
+	u32 size = ftell (f);
+	fseek(f, 0, SEEK_SET);
+	
+	char *mem = (char *) malloc(size);
+	if(mem==NULL) return;
+	fread(mem,1,size, f);
+	fclose(f);
+	Delete("/dev_hdd0/tmp/ird.tmp");
+	
+	char IRD_url[128];
+	char IRD_dst[128];
+	int n;
+	strcpy(IRD_url, "http://jonnysp.bplaced.net/ird/");
+	
+	for(n=0; n<size ; n++) {
+		if(!memcmp((char *) &mem[n], (char *) ird->GameId, 9)) {
+			if( mem[n+9] == '-' ) {
+				strncat(IRD_url, &mem[n], 46);
+				break;
+			}
+		}
+	}
+	free(mem);
+	
+	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
+	mkdir(IRD_dst, 0777);
+	char *date = get_date();
+	if(date==NULL) {
+		print_debug("Error : can't get the date");
+		return;
+	}
+	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s_%08X.ird", ManaGunZ_id, date, meta_sig);
+	free(date);
+	
+	
+	if( download(IRD_url, IRD_dst) == FAILED) {
+		Delete(IRD_dst);
+		return;
 	}
 	
-	print_load ("Error : IRD not found !");
+	u32 sig = IRD_meta_sig(IRD_dst);
+				
+	if(sig==meta_sig) {
+		char *full_sig = IRD_sig(IRD_dst);
+		if(full_sig == NULL) {
+			print_debug("Error : couldn't get full_sig ird_download2");
+			return;
+		}
+		char filename[512];
+		sprintf(filename, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.ird", ManaGunZ_id, full_sig);
+		free(full_sig);
+		
+		if(path_info(filename) == _FILE) return;
+		
+		rename(IRD_dst, filename);
+		
+		*IRD_nPath = *IRD_nPath + 1;
+		*IRD_Path = (char **) realloc(*IRD_Path, *IRD_nPath * sizeof(char*));
+		*IRD_Path[*IRD_nPath-1] = strcpy_malloc(filename);
+	}
+}
+
+void IRD_download(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
+{
+	print_head("Downloading IRD ...");
+	char line[255]={0};
+	char filepath[512]={0};
+	char URL[512]={0};
+	char tmp[512]={0};
+	
+	char IRD_dir[512]={0};
+	sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
+	
+	sprintf(URL, IRD_SCRIPT "?ird=%08X", meta_sig);
+	
+	sprintf(tmp, "/dev_hdd0/game/%s/USRDIR/temp", ManaGunZ_id);
+	mkdir(tmp, 0777);
+	sprintf(tmp, "/dev_hdd0/game/%s/USRDIR/temp/%08X.txt", ManaGunZ_id, meta_sig);
+	
+	if( download(URL, tmp)==FAILED) return;
+	
+	FILE *f = fopen(tmp, "rb");
+	if(f==NULL) return;
+	
+	while(fgets(line, 255, f) != NULL) {
+		if(line[0]=='\r' || line[0]=='\n') continue;
+		if(strstr(line, "\r") != NULL) strtok(line, "\r");
+		if(strstr(line, "\n") != NULL) strtok(line, "\n");
+		
+		sprintf(URL, IRD_SERVER "/%s", line);
+		sprintf(filepath, "%s/%s", IRD_dir, line); 
+		
+		if( download(URL, filepath) == SUCCESS) {
+			
+			u32 sig = IRD_meta_sig(filepath);
+				
+			if(sig==meta_sig) {
+				*IRD_nPath = *IRD_nPath + 1;
+				*IRD_Path = (char **) realloc(*IRD_Path, *IRD_nPath * sizeof(char*));
+				*IRD_Path[*IRD_nPath-1] = strcpy_malloc(filepath);
+			}
+		}
+		memset(line, 0, 255);
+	}
+	fclose(f);
+	Delete(tmp);	
+}
+
+u8 IRD_check(char *G_PATH)
+{
+	char **IRD_Path=NULL;
+	u32 IRD_nPath=0;
+	u32 meta_sig = 0;
+	
+// SEARCH with TITLE_ID
+	ird_t *ird = IRD_new(G_PATH);
+	if(ird == NULL) {
+		print_load("Error : failed to get struct ird_t");
+		return FAILED;
+	}
+	
+	meta_sig = IRD_meta_sig3(ird);
+	
+	IRD_search(ird, meta_sig, &IRD_Path, &IRD_nPath); 
+	if( IRD_nPath != 0 ) goto check;
+	
+// SEARCH
+	IRD_download(ird, meta_sig, &IRD_Path, &IRD_nPath);
+	//IRD_download2(ird, meta_sig, &IRD_Path, &IRD_nPath);
+	if( IRD_nPath != 0 ) goto check;
+	
+	print_load("Error : IRD not found !");
+	
+	FREE_IRD(ird);
+	
 	return FAILED;
 	
 check:
 	print_head("Checking MD5...");
-	IRDMD5(IRD_path, G_PATH);
+	print_load("%d IRD file(s) found", IRD_nPath);
+	
+	IRD_check_md5(G_PATH, IRD_Path, IRD_nPath);
+	
+	print_debug("FREE_IRD");
+	sleep(3);
+	
+	FREE_IRD(ird);
+	
+	print_debug("end of IRD_check");
 	
 	if(cancel == YES) return FAILED;
 	
@@ -16635,11 +17891,11 @@ check:
 
 u8 Get_ID(char *gpath, u8 platform, char *game_ID)
 {
-	if(platform == ISO_PS3 || platform == JB_PS3) {
-		return GetParamSFO("TITLE_ID", game_ID, -1, gpath);	
+	if(platform == ISO_PS3 || platform == JB_PS3 || platform == BDVD) {
+		return GetParamSFO("TITLE_ID", game_ID, gpath);	
 	} else
 	if(platform == ISO_PSP || platform == JB_PSP) {
-		return GetParamSFO("DISC_ID", game_ID, -1, gpath);	
+		return GetParamSFO("DISC_ID", game_ID, gpath);
 	} else
 	if(platform == ISO_PS2 || platform == ISO_PS1) {
 		char *mem = NULL;
@@ -16705,7 +17961,7 @@ u32 Download_covers()
 		int j;
 		for(j=0; j < strlen(game_ID); j++) game_ID[j] = upit(game_ID[j]);
 		
-		if(list_game_platform[i] == JB_PS3 || list_game_platform[i] == ISO_PS3)
+		if(list_game_platform[i] == BDVD || list_game_platform[i] == JB_PS3 || list_game_platform[i] == ISO_PS3)
 		if(strstr(game_ID, "NP") != NULL) continue;
 		
 		sprintf(out, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, game_ID);
@@ -17587,7 +18843,7 @@ u8 re_sign_GAME(char *path)
 	}
 	closedir(d);
 	
-	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", position, NULL) == FAILED) return FAILED;
+	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", list_game_path[position]) == FAILED) return FAILED;
 
 	return SUCCESS;
 }
@@ -19033,6 +20289,7 @@ u8 can_view(char *ext)
 
 u8 get_platform_from_ext(char *ext)
 {
+	if(!strcmp(ext, _BDVD) ) return BDVD;
 	if(!strcmp(ext, _JB_PS3)) return JB_PS3;
 	if(!strcmp(ext, _JB_PS2)) return JB_PS2;
 	if(!strcmp(ext, _JB_PS1)) return JB_PS1;
@@ -19061,6 +20318,8 @@ char *get_ext(char *file)
 	
 	if(strstr(file, "/")) {
 		is_path=YES;
+		
+		if(!strcmp(file, "/dev_bdvd")) return _BDVD;
 		
 		if(path_info(file) == _DIRECTORY)  {
 			char temp[255];
@@ -20620,7 +21879,7 @@ typedef struct
 	uint32_t pkg_info_count;
 	uint32_t pkg_info_size;
 	uint32_t item_count;
-	uint64_t gathering_total_size;
+	uint64_t pkg_size;
 	uint64_t data_offset;
 	uint64_t data_size;
 	char content_id[48];
@@ -20636,7 +21895,7 @@ typedef struct
 	 (x).pkg_info_count = FROM_BE (32, (x).pkg_info_count);				 \
 	 (x).pkg_info_size = FROM_BE (32, (x).pkg_info_size);		   \
 	 (x).item_count = FROM_BE (32, (x).item_count);			 \
-	 (x).gathering_total_size = FROM_BE (64, (x).gathering_total_size);			 \
+	 (x).pkg_size = FROM_BE (64, (x).pkg_size);			 \
 	 (x).data_offset = FROM_BE (64, (x).data_offset);		   \
 	 (x).data_size = FROM_BE (64, (x).data_size);
 #define PKG_HEADER_TO_BE(x) PKG_HEADER_FROM_BE (x)
@@ -21000,7 +22259,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	header.item_count = htonl((uint32_t)item_count);
 	header.data_offset = htonll((uint64_t)(PKG_HEADER__PKG_INFO_OFFSET + 0x40 + PKG_HEADER__PKG_INFO_SIZE + 0x40 ));
 	header.data_size = htonll(tmp);
-	header.gathering_total_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x60 + 0x40 + 0x40); 
+	header.pkg_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x60 + 0x40 + 0x40); 
 	memset(header.content_id, 0, sizeof(header.content_id));
 	memset(header.qa_digest, 0, sizeof(header.qa_digest));
 	memset(header.KLicensee, 0, sizeof(header.KLicensee));
@@ -21141,7 +22400,7 @@ void make_pkg(const char *dir_path)
 			print_load("Error : Cannot get Content ID");
 			return;
 		}
-		if(GetParamSFO("TITLE_ID", title_id, -1, file) == FAILED ) {
+		if(GetParamSFO("TITLE_ID", title_id, file) == FAILED ) {
 			print_load("Error : Cannot get Content ID");
 			return;
 		}
@@ -21300,7 +22559,7 @@ u8 pkg_list(const char *filename)
 	
 	sprintf(str, "Item count : %d\n",	  header.item_count);
 	fputs(str, txt);
-	sprintf(str, "PKG size : %d\n",	(int) header.gathering_total_size);
+	sprintf(str, "PKG size : %d\n",	(int) header.pkg_size);
 	fputs(str, txt);
 	sprintf(str, "Content ID : %s\n",	  header.content_id);
 	fputs(str, txt);
@@ -21581,10 +22840,7 @@ print_load("Init...");
 		
 		strcpy(title, &strrchr(path, '/')[1]);
 		RemoveExtension(title);
-		u8 platform = get_platform(path);
-		if(platform == ISO_PS3 || platform == JB_PS3 || platform == ISO_PSP || platform == JB_PSP) {
-			GetParamSFO("TITLE", title, game_number, NULL);
-		}
+		GetParamSFO("TITLE", title, path);
 	}
 	
 	char content_id[37];
@@ -21648,7 +22904,7 @@ print_load("Copy param...");
 	
 // TITLE ID
 print_load("Set title ID...");
-	if( SetParamSFO("TITLE_ID", title_id, -1, dst) == FAILED ) {
+	if( SetParamSFO("TITLE_ID", title_id, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE_ID");
 		Delete(lch);
 		return FAILED;
@@ -21656,7 +22912,7 @@ print_load("Set title ID...");
 	
 // TITLE
 print_load("Set title...");
-	if( SetParamSFO("TITLE", title, -1, dst) == FAILED ) {
+	if( SetParamSFO("TITLE", title, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE");
 		Delete(lch);
 		return FAILED;
@@ -21833,7 +23089,7 @@ void update_MGZ()
 	float latest_version;
 	char link[255];
 	
-	if(GetParamSFO("TITLE", mgz_title, -1, "/dev_hdd0/game/MANAGUNZ0/PARAM.SFO") == FAILED) {
+	if(GetParamSFO("TITLE", mgz_title, "/dev_hdd0/game/MANAGUNZ0/PARAM.SFO") == FAILED) {
 		print_load("Error : Get current version failed");
 		end_loading();
 		return;
@@ -22186,7 +23442,7 @@ void write_setting()
 	
 	char sfo[64];
 	sprintf(sfo, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
-	SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, 0, sfo);
+	SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, sfo);
 	
 	if(lang_code != lang_code_loaded) update_lang();
 	
@@ -23371,17 +24627,14 @@ void Draw_OnlyResetBox(float x, float y, float z, float w, float h)
 		tiny3d_SetTexture(0, PICTURE_offset[RESET], PICTURE[RESET].width, PICTURE[RESET].height, PICTURE[RESET].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
 	} else {
-		Draw_Box(x, y, z, 3, w, h, 0xff1000ff, NO);
-		Draw_Box(x+1, y+1, z, 3, w-2, h-2, 0x00000066, NO);
+		float w1 = 3*w/4;
+		float h1 = 3*h/4;
 		
-		tiny3d_SetPolygon(TINY3D_POLYGON);
-		tiny3d_VertexPos(x+3 , y+7  , z);
-		tiny3d_VertexColor(WHITE);
-		tiny3d_VertexPos(x+5 , y+7  , z);
-		tiny3d_VertexPos(x+10, y+12 , z);
-		tiny3d_VertexPos(x+15, y+7  , z);
-		tiny3d_VertexPos(x+17, y+7  , z);
-		tiny3d_VertexPos(x+10, y+14 , z);
+		Draw_Box(x+w/4, y, z, 0, w1, h1, WHITE, NO);
+		Draw_BoxLine(x+w/4, y, z, w1, h1, BLACK);
+		
+		Draw_Box(x, y+w/4, z, 0, w1, h1, WHITE, NO);
+		Draw_BoxLine(x, y+w/4, z, w1, h1, BLACK);
 	}
 }
 
@@ -23446,8 +24699,8 @@ void Draw_OnlyDockRightBox(float x, float y, float z, float w, float h)
 		tiny3d_SetTexture(0, PICTURE_offset[DOCK_R], PICTURE[DOCK_R].width, PICTURE[DOCK_R].height, PICTURE[DOCK_R].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
 	} else {
-		Draw_Box(x, y, z, 0, w, h, WHITE, NO);
-		Draw_Box(x+2, y+2, z, 0, w/3, h-4, BLACK, NO);
+		Draw_LineBoxInside(x, y, z, 2, w, h, WHITE);
+		Draw_Box(x+w/2, y, z, 0, w/2, h, WHITE, NO);
 	}
 }
 
@@ -23477,8 +24730,8 @@ void Draw_OnlyDockLeftBox(float x, float y, float z, float w, float h)
 		tiny3d_SetTexture(0, PICTURE_offset[DOCK_L], PICTURE[DOCK_L].width, PICTURE[DOCK_L].height, PICTURE[DOCK_L].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, w, h, WHITE, YES);
 	} else {
-		Draw_Box(x, y, z, 0, w, h, WHITE, NO);
-		Draw_Box(x+w-w/3-2, y+2, z, 0, w/3, h-4, BLACK, NO);
+		Draw_LineBoxInside(x, y, z, 2, w, h, WHITE);
+		Draw_Box(x, y, z, 0, w/2, h, WHITE, NO);
 	}
 }
 
@@ -23505,8 +24758,11 @@ void Draw_DockLeftBox(float x, float y, float z, float w, float h, u8 mouse_over
 
 u8 is_dev_blind(char *path)
 {
-	if( !strncmp(path, "/dev_blind", 10) ) return YES;
-	if( !strncmp(path, "/dev_rebug", 10) ) return YES;
+	int n=0;
+	if( path[0]=='/') n++;
+	
+	if( !strncmp(path + n, "dev_blind", 9) ) return YES;
+	if( !strncmp(path + n, "dev_rebug", 9) ) return YES;
 	
 	return NO;
 }
@@ -23795,11 +25051,11 @@ void Draw_window()
 				char mount_point[32];
 				strcpy(mount_point, window_content_Name[n][window_scroll_P[n]+i]);
 				if( is_dev_blind(mount_point) ) {
-					mount_point[5]='f';
-					mount_point[6]='l';
-					mount_point[7]='a';
-					mount_point[8]='s';
-					mount_point[9]='h';
+					mount_point[4]='f';
+					mount_point[5]='l';
+					mount_point[6]='a';
+					mount_point[7]='s';
+					mount_point[8]='h';
 				}
 				
 				// ------------------------------------------------------------
@@ -24736,7 +25992,7 @@ void RefreshWindow(window_id)
 	char temp[512];
 	int n, i; 
 	if(window_open[window_id] == NO) return;
-		
+	
 	// clear
 	window_content_N[window_id]=-1;
 	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
@@ -24744,6 +26000,24 @@ void RefreshWindow(window_id)
 		FREE(window_content_Type[window_id][n]);
 		window_content_Size[window_id][n] = 0;
 		window_content_Selected[window_id][n] = NO;
+	}
+	
+	u8 hide_dev_flash=dev_blind_exist();
+	if( hide_dev_flash && !strncmp(window_path[window_id], "/dev_flash", 10) ) {
+		if(path_info("/dev_blind") != _NOT_EXIST) {
+			window_path[window_id][5]='b';
+			window_path[window_id][6]='l';
+			window_path[window_id][7]='i';
+			window_path[window_id][8]='n';
+			window_path[window_id][9]='d';
+		} else 
+		if(path_info("/dev_rebug") != _NOT_EXIST) {
+			window_path[window_id][5]='r';
+			window_path[window_id][6]='e';
+			window_path[window_id][7]='b';
+			window_path[window_id][8]='u';
+			window_path[window_id][9]='g';
+		}
 	}
 	
 	// OpenDir
@@ -24763,6 +26037,12 @@ void RefreshWindow(window_id)
 			closedir(d);
 			sort(window_id);
 			return;
+		}
+		
+		if( hide_dev_flash ) {
+			if(strcmp(window_path[window_id], "/") == 0) {
+				if( !strcmp(dir->d_name, "dev_flash")) continue;
+			}
 		}
 		
 		window_content_N[window_id]++;
@@ -24914,6 +26194,12 @@ void Window(char *directory)
 		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("app_home");
 		DevicesInfo_N++;
 		GetDeviceInfo("/app_home/", &DevicesInfo[window_content_N[window_activ]]);
+		
+		window_content_N[window_activ]++;
+		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
+		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("app_home");
+		DevicesInfo_N++;
+		GetDeviceInfo("/dev_bdvd/", &DevicesInfo[window_content_N[window_activ]]);
 		
 		return;
 	}
@@ -25190,10 +26476,47 @@ void open_picture_viewer(char *pict_path)
 
 //**** txt viewer ****
 
-float DrawTXTInBox(float x, float y, float z, float w, float h, char *string, u32 bg_color, u32 font_color)
+// LF remplaced by space
+float DrawTXTinLineBox(float x, float y, float z, float w, char *string, u32 bg_color, u32 font_color)
 {
 	if(y<0) return x;
 	
+	SetFontZ(z);
+	FontColor(font_color);
+	
+	float h1 = GetFontHeight();
+	
+	char local_str[1024]={0};
+	u32 len = strlen(string);
+	u32 i=0;
+	u32 j=0;
+	for(i=0; i<len; i++)
+	{
+		if( string[i] == '\r') continue;
+		if( string[i] == '\n') {
+			local_str[j]= ' ';
+		} else {
+			local_str[j]= string[i];
+		}
+		j++;
+		if(j==1024) break;
+	}
+	
+	if( bg_color != 0) Draw_Box(x, y, z, 0, w, h1, bg_color, NO);
+	
+	set_ttf_window(x, y, w, h1, 0);
+	Z_ttf = z;
+    x = (float) display_ttf_string(0, 0, local_str, font_color, 0, GetFontWidth(), GetFontHeight());
+	
+	set_ttf_window(0, 0, X_MAX, Y_MAX, 0);
+	
+	return x;
+	
+}
+
+float DrawTXTInBox(float x, float y, float z, float w, float h, char *string, u32 bg_color, u32 font_color)
+{
+	if(y<0) return x;
 	
 	SetFontZ(z);
 	FontColor(font_color);
@@ -25208,10 +26531,30 @@ float DrawTXTInBox(float x, float y, float z, float w, float h, char *string, u3
 	Z_ttf = z;
     x = (float) display_ttf_string(0, 0, string, font_color, 0, GetFontWidth(), GetFontHeight());
 	
-	set_ttf_window(0, 0, 848, 512, 0);
+	set_ttf_window(0, 0, X_MAX, Y_MAX, 0);
 	
 	return x;
-        
+}
+
+float DrawTXTInBoxFromCenter(float x, float y, float z, float w, float h, char *string, u32 bg_color, u32 font_color)
+{
+	if(y<0) return x;
+	
+	SetFontZ(z);
+	FontColor(font_color);
+	float w_str = WidthFromStr(string);
+	
+	float h1 = h;
+	if(h==1) h1 = GetFontHeight();
+	
+	if( bg_color != 0) Draw_Box(x, y, z, 0, w, h1, bg_color, NO);
+	
+	set_ttf_window(w/2 - w_str/2, y, w, h1, WIN_AUTO_LF);
+	Z_ttf = z;
+    x = (float) display_ttf_string(0, 0, string, font_color, 0, GetFontWidth(), GetFontHeight());
+	set_ttf_window(0, 0, X_MAX, Y_MAX, 0);
+	
+	return x;
 }
 
 int GetNumberOfLine(float x, float y, float w, float h, char *string)
@@ -25222,9 +26565,8 @@ int GetNumberOfLine(float x, float y, float w, float h, char *string)
 	Z_ttf = 0.0;
 	Y_ttf = y;
 	set_ttf_window(x, y, w, h1, WIN_AUTO_LF);
-    int lines =  display_ttf_line(-1, 0, 0, string, 0, 0, GetFontWidth(), GetFontHeight());
-   
-	set_ttf_window(0, 0, 848, 512, 0);
+    int lines = display_ttf_line(-1, 0, 0, string, 0, 0, GetFontWidth(), GetFontHeight());
+	set_ttf_window(0, 0, X_MAX, Y_MAX, 0);
 	
 	return lines;
 }
@@ -25244,11 +26586,9 @@ float DrawTXTInBoxScroll(int line, float x, float y, float z, float w, float h, 
 	set_ttf_window(x, y, w, h1, WIN_AUTO_LF);
     Z_ttf = z;
 	x = (float) display_ttf_line(line, 0, 0, string, font_color, 0, GetFontWidth(), GetFontHeight());
-    	
-	set_ttf_window(0, 0, 848, 512, 0);
+	set_ttf_window(0, 0, X_MAX, Y_MAX, 0);
 	
 	return x;
-        
 }
 
 void txt_viewer_input()
@@ -25277,6 +26617,7 @@ void txt_viewer_input()
 	{
 		txt_viewer_activ=NO;
 		if(txt_viewer_path==NULL && scene==SCENE_FILEMANAGER) Window(".");
+		memset(txt_viewer_content, 0, sizeof(txt_viewer_content));
 		FREE(txt_viewer_content);
 		FREE(txt_viewer_path);
 	}
@@ -25312,18 +26653,20 @@ void Draw_txt_viewer()
 void open_txt_viewer(char *txt_path)
 {
 	txt_line=0;
-	txt_scroll=0;
+	txt_scroll=0; 
 	
 	FREE(txt_viewer_path);
 	txt_viewer_path = strcpy_malloc(txt_path);
 	
 	int size;
 	txt_viewer_content = LoadFile(txt_viewer_path, &size);
+	if(txt_viewer_content != NULL) {
+		txt_viewer_content = realloc(txt_viewer_content, size + 1);
+		txt_viewer_content[size + 1] = 0;
+		txt_scroll = GetNumberOfLine(TXT_X, TXT_Y, TXT_W, TXT_H, txt_viewer_content) + 1;
+	}
 	
-	txt_scroll = GetNumberOfLine(TXT_X, TXT_Y, TXT_W, TXT_H, txt_viewer_content) + 1;
-	
-	if(TXT_LINE_MAX < txt_scroll) txt_scroll -= TXT_LINE_MAX;
-	else txt_scroll = 0;
+	SetFontSize(15, 15);
 	
 	txt_viewer_activ = YES;
 }
@@ -25411,7 +26754,7 @@ void open_SFO_viewer(char *path)
 	
 // get KEYS
 	for(i=0; i < header.nb_entries; i++) {
-		if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8S) continue ; // ignore
+		//if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8S) continue ; // ignore
 		fseek(sfo, header.key_table_start + table_entry[i].key_offset, SEEK_SET );
 		fgets(SFO_KEY[i], 64, sfo);
 		SFO_NB++;
@@ -25425,13 +26768,13 @@ void open_SFO_viewer(char *path)
 		
 		fseek(sfo, header.data_table_start + table_entry[i].data_offset, SEEK_SET );
 		
-		if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8S) continue ; // ignore
-		if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8) {
+		if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8S
+		|| table_entry[i].data_type == SFO_DATA_TYPE_UTF8) {
 			entry_data_utf8 = (char *) malloc(table_entry[i].data_max_len);
 			fread(entry_data_utf8, table_entry[i].data_max_len, 1, sfo);
 			strcpy(SFO_DATA[i], entry_data_utf8);
 			free(entry_data_utf8);
-		}
+		} else
 		if(table_entry[i].data_type == SFO_DATA_TYPE_INT32) {
 			fread(&entry_data_int32, table_entry[i].data_max_len, 1, sfo);
 			entry_data_int32 = ES(entry_data_int32);
@@ -25442,6 +26785,93 @@ void open_SFO_viewer(char *path)
 	fclose(sfo);
 	
 	SFO_viewer_activ = TRUE;
+}
+
+u8 GetParamSFO(const char *name, char *value, char *path)
+{	
+	FILE* sfo=NULL;
+	u32 sfo_start=0;
+	u32 sfo_size=0;
+	
+	if(path == NULL) {
+		print_load("GetParamSFO path==NULL");
+		return FAILED;
+	}
+	
+	sfo = openSFO(path, &sfo_start, &sfo_size, "rb");
+	if(sfo==NULL) {
+		print_load("Failed to open %s", path);
+		return FAILED;
+	}
+	
+	fseek(sfo, sfo_start, SEEK_SET);
+	
+	sfo_header header;
+	
+	// read header
+	fread(&header, sizeof(sfo_header), 1, sfo);
+	es_header(&header);
+
+	if(header.magic != SFO_MAGIC) {
+		print_load("Error : wrong magic value");
+		return FAILED;
+	}
+	
+	sfo_table_entry table_entry[header.nb_entries];
+	
+// read table entries
+	int i;
+	for(i=0; i < header.nb_entries; i++) {
+		fread(&table_entry[i], sizeof(sfo_table_entry), 1, sfo);
+		es_table_entry(&table_entry[i]);
+	}
+
+	char KEY[64]={0};
+	s32 ENTRY_ID=-1;
+	u32 len = strlen(name);
+	
+// get KEY
+	for(i=0; i < header.nb_entries; i++) {
+		//if(table_entry[i].data_type == SFO_DATA_TYPE_UTF8S) continue ; // ignore
+		fseek(sfo, header.key_table_start + table_entry[i].key_offset + sfo_start, SEEK_SET );
+		memset(KEY, 0, 64);
+		fgets(KEY, 64, sfo);
+		if(!strncmp(KEY, name, len))  {
+			ENTRY_ID = i;
+			break;
+		}
+	}
+	
+	if(ENTRY_ID == -1) {
+		print_debug("Failed to find %s in param.sfo", name);
+		return FAILED;
+	}
+	
+	char *entry_data_utf8;
+	uint32_t entry_data_int32;
+	
+// get DATAS
+	fseek(sfo, header.data_table_start + table_entry[ENTRY_ID].data_offset + sfo_start, SEEK_SET );
+	
+	if(table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_UTF8 || table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_UTF8S) {
+		entry_data_utf8 = (char *) malloc(table_entry[ENTRY_ID].data_max_len);
+		if(entry_data_utf8==NULL) {
+			fclose(sfo);
+			print_debug("Error : failed to malloc entry_data_utf8");
+			return FAILED;
+		}
+		fread(entry_data_utf8, 1, table_entry[i].data_max_len, sfo);
+		strcpy(value, entry_data_utf8);
+		free(entry_data_utf8);
+	} else
+	if(table_entry[ENTRY_ID].data_type == SFO_DATA_TYPE_INT32) {
+		fread(&entry_data_int32, 1, table_entry[i].data_max_len, sfo);
+		entry_data_int32 = ES(entry_data_int32);
+		sprintf(value, "%d", entry_data_int32);
+	}
+	fclose(sfo);
+	
+	return SUCCESS;
 }
 
 void Draw_SFO_viewer()
@@ -25727,9 +27157,17 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		//DumpUSB000();
-		//exFAT_test();
-		//TestCapFlag();
+		u32 sig = 0;
+		sig = IRD_meta_sig("/dev_hdd0/BLES00565.ird"); 
+		print_load("sig ird = %X", sig);
+		sig = IRD_meta_sig("/dev_hdd0/BLES00565.iso");
+		print_load("sig iso = %X", sig);
+		
+		print_load( "IRD_UPLOAD !");
+		
+		IRD_upload("/dev_hdd0/BLES00565.ird");
+		sleep(4);
+		
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
@@ -26036,9 +27474,8 @@ void Option(char *item)
 	if(strcmp(item, STR_CHECK_IRD) == 0) {
 		start_loading();
 		for(i=0; i<=option_sel_N; i++) {
-			if ( CheckIRD(option_sel[i]) == SUCCESS) {
-				if(is_iso(option_sel[i])) sprintf(temp, "%s.MD5_check.txt", option_sel[i]);
-				else sprintf(temp, "%s/MD5_check.txt", option_sel[i]);
+			if ( IRD_check(option_sel[i]) == SUCCESS) {
+				sprintf(temp, "%s.result_md5.txt", option_sel[i]);
 				if(option_sel_N==0) open_txt_viewer(temp);
 			}
 		}
@@ -27672,7 +29109,10 @@ void Draw_HELP()
 	float y=23;
 	FontColor(COLOR_1);
 	FontSize(13);
-
+	
+	if(item_is(STR_DUMP_DEC)) {
+		DrawString(x, y, STR_DUMP_DEC_DESC);
+	} else
 	if(item_is(STR_BT_AUDIO)) {
 		DrawString(x, y, STR_BT_AUDIO_DESC);
 	} else
@@ -28315,7 +29755,7 @@ void Draw_ICON0_creator()
 		xj = X_ICON0_creator * wi / COVER.width;
 		yj = Y_ICON0_creator * hi / COVER.height ;
 		
-		Draw_LineBox(xi+xj, yi+yj, 0, 5, wj, hj, RED);
+		Draw_LineBoxOutside(xi+xj, yi+yj, 0, 5, wj, hj, RED);
 	}
 }
 
@@ -30003,7 +31443,7 @@ void PS2_CONFIG_MENU_CROSS()
 			CONFIG_remove_PNACH(pnach);
 			
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PNACH(pnach);
-		if( DEBUG ) end_loading();
+		end_loading();
 	} else
 	if(item_is(STR_WIDESCREEN)) {
 		if( DEBUG ) start_loading();
@@ -30012,7 +31452,7 @@ void PS2_CONFIG_MENU_CROSS()
 		else
 			CONFIG_remove_PNACH(WS);
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PNACH(WS);
-		if( DEBUG ) end_loading();
+		end_loading();
 	} else
 	if(item_is(STR_YFIX)) {
 		if( DEBUG ) start_loading();
@@ -30021,7 +31461,7 @@ void PS2_CONFIG_MENU_CROSS()
 		else
 			CONFIG_remove_PS2PATCH(PS2PATCH_YFIX_offset+0x24, 0, 4);
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PS2PATCH(PS2PATCH_YFIX_offset+0x24, 0);
-		if( DEBUG ) end_loading();
+		end_loading();
 	} else
 	if(item_is(STR_480P)) {
 		if( DEBUG ) start_loading();
@@ -30036,7 +31476,7 @@ void PS2_CONFIG_MENU_CROSS()
 			CONFIG_remove_PS2PATCH(PS2PATCH_480P_offset+0x10, 0, 4);
 		}
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PS2PATCH(PS2PATCH_480P_offset, 0);
-		if( DEBUG ) end_loading();
+		end_loading();
 	} else
 	if(item_is(STR_FMV)) {
 		if( DEBUG ) start_loading();
@@ -30045,7 +31485,7 @@ void PS2_CONFIG_MENU_CROSS()
 		else
 			CONFIG_remove_PS2PATCH(PS2PATCH_FMVSKIP_offset+8, 0, 4);
 		ITEMS_VALUE_POSITION[ITEMS_POSITION]=CONFIG_exist_PS2PATCH(PS2PATCH_FMVSKIP_offset+8, 0);
-		if( DEBUG ) end_loading();
+		end_loading();
 	} else
 /*
 	if(item_is("Tri-Ace Hack")) {
@@ -30077,7 +31517,7 @@ void PS2_CONFIG_MENU_CROSS()
 		}
 		if( DEBUG ) start_loading();
 		load_PS2_CONFIG(CONFIG_path);
-		if( DEBUG ) end_loading();
+		end_loading();
 	} else
 	if(item_is(STR_NEW_CMD)) {
 		show_msg("TODO");
@@ -31742,6 +33182,9 @@ void open_PS1_GAME_MENU()
 
 void open_PS3_GAME_MENU();
 void close_PS3_GAME_MENU();
+void open_BDVD_MENU();
+void close_BDVD_MENU();
+
 
 typedef struct
 {
@@ -31765,7 +33208,7 @@ void get_current_version(char *gameID)
 	sprintf(sfo_path, "/dev_hdd0/game/%s/USRDIR/param.sfo", gameID);
 	
 	memset(ps3_game_current_version, 0, 4);
-	if( GetParamSFO("APP_VER", ps3_game_current_version, -1, sfo_path)== FAILED) {
+	if( GetParamSFO("APP_VER", ps3_game_current_version, sfo_path)== FAILED) {
 		strcpy(ps3_game_current_version, "01.00");
 	}
 }
@@ -31841,7 +33284,8 @@ void close_PS3_UPDATE_MENU()
 	FREE(ps3_game_updates);
 	ps3_game_updates_number=-1;
 	
-	open_PS3_GAME_MENU();
+	if(list_game_platform[position]==BDVD) open_BDVD_MENU(); 
+	else open_PS3_GAME_MENU();
 }
 
 void init_PS3_UPDATE_MENU()
@@ -32829,7 +34273,7 @@ u8 PS3_GAME_MENU_CROSS()
 		strcpy(tmpName, list_game_title[position]);
 		if(Get_OSK_String(STR_RENAME, tmpName, 128) == SUCCESS) {
 			if(tmpName[0]!=0) {
-				if(SetParamSFO("TITLE", tmpName, position, NULL)==SUCCESS) {
+				if(SetParamSFO("TITLE", tmpName, list_game_path[position])==SUCCESS) {
 					FREE(list_game_title[position]);
 					list_game_title[position] = strcpy_malloc(tmpName);
 					show_msg(STR_DONE);
@@ -32905,7 +34349,7 @@ u8 PS3_GAME_MENU_CROSS()
 	if(item_is(STR_PATCH_EBOOT)) {
 		start_loading();
 		u8 ret;
-		ret = patch_EBOOT(position);
+		ret = patch_EBOOT(list_game_path[position]);
 		if(ret == SUCCESS) show_msg(STR_DONE); 
 		else show_msg(STR_FAILED);
 		end_loading();
@@ -32996,19 +34440,22 @@ u8 PS3_GAME_MENU_CROSS()
 	if(item_is(STR_CHECK_IRD)) {
 		u8 ret;
 		start_loading();
-		ret = CheckIRD(list_game_path[position]);
+		ret = IRD_check(list_game_path[position]);
+		print_debug("end_loading");
 		end_loading();
+		
 		
 		if( ret == SUCCESS ) {
 			char temp[128];
-			if(iso) sprintf(temp, "%s.MD5_check.txt", list_game_path[position]);
-			else sprintf(temp, "%s/MD5_check.txt", list_game_path[position]);
+			sprintf(temp, "%s.result_md5.txt", list_game_path[position]);
+			print_debug("open_txt_viewer %s", temp);
+			
 			open_txt_viewer(temp);
-		}
-		else {
+		} else {
+			print_debug("show_msg");
 			show_msg(STR_FAILED);
-			end_loading();
 		}
+		
 	} else 
 	if(item_is(STR_DL_UPDATE)) {
 		open_PS3_UPDATE_MENU();
@@ -33247,14 +34694,11 @@ void Draw_PS3_GAME_MENU_input()
 	if( item_is(STR_CHANGE_IDPS) && change_IDPS) {
 		x=DrawButton(x, y, STR_EDIT_IDPS, BUTTON_R1);
 	}
-
 }
 
 void open_PS3_GAME_MENU()
 {
-	if( DEBUG ) {
-		start_loading();
-	}
+	if( DEBUG ) start_loading();
 	
 	read_game_setting(position);
 	
@@ -33270,13 +34714,379 @@ void open_PS3_GAME_MENU()
 	
 	new_pad = 0;
 	
-	if( DEBUG ) {
-		end_loading();
+	end_loading();
+}
+
+//*******************************************************
+// BDVD MENU
+//*******************************************************
+
+void close_BDVD_MENU()
+{
+	Draw_MENU_input = &EmptyFunc;
+	input_MENU = &EmptyFunc;
+	MENU=NO;
+	free_MENU();
+}
+
+void init_BDVD_MENU()
+{
+	
+	print_debug("init_PS3_GAME_MENU");
+	
+	int i, j;
+	char tmp[255];
+	
+	init_MENU();
+	
+	add_title_MENU(STR_GAME_OPTION);
+	
+	if(is_favorite(list_game_path[position]) == NO) {
+		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
+	} else {
+		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
 	}
+	
+	add_item_MENU(STR_DUMP_DEC, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
+	
+	add_item_MENU(STR_DUMP_ENC, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
+	
+	add_item_MENU(STR_DUMP_DISC_KEY, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		add_item_value_MENU(tmp);
+	}
+	
+	add_item_MENU(STR_COPY, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			if(strstr(list_game_path[position], list_device[i])) continue;
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
+	
+	add_item_MENU(STR_DL_UPDATE, ITEM_TEXTBOX);
+	
+	add_item_MENU(STR_PROPS, ITEM_TEXTBOX);	
+}
+
+void BDVD_MENU_UPDATE()
+{
+		
+}
+
+u8 BDVD_MENU_CROSS()
+{
+	if(item_is(STR_ADD_FAV)) {
+		if(add_favorite()==SUCCESS) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else 
+	if(item_is(STR_REM_FAV)) {
+		if(remove_favorite()==SUCCESS) {
+			show_msg(STR_DONE);
+			if(UI_position != XMB && Only_FAV) {
+				int i;
+				int old_position = position;
+				for(i=0; i<=game_number; i++) {
+					if(position-i<0 && game_number<position+i) break;
+					if(Show_it(position+i) == YES) {position+=i; break;}
+					if(Show_it(position-i) == YES) {position-=i; break;}
+				}
+				if(old_position == position && 0 <= position) position = -1;
+				return BREAK;
+			} else 
+			if(UI_position == XMB && XMB_H_position==XMB_COLUMN_FAVORITES) {
+				return BREAK;
+			}	
+		} else {
+			show_msg(STR_FAILED);
+		}
+	} else 
+	if(item_is(STR_COPY)) {
+		Copy_Game(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+	} else
+	if(item_is(STR_DUMP_DEC)) {
+		start_copy_loading();
+		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(item_is(STR_DUMP_ENC)) {
+		start_copy_loading();
+		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(item_is(STR_DUMP_DISC_KEY)) {
+		start_copy_loading();
+		u8 ret =FAILED;
+		char outfile[512];
+		char *date = get_date();
+		if( date != NULL) {
+			sprintf(outfile, "%s/%s_%s.disc.key", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], list_game_ID[position], date);
+			free(date);
+			ret = dump_disc_key(outfile);
+		}
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(item_is(STR_DL_UPDATE)) {
+		open_PS3_UPDATE_MENU();
+	} else 
+	if(item_is(STR_PROPS)) {
+		start_gathering();
+		Get_Game_Size(list_game_path[position]);
+		end_gathering();
+			
+		if(gathering_cancel==NO) Draw_GameProperties();
+		else gathering_cancel=NO;
+	}
+	
+	return CONTINUE;
+}
+
+u8 BDVD_MENU_SQUARE()
+{
+	return CONTINUE;
+}
+
+u8 BDVD_MENU_TRIANGLE()
+{
+	return CONTINUE;
+}
+
+u8 BDVD_MENU_R1()
+{
+	return CONTINUE;
+}
+
+void input_BDVD_MENU()
+{
+	if(MENU==NO) return;
+	
+	int i;
+	
+	get_R2speed();
+	
+	if(R2pad(BUTTON_UP)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				u8 twice=NO;
+				if(TITLES[ITEMS_POSITION]==NULL) twice=YES;
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos = ITEMS_POSITION-i;
+					if( i_pos < 0 ) i_pos+=ITEMS_NUMBER+1;
+					if(TITLES[i_pos] != NULL) {
+						if(twice==NO) {
+							ITEMS_POSITION = i_pos;
+							break;
+						} else twice=NO;
+					}
+				}
+			} else if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION==TITLE_MENU_FIRST_ITEM) ITEMS_POSITION=TITLE_MENU_LAST_ITEM;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+					else ITEMS_POSITION--;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
+		}
+	} else
+	if(R2pad(BUTTON_DOWN)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL==LVL_TITLE) {
+				for(i=1; i<=ITEMS_NUMBER; i++) {
+					int i_pos=ITEMS_POSITION+i;
+					if(ITEMS_NUMBER<i_pos) i_pos-=ITEMS_NUMBER+1;
+					if(TITLES[i_pos]!=NULL) {
+						ITEMS_POSITION=i_pos;
+						break;
+					}
+				}
+			} else
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=TITLE_MENU_LAST_ITEM-TITLE_MENU_FIRST_ITEM; i++) {
+					if(ITEMS_POSITION == TITLE_MENU_LAST_ITEM) ITEMS_POSITION = TITLE_MENU_FIRST_ITEM;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}				
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				for(i=0; i<=ITEMS_NUMBER; i++) {
+					if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+					else ITEMS_POSITION++;
+					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
+				}
+				
+			} else if(MENU_LVL == LVL_VALUE) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_CROSS)) {
+		if(MENU_LVL == LVL_TITLE) {
+			MENU_LVL = LVL_ITEMS;
+		} else 
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == NO) ITEMS_VALUE_POSITION[ITEMS_POSITION]=YES;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=NO;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			MENU_LVL = LVL_VALUE;
+		} else {
+			if(BDVD_MENU_CROSS() == BREAK) {
+				close_BDVD_MENU();
+				return;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_SQUARE)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
+			}
+		} else {
+			if(BDVD_MENU_SQUARE() == BREAK) {
+				close_BDVD_MENU();
+				return;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_TRIANGLE)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else
+		if( ITEMS_TYPE[ITEMS_POSITION] == ITEM_TOGGLE ) {
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION]=1;
+			else ITEMS_VALUE_POSITION[ITEMS_POSITION]=0;
+		} else 
+		if(MENU_LVL == LVL_ITEMS && ITEMS_VALUE_NUMBER[ITEMS_POSITION] != -1) {
+			if(ITEMS_VALUE_SHOW[ITEMS_POSITION] == YES) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
+				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
+			}
+		} else {
+			if(BDVD_MENU_TRIANGLE() == BREAK) {
+				close_BDVD_MENU();
+				return;
+			}
+		}
+	} else
+	if(NewPad(BUTTON_CIRCLE)) {
+		if(USE_TITLE_MENU) {
+			if(MENU_LVL == LVL_TITLE) {
+				close_BDVD_MENU(); 
+				return;
+			} else 
+			if(MENU_LVL == LVL_ITEMS) {
+				MENU_LVL = LVL_TITLE;
+			} else 
+			if(MENU_LVL == LVL_VALUE) {
+				MENU_LVL = LVL_ITEMS;
+			}
+		} else {
+			if(MENU_LVL == LVL_ITEMS) {
+				close_BDVD_MENU(); 
+				return;
+			} else {
+				MENU_LVL = LVL_ITEMS;
+				init_BDVD_MENU();
+			}
+		}
+	} else 
+	if(NewPad(BUTTON_R1)) {
+		if(MENU_LVL == LVL_TITLE) {
+			//nothing
+		} else {
+			BDVD_MENU_R1();
+		}
+	}
+	
+	if(new_pad) BDVD_MENU_UPDATE();
+}
+
+void Draw_BDVD_MENU_input()
+{
+	if(MENU==NO) return;
+	
+	float x=INPUT_X;
+	float y=INPUT_Y;
+	
+	FontColor(COLOR_1);
+	SetFontZ(0);
+	
+	x=DrawButton(x, y, STR_ENTER, BUTTON_CROSS);
+	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
+}
+
+void open_BDVD_MENU()
+{
+	if( DEBUG ) start_loading();
+	
+	USE_TITLE_MENU=NO;
+	new_MENU();
+	MENU_SIDE=Use_SideMenu;
+	if(MENU_SIDE) MENU_ITEMS_X=X_MAX;
+	
+	Draw_MENU_input = &Draw_BDVD_MENU_input;
+	input_MENU = &input_BDVD_MENU;
+	
+	init_BDVD_MENU();
+	
+	new_pad = 0;
+	
+	end_loading();
 }
 
 void open_GameMenu()
 {
+	if(list_game_platform[position] == BDVD) {
+		open_BDVD_MENU();
+	} else 
 	if(list_game_platform[position] == JB_PS3 || list_game_platform[position] == ISO_PS3) {
 		open_PS3_GAME_MENU();
 	} else
@@ -33567,7 +35377,8 @@ void input_PLUGINS_MANAGER()
 	if(txt_viewer_activ) {
 		// if the user delete the file from txt_viewer
 		if(NewPad(BUTTON_SQUARE)) {
-			txt_viewer_activ=NO;				
+			txt_viewer_activ=NO;
+			memset(txt_viewer_content, 0, sizeof(txt_viewer_content));
 			FREE(txt_viewer_content);
 			FREE(txt_viewer_path);
 			MENU_LVL = LVL_ITEMS;
@@ -34829,33 +36640,34 @@ void init_SETTINGS()
 	}
 	
 	
-	add_title_MENU("System");
+	add_title_MENU(STR_SYSTEM_TOOLS);
+
+	if( ERK_DUMPER_SIZE != 0 ) {
+		add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
+		add_item_MENU(STR_DUMP_3DUMP, ITEM_TEXTBOX);
+	}
 	
-	add_item_MENU("Logging", ITEM_TOGGLE);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LOG;
-	
-	add_item_MENU("Debugging", ITEM_TOGGLE);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = DEBUG;
-	
-	if( ERK_DUMPER_SIZE != 0 ) add_item_MENU("Dump eid_root_key", ITEM_TEXTBOX);
-	
-	add_item_MENU("Dump BD keys", ITEM_TEXTBOX);
-	
-	add_item_MENU("Dump 3Dump.bin", ITEM_TEXTBOX);
+	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
+	
+	add_item_MENU("MGZ log", ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LOG;
+	
+	add_item_MENU("MGZ debug", ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = DEBUG;
 }
 
 void update_SETTINGS()
 {
-	if(item_is("Logging")) {
+	if(item_is("MGZ log")) {
 		LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(item_is("Debugging")) {
+	if(item_is("MGZ debug")) {
 		DEBUG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
 	if(item_is(STR_FONT)) {
@@ -35113,6 +36925,12 @@ u8 SETTING_R1()
 
 u8 SETTINGS_CROSS()
 {
+	if(item_is(STR_FIX_PERMS)) {
+		start_loading();
+		print_head("Fixing file permissions to /dev_hdd0");
+		SetPerms("/dev_hdd0");
+		end_loading();
+	} else
 	if(item_is(STR_DUMP_LV1)) {
 		start_loading();
 		dump_lv1("/dev_hdd0");
@@ -35128,14 +36946,7 @@ u8 SETTINGS_CROSS()
 		dump_flash("/dev_hdd0");
 		end_loading();
 	} else 
-	if(item_is("Dump BD keys")) {
-		start_loading();
-		u8 ret = Dump_BD_keys();
-		end_loading();
-		if( ret == SUCCESS ) show_msg(STR_DONE);
-		else show_msg(STR_FAILED);
-	} else 
-	if(item_is("Dump eid_root_key")) {
+	if(item_is(STR_DUMP_ERK)) {
 		start_loading();
 		mkdir("/dev_hdd0/tmp", 0777);
 		u8 ret = dump_eid_root_key("/dev_hdd0/tmp/eid_root_key");
@@ -35143,7 +36954,7 @@ u8 SETTINGS_CROSS()
 		if( ret == SUCCESS ) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
 	} else 
-	if(item_is("Dump 3Dump.bin")) {
+	if(item_is(STR_DUMP_3DUMP)) {
 		start_loading();
 		u8 ret = dump_3Dump();
 		end_loading();
@@ -35642,7 +37453,7 @@ void AutoMount()
 	game_number=0;
 	position=0;
 	
-	GetParamSFO("TITLE", list_game_title[0], 0, NULL);
+	GetParamSFO("TITLE", list_game_title[0], list_game_path[0]);
 	list_game_platform[0] = get_platform(list_game_path[0]);
 	iso = is_iso(list_game_path[0]);
 	usb = is_usb(list_game_path[0]);
@@ -36095,10 +37906,8 @@ void Draw_LIST()
 		
 		j++;
 		
-		if(i==position) FontColor(COLOR_2);
-		else FontColor(COLOR_1);
+		DrawTXTinLineBox(x, y, 0, X_MAX-x, list_game_title[i], 0, i==position ? COLOR_2 : COLOR_1);
 		
-		DrawFormatString(x, y, "%s", list_game_title[i]);
 		y+=LIST_SizeFont;
 	}
 	SetFontZ(10);
@@ -38610,7 +40419,8 @@ void Draw_XMB_LINES()
 					w, h, YES, WHITE);
 		
 		if(w<XMB_W*2) w = XMB_W*2;
-		DrawString(XMB_X_LINE+w/2+20, XMB_Y_LINE - 20, list_game_title[position]);
+		DrawTXTInBox(XMB_X_LINE+w/2+20, XMB_Y_LINE - 20, 10, X_MAX-XMB_X_LINE+w/2+20, Y_MAX-XMB_Y_LINE - 20, list_game_title[position], 0, color);
+		//DrawString(XMB_X_LINE+w/2+20, XMB_Y_LINE - 20, list_game_title[position]);
 	}
 
 }
@@ -38761,7 +40571,7 @@ void Draw_GRID()
 		
 		Draw_GAMEPIC(i, GAMEPIC_ICON0 | GAMEPIC_COVER2D | GAMEPIC_ICON0_DEFAULT, ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], GRID_W_ICON0, GRID_H_ICON0, NO, WHITE);
 		if(i==position) {
-			Draw_LineBox(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], 5, GRID_W_ICON0, GRID_H_ICON0, WHITE);
+			Draw_LineBoxOutside(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i], 5, GRID_W_ICON0, GRID_H_ICON0, WHITE);
 		} else {
 			Draw_Box(ITEM_moveX[i], ITEM_moveY[i], ITEM_moveZ[i]-1, 0, GRID_W_ICON0, GRID_H_ICON0, 0xFFFFFF80, NO); 
 		}
@@ -39168,7 +40978,7 @@ void Draw_MAIN_input()
 		
 		FontColor(COLOR_1);
 		
-		if(list_game_platform[position] == ISO_PS3 || list_game_platform[position] == JB_PS3) {
+		if(list_game_platform[position] == ISO_PS3 || list_game_platform[position] == JB_PS3 || list_game_platform[position]==BDVD) {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "PS3");
 		} else
 		if(list_game_platform[position] == ISO_PS2 || list_game_platform[position] == JB_PS2) {
@@ -39201,8 +41011,11 @@ void Draw_MAIN_input()
 		} else
 		if( !strncasecmp(Ext, ".cso", 4) )  {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "CSO");
+		} else
+		if( list_game_platform[position]==BDVD) {
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "BLUERAY");
 		} else {
-			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "JB");
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "JB");			
 		}
 		
 		if(is_66600(list_game_path[position])) {
@@ -39304,7 +41117,7 @@ void Draw_MAIN()
 	if(UI_position==FLOW) {
 		if(FLOW_3D) {
 			FontSize(20);
-			DrawStringFromCenterX(424, 50, list_game_title[position]);
+			DrawTXTInBoxFromCenter(0, 50, 10, X_MAX, 60, list_game_title[position], 0, WHITE);
 			
 			update_3DFLOW();
 		
@@ -39319,7 +41132,7 @@ void Draw_MAIN()
 		}
 		else {
 			FontSize(20);
-			DrawStringFromCenterX(424, 75, list_game_title[position]);
+			DrawTXTInBoxFromCenter(0, 75, 10, X_MAX, 60, list_game_title[position], 0, WHITE);
 			
 			update_FLOW();
 			
@@ -39335,7 +41148,7 @@ u8 Show_it(int pos)
 {
 	if(pos<0 || game_number<pos) return NO;
 	
-	if( Show_PS3==NO && (list_game_platform[pos]== ISO_PS3 || list_game_platform[pos]== JB_PS3)) return NO;
+	if( Show_PS3==NO && (list_game_platform[pos]== ISO_PS3 || list_game_platform[pos]== JB_PS3 || list_game_platform[pos]== BDVD)) return NO;
 	if( Show_PS2==NO && (list_game_platform[pos]== ISO_PS2 || list_game_platform[pos]== JB_PS2)) return NO;
 	if(	Show_PS1==NO && (list_game_platform[pos]== ISO_PS1 || list_game_platform[pos]== JB_PS1)) return NO;
 	if(	Show_PSP==NO && (list_game_platform[pos]== ISO_PSP || list_game_platform[pos]== JB_PSP)) return NO;

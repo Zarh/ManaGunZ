@@ -231,6 +231,17 @@ char MGZ_fputc(char c, MGZ_FILE* mgz_file)
 	return -1;
 }
 
+// todo...
+int MGZ_ferror(MGZ_FILE *mgz_file)
+{
+	return 0;
+}
+
+int MGZ_feof(MGZ_FILE *mgz_file)
+{
+	return 0;	
+}
+
 #define FILE		MGZ_FILE
 
 #define fopen		MGZ_fopen
@@ -244,6 +255,8 @@ char MGZ_fputc(char c, MGZ_FILE* mgz_file)
 #define fgets 		MGZ_fgets
 #define fputs 		MGZ_fputs
 #define truncate 	MGZ_truncate
+//#define ferror		MGZ_ferror
+//#define feof			MGZ_feof
 
 //*******************************************************************************************
 //*******************************************************************************************

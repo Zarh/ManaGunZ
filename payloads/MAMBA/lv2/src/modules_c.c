@@ -20,6 +20,30 @@ int prx_get_module_name_by_address(process_t process, void *addr, char *name)
 	return 0;
 }
 
+// load system modules by haxxxen
+int prx_start_modules(sys_prx_id_t id, process_t process, uint64_t flags, uint64_t arg)
+{
+	int ret;
+	uint64_t meminfo[5];
+	uint32_t toc[2];
+
+	meminfo[0] = sizeof(meminfo);
+	meminfo[1] = 1;
+
+	ret = prx_start_module(id, process, flags, meminfo);
+	if (ret) // (ret != SUCCEEDED)
+		return ret;
+
+	ret = copy_from_process(process, (void *)meminfo[2], toc, sizeof(toc));
+	if (ret) // (ret != SUCCEEDED)
+		return ret;
+
+	meminfo[1] = 2;
+	meminfo[3] = 0;
+
+	return prx_start_module(id, process, flags, meminfo);
+}
+
 int prx_start_module_with_thread(sys_prx_id_t id, process_t process, uint64_t flags, uint64_t arg)
 {
 	int ret;
@@ -32,15 +56,15 @@ int prx_start_module_with_thread(sys_prx_id_t id, process_t process, uint64_t fl
 	meminfo[1] = 1;
 
 	ret = prx_start_module(id, process, flags, meminfo);
-	if (ret != 0)
+	if (ret)
 		return ret;
 
 	ret = copy_from_process(process, (void *)meminfo[2], toc, sizeof(toc));
-	if (ret != 0)
+	if (ret)
 		return ret;
 
 	ret = ppu_user_thread_create(process, &thread, toc, arg, 0, 0x1000, PPU_THREAD_CREATE_JOINABLE, "");
-	if (ret != 0)
+	if (ret)
 		return ret;
 
 	ppu_thread_join(thread, &exit_code);
@@ -62,15 +86,15 @@ int prx_stop_module_with_thread(sys_prx_id_t id, process_t process, uint64_t fla
 	meminfo[1] = 1;
 
 	ret = prx_stop_module(id, process, flags, meminfo);
-	if (ret != 0)
+	if (ret)
 		return ret;
 
 	ret = copy_from_process(process, (void *)meminfo[2], toc, sizeof(toc));
-	if (ret != 0)
+	if (ret)
 		return ret;
 
 	ret = ppu_user_thread_create(process, &thread, toc, arg, 0, 0x1000, PPU_THREAD_CREATE_JOINABLE, "");
-	if (ret != 0)
+	if (ret)
 		return ret;
 
 	return ppu_thread_join(thread, &exit_code);

@@ -17,16 +17,16 @@ typedef struct _SHACtx
 
 LV2_EXPORT int get_pseudo_random_number(void *buf, uint64_t size);
 
-LV2_EXPORT void aescbccfb_dec(uint8_t *out, uint8_t *in, uint32_t len,uint8_t *key,uint32_t bits,uint8_t *iv);
-LV2_EXPORT void aescbccfb_enc(uint8_t *out, uint8_t *in, uint32_t len,uint8_t *key,uint32_t bits,uint8_t *iv);
+LV2_EXPORT void md5_reset(MD5Context *ctx);
+LV2_EXPORT void md5_update(MD5Context *ctx, void *buf, uint32_t size);
+LV2_EXPORT void md5_final(void *hash, MD5Context *ctx);
 
 LV2_EXPORT void sha1_init(SHACtx *ctx);
 LV2_EXPORT void sha1_update(SHACtx *ctx, const void *buf, uint64_t len);
 LV2_EXPORT void sha1_final(uint8_t *out, SHACtx *ctx);
 
-LV2_EXPORT void md5_reset(MD5Context *ctx);
-LV2_EXPORT void md5_update(MD5Context *ctx, void *buf, uint32_t size);
-LV2_EXPORT void md5_final(void *hash, MD5Context *ctx);
+LV2_EXPORT void aescbccfb_dec(uint8_t *out, uint8_t *in, uint32_t len, uint8_t *key, uint32_t bits, uint8_t *iv);
+LV2_EXPORT void aescbccfb_enc(uint8_t *out, uint8_t *in, uint32_t len, uint8_t *key, uint32_t bits, uint8_t *iv);
 
 /*
 static INLINE void md5_once(void *buf, uint32_t size, void *hash)
@@ -69,5 +69,3 @@ static void syscon_brick_experiment(void)
 }*/
 
 #endif /* __LV2_SECURITY_H__ */
-
-

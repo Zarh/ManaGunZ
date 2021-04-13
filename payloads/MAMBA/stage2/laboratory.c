@@ -130,8 +130,8 @@ static void dump_process(process_t process)
 		return;
 	}
 
-	ret = cellFsOpen(path, CELL_FS_O_WRONLY|CELL_FS_O_CREAT|CELL_FS_O_TRUNC, &fd, 0666, NULL, 0);
-	if (ret != 0)
+	ret = cellFsOpen(path, CELL_FS_O_WRONLY | CELL_FS_O_CREAT | CELL_FS_O_TRUNC, &fd, 0666, NULL, 0);
+	if (ret) // (ret != CELL_FS_SUCCEEDED)
 	{
 		DPRINTF("Cannot create %s\n", path);
 		return;
@@ -142,7 +142,7 @@ static void dump_process(process_t process)
 		uint64_t written;
 
 		ret = copy_from_process(process, (void *)addr, buf, KB(64));
-		if (ret != 0)
+		if (ret) // (ret != 0)
 		{
 			DPRINTF("End of maing segment: %lx\n", addr);
 			break;
@@ -156,7 +156,7 @@ static void dump_process(process_t process)
 	sprintf(path, "/dev_usb000/%s.heap_segment", get_process_name(process));
 
 	ret = cellFsOpen(path, CELL_FS_O_WRONLY | CELL_FS_O_CREAT | CELL_FS_O_TRUNC, &fd, 0666, NULL, 0);
-	if (ret != 0)
+	if (ret) // (ret != CELL_FS_SUCCEEDED)
 	{
 		DPRINTF("Cannot create %s\n", path);
 		return;
@@ -167,7 +167,7 @@ static void dump_process(process_t process)
 		uint64_t written;
 
 		ret = copy_from_process(process, (void *)addr, buf, KB(64));
-		if (ret != 0)
+		if (ret) // (ret != 0)
 		{
 			DPRINTF("End of heap segment: %lx\n", addr);
 			break;
@@ -295,7 +295,7 @@ static void ps2net_copy_test(uint64_t arg0)
 	read_and_clear_ps2netemu_log();
 	DPRINTF("Attempting to write ps2_netemu.self\n");
 
-	if (cellFsUtilMount_h("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_wflash", 0, 0, 0, NULL, 0) != 0)
+	if (cellFsUtilMount_h("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_wflash", 0, 0, 0, NULL, 0) != CELL_FS_SUCCEEDED)
 	{
 		DPRINTF("Mount R/W failed\n");
 		ppu_thread_exit(0);
@@ -304,13 +304,13 @@ static void ps2net_copy_test(uint64_t arg0)
 	int src, dst;
 	uint64_t rw;
 
-	if (cellFsOpen("/dev_usb000/ps2_netemu.self", CELL_FS_O_RDONLY, &src, 0, NULL, 0) != 0)
+	if (cellFsOpen("/dev_usb000/ps2_netemu.self", CELL_FS_O_RDONLY, &src, 0, NULL, 0) != CELL_FS_SUCCEEDED)
 	{
 		DPRINTF("open Src read failed\n");
 		goto umount_exit;
 	}
 
-	if (cellFsOpen("/dev_wflash/ps2emu/ps2_netemu.self", CELL_FS_O_WRONLY|CELL_FS_O_CREAT|CELL_FS_O_TRUNC, &dst, 0666, NULL, 0) != 0)
+	if (cellFsOpen("/dev_wflash/ps2emu/ps2_netemu.self", CELL_FS_O_WRONLY | CELL_FS_O_CREAT | CELL_FS_O_TRUNC, &dst, 0666, NULL, 0) != CELL_FS_SUCCEEDED)
 	{
 		DPRINTF("open dst write failed\n");
 		cellFsClose(src);
@@ -319,7 +319,7 @@ static void ps2net_copy_test(uint64_t arg0)
 
 	uint8_t *buf;
 
-	if (page_allocate_auto(NULL, 0x10000, (void **)&buf) != 0)
+	if (page_allocate_auto(NULL, 0x10000, (void **)&buf) != SUCCEEDED)
 	{
 		DPRINTF("page_allocate failed\n");
 		cellFsClose(src);
@@ -334,7 +334,7 @@ static void ps2net_copy_test(uint64_t arg0)
 
 	while (1)
 	{
-		if (cellFsRead(src, buf, 0x10000, &rw) != 0)
+		if (cellFsRead(src, buf, 0x10000, &rw) != CELL_FS_SUCCEEDED)
 		{
 			DPRINTF("cellFsRead failed\n");
 			cellFsClose(src);
@@ -343,7 +343,7 @@ static void ps2net_copy_test(uint64_t arg0)
 			goto umount_exit;
 		}
 
-		if (cellFsWrite(dst, buf, rw, &rw) != 0)
+		if (cellFsWrite(dst, buf, rw, &rw) != CELL_FS_SUCCEEDED)
 		{
 			DPRINTF("cellFsWrite failed\n");
 			cellFsClose(src);
@@ -366,7 +366,7 @@ static void ps2net_copy_test(uint64_t arg0)
 
 umount_exit:
 
-	if (cellFsUtilUmount("/dev_wflash", 0, 0) != 0)
+	if (cellFsUtilUmount("/dev_wflash", 0, 0) != CELL_FS_SUCCEEDED)
 		cellFsUtilUmount("/dev_wflash", 0, 1);
 
 	ppu_thread_exit(0);

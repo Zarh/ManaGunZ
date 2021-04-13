@@ -359,3 +359,24 @@ STR_FILTER_NOGAME			{No games found. Adjust your filter.}
 STR_SYMLINK_SRC				{SymLink source}
 STR_SYMLINK_TARGET			{SymLink target}
 STR_LOAD_MAMBA				{Load mamba}
+
+STR_CONVERT_TO_PNG			{Convert to PNG}
+STR_MOUNT_DEVBLIND			{Unprotect dev_flash}
+STR_UNMOUNT_DEVBLIND		{Protect dev_flash}
+STR_BT_AUDIO				{Game-pad audio out}
+STR_BT_AUDIO_DESC			{Play sound through the game-pad while playing. Tested with a DS4.}
+STR_GAME_UPDATE_TITLE		{PS3 game updates downloader}
+STR_CURRENT_VERS			{Current version}
+STR_CANT_MOUNT_PEEKPOKE		{Unmountable : PEEK and POKE unavailable, mamba can't be installed}
+STR_CANT_MOUNT_UNKFW		{Unmountable : unknown firmware, mamba can't be installed.}
+STR_CANT_MOUNT				{Unmountable}
+STR_ONLY_FAV				{Only favorites}
+STR_ALL_GAMES				{All games}
+STR_DISPLAY					{Display}
+STR_DUMP_DEC				{Dump decrypted Blu-Ray disc}
+STR_DUMP_DEC_DESC			{Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
+STR_DUMP_ENC				{Dump encrypted Blu-Ray disc}
+STR_DUMP_DISC_KEY			{Dump Blu-Ray disc key}
+STR_DUMP_ERK				{Dump eid root key}
+STR_DUMP_3DUMP				{Dump 3Dump.bin}
+STR_SYSTEM_TOOLS			{System tools}

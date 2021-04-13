@@ -34,7 +34,7 @@ PKGFILES1	:=	$(CURDIR)/pkgfiles
 PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.38
+VERSION		:=  1.39
 
 ifeq ($(FILEMANAGER), 1)
 PKGFILES	:=	$(PKGFILES2)

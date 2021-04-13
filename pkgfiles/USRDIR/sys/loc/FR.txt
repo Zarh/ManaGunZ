@@ -32,7 +32,7 @@ STR_GAME_TITLE				{Titre}
 STR_GAME_PATH				{Emplacement}
 STR_GAME_FORMAT				{Format}
 STR_GAME_SIZE				{Taille}
-STR_GAME_PLATFORM			{Platform}
+STR_GAME_PLATFORM			{Plateforme}
 STR_SYSVERS					{Firmware}
 STR_GAMEID					{Identifiant}
 STR_ELFCRC					{ELF CRC}
@@ -209,7 +209,7 @@ STR_UPD_MGZ_DESC			{Télécharger et installer la dernières version de ManaGunZ
 STR_GAME_PATHS				{Emplacement des jeux}
 STR_GAME_PATHS_DESC			{Configurer les noms de dossiers dans lesquels ManaGunZ va chercher vos jeux.}
 STR_XMB_PRIO				{Priorité dans XMB}
-STR_XMB_PRIO_DESC			{L'icône de ManaGunZ dans l'XMB sera afficher tout en haut de la liste.}
+STR_XMB_PRIO_DESC			{L'icône de ManaGunZ dans l'XMB sera affiché tout en haut de la liste.}
 STR_HELP					{Montrer l'aide}
 STR_HELP_DESC				{Afficher les phrases que vous lisez ici.}
 STR_COLOR_1					{Couleur 1}
@@ -280,7 +280,7 @@ STR_DOCK_LEFT				{Ancrer à gauche}
 STR_DOCK_FULL				{Agrandir}
 STR_PLUGIN_MONITOR			{Moniteur de modules}
 STR_UNUSED					{Inutilisé}
-STR_UNLOAD					{Decharger}
+STR_UNLOAD					{Décharger}
 STR_BOOT_FILE				{Fichier de lancement}
 STR_CURRENT					{Actuel}
 STR_NET						{Net}
@@ -298,19 +298,19 @@ STR_ADVANCED				{Avancée}
 STR_INSTALL_MGZ				{Voulez-vous installer ManaGunZ ?} 
 STR_UP2DATE					{C'est à jour}
 STR_SHOW_WAVES				{Montrer les vagues}
-STR_SHOW_WAVES_DESC			{Afficher les vagues dans le fonds d'ecran.}
+STR_SHOW_WAVES_DESC			{Afficher les vagues dans le fond d'écran.}
 STR_WAVES_COLOR				{Couleur des vagues}
 STR_WAVES_COLOR_DESC		{Changer la couleur des vagues.}
 STR_USE_CONFIG				{Vous n'utilisez pas de fichier de configuration PS2 '*.CONFIG'.}
 STR_COLORSET				{Jeu de couleurs}
-STR_COLORSET_DESC 			{Choissir le jeu de couleurs prédéfinie.}
-STR_GRID_SCROLL				{Derouler}
+STR_COLORSET_DESC 			{Choisir le jeu de couleurs prédéfinie.}
+STR_GRID_SCROLL				{Dérouler}
 STR_ADD_LIMG				{Ajouter LIMG}
 STR_REMOVE_LIMG				{Enlever LIMG}
 STR_LIMG_DESC				{Cela peux faire fonctionner certains jeux.}
 STR_FONT					{Police}
 STR_FONT_DESC				{Changer la police.}
-STR_MOVE					{Deplacer}
+STR_MOVE					{Déplacer}
 STR_JOIN					{Joindre}
 STR_JOIN_DESC				{Joindre les fichiers *.666XX.}
 STR_COLOR_FILTER			{Filtres de couleur}
@@ -346,16 +346,37 @@ STR_FM_DEVICE				{Périphérique}
 STR_FM_LABEL				{Nom de volume}
 STR_FM_CAPACITY				{Barre de remplissage}
 STR_FM_MEMINSIDE			{Mémoire à l'intérieur}
-STR_FM_MEMOUTSIDE			{Mémoire à l'exterieur}
+STR_FM_MEMOUTSIDE			{Mémoire à l'extérieur}
 STR_FM_FILESYSTEM			{Système de fichiers}
 STR_FM_CB_WIDTH				{Longueur de la barre}
 STR_FM_MEMORY				{Mémoire}
 STR_FM_ICON					{Icônes}
 STR_FM_FILEFOLDER			{Fichiers et dossiers}
-STR_FM_CUSTOM				{Icônes personalisées}
+STR_FM_CUSTOM				{Icônes personnalisées}
 STR_FM_CB_FILL				{Remplir}
 STR_EDIT_IDPS				{Modifier l'IDPS}
-STR_FILTER_NOGAME			{Aucun jeux. Veuillez changer votre filtrage de jeux.}
+STR_FILTER_NOGAME			{Aucun jeux. Veuillez ajuster les filtres.}
 STR_SYMLINK_SRC				{SymLink source}
-STR_SYMLINK_TARGET			{SymLink target}
-STR_LOAD_MAMBA				{Load mamba}
+STR_SYMLINK_TARGET			{SymLink cible}
+STR_LOAD_MAMBA				{Installer mamba}
+
+STR_CONVERT_TO_PNG			{Convertir en PNG}
+STR_MOUNT_DEVBLIND			{Déprotéger le dev_flash}
+STR_UNMOUNT_DEVBLIND		{Protéger le dev_flash}
+STR_BT_AUDIO				{Sortie audio via la manette}
+STR_BT_AUDIO_DESC			{Permet de jouer au jeux vidéo ayant son casque audio branché sur la manette. Testé avec la DS4.}
+STR_GAME_UPDATE_TITLE		{Gestionnaire de téléchargement de mise à jours}
+STR_CURRENT_VERS			{Version actuelle.}
+STR_CANT_MOUNT_PEEKPOKE		{Immontable : PEEK and POKE ne sont pas disponible, le payload mamba ne peut pas être installé.}
+STR_CANT_MOUNT_UNKFW		{Immontable : firmware inconnue, le payload mamba ne peut pas être installé.}
+STR_CANT_MOUNT				{Immontable}
+STR_ONLY_FAV				{Uniquement les favoris}
+STR_ALL_GAMES				{Tout les jeux}
+STR_DISPLAY					{Affichage}
+STR_DUMP_DEC				{Dumper le disque Blu-Ray décrypté}
+STR_DUMP_DEC_DESC			{Obtenir une sauvegarde propre de votre Blu-Ray sous la forme de fichier ISO avec son IRD. L'ird sera uploadé dans la base de donnée lorsque l'opération sera terminé.}
+STR_DUMP_ENC				{Dumper le disque Blu-Ray crypté}
+STR_DUMP_DISC_KEY			{Dumper la clé du disque Blu-Ray}
+STR_DUMP_ERK				{Dumper l'eid root key}
+STR_DUMP_3DUMP				{Dumper le 3Dump.bin}
+STR_SYSTEM_TOOLS			{Outils système}

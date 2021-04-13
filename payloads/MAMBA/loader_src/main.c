@@ -32,7 +32,7 @@ void free(void *ptr);
 static size_t read_file(const char *path, void *buf, size_t size)
 {
 	int fd;
-	if (cellFsOpen(path, CELL_FS_O_RDONLY, &fd, 0, NULL, 0) == SUCCEEDED)
+	if (cellFsOpen(path, CELL_FS_O_RDONLY, &fd, 0, NULL, 0) == CELL_FS_SUCCEEDED)
 	{
 		uint64_t offset;
 		cellFsLseek(fd, 0, SEEK_SET, &offset);

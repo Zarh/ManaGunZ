@@ -13,7 +13,7 @@ STR_UNKNOWN					{Unknown}
 STR_FILE					{File}
 STR_CANCEL					{Cancel}
 STR_TURNOFF					{Turn off}
-STR_CANCELLED				{Cancelled}
+STR_CANCELLED				{Canceled}
 STR_UNIT					{Bytes}
 STR_TOTALSIZE				{Total size}
 STR_HIDELOGS				{Hide logs}
@@ -121,7 +121,7 @@ STR_PATCH_LIBFS_DESC		{Choose which patched libfs you want to use.}
 STR_MOUNT_APPHOME			{Mount /app_home}
 STR_MOUNT_APPHOME_DESC		{Redirect the path /app_home to /dev_bdvd.}
 STR_PATCH_EXP				{Patch explore_plugin}
-STR_PATCH_EXP_DESC			{The path /app_home is remplaced by /dev_bdvd inside the plugin explore_plugin.}
+STR_PATCH_EXP_DESC			{The path /app_home is replaced by /dev_bdvd inside the plugin explore_plugin.}
 STR_MAKE_SHTCUT_PKG			{Make Shortcut PKG}
 STR_MAKE_SHTCUT_PKG_DESC	{Create a package file stored to /dev_hdd0/packages. Once installed, it will be a 'shortcut' to mount your backup from the XMB.}
 STR_PATCH_EBOOT				{Patch EBOOT}
@@ -249,7 +249,7 @@ STR_NB_LINE_DESC			{Choose the number of lines of the grid.}
 STR_INVERSE					{Inverse button}
 STR_INVERSE_DESC			{Inverse the buttons right and left.}
 STR_3D						{3D}
-STR_3D_DESC					{Display the menu with 3D models of gamecases.}
+STR_3D_DESC					{Display the menu with 3D models of game cases.}
 STR_ADD						{Add}
 STR_LOAD					{Load}
 STR_CHANGE					{Change}
@@ -320,7 +320,6 @@ STR_COLOR_BOXBODY			{Box body}
 STR_COLOR_SIDEBAR			{Sidebar }
 STR_COLOR_BGS				{Setting background}
 STR_COLOR_BG				{Background}
-
 STR_ROOT_DISPLAY			{Root display}
 STR_ROOT_DISPLAY_DESC		{Change the display of the root in FileManager.}
 STR_STYLE					{Style}
@@ -359,3 +358,23 @@ STR_FILTER_NOGAME			{No game found. Adjust your filters.}
 STR_SYMLINK_SRC				{SymLink source}
 STR_SYMLINK_TARGET			{SymLink target}
 STR_LOAD_MAMBA				{Load mamba}
+STR_CONVERT_TO_PNG			{Convert to PNG}
+STR_MOUNT_DEVBLIND			{Unprotect dev_flash}
+STR_UNMOUNT_DEVBLIND		{Protect dev_flash}
+STR_BT_AUDIO				{Game-pad audio out}
+STR_BT_AUDIO_DESC			{Play sound through the game-pad while playing. Tested with a DS4.}
+STR_GAME_UPDATE_TITLE		{PS3 game updates downloader}
+STR_CURRENT_VERS			{Current version}
+STR_CANT_MOUNT_PEEKPOKE		{Unmountable : PEEK and POKE unavailable, mamba can't be installed}
+STR_CANT_MOUNT_UNKFW		{Unmountable : unknown firmware, mamba can't be installed.}
+STR_CANT_MOUNT				{Unmountable}
+STR_ONLY_FAV				{Only favorites}
+STR_ALL_GAMES				{All games}
+STR_DISPLAY					{Display}
+STR_DUMP_DEC				{Dump decrypted Blu-Ray disc}
+STR_DUMP_DEC_DESC			{Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
+STR_DUMP_ENC				{Dump encrypted Blu-Ray disc}
+STR_DUMP_DISC_KEY			{Dump Blu-Ray disc key}
+STR_DUMP_ERK				{Dump eid root key}
+STR_DUMP_3DUMP				{Dump 3Dump.bin}
+STR_SYSTEM_TOOLS			{System tools}

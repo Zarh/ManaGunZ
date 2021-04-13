@@ -33,7 +33,7 @@ int mm_map_lpar_memory_region(u64 lpar_start_addr, u64 ea_start_addr, u64 size,
 	for (i = 0; i < size >> page_shift; i++)
 	{
 		result = mm_insert_htab_entry(MM_EA2VA(ea_start_addr), lpar_start_addr, prot);
- 		if (result != 0)
+ 		if (result)
  			return result;
 
 		lpar_start_addr += (1 << page_shift);

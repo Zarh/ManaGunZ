@@ -205,10 +205,10 @@ static void bn_mon_exp(u8 *d, u8 *a, u8 *N, u32 n, u8 *e, u32 en)
 	bn_to_mon(d, N, n);
 
 	for (u32 i = 0; i < en; i++)
-		for (mask = 0x80; mask != 0; mask >>= 1)
+		for (mask = 0x80; mask; mask >>= 1)
 		{
 			bn_mon_mul(t, d, d, N, n);
-			if ((e[i] & mask) != 0)
+			if (e[i] & mask)
 				bn_mon_mul(d, t, a, N, n);
 			else
 				bn_copy(d, t, n);
@@ -392,10 +392,10 @@ static void point_mul(struct point *d, u8 *a, struct point *b)	// a is bignum
 	point_zero(d);
 
 	for (u32 i = 0; i < 21; i++)
-		for (mask = 0x80; mask != 0; mask >>= 1)
+		for (mask = 0x80; mask; mask >>= 1)
 		{
 			point_double(d, d);
-			if ((a[i] & mask) != 0)
+			if (a[i] & mask)
 				point_add(d, d, b);
 		}
 }
@@ -583,7 +583,9 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_4(int,sys_fs_read,(int fd, void *buf, uint64
 {
 	uint16_t gen_ecdsa = 0;
 
-	if(rif_fd == fd)
+	if(!buf) ;
+
+	else if(rif_fd == fd)
 	{
 		if(*nread == 0x98)
 		{
@@ -625,7 +627,7 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_4(int,sys_fs_read,(int fd, void *buf, uint64
 		u8 *buffer = (u8 *)buf;
 		uint16_t bsize  = gen_ecdsa - 0x28;
 
-		u8 sha1_digest[20];
+		u8 sha1_digest[0x15];
 		sha1(buffer, bsize, sha1_digest);
 
 		u8 R[0x15];

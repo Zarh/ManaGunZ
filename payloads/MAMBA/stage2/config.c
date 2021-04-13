@@ -14,13 +14,24 @@
 
 MambaConfig config;
 
-#ifndef sysmem_obj
- #undef FAN_CONTROL
-#endif
-
 #ifdef FAN_CONTROL
-int sm_set_fan_policy(uint8_t arg1, uint8_t arg2, uint8_t arg3);
-void do_fan_control(void);
+extern uint8_t set_fan_speed;		// fan_control.h
+void load_fan_control(void);
+#endif
+#ifdef DO_AUTO_MOUNT_DEV_BLIND
+extern uint8_t auto_dev_blind;		// homebrew_blocker.h
+#endif
+#ifdef DO_AUTO_RESTORE_SC
+extern uint8_t allow_restore_sc;	// homebrew_blocker.h
+#endif
+#ifdef DO_PHOTO_GUI
+extern uint8_t photo_gui;			// mappath.c
+#endif
+#ifdef DO_AUTO_EARTH
+extern uint8_t auto_earth;			// mappath.c
+#endif
+#ifdef MAKE_RIF
+extern uint8_t skip_existing_rif;	// make_rif.h;
 #endif
 
 static void check_and_correct(MambaConfig *cfg)
@@ -60,6 +71,22 @@ static void check_and_correct(MambaConfig *cfg)
 	//cfg->spoof_version  = 0;
 	//cfg->spoof_revision = 0;
 
+	if(cfg->size == 0)
+	{
+		#ifdef MAKE_RIF
+		config.skip_existing_rif = 1;
+		#endif
+		#ifdef DO_AUTO_MOUNT_DEV_BLIND
+		config.auto_dev_blind = 1;
+		#endif
+		#ifdef DO_AUTO_RESTORE_SC
+		config.allow_restore_sc = 1;
+		#endif
+		#ifdef DO_PHOTO_GUI
+		config.photo_gui = 1;
+		#endif
+	}
+
 	//if (cfg->size > sizeof(MambaConfig))
 		cfg->size = sizeof(MambaConfig);
 }
@@ -87,19 +114,29 @@ int read_mamba_config(void)
 
 	bd_video_region = config.bd_video_region;
 	dvd_video_region = config.dvd_video_region;
+	#ifdef MAKE_RIF
+	skip_existing_rif = config.skip_existing_rif;
+	#endif
+	#ifdef DO_AUTO_MOUNT_DEV_BLIND
+	auto_dev_blind   = config.auto_dev_blind;	// 1 = Allow auto-mount /dev_blind   | 0 = Does not allow auto-mount /dev_blind
+	#endif
+	#ifdef DO_AUTO_RESTORE_SC
+	allow_restore_sc = config.allow_restore_sc;	// 1 = Allow to restore CFW syscalls | 0 = Does not allow to restore CFW syscalls
+	#endif
+	#ifdef DO_PHOTO_GUI
+	photo_gui        = config.photo_gui;		// 1 = Allow Photo GUI				 | 0 = Does not allow Photo GUI
+	#endif
+	#ifdef DO_AUTO_EARTH
+	auto_earth       = config.auto_earth;		// 1 = Allow auto-map earth.qrc      | 0 = Does not allow auto-map earth.qrc
+	#endif
+	#ifdef FAN_CONTROL
+	set_fan_speed    = config.fan_speed;		// 1 = DISABLED, 1 = SYSCON, 2 = Dynamic Fan Controller, 0x33 to 0xFF = Set manual fan speed
+	load_fan_control();
+	#endif
 
 	#ifdef DEBUG
 		DPRINTF("Configuration read. bd_video_region=%d,dvd_video_region=%d\n",
 				bd_video_region, dvd_video_region);
-	#endif
-
-	#ifdef FAN_CONTROL
-	if(config.fan_speed >= 0x33 && config.fan_speed <= 0x80)
-		sm_set_fan_policy(0, 2, config.fan_speed); // Manual mode
-	else if(config.fan_speed <= 1)
-		sm_set_fan_policy(0, 1, 0); // SYSCON mode
-	else // if(config.fan_speed >= 2 && config.fan_speed <= 0x32)
-		do_fan_control();  // Dynamic fan control
 	#endif
 
 	return SUCCEEDED;
@@ -153,6 +190,24 @@ int sys_write_mamba_config(MambaConfig *cfg)
 	config.spoof_version  = 0; // deprecated
 	config.spoof_revision = 0; // deprecated
 
+	#ifdef FAN_CONTROL
+	set_fan_speed = config.fan_speed;
+	#endif
+	#ifdef DO_AUTO_RESTORE_SC
+	allow_restore_sc = config.allow_restore_sc;
+	#endif
+	#ifdef DO_PHOTO_GUI
+	photo_gui = config.photo_gui;
+	#endif
+	#ifdef DO_AUTO_EARTH
+	auto_earth = config.auto_earth
+	#endif
+	#ifdef DO_AUTO_MOUNT_DEV_BLIND
+	auto_dev_blind = config.auto_dev_blind;
+	#endif
+	#ifdef MAKE_RIF
+	skip_existing_rif = config.skip_existing_rif;
+	#endif
 /*	cfg->checksum = checksum(cfg);
 	copy_size = cfg->size - sizeof(config.size);
 	if (copy_size < 0)

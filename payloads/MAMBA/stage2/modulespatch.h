@@ -36,6 +36,10 @@ int sys_prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, uint32_t a
 int sys_prx_unload_vsh_plugin(unsigned int slot);
 int sys_thread_create_ex(sys_ppu_thread_t *thread, void *entry, uint64_t arg, int prio, uint64_t stacksize, uint64_t flags, const char *threadname);
 
+#ifdef FAN_CONTROL
+void unhook_all_fan_patches(void);
+#endif
+
 #ifdef PS3M_API
 void ps3mapi_unhook_all(void);
 void unhook_all_modules(void);
