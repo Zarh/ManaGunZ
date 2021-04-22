@@ -141,7 +141,6 @@ STR_CHECK_DESC				{Sprawdź, czy pliki gry nie są zmodyfikowane.}
 STR_DL_UPDATE				{Pobierz aktualizację}
 STR_DL_UPDATE_DESC			{Pobierz aktualizacje gry do /dev_hdd0/packages.}
 STR_OPEN_WINDOW				{Otwórz nowe okno}
-STR_MOUNT_DEVBLIND			{Zamontuj /dev_blind}
 STR_DUMP_LV1				{Zapisz lv1 do pliku}
 STR_DUMP_LV2				{Zapisz lv2 do pliku}
 STR_DUMP_FLASH				{Zapisz flash do pliku}

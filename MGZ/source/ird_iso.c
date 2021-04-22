@@ -18,9 +18,6 @@
 
 #define IRD_FILE_BUFFSIZE 0x20*0x800
 
-#define printf print_load
-#define print_debug if( DEBUG ) print_load
-
 extern u8 DEBUG;
 extern void print_load(char *format, ...);
 extern void Delete(char* path);
@@ -1428,12 +1425,15 @@ error:
 
 u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_filetable)
 {
+	FileHash_t *TempFH=NULL;
+	u32 nFileHashes = 0;
+	
 	ird->FileHashesNumber=0;
 	*start_filetable=0;
 	*end_filetable=0;
 	
 	struct stat s;
-    int n;
+    int n, i;
     
     char path1[0x420];
 
@@ -1460,7 +1460,7 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
     fixpath(path1);
 
     n = strlen(path1);
-
+	
     if(n >= 4 && (!strcmp(&path1[n - 4], ".iso") || !strcmp(&path1[n - 4], ".ISO"))) {
 
         sprintf(split_file[0].path, "%s", path1);
@@ -1468,7 +1468,7 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
             printf("Error: ISO file don't exists!"); 
 			return FAILED;
         }
-
+		
         split_file[0].size = s.st_size;
         split_file[1].size = 0; // split off
        
@@ -1751,24 +1751,23 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
                     if(len!=1) strcat(string2, "/");
                     strcat(string2, string);
 
-					if(*start_filetable==0) *start_filetable = file_lba*0x800;
-					if(file_lba*0x800 < *start_filetable) *start_filetable = file_lba*0x800;
+					if(*start_filetable==0) *start_filetable = (u64) file_lba*0x800ULL;
+					if(file_lba*0x800 < *start_filetable) *start_filetable = (u64) file_lba*0x800;
 					
-					u64 footer = file_lba*0x800 + file_size;
-					
-					if( file_size%0x800 != 0) footer += 0x800 - file_size%0x800;
+					u64 footer = (u64) file_lba* 0x800ULL + (u64) file_size;
+					footer = ((footer + 2047)/2048) * 2048;
 					
 					if(*end_filetable==0) *end_filetable = footer;
 					if(*end_filetable < footer) *end_filetable = footer;
 					
-                  	ird->FileHashesNumber = ird->FileHashesNumber + 1;
+					nFileHashes = nFileHashes + 1;
 					
-					ird->FileHashes = (FileHash_t *) realloc(ird->FileHashes, ird->FileHashesNumber * sizeof(FileHash_t));
+					TempFH = (FileHash_t *) realloc(TempFH, nFileHashes * sizeof(FileHash_t));
 	
-					ird->FileHashes[ird->FileHashesNumber-1].FilePath = strcpy_malloc(string2);
+					TempFH[nFileHashes-1].FilePath = strcpy_malloc(string2);
 									
-					ird->FileHashes[ird->FileHashesNumber-1].Sector = file_lba;
-					memset(ird->FileHashes[ird->FileHashesNumber-1].FileHash, 0, 0x10);
+					TempFH[nFileHashes-1].Sector = file_lba;
+					memset(TempFH[nFileHashes-1].FileHash, 0, 0x10);
 					
 					md5_context ctx;
 					md5_starts( &ctx );
@@ -1808,7 +1807,7 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
 					}
 					task_End();
 					
-					md5_finish(&ctx, ird->FileHashes[ird->FileHashesNumber-1].FileHash);
+					md5_finish(&ctx, TempFH[nFileHashes-1].FileHash);
 					
                     string2[len] = 0;                   
                 }
@@ -1841,10 +1840,37 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
     
     if(directory_iso2) free(directory_iso2);   
 
+	
+// sort
+	ird->FileHashes = malloc(nFileHashes * sizeof(FileHash_t) );
+	ird->FileHashesNumber = nFileHashes;
+	
+	u64 smallest_sector = 0;
+	for(n=0; n<nFileHashes; n++) {
+		
+		for(i=0; i<nFileHashes; i++) {
+			if( TempFH[i].Sector < TempFH[smallest_sector].Sector ) {
+				smallest_sector = i;
+			}
+		}
+		
+		memcpy(ird->FileHashes[n].FileHash, TempFH[smallest_sector].FileHash, 0x10);
+		ird->FileHashes[n].Sector = TempFH[smallest_sector].Sector;
+		ird->FileHashes[n].FilePath = strcpy_malloc(TempFH[smallest_sector].FilePath);
+		
+		TempFH[smallest_sector].Sector = -1; // MAX !
+	}
+	
+	for(n=0; n<nFileHashes; n++) FREE(TempFH[n].FilePath);
+	FREE(TempFH);
+	
     return SUCCESS;
 
 err:
-
+	
+	for(n=0; n<nFileHashes; n++) FREE(TempFH[n].FilePath);
+	FREE(TempFH);
+	
     if(fp) fclose(fp);
     if(split_index && fp_split) {fclose(fp_split); fp_split = NULL;}
 	

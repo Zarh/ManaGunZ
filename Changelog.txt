@@ -1,38 +1,43 @@
 TO DO :
-fix shortcut pkg
-Add FileManager : Click under the thumb will scroll down/up a page instead of 1 item.
+Fix : Shortcut pkg
+Add : FileManager : Click under the thumb will scroll down/up a page instead of 1 item.
 Add : Get custom PS2 CONFIG files from /dev_hdd0/game/PS2CONFIG
+Add : Detect new BR !
+Add : Dump decrypted splitted iso for FAT32 !
 
 v1.39
-Add : dev_bdvd is displayed.
-Add BDVD option: Dump encrypted Blu-Ray disc.
-Add BDVD option: Dump disc key.
-Add BDVD option: Dump decrypted Blu-Ray disc with its IRD. see NOTE (1).
 Fix : Display issue with title containing new line character '\n'.
-Add : Now to download the ird, the TITLE_ID, APP_VER and VERSION must match.
+Fix : No more freeze when the firmware is unknown/new. I'm not sure how I fixed it tho.
+Fix : XMB UI won't display 'adjust your filters' on boot of MGZ if you unchecked 'PS3' filter.
+Add : IRD check is more accurate. See note (3)
 Add : Updated mamba to 8.3 from https://github.com/aldostools/Mamba
 Add : OffsetFinder support every symbols/hash needed to build cobra & mamba 8.3
 Add : Support exFAT. See notes (2).
-Add Settings/System tools : Dump eid_root_key, 3Dump.bin, lv1, lv2 and fix permission for dev_hdd0.
-Add FileManager : Convert any supported picture to PNG.
 Add : Support HEN & CFW 4.87C.
 Add : Logs option. It saves loading logs at "/dev_hdd0/tmp/mgz.log".
 Add : Debug option. It slows the messages displayed on screen during loadings.
 Add : multiMAN payload is now firmware independent.
-Fix : No more freeze when the firmware is unknown/new. I'm not sure how I fixed it tho.
 Add : New CUSTOM PS2 CONFIG files from webMAN MOD by aldostools December 14, 2020. Special thanks to kozarovv.
 Add : New ps2 widescreen pnatchs from pcsx2.net forum January 13, 2021.
-Add FileManager : Extract RAR files.
 Add : Reset position of filter box.
-Fix : XMB UI won't display 'adjust your filters' on boot of MGZ if you unchecked 'PS3' filter.
-
+Add : Reworked the game updates manager.
+Add : dev_bdvd is displayed.
+Add BDVD option : Dump encrypted Blu-Ray disc.
+Add BDVD option : Dump disc key.
+Add BDVD option : Dump decrypted Blu-Ray disc with its IRD. see NOTE (1).
+Add BDVD option : Copy, it will copy the content of the BR to a directory.
+Add BDVD option : Properties, same as JB backup.
+Add Settings/System tools : Dump eid_root_key, 3Dump.bin, lv1, lv2 and fix permission for dev_hdd0.
+Add FileManager : Convert any supported picture to PNG.
+Add FileManager : It won't show dev_blind and dev_rebug anymore, instead it will display a protected/unprotect dev_flash with a lock icon.
+Add FileManager : Extract RAR files.
 
 Notes :
 (1) When you use the option 'Dump decrypted Blu-Ray disc', it will also generate an ird.
 The ird file is automatically uploaded to an online database if it's a new one.
 If you don't want to upload the ird then disable internet ;)
 (2) It's very slow ! It still needs some improvement/fix : ~1MB/s instead of ~10MB/s.
-I used the  FatFs module http://www.elm-chan.org/fsw/ff/00index_e.html ported to ps3 (psl1ght) by tps/lmirel https://github.com/lmirel/fatfs_psx.
+I used the FatFs module http://www.elm-chan.org/fsw/ff/00index_e.html ported to ps3 (psl1ght) by tps/lmirel https://github.com/lmirel/fatfs_psx.
 I did few modifications in the lib.
 - enabled GPT with FF_LBA64
 - changed FF_VOLUMES from 8 to 131
@@ -43,6 +48,11 @@ To support exFAT without changing to much code in ManaGunZ I included 2 files, e
 exFAT.c : it allows you to manage the exFAT devices : mount, unmount etc.
 mgz_io.c : it replaces several standard functions (some of them are slow/broken in psl1ght anyway) with new ones that support ps3 native file system (ufs2, fat16, fat32), ntfs and exFAT.
 The prefix "exFAT" is used to detect if it's an exFAT device in mgz_io.c 
+(3) Before downloading the ird and checking the MD5, it will check if the following value matchs.
+- TITLE_ID
+- APP_VER
+- VERSION 
+- PUP version, if there isn't PUP it will use PS3_SYSTEM_VERS
 
 v1.38
 Add : Support CFW/HEN 486C
@@ -164,7 +174,7 @@ Add : Set alpha of colors.
 Add : (R2+L2) Screenshots saved at '/dev_hdd0/photo/ManaGunZ_XXX.bmp'.
 Add : Check md5 files from ISO with IRD.
 Add : Add/Remove LIMG sector in PS2 iso.
-Add : Choose Font. It search recursivly ttf font in the directories '/dev_flash/data/font' and '/USRDIR/GUI'. See note (3).
+Add : Choose Font. It search recursively ttf font in the directories '/dev_flash/data/font' and '/USRDIR/GUI'. See note (3).
 Add : Choose colorset. See note (3).
 Fix FileManager : Convert iso.
 Add FileManager : LEFT/RIGHT D-pad to scroll up/down a page.

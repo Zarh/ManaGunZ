@@ -54,7 +54,7 @@ STR_UNPLUG					{Desconectar dispositivos}
 STR_PATH					{Ruta}
 STR_TYPE					{Tipo}
 STR_FOLDER					{Carpeta}
-STR_DIR						{Directorio}
+STR_DIR						{Carpeta}
 STR_MULT					{Múltiple}
 
 STR_THM_SETTINGS			{Configuración del Tema}
@@ -113,7 +113,7 @@ STR_NONE					{Ninguna}
 STR_CHECK_MD5				{Comprobar MD5}
 STR_PROPS					{Propiedades}
 STR_PROPS_DESC				{Muestra las propiedades del juego.}
-STR_ASK_DEL					{Realmente quieres borrarlo ?}
+STR_ASK_DEL					{Realmente quieres eliminar:}
 
 STR_GAME_SETTINGS			{Configuración del Juego}
 STR_DIRECT_BOOT				{Arranque directo}
@@ -149,10 +149,10 @@ STR_MAKE_SHTCUT_PKG_DESC	{Crea un PKG en: /dev_hdd0/packages/ que funciona como 
 STR_PATCH_EBOOT				{Parchear EBOOT.BIN}
 STR_PATCH_EBOOT_DESC		{Cambia la versión de firmware en el EBOOT.BIN a 4.21 para prevenir el error 0x80010009.}
 STR_RESIGN					{Refirmar}
-STR_RESIGN_DESC				{Reconstruye los archivos ejecutables del juego (EBOOT.BIN, SELF, SPRX) usando las keys del firmware 4.21.}
+STR_RESIGN_DESC				{Reconstruye los archivos ejecutables del juego (EBOOT.BIN, SELF, SPRX, DAT, EDAT) usando las keys del firmware 4.21.}
 
 STR_RESTORE					{Restaurar}
-STR_RESTORE_DESC			{Restaura los archivos ejecutables del juego originales (EBOOT.BIN, SELF, SPRX).}
+STR_RESTORE_DESC			{Restaura los archivos ejecutables del juego (EBOOT.BIN, SELF, SPRX, DAT, EDAT).}
 
 STR_EXTRACT_ISO				{Extraer ISO}
 STR_EXTRACT_ISO_DESC		{Convierte el juego del formato ISO al formato JB.}
@@ -169,7 +169,6 @@ STR_DL_UPDATE				{Descargar actualizaciones}
 STR_DL_UPDATE_DESC			{Descarga las actualizaciones del juego a la ruta: /dev_hdd0/packages/.}
 
 STR_OPEN_WINDOW				{Abrir nueva ventana}
-STR_MOUNT_DEVBLIND			{Montar /dev_flash en /dev_blind}
 STR_DUMP_LV1				{Dump de LV1 RAM}
 STR_DUMP_LV2				{Dump de LV2 RAM}
 STR_DUMP_FLASH				{Dump del chip FLASH}
@@ -244,7 +243,7 @@ STR_XMB_PRIO				{Activar prioridad en el XMB}
 STR_XMB_PRIO_DESC			{Desplaza el icono de ManaGunZ a la primera posición de los PKG instalados en la categoria [XMB] → [Juego].}
 
 STR_HELP					{Mostrar ayuda}
-STR_HELP_DESC				{Muestra los textos de ayuda, como este que estas leyendo.}
+STR_HELP_DESC				{Muestra los mensajes de ayuda, como este que estás leyendo.}
 
 STR_COLOR_1					{Color. Normal}
 STR_COLOR_2					{Color. Selección}
@@ -358,7 +357,7 @@ STR_COLORSET_DESC 			{Selecciona una combinación de colores predefinida.}
 STR_GRID_SCROLL				{Lineal}
 STR_ADD_LIMG				{Aplicar parche LIMG}
 STR_REMOVE_LIMG				{Eliminar parche LIMG}
-STR_LIMG_DESC				{Añade un sector al final de la ISO con informacion sobre el modo, numero, y tamaño de los sectores.}
+STR_LIMG_DESC				{Añade un sector al final de la ISO con información sobre el modo, número, y tamaño de los sectores.}
 STR_FONT					{Fuente}
 STR_FONT_DESC				{Selecciona el tipo de letra.}
 STR_MOVE					{Mover}
@@ -389,8 +388,8 @@ STR_ROOTLABEL				{Mi PlayStation 3}
 STR_FM_ICONSIZE				{Iconos de dispositivo, tamaño}
 STR_FM_BIG					{Grandes}
 STR_FM_SMALL				{Pequeños}
-STR_FM_ROWNUMBER			{Numero de lineas}
-STR_FM_ROWSIZE				{Tamaño de linea}
+STR_FM_ROWNUMBER			{Número de lineas}
+STR_FM_ROWSIZE				{Altura de linea}
 STR_FM_LEFT_CONTENT			{Contenido de linea (izquierda)}
 STR_FM_RIGHT_CONTENT		{Contenido de linea (derecha)}
 STR_FM_EMPTY				{Nada}
@@ -405,31 +404,31 @@ STR_FM_CB_WIDTH				{Barra de capacidad, ancho}
 STR_FM_MEMORY				{Tamaño disponible/total}
 STR_FM_ICON					{Iconos de dispositivo, tipo}
 STR_FM_FILEFOLDER			{Carpeta y archivo}
-STR_FM_CUSTOM				{Personalizados}
+STR_FM_CUSTOM				{Dispositivos}
 STR_FM_CB_FILL				{Todo el ancho}
 STR_EDIT_IDPS				{Editar IDPS}
 STR_FILTER_NOGAME			{No se han encontrado juegos. Comprueba tus filtros y las rutas de juegos.}
-STR_SYMLINK_SRC				{SymLink source}
-STR_SYMLINK_TARGET			{SymLink target}
-STR_LOAD_MAMBA				{Load mamba}
+STR_SYMLINK_SRC				{SymLink (Origen)}
+STR_SYMLINK_TARGET			{SymLink (Destino)}
+STR_LOAD_MAMBA				{Cargar Mamba}
 
-STR_CONVERT_TO_PNG			{Convert to PNG}
-STR_MOUNT_DEVBLIND			{Unprotect dev_flash}
-STR_UNMOUNT_DEVBLIND		{Protect dev_flash}
-STR_BT_AUDIO				{Game-pad audio out}
-STR_BT_AUDIO_DESC			{Play sound through the game-pad while playing. Tested with a DS4.}
-STR_GAME_UPDATE_TITLE		{PS3 game updates downloader}
-STR_CURRENT_VERS			{Current version}
-STR_CANT_MOUNT_PEEKPOKE		{Unmountable : PEEK and POKE unavailable, mamba can't be installed}
-STR_CANT_MOUNT_UNKFW		{Unmountable : unknown firmware, mamba can't be installed.}
-STR_CANT_MOUNT				{Unmountable}
-STR_ONLY_FAV				{Only favorites}
-STR_ALL_GAMES				{All games}
-STR_DISPLAY					{Display}
-STR_DUMP_DEC				{Dump decrypted Blu-Ray disc}
-STR_DUMP_DEC_DESC			{Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
-STR_DUMP_ENC				{Dump encrypted Blu-Ray disc}
-STR_DUMP_DISC_KEY			{Dump Blu-Ray disc key}
-STR_DUMP_ERK				{Dump eid root key}
-STR_DUMP_3DUMP				{Dump 3Dump.bin}
-STR_SYSTEM_TOOLS			{System tools}
+STR_CONVERT_TO_PNG			{Convertir a PNG}
+STR_MOUNT_DEVBLIND			{Permitir escritura en dev_flash}
+STR_UNMOUNT_DEVBLIND		{Denegar escritura en dev_flash}
+STR_BT_AUDIO				{Parchear libaudio.sprx}
+STR_BT_AUDIO_DESC			{Redirige el audio del juego a un DualShock4.}
+STR_GAME_UPDATE_TITLE		{Descargar actualizaciones del juego}
+STR_CURRENT_VERS			{Versión actual}
+STR_CANT_MOUNT_PEEKPOKE		{Incompatible : PEEK y POKE no están disponibles, no se puede instalar mamba}
+STR_CANT_MOUNT_UNKFW		{Incompatible : Firmware desconocido, no se puede instalar mamba.}
+STR_CANT_MOUNT				{Incompatible}
+STR_ONLY_FAV				{Solo favoritos}
+STR_ALL_GAMES				{Todos los juegos}
+STR_DISPLAY					{Mostrar}
+STR_DUMP_DEC				{Copiar Blu-Ray (desencriptado)}
+STR_DUMP_DEC_DESC			{Crea una ISO del disco Blu-Ray original. Y un archivo IRD que es enviado a la base de datos online de ManaGunZ.}
+STR_DUMP_ENC				{Copiar Blu-Ray (encriptado)}
+STR_DUMP_DISC_KEY			{Copiar Blu-Ray (key)}
+STR_DUMP_ERK				{Dump EID_root_key}
+STR_DUMP_3DUMP				{Copiar Blu-Ray (3Dump.bin)}
+STR_SYSTEM_TOOLS			{Herramientas del sistema}

@@ -141,7 +141,6 @@ STR_CHECK_DESC				{检查游戏文件是否被修改.}
 STR_DL_UPDATE				{下载升级补丁}
 STR_DL_UPDATE_DESC			{下载游戏的升级补丁到/dev_hdd0/packages.}
 STR_OPEN_WINDOW				{打开新窗口}
-STR_MOUNT_DEVBLIND			{挂载/dev_blind}
 STR_DUMP_LV1				{转储LV1}
 STR_DUMP_LV2				{转储LV2}
 STR_DUMP_FLASH				{转储Flash}

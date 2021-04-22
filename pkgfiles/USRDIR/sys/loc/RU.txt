@@ -141,7 +141,6 @@ STR_CHECK_DESC				{Проверить были ли модифицированы
 STR_DL_UPDATE				{Скачать обновление}
 STR_DL_UPDATE_DESC			{Загрузите обновления игры в /dev_hdd0/packages.}
 STR_OPEN_WINDOW				{Открыть новое окно}
-STR_MOUNT_DEVBLIND			{Монтировать /dev_blind}
 STR_DUMP_LV1				{Дамп lv1}
 STR_DUMP_LV2				{Дамп lv2}
 STR_DUMP_FLASH				{Дамп flash}

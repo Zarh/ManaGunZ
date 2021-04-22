@@ -77,15 +77,17 @@ int GZ_compress2(FILE *source, int sourceLen, char **dest, int *destLen)
     strm.opaque = Z_NULL;
     
     ret = deflateInit2(&strm, Z_BEST_COMPRESSION, Z_DEFLATED, windowBits | GZIP_ENCODING, 8, Z_DEFAULT_STRATEGY);
-    if (ret != Z_OK)
+    if (ret != Z_OK) {
+        print_load("Error : deflateInit2");
         return ret;
+    }
 
     *dest=NULL;
     
     gathering_total_size = sourceLen;
     copy_current_size = 0;
     u32 buffsize = CHUNK;
-    /* compress until end of file */
+    
     do {
         if( CHUNK < sourceLen - copy_current_size ) {
             flush = Z_NO_FLUSH;
@@ -98,32 +100,37 @@ int GZ_compress2(FILE *source, int sourceLen, char **dest, int *destLen)
         if(copy_cancel) {
            (void)deflateEnd(&strm);
            if(*dest) free(*dest);
+           print_load("cancel");
            return Z_ERRNO;
         }
+        
+        memset(in, 0, CHUNK);
+        
         strm.avail_in = fread(in, 1, buffsize, source);
+        
         if( strm.avail_in != buffsize ) {
             (void)deflateEnd(&strm);
             if(*dest) free(*dest);
-           return Z_ERRNO;
+            print_load("Error : fread ret %X != buffsize %X", strm.avail_in, buffsize);
+            return Z_ERRNO;
         }
         
         copy_current_size += buffsize;
         
         strm.next_in = in;
 
-        /* run deflate() on input until output buffer not full, finish
-           compression if all of source has been read in */
         do {
-            strm.avail_out = buffsize;
+            strm.avail_out = CHUNK;
             strm.next_out = out;
-            ret = deflate(&strm, flush);    /* no bad return value */
-            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-            have = buffsize - strm.avail_out;
+            ret = deflate(&strm, flush);
+            assert(ret != Z_STREAM_ERROR);
+            have = CHUNK - strm.avail_out;
             
             *dest = realloc(*dest, strm.total_out);
             memcpy(*dest + strm.total_out - have, out, have);
             
             if(copy_cancel) {
+                 print_load("cancel");
                 (void)inflateEnd(&strm);
                 if(*dest) free(*dest);
                 return Z_ERRNO;
@@ -140,7 +147,7 @@ int GZ_compress2(FILE *source, int sourceLen, char **dest, int *destLen)
     /* clean up and return */
     (void)deflateEnd(&strm);
     return Z_OK;
-	}
+}
 
 int GZ_compress3(FILE *source, FILE *dest)
 {

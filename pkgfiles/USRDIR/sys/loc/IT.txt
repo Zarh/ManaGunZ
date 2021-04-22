@@ -141,7 +141,6 @@ STR_CHECK_DESC				{Controlla se i file dei backup non vengono modificati.}
 STR_DL_UPDATE				{Scarica Aggiornamento}
 STR_DL_UPDATE_DESC			{Scarica gli aggiornamenti del backup IN /dev_hdd0/packages.}
 STR_OPEN_WINDOW				{Apri Nuova Finestra}
-STR_MOUNT_DEVBLIND			{Monta /dev_blind}
 STR_DUMP_LV1				{Dumpa lv1}
 STR_DUMP_LV2				{Dumpa lv2}
 STR_DUMP_FLASH				{Dumpa flash}

@@ -141,7 +141,6 @@ STR_CHECK_DESC				{Ellenőrizd, hogy a játékok fájljai nem módosultak-e.}
 STR_DL_UPDATE				{Frissítés letöltése}
 STR_DL_UPDATE_DESC			{Töltsd le a játék frissítéseit a /dev_hdd0/ packages mappába.}
 STR_OPEN_WINDOW				{Új Ablak}
-STR_MOUNT_DEVBLIND			{Indítás /dev_blind-ből}
 STR_DUMP_LV1				{Dump lv1}
 STR_DUMP_LV2				{Dump lv2}
 STR_DUMP_FLASH				{Dump flash}

@@ -11,16 +11,9 @@
 #include <unistd.h>
 #include <ppu-types.h>
 
+#include "mgz_io.h"
 #include "ird_gz.h"
 #include "md5.h"
-
-#define VERBOSE	 0
-
-#ifdef VERBOSE
-	#define print_verbose print_load
-#else
-	#define print_verbose(...)
-#endif
 
 #define SUCCESS		1
 #define FAILED 		0
@@ -47,12 +40,17 @@
 									FREE(x->FileHashes);                                                       \
 									FREE(x);                                                                   \
 								}
-#define MAGIC_IRD				"3IRD"
-#define printf					print_load			
+#define MAGIC_IRD				"3IRD"			
 #define SIZEOF_IRD(x)  (4+1+9+1+x->GameName_length+4+5+5+4+x->HeaderLength+4+x->FooterLength+\
 						1+x->RegionHashesNumber*0x10+4+x->FileHashesNumber*(0x8+0x10)+2+2+\
 						0x73+0x10+0x10+4+4)
-						
+
+
+#define print_debug(...) if( DEBUG ) print_load(__VA_ARGS__)
+#define printf		  print_load
+#define print_verbose print_debug
+
+extern u8 DEBUG;
 extern void print_load(char *format, ...);
 extern void Delete(char* path);
 

@@ -141,7 +141,6 @@ STR_CHECK_DESC				{Kontrollera om filerna i dina Backups inte ändras.}
 STR_DL_UPDATE				{Hämta uppdatering}
 STR_DL_UPDATE_DESC			{Ladda ner dina backup-uppdateringar till / dev_hdd0 / packages.}
 STR_OPEN_WINDOW				{Öppna nytt fönster}
-STR_MOUNT_DEVBLIND			{Montera / dev_blind}
 STR_DUMP_LV1				{Dumpa lv1}
 STR_DUMP_LV2				{Dumpa lv2}
 STR_DUMP_FLASH				{Dumpa flash}

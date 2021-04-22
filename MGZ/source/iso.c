@@ -117,90 +117,6 @@ char * get_extension(char *path)
 void UTF8_to_UTF16(u8 *stb, u16 *stw);
 void UTF16_to_UTF8(u16 *stw, u8 *stb);
 
-static void utf8_to_ansiname(char *utf8, char *ansi, int len)
-{
-    u8 *ch= (u8 *) utf8;
-    u8 c;
-    int is_space = 1;
-
-    char *a = ansi;
-
-    *ansi = 0;
-
-    while(*ch != 0 && len > 0)
-    {
-        // 3, 4 bytes utf-8 code
-        if(((*ch & 0xF1) == 0xF0 || (*ch & 0xF0) == 0xe0) && (*(ch+1) & 0xc0) == 0x80)
-        {
-            if(!is_space)
-            {
-                *ansi++=' '; // ignore
-                len--;
-                is_space = 1;
-            }
-
-            ch += 2+1*((*ch & 0xF1) == 0xF0);
-        }
-        else
-        // 2 bytes utf-8 code
-        if((*ch & 0xE0) == 0xc0 && (*(ch+1) & 0xc0) == 0x80)
-        {
-            c = (((*ch & 3)<<6) | (*(ch+1) & 63));
-
-            if(c >= 0xC0 && c <= 0xC5) c='A';
-            else if(c == 0xc7) c = 'C';
-            else if(c >= 0xc8 && c <= 0xcb) c = 'E';
-            else if(c >= 0xcc && c <= 0xcf) c = 'I';
-            else if(c == 0xd1) c = 'N';
-            else if(c >= 0xd2 && c <= 0xd6) c = 'O';
-            else if(c >= 0xd9 && c <= 0xdc) c = 'U';
-            else if(c == 0xdd) c = 'Y';
-            else if(c >= 0xe0 && c <= 0xe5) c = 'a';
-            else if(c == 0xe7) c = 'c';
-            else if(c >= 0xe8 && c <= 0xeb) c = 'e';
-            else if(c >= 0xec && c <= 0xef) c = 'i';
-            else if(c == 0xf1) c = 'n';
-            else if(c >= 0xf2 && c <= 0xf6) c = 'o';
-            else if(c >= 0xf9 && c <= 0xfc) c = 'u';
-            else if(c == 0xfd || c == 0xff) c = 'y';
-            else if(c>127) c=*(++ch+1); //' ';
-
-            if(!is_space || c!= 32)
-            {
-               *ansi++=c;
-                len--;
-                if(c == 32) is_space = 1; else is_space = 0;
-            }
-
-            ch++;
-
-        }
-        else
-        {
-            if(*ch<32) *ch=32;
-
-            if(!is_space || *ch!= 32) {
-               *ansi++=*ch;
-
-                len--;
-
-                if(*ch == 32) is_space = 1; else is_space = 0;
-            }
-        }
-
-        ch++;
-    }
-
-    while(len > 0)
-    {
-        *ansi++=0;
-        len--;
-    }
-
-    if(a[0] == 0 || a[0] == ' ') strcpy(a, "PS3");
-}
-
-
 extern int firmware;
 
 #define ISODCL(from, to) (to - from + 1)
@@ -933,79 +849,6 @@ static void memcapscpy(void *dest, void *src, int size)
     int n;
 
     for(n = 0; n < size; n++) {c = *s++; *d++ = (char) toupper((int) c);}
-}
-
-static int iso_parse_param_sfo(char * file, char *title_id, char *title_name)
-{
-    int fd;
-    int bytes;
-    int ct = 0;
-
-    fd = ps3ntfs_open(file, O_RDONLY, 0766);
-
-    if(fd >= 0)
-    {
-        int len, pos, str;
-        unsigned char *mem=NULL;
-
-        len = (int) ps3ntfs_seek64(fd, 0, SEEK_END);
-
-        mem= (unsigned char *) malloc(len + 16);
-        if(!mem) {ps3ntfs_close(fd); return -2;}
-
-        memset(mem, 0, len + 16);
-
-        ps3ntfs_seek64(fd, 0, SEEK_SET);
-
-        bytes = ps3ntfs_read(fd, (void *) mem, len);
-
-        ps3ntfs_close(fd);
-
-        if(bytes != len)
-        {
-            free(mem);
-            return -2;
-        }
-
-        str = (mem[8]   + (mem[9]<<8));
-        pos = (mem[0xc] + (mem[0xd]<<8));
-
-        int indx = 0;
-
-        while(str < len)
-        {
-            if(mem[str] == 0) break;
-
-            if(!strncmp((char *) &mem[str], "TITLE", 6))
-            {
-                strncpy(title_name, (char *) &mem[pos], 63);
-                title_name[63] = 0;
-                ct++;
-            }
-            else if(!strncmp((char *) &mem[str], "TITLE_ID", 9))
-            {
-                memcpy(title_id, (char *) &mem[pos], 4);
-                title_id[4] = '-';
-                strncpy(&title_id[5], (char *) &mem[pos + 4], 58);
-                title_id[63] = 0;
-                ct++;
-            }
-
-            if(ct >= 2)
-            {
-                free(mem);
-                return SUCCESS;
-            }
-
-            while(mem[str]) str++; str++;
-            pos  += (mem[0x1c+indx]+(mem[0x1d+indx]<<8));
-            indx += 16;
-        }
-
-        if(mem) free(mem);
-    }
-
-    return FAILED;
 }
 
 static int calc_entries(char *path, int parent)
@@ -2244,15 +2087,6 @@ static void fixpath(char *p)
         memcpy(p, p + 1, strlen(p));
     }
 
-    #ifdef __CYGWIN__
-    if(p[0]!=0 && p[1] == ':')
-    {
-        p[1] = p[0];
-        memmove(p + 9, p, strlen(p) + 1);
-        memcpy(p, "/cygdrive/", 10);
-    }
-    #endif
-
     while(*pp)
     {
         if(*pp == '"') {*pp = 0; break;}
@@ -2265,24 +2099,8 @@ static void fixpath(char *p)
 
 }
 
-static void fixtitle(char *p)
+int makeps3iso(char *g_path, char *outdir, int split)
 {
-    while(*p)
-    {
-        if(*p & 128) *p = 0;
-        else
-        if(*p == ':' || *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|') *p = '_';
-        else
-        if(*p == '\\' || *p == '/') *p = '-';
-        else
-        if(((u8)*p) > 0 && ((u8)*p) < 32) {*p = 0; break;}
-        p++;
-    }
-}
-
-int makeps3iso(char *g_path, char *f_iso, int split)
-{
-
     struct stat s;
     char path1[0x420];
     char path2[0x420];
@@ -2298,65 +2116,23 @@ int makeps3iso(char *g_path, char *f_iso, int split)
     }
 
     fixpath(path1);
-
     if(stat(path1, &s) < 0 || !(S_ISDIR(s.st_mode)))
     {
         print_load("Error : Invalid Path!");
         return FAILED;
     }
 
-    strcpy(path2, path1);
-    strcat(path2, "/PS3_GAME/PARAM.SFO");
-
-    if(iso_parse_param_sfo(path2, title_id, output_name) < 0) {
-        print_load("Error: PARAM.SFO not found!");
-        return FAILED;
-    }
-    else {
-        utf8_to_ansiname(output_name, path2, 32);
-        path2[32]= 0;
-        fixtitle(path2);
-        strcat(path2, "-");
-        strcat(path2, title_id);
-    }
-
-    if(f_iso) strcpy(output_name, f_iso); else output_name[0] = 0;
-
-
+    u64 avail = get_disk_free_space(outdir);
+    
+    sprintf(output_name, "%s%s.iso", outdir, strrchr(g_path, '/'));
     fixpath(output_name);
-
-    // create path for get free space from destination file
-    char dest_path[0x420];
-
-    strcpy(dest_path, output_name);
-
-    u64 avail = get_disk_free_space(dest_path);
-
-    int nlen = strlen(output_name);
-
-    if(nlen < 1) {
-		strcpy(output_name, path2);
-		print_load("Error : ISO name too short!"); 
-		return FAILED;
-	}
-    else {
-		if(stat(output_name, &s) == 0 && (S_ISDIR(s.st_mode))) {
-			strcat(output_name, "/"); strcat(output_name, path2);
-		}
-    }
-
-    nlen = strlen(output_name);
-
-    if(nlen < 4 || (strcmp(&output_name[nlen - 4], ".iso") && strcmp(&output_name[nlen - 4], ".ISO"))) {
-        strcat(output_name, ".iso");
-    }
-
     if(!stat(output_name, &s)) {
         print_load("Error : File already exists");
 		return FAILED;
     }
-    else	print_load("Create ISO : %s", output_name);
-
+    else {
+        print_load("Create ISO : %s", output_name);
+    }
     strcpy(output_name2, output_name);
 
     iso_split = (split != 0);

@@ -252,9 +252,6 @@ char *PictureViewerSupport[] = {
 
 #define MAX_SECTIONS	((0x10000-sizeof(rawseciso_args))/8)
 
-#define print_debug(...) if( DEBUG ) print_load(__VA_ARGS__)
-//#define print_debug(x) print_load(x); sleep(1);
-
 #define SCENE_FILEMANAGER			0
 #define SCENE_PS3_MENU				1
 #define SCENE_PS2_MENU				2
@@ -2195,6 +2192,8 @@ u8 SetPerms(char* path);
 u32 crc_file2(char *path, u32 current_crc);
 int upload(char *url, char *src);
 int http_response(char *url);
+void add_GAMELIST(char *path);
+void sort_GAMELIST();
 
 void Draw_MENU();
 
@@ -5101,7 +5100,7 @@ void Draw_DEFAULT(int pos, float x , float y, float z,  float w, float h, u8 cen
 	u32 col = color;
 	if(type == JB_PS1 || type == ISO_PS1) col = SetALPHA(GetALPHA(color), COLOR_PS1);
 	if(type == JB_PS2 || type == ISO_PS2) col = SetALPHA(GetALPHA(color), COLOR_PS2);
-	if(type == JB_PS3 || type == ISO_PS3) col = SetALPHA(GetALPHA(color), COLOR_PS3);
+	if(type == JB_PS3 || type == ISO_PS3 || type == BDVD) col = SetALPHA(GetALPHA(color), COLOR_PS3);
 	if(type == JB_PSP || type == ISO_PSP) col = SetALPHA(GetALPHA(color), COLOR_PSP);
 	Draw_Box(x1, y1, z, 0, w1, h1, col , YES);
 	
@@ -9417,7 +9416,7 @@ float Draw_Button_R2(float x, float y, float z, float size)
 		tiny3d_SetTexture(0, PICTURE_offset[R2], PICTURE[R2].width, PICTURE[R2].height, PICTURE[R2].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
-	} else	return DrawString(x, y, "R1");
+	} else	return DrawString(x, y, "R2");
 }
 
 float Draw_Button_R1(float x, float y, float z, float size)
@@ -9426,7 +9425,7 @@ float Draw_Button_R1(float x, float y, float z, float size)
 		tiny3d_SetTexture(0, PICTURE_offset[R1], PICTURE[R1].width, PICTURE[R1].height, PICTURE[R1].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(x, y, z, 0, size, size, WHITE, YES);
 		return x+size;
-	} else	return DrawString(x, y, "R2");
+	} else	return DrawString(x, y, "R1");
 }
 
 float Draw_Button_R3(float x, float y, float z, float size)
@@ -11739,7 +11738,7 @@ FILE *openPUP(char *path, u64 *offset, char *mode)
 	
 	char *ext = get_ext(path);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcasecmp(ext, ".pup")) return NULL;
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcasecmp(ext, ".pup")) return NULL;
 	
 	if(!strcasecmp(ext, ".pup")) {
 		pup = fopen(path, mode);
@@ -11767,7 +11766,7 @@ FILE *openPUP(char *path, u64 *offset, char *mode)
 		*offset=file_offset;
 		return pup;	
 	} else
-	if(!strcmp(ext, _JB_PS3)) {
+	if(!strcmp(ext, _JB_PS3) || !strcmp(ext, _BDVD)) {
 		char PUP_path[255];
 		sprintf(PUP_path, "%s/PS3_UPDATE/PS3UPDAT.PUP", path);
 		
@@ -11802,7 +11801,8 @@ u8 Get_PUPVersion(char *source, char *UpdateVersion)
 ird_t *IRD_new(char *source)
 {
 	int ret=FAILED;
-
+	print_load("IRD_new");
+	
 	print_debug("IRD_new init");
 	ird_t *ird=MALLOC_IRD();
 	if(ird==NULL) return NULL;
@@ -11909,9 +11909,19 @@ IRD_keys_sig is the CRC of
 -Data2 (without the 4 last bytes)
 -PIC
 
+I think IRD_keys_sig is not a per-disc key, I'm not sure...
+I think I already saw 2 different d1&d2 with the same disc.
+With my first try, I always had the same d1&d2 than the one I found inside 'official' ird made by 3key team.
+Months later, I dumped new d1&d2, they were completely different from the previous one. And now (more weeks later), I always have the new ones...
+The backup was always perfectly decrypted with these keys.
+Maybe these keys are calculated with the current date... or maybe I mixed the 'official' ird and mines...
+I need to do more test...
+
+
+
 IRD files are named with the following pattern [IRD_META_SIG]_[IRD_FILES_SIG]_[IRD_EXTRA_SIG]_[IRD_KEYS_SIG].ird
 
-This unique file name allows me to manage the uploads/download in/from the server without any duplicates.
+This unique file name allows me to manage the uploads/download in/from the server without too much duplicates.
 */
 
 u32 IRD_keys_sig(ird_t *ird)
@@ -12010,7 +12020,7 @@ u32 IRD_meta_sig(char *source)
 	
 	char *ext = get_ext(source);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcasecmp(ext, ".ird")) return 0;
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcasecmp(ext, ".ird")) return 0;
 	
 	if( !strcasecmp(ext, ".ird") ) {
 		int ret = GZ_decompress8(source, &mem, 1024);
@@ -12070,13 +12080,31 @@ char *IRD_sig(char *ird_path)
 	return sig;
 }
 
+#define MAX_UPLOAD_TRY 5
 u8 IRD_DB_upload(char *IRD_PATH, char *IRD_SIG)
 {
 	char URL[128]={0};
-	sprintf(URL, IRD_SCRIPT "?ird=%s", IRD_SIG);
+	sprintf(URL, IRD_SCRIPT "?ird=%s&size=%d", IRD_SIG, (int) get_size(IRD_PATH));
 	
 	print_head("Uploading...");
-	return upload(URL, IRD_PATH);
+	int try = 0;
+retry:
+	try++;
+	
+	int ret = upload(URL, IRD_PATH);
+	if( ret == 200) {
+		print_load("Success");
+		return SUCCESS;
+	}
+	
+	if(ret == 409 && try <= MAX_UPLOAD_TRY) {
+		print_load("Failed to upload, retry...");
+		goto retry;
+	}
+	
+	print_load("Failed to upload...");
+	
+	return FAILED; 
 }
 
 u8 IRD_DB_exist(char *IRD_SIG)
@@ -12164,14 +12192,14 @@ u8 dump_dec_bdvd(char *outdir)
 	
 	unsigned char key_d1[] = {0x38, 11, 0xcf, 11, 0x53, 0x45, 0x5b, 60, 120, 0x17, 0xab, 0x4f, 0xa3, 0xba, 0x90, 0xed};
 	unsigned char iv_d1[] = {0x69, 0x47, 0x47, 0x72, 0xaf, 0x6f, 0xda, 0xb3, 0x42, 0x74, 0x3a, 0xef, 170, 0x18, 0x62, 0x87};
-	
+
 	print_debug("IRD_new");
 	ird = IRD_new("/dev_bdvd");
 	if(ird==NULL) {
 		print_load("Error : failed to IRD_new");
 		goto error;
 	}
-		
+
 	print_debug("Get decryption keys");
 	if( get_keys(ird->Data1, ird->Data2, ird->PIC)==FAILED) {
 		print_load("Error : failed to get_keys");
@@ -12254,7 +12282,7 @@ u8 dump_dec_bdvd(char *outdir)
 	strcpy( copy_dst, ISO_PATH);
 	gathering_nb_file = -1;
 	gathering_nb_directory = -1;
-	gathering_total_size = total_sectors * 0x800;
+	gathering_total_size = (u64) total_sectors * 0x800ULL;
 	
 	u64 current_sector=0;
 	u64 sector_nb;
@@ -12262,7 +12290,7 @@ u8 dump_dec_bdvd(char *outdir)
 	
 	print_load("regions :  0x%X\n", regions);
 	print_load("total_sectors :  0x%X\n", total_sectors);
-	print_load("gathering_total_size :  0x%X\n", gathering_total_size);
+	print_load("gathering_total_size :  0x%llX\n", gathering_total_size);
 	
 	ird->RegionHashesNumber=regions;
 	ird->RegionHashes = (u8 **) malloc(ird->RegionHashesNumber * sizeof(u8*));
@@ -12299,7 +12327,6 @@ u8 dump_dec_bdvd(char *outdir)
 		md5_context ctx;
 		
 		md5_starts( &ctx );
-		memset( &ctx, 0, sizeof( md5_context ) );
 		
 		while( current_sector < region_last_sector ) {
 		
@@ -12343,6 +12370,8 @@ u8 dump_dec_bdvd(char *outdir)
 	}
 	FCLOSE(f);
 	
+	SetPerms(ISO_PATH);
+	
 	print_head("Building IRD...");
 	u64 footer_offset;
 	u64 header_lenght;
@@ -12355,62 +12384,82 @@ u8 dump_dec_bdvd(char *outdir)
 		goto error;
 	}
 	
+	copy_current_size=0;
+	task_Init(gathering_total_size);
 	print_load("Calculating files' MD5...");
 	if( IRD_FilesHashes(ISO_PATH, ird, &header_lenght, &footer_offset) == FAILED) {
 		print_load("Error : failed to get filehashes");
 		goto error;
 	}
+	task_End();
+	
+	print_load("Compressing header...");
 	
 	u64 footer_lenght = total_sectors * 0x800 - footer_offset;
 	gathering_nb_file = -1;
-	
 	f = fopen(ISO_PATH, "rb");
 	if(f==NULL) {
 		print_load("Error : failed to fopen ISO to load footer and header");
 		goto error;
 	}
 	
-	print_load("Compressing header...");
-	GZ_compress2(f, (int) header_lenght, (char **) &ird->Header, (int *) &ird->HeaderLength);
+	if( GZ_compress2(f, (int) header_lenght, (char **) &ird->Header, (int *) &ird->HeaderLength) != Z_OK) {
+		print_load("Error : failed to compress header");
+		goto error;
+	}
 	
 	print_load("Compressing footer...");
 	fseek(f, footer_offset, SEEK_SET);
+	copy_current_size =0;
 	gathering_total_size = footer_lenght;
-	GZ_compress2(f, (int) footer_lenght, (char **) &ird->Footer, (int *) &ird->FooterLength);
-	
+	if( GZ_compress2(f, (int) footer_lenght, (char **) &ird->Footer, (int *) &ird->FooterLength) != Z_OK) {
+		print_load("Error : failed to compress footer");
+		goto error;
+	}
 	FCLOSE(f);
 	
-	print_load("GameName_length %d", ird->GameName_length);
-	print_load("GameName %s", ird->GameName);
-	
+	copy_current_size = 0;
 	gathering_total_size = SIZEOF_IRD(ird);
 	print_load("Saving IRD");
 	if(IRD_save(IRD_PATH, ird)==FAILED) {
 		print_load("Error : failed to save IRD");
 		goto error;
 	}
+	SetPerms(IRD_PATH);
 	
 	print_head("Uploading IRD");
-	
+	print_load("Getting ird signature");
 	IRD_NAME = IRD_sig2(ird);
 	if(IRD_NAME == NULL) {
 		print_load("Error : failed  to get IRD_sig");
 		goto error;
 	}
 	
-	if( IRD_DB_exist(IRD_NAME) ) {
-		print_load("This ird already exist in DB");
-		goto end;
+	print_load("Check if ird exist");
+	ret = IRD_DB_exist(IRD_NAME); 
+	if( ret == NET_ERROR) {
+		ret = FAILED;
+		goto error;
+	} else
+	if( ret == YES ) {
+		print_load("The ird already exists in DB");
+		ret = FAILED;
+		goto error;
 	}
 	
+	print_load("uploading the ird");
 	if( IRD_DB_upload(IRD_PATH, IRD_NAME) == FAILED ) {
 		print_load("Error : failed to upload IRD");
 		goto error;
 	}
-
 	
-end:
+	add_GAMELIST(ISO_PATH);
+	sort_GAMELIST();
+	init_Load_GAMEPIC();
+	read_fav();
+	
 	ret=SUCCESS;
+
 error:
 	
 	if( copy_cancel ) ret=FAILED;
@@ -13446,14 +13495,16 @@ void Draw_Copy_screen(void *unused)
 		FontSize(17);
 		
 		if( loading_log[0][0] ) {
-			for(i=0; i<=20; i++){
-				if(strstr(loading_log[i], "Error")) FontColor(RED);
-				else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
-				else FontColor(COLOR_1);
-				
-				DrawFormatString(x , y, loading_log[i]);
-				y+=20;
-				if(y>450) break;
+			if(show_log) {
+				for(i=0; i<=20; i++){
+					if(strstr(loading_log[i], "Error")) FontColor(RED);
+					else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+					else FontColor(COLOR_1);
+					
+					DrawFormatString(x , y, loading_log[i]);
+					y+=20;
+					if(y>450) break;
+				}
 			}
 		}
 		
@@ -13465,7 +13516,7 @@ void Draw_Copy_screen(void *unused)
 		x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
 		
 		x=DrawButton(x, y, STR_TURNOFF, BUTTON_L1);
-		x=Draw_checkbox(x-3, y, 0, "", shutdown, YES);
+		x=Draw_checkbox(x-3, y, 0, "", shutdown, NO);
 		
 		if( loading_log[0][0] ) {	
 			if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
@@ -13477,7 +13528,7 @@ void Draw_Copy_screen(void *unused)
 		ps3pad_read();
 		
 		if(NewPad(BUTTON_L1)) {
-			shutdown= !shutdown;
+			shutdown = !shutdown;
 		}
 		if( loading_log[0][0] ) {	
 			if(NewPad(BUTTON_SELECT)) {
@@ -13488,10 +13539,9 @@ void Draw_Copy_screen(void *unused)
 			copy_cancel = YES;
 			show_msg(STR_CANCELLED);
 		}
-		
 	}
 	
-	print_load("Delete_Game");
+	print_load("end_of 'Draw_Copy_screen'");
 	
 	if(copy_cancel == YES) Delete_Game(copy_dst, -1);
 	else if(shutdown==YES) {
@@ -14601,7 +14651,7 @@ void add_GAMELIST(char *path)
 	strcpy(title, &strrchr(path, '/')[1]);
 	RemoveExtension(title);
 	
-	if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP) {
+	if(plat == ISO_PS3 || plat == JB_PS3 || plat == ISO_PSP || plat == JB_PSP || plat == BDVD) {
 		if( GetParamSFO("TITLE", title, list_game_path[game_number]) == FAILED) {
 			print_debug("Error : failed to get TITLE from %s", list_game_path[game_number]);	
 		}
@@ -14848,10 +14898,6 @@ void Draw_GameProperties()
 		} else strcpy(sys_vers, STR_UNKNOWN);
 	}
 	
-	char Game_id[20];
-	if( list_game_ID[position] == NULL) strcpy(Game_id, STR_UNKNOWN);
-	else strcpy(Game_id, list_game_ID[position]);
-	
 	u8 LoopBreak=1;
 	while(LoopBreak) {
 		
@@ -14950,7 +14996,7 @@ void Draw_GameProperties()
 		FontColor(COLOR_3);
 		xt=DrawFormatString(x1 , y, "%s :", STR_GAMEID);
 		FontColor(COLOR_1);
-		DrawString(xt+10 , y, Game_id);
+		DrawString(xt+10 , y, list_game_ID[position]);
 		
 		y+=new_line(1);
 		
@@ -15464,7 +15510,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 	
 	char *ext = get_ext(path);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _ISO_PSP) && strcmp(ext, _JB_PS3) && strcmp(ext, _JB_PSP) && strcasecmp(ext, ".sfo")) return NULL;
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _ISO_PSP) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcmp(ext, _JB_PSP) && strcasecmp(ext, ".sfo")) return NULL;
 	
 	if(!strcasecmp(ext, ".sfo")) {
 		sfo = fopen(path, mode);
@@ -15522,7 +15568,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 		
 		return sfo;
 	} else
-	if(!strcmp(ext, _JB_PS3)) {
+	if(!strcmp(ext, _JB_PS3) || !strcmp(ext, _BDVD)) {
 	
 		char SFO_path[255];
 		sprintf(SFO_path, "%s/PS3_GAME/PKGDIR/PARAM.SFO", path);
@@ -15666,7 +15712,7 @@ FILE* openEBOOT(char *path, u32 *start_offset, char *mode)
 	
 	char *ext = get_ext(path);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _EBOOT_BIN)) return NULL;
+	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcmp(ext, _EBOOT_BIN)) return NULL;
 	
 	if(!strcmp(ext, _EBOOT_BIN)) {
 		eboot = fopen(path, mode);
@@ -15699,7 +15745,7 @@ FILE* openEBOOT(char *path, u32 *start_offset, char *mode)
 
 		return eboot;
 	} else
-	if(!strcmp(ext, _JB_PS3)) {
+	if(!strcmp(ext, _JB_PS3) || !strcmp(ext, _BDVD)) {
 		char EBOOT_path[255];
 		sprintf(EBOOT_path, "%s/PS3_GAME/USRDIR/EBOOT.BIN", path);
 		
@@ -16235,7 +16281,7 @@ end:
 int upload(char *url, char *src)
 {
 	int ret = 0;
-	//int httpCode = 0;
+	int httpCode = 0;
 	s32 cert_size=0;
 	httpUri uri;
 	httpClientId httpClient = 0;
@@ -16408,15 +16454,7 @@ int upload(char *url, char *src)
 	}
 
 // FILE UPLOAD
-	fp=fopen(src, "rb");
-	if(fp==NULL) {
-		print_load("Error : fopen() failed : %s", src);
-		ret=FAILED;
-		goto end;
-	}
-	fseek(fp, 0, SEEK_END);	
-	length = (u64) ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	length = get_size(src);
 	
 	print_debug("httpRequestSetContentLength");
 	ret = httpRequestSetContentLength(httpTrans, length);
@@ -16426,10 +16464,14 @@ int upload(char *url, char *src)
 		goto end;
 	}
 	
-	if(length != 0) {
-		if(prog_bar1_value!=-1) prog_bar2_value=0;
-		else prog_bar1_value=0;
+	fp=fopen(src, "rb");
+	if(fp==NULL) {
+		print_load("Error : fopen() failed : %s", src);
+		ret=FAILED;
+		goto end;
 	}
+	
+	task_Init(length);
 	
 	print_debug("Sending data...");
 	while(nSent != 0 ) {
@@ -16437,10 +16479,15 @@ int upload(char *url, char *src)
 		if(length < ul + toSend) toSend = length - ul;
 		
 		fread((char *) getBuffer, toSend, 1, fp);
-		
-		if(httpSendRequest(httpTrans, (void*) getBuffer, toSend, &nSent) > 0) break;
+		ret = httpSendRequest(httpTrans, (void*) getBuffer, toSend, &nSent);
+		if( ret < 0) {
+			print_load(" Error : httpSendRequest %X", ret);
+			break;
+		}
 		
 		ul+=toSend;
+		
+		task_Update(toSend);
 		
 		if(length <= ul ) break;
 		if(cancel==YES) break;
@@ -16453,20 +16500,30 @@ int upload(char *url, char *src)
 		}
 	}
 	fclose(fp);
-		
-	if(prog_bar2_value!=-1) prog_bar2_value=-1;
-	else prog_bar1_value=-1;
+	
+	task_End();
+	
+	if(length != ul) {
+		print_load("Error : length != ul");
+		ret = FAILED;
+	}
+	
+	print_debug("httpResponseGetStatusCode");
+	ret = httpResponseGetStatusCode(httpTrans, &httpCode);
+	if (ret < 0) {
+		print_load("Error : cellHttpResponseGetStatusCode() failed (%x)", ret);
+		goto end;
+	}
+	
+	ret = httpCode;
 	
 //END of TRANSFERT
-
-	ret=SUCCESS;
-	
-	if(cancel==YES) {
+end:
+	if(cancel) {
 		ret=FAILED;
 		cancel=NO;
 	}
 	
-end:
 	if(caList) free(caList);
 	if(httpTrans) httpDestroyTransaction(httpTrans);
 	if(httpClient) httpDestroyClient(httpClient);
@@ -20260,6 +20317,7 @@ char *ISOtype(char *isoPath)
 u8 is_folder(char *ext)
 {
 	if(	   !strcmp(ext, _SDIR)
+		|| !strcmp(ext, _BDVD) 
 		|| !strcmp(ext, _JB_PS3) 
 		|| !strcmp(ext, _JB_PS2)
 		|| !strcmp(ext, _JB_PS1)
@@ -24795,14 +24853,7 @@ void Draw_RootIcon(char *mount_point, char *type, float x, float y, float z, u8 
 			DrawIcon(x, y, z, USB, WHITE, readonly);
 		} else
 		if( strncmp(mount_point, "dev_bdvd", 8)==0) {
-			if( !strcmp(type, _JB_PS3)) {
-				DrawIcon(x, y, z, DISC_PS3, WHITE, readonly);
-			} else
-			if( !strcmp(type, _JB_PS1)) {
-				DrawIcon(x, y, z, DISC_PS1, WHITE, readonly);
-			} else {
-				DrawIcon(x, y, z, DISC, WHITE, readonly);
-			}
+			DrawIcon(x, y, z, DISC_PS3, WHITE, readonly);
 		} else
 		if( strncmp(mount_point, "dev_ps2disk", 11)==0) {
 			DrawIcon(x, y, z, DISC_PS2, WHITE, readonly);
@@ -27157,17 +27208,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		u32 sig = 0;
-		sig = IRD_meta_sig("/dev_hdd0/BLES00565.ird"); 
-		print_load("sig ird = %X", sig);
-		sig = IRD_meta_sig("/dev_hdd0/BLES00565.iso");
-		print_load("sig iso = %X", sig);
-		
-		print_load( "IRD_UPLOAD !");
-		
-		IRD_upload("/dev_hdd0/BLES00565.ird");
-		sleep(4);
-		
+		IRD_upload("/dev_hdd0/GAMES/BLES00565_20210421_175544.ird");
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
@@ -27303,6 +27344,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, STR_UNMOUNT_DEVBLIND)==0) {
 		sys_fs_unmount("/dev_blind");
+		sys_fs_unmount("/dev_rebug");
 		Window(".");
 	} else
 	if(strcmp(item, STR_PROPS) == 0) {
@@ -27891,10 +27933,11 @@ void Open_option()
 	if(window_activ == -1) {
 		add_option_item(STR_OPEN_WINDOW);
 		return;
-		
-	} else {
+	} 
+	else {
 		int same_ext = -1;
 		char *ext=NULL;
+		
 		for(i=0; i<=window_content_N[window_activ]; i++) {
 			if(window_content_Selected[window_activ][i] == YES) {
 				option_sel_N++;
@@ -27903,6 +27946,7 @@ void Open_option()
 				} else {
 					option_sel[option_sel_N] = sprintf_malloc("%s/%s", window_path[window_activ], window_content_Name[window_activ][i]);
 				}
+				
 				if(same_ext == -1) { //1st
 					same_ext = YES;
 					ext = get_ext(option_sel[option_sel_N]);
@@ -27924,7 +27968,20 @@ void Open_option()
 		} else
 		if(strcmp( window_path[window_activ], "/") == 0) {
 			add_option_item(STR_OPEN_WINDOW);
-			add_option_item(STR_MOUNT_DEVBLIND);
+			
+			u8 flash_readonly = YES;
+			for(i=0; i<=window_content_N[window_activ]; i++) {
+				if( is_dev_blind(window_content_Name[window_activ][i]) ) {
+					flash_readonly = NO;
+					break;
+				}
+			}
+			if( flash_readonly ) {
+				add_option_item(STR_MOUNT_DEVBLIND);
+			} 
+			else {
+				add_option_item(STR_UNMOUNT_DEVBLIND);
+			}
 			if(PEEKnPOKE) {
 				add_option_item(STR_DUMP_LV1);
 				add_option_item(STR_DUMP_LV2);
@@ -27949,9 +28006,8 @@ void Open_option()
 					}
 				}
 			}
-			
 		}
-		else {		
+		else {
 			add_option_item(STR_REFRESH);
 			add_option_item(STR_NEWFOLDER);
 			add_option_item(STR_NEWFILE);
@@ -28001,7 +28057,6 @@ void Open_option()
 					if( can_read(ext) == YES) {
 						if(option_sel_N==0) add_option_item(STR_VIEW_TXT);
 					}
-					
 					if(!strcasecmp(ext, ".sfo")) {
 						if(option_sel_N==0) add_option_item(STR_VIEW_SFO);
 					} else
@@ -28035,8 +28090,7 @@ void Open_option()
 								} else {
 									add_option_item(STR_ADD_PRXLOADER);
 								}					
-							}
-										
+							}					
 							if(path_info("/dev_hdd0/prx_plugins.txt") != _NOT_EXIST) {
 								if(is_it_inside("/dev_hdd0/prx_plugins.txt", option_sel[0]) == YES) {
 									add_option_item(STR_REMOVE_PRXLOADER2);
@@ -28142,7 +28196,6 @@ void Open_option()
 	option_h = (option_item_N+1)*15;
 	option_w = k+30;
 	if(option_y+option_h > 485) option_y = 485 - option_h; 
-
 }
 
 void Draw_option()
@@ -28955,7 +29008,7 @@ void show_preview()
 			}
 		}
 	}
-	preview_window(strcmp(TITLES[title], STR_ROOT_DISPLAY) == 0 && MENU_LVL != LVL_TITLE);
+	if(TITLES[title]!=NULL) preview_window(strcmp(TITLES[title], STR_ROOT_DISPLAY) == 0 && MENU_LVL != LVL_TITLE);
 }
 
 //*******************************************************
@@ -29644,13 +29697,7 @@ void Draw_MENU()
 		}
 	}
 	
-	
-	
 	show_preview();
-	
-	
-	
-	
 }
 
 //*******************************************************
@@ -33214,7 +33261,7 @@ void get_current_version(char *gameID)
 }
 
 update_data *download_upd_xml(char *gameID, int *nPKG)
-{
+{	
 	char url[128];
 	char dst[128];
 	u32 n;
@@ -33401,6 +33448,8 @@ void input_PS3_UPDATE_MENU()
 {
 	if(MENU==NO) return;
 	
+	int i;
+	
 	get_R2speed();
 	
 	if(MENU_TABLE_START < ITEMS_POSITION && ITEMS_POSITION <=MENU_TABLE_END) {
@@ -33421,14 +33470,12 @@ void input_PS3_UPDATE_MENU()
 			}
 		}
 	}
-	
-	int i;
+		
 	for(i=0; i<=ITEMS_NUMBER; i++) {
 		if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
-		if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+		if(ITEMS_POSITION >= ITEMS_NUMBER) ITEMS_POSITION = 0;
 		else ITEMS_POSITION++;
 	}
-	
 	if(R2pad(BUTTON_UP)) {
 		if(USE_TITLE_MENU) {
 			if(MENU_LVL == LVL_TITLE) {
@@ -33454,14 +33501,14 @@ void input_PS3_UPDATE_MENU()
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
 			}
-		} else {
+		} 
+		else {
 			if(MENU_LVL == LVL_ITEMS) {
 				for(i=0; i<=ITEMS_NUMBER; i++) {
-					if(ITEMS_POSITION == 0) ITEMS_POSITION = ITEMS_NUMBER;
+					if(ITEMS_POSITION <= 0) ITEMS_POSITION = ITEMS_NUMBER;
 					else ITEMS_POSITION--;
 					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
 				}
-				
 			} else if(MENU_LVL == LVL_VALUE) {
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) ITEMS_VALUE_POSITION[ITEMS_POSITION] = ITEMS_VALUE_NUMBER[ITEMS_POSITION];
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]--;
@@ -33491,10 +33538,11 @@ void input_PS3_UPDATE_MENU()
 				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == ITEMS_VALUE_NUMBER[ITEMS_POSITION]) ITEMS_VALUE_POSITION[ITEMS_POSITION] = 0 ;
 				else ITEMS_VALUE_POSITION[ITEMS_POSITION]++;
 			}
-		} else {
+		} 
+		else {
 			if(MENU_LVL == LVL_ITEMS) {
 				for(i=0; i<=ITEMS_NUMBER; i++) {
-					if(ITEMS_POSITION == ITEMS_NUMBER) ITEMS_POSITION = 0;
+					if(ITEMS_POSITION >= ITEMS_NUMBER) ITEMS_POSITION = 0;
 					else ITEMS_POSITION++;
 					if(ITEMS_TYPE[ITEMS_POSITION]!=ITEM_LOCKED) break;
 				}
@@ -33546,14 +33594,16 @@ void Draw_PS3_UPDATE_MENU_input()
 	x=DrawButton(x, y, STR_SELECT_ALL, BUTTON_SQUARE);
 	x=DrawButton(x, y, STR_UNSELECT_ALL, BUTTON_TRIANGLE);
 	
-	if(ITEMS_VALUE_SHOW[ITEMS_POSITION]) x=DrawButton(x, y, STR_DELETE, BUTTON_L1);
-	
-	if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) {
-		x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
-	} else { 
-		x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);			
+	if( 0 < ITEMS_POSITION ) {
+		if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_CHECKBOX) {
+			if( ITEMS_VALUE_SHOW[ITEMS_POSITION]) x=DrawButton(x, y, STR_DELETE, BUTTON_L1);
+		}
+		if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES) {
+			x=DrawButton(x, y, STR_UNCHECK, BUTTON_CROSS);
+		} else { 
+			x=DrawButton(x, y, STR_CHECK, BUTTON_CROSS);			
+		}
 	}
-	
 	x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 }
 
@@ -33570,6 +33620,8 @@ u8 open_PS3_UPDATE_MENU()
 	ps3_game_updates = download_upd_xml(list_game_ID[position], &ps3_game_updates_number);
 	
 	get_current_version(list_game_ID[position]);
+	
+	mkdir("/dev_hdd0/packages", 0777);
 	
 	init_PS3_UPDATE_MENU();
 	
@@ -34370,10 +34422,12 @@ u8 PS3_GAME_MENU_CROSS()
 		start_loading();
 		print_head("Converting...");
 		u8 ret;
+
 		if( support_big_files(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) ) 
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], FULL); 
 		else 
 			ret = extractps3iso(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], SPLIT);	
+		
 		if(ret==SUCCESS) {
 			char ExtGame[512];
 						
@@ -34385,7 +34439,7 @@ u8 PS3_GAME_MENU_CROSS()
 			add_GAMELIST(ExtGame);
 			
 			sort_GAMELIST();
-		
+			
 			init_Load_GAMEPIC();
 			
 			read_fav();
@@ -34765,7 +34819,10 @@ void init_BDVD_MENU()
 	
 	add_item_MENU(STR_DUMP_DISC_KEY, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
-		add_item_value_MENU(tmp);
+		for(i=0; i<=device_number; i++) {
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
 	}
 	
 	add_item_MENU(STR_COPY, ITEM_TEXTBOX);
@@ -40098,7 +40155,7 @@ void Draw_FLOW_3D()
 		
 		if(0<=TextSlot) PICType = Get_PICType(GAMEPIC[TextSlot].width, GAMEPIC[TextSlot].height);
 		
-		if( list_game_platform[i] == ISO_PS3 || list_game_platform[i] == JB_PS3 ) {
+		if( list_game_platform[i] == ISO_PS3 || list_game_platform[i] == JB_PS3 || list_game_platform[i] == BDVD) {
 			// texture
 			if(PICTURE_offset[BR_LOGO]) tiny3d_SetTexture(0, PICTURE_offset[BR_LOGO], PICTURE[BR_LOGO].width, PICTURE[BR_LOGO].height, PICTURE[BR_LOGO].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 
@@ -40299,7 +40356,7 @@ void init_XMB()
 	for(i = 0 ; i <= game_number ; i++) {
 		if(XMB_H_position==XMB_COLUMN_SETTINGS) continue;
 		
-		if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] != ISO_PS3 && list_game_platform[i] != JB_PS3)) continue;
+		if(XMB_H_position==XMB_COLUMN_PS3 && (list_game_platform[i] != ISO_PS3 && list_game_platform[i] != JB_PS3 && list_game_platform[i] != BDVD)) continue;
 		if(XMB_H_position==XMB_COLUMN_PS2 && (list_game_platform[i] != ISO_PS2 && list_game_platform[i] != JB_PS2)) continue;
 		if(XMB_H_position==XMB_COLUMN_PS1 && (list_game_platform[i] != ISO_PS1 && list_game_platform[i] != JB_PS1)) continue;
 		if(XMB_H_position==XMB_COLUMN_PSP && (list_game_platform[i] != ISO_PSP && list_game_platform[i] != JB_PSP)) continue;
