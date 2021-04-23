@@ -11830,32 +11830,29 @@ ird_t *IRD_new(char *source)
 
 	print_debug("IRD_new TITLE_ID");
 	memset(value, 0, 255);
+	memset(ird->GameId, 0, 10);
 	ret = GetParamSFO("TITLE_ID", value, source);
 	if(ret==FAILED) {
 		print_load("Error : ird_new failed to get TITLE_ID");
 		goto error;
 	}
-	memset(ird->GameVersion, 0, 10);
 	memcpy(ird->GameId, value, 9);
 	
 	print_debug("IRD_new VERSION");
-	ret = GetParamSFO("VERSION", value, source);
-	if(ret==FAILED) {
-		print_load("Error : ird_new failed to get VERSION");
-		goto error;
-	}
+	
 	memset(ird->GameVersion, 0, 6);
-	memcpy(ird->GameVersion, value, 5);
+	memset(value, 0, 255);
+	ret = GetParamSFO("VERSION", value, source);
+	if(ret==FAILED) print_load("Error : ird_new failed to get VERSION");
+	else memcpy(ird->GameVersion, value, 5);
 
 	print_debug("IRD_new APP_VER");
+	memset(ird->AppVersion, 0, 6);
 	memset(value, 0, 255);
 	ret = GetParamSFO("APP_VER", value, source);
-	if(ret==FAILED) {
-		print_load("Error : ird_new failed to get APP_VER");
-		goto error;
-	}
-	memset(ird->AppVersion, 0, 6);
-	memcpy(ird->AppVersion, value, 5);
+	if(ret==FAILED) print_load("ird_new failed to get APP_VER");
+	else memcpy(ird->AppVersion, value, 5);
+	
 	
 	print_debug("IRD_new PUP_VER");
 	memset(ird->UpdateVersion, 0, 5);
@@ -11865,10 +11862,11 @@ ird_t *IRD_new(char *source)
 		memset(value, 0, 255);
 		ret = GetParamSFO("PS3_SYSTEM_VER", value, source);
 		if(ret==FAILED) {
-			print_load("Error : failed to get SYSTEM_VERS");
-			goto error;
+			print_load("failed to get SYSTEM_VERS");
+			strcpy(ird->UpdateVersion, "0000\0");
+		} else {
+			memcpy(ird->UpdateVersion, &value[1], 4);
 		}
-		memcpy(ird->UpdateVersion, &value[1], 4);
 	}
 	
 	ret = SUCCESS;
@@ -11908,7 +11906,7 @@ IRD_keys_sig is the CRC of
 -Data1
 -PIC
 
-Data2 seems to be a per-disc key.
+Data2 is a per-disc key (disc_id), even if the last 4 bytes are patched, I'd rather to not use this data.
 
 IRD files are named with the following pattern [IRD_META_SIG]_[IRD_FILES_SIG]_[IRD_EXTRA_SIG]_[IRD_KEYS_SIG].ird
 
@@ -27186,7 +27184,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		IRD_upload("/dev_hdd0/GAMES/BLES00565_20210421_175544.ird");
+		
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {

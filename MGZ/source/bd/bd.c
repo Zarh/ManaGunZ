@@ -137,6 +137,32 @@ u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 		goto error;
 	}
 	
+/** From IRD documentation by 3key team
+	
+		The original iso contains plain and encrypted content. To be able to successfully re-encrypt the plain
+	files, we need the original keys from the disc. First, the D1 key is written (16 bytes long). Next up, the
+		D2 key is written (also 16 bytes long). Finally, the PIC data is written (115 bytes long).
+	A special note about the D2 key is in order. This key is a unique fingerprint, which is different on each
+	disc produced. Therefore, we need to change this key to hide the origin. The origin *could* lead to a
+	PSN account. As a result, the D2 key is decrypted. The first 12 bytes are copied, but the last 4 bytes
+	are changed. If the last 4 bytes are all zeroes, then no change will be made. If they contain a different
+	value, then it will be changed to 1 (0x00 0x00 0x00 0x01). Then the key is encrypted again, and stored
+	in the IRD file.
+		When building an ISO file, the D2 is decrypted once again, and the last four bytes are checked for a
+	value other than 0. If it finds that, it will supply a random value between 0 and 0x1FFFFF.
+	
+**/
+
+	dec_d2(d2);
+
+	d2[12]=0;
+	d2[13]=0;
+	d2[14]=0;
+	d2[15]=1;
+	
+	enc_d2(d2);
+	
+	
 	ret=SUCCESS;
 error:
 	
