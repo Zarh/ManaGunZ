@@ -8,6 +8,12 @@
 u8 get_keys(u8 *d1, u8 *d2, u8 *pic);
 u8 dump_disc_key();
 
+void dec_d2(unsigned char* d2);
+void dec_d1(unsigned char* d1);
+void enc_d2(unsigned char* d2);
+void enc_d1(unsigned char* d1);
+
+
 #endif /* _SYS_STORAGE_H__ */
 
 

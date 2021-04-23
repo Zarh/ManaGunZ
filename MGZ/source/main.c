@@ -11819,7 +11819,7 @@ ird_t *IRD_new(char *source)
 	memset(value, 0, 255);
 	ret = GetParamSFO("TITLE", value, source);
 	if(ret==FAILED) {
-		print_debug("Error : ird_new failed to get TITLE");
+		print_load("Error : ird_new failed to get TITLE");
 		goto error;
 	}
 	ird->GameName_length = (u8) strlen(value);	
@@ -11832,7 +11832,7 @@ ird_t *IRD_new(char *source)
 	memset(value, 0, 255);
 	ret = GetParamSFO("TITLE_ID", value, source);
 	if(ret==FAILED) {
-		print_debug("Error : ird_new failed to get TITLE_ID");
+		print_load("Error : ird_new failed to get TITLE_ID");
 		goto error;
 	}
 	memset(ird->GameVersion, 0, 10);
@@ -11841,7 +11841,7 @@ ird_t *IRD_new(char *source)
 	print_debug("IRD_new VERSION");
 	ret = GetParamSFO("VERSION", value, source);
 	if(ret==FAILED) {
-		print_debug("Error : ird_new failed to get VERSION");
+		print_load("Error : ird_new failed to get VERSION");
 		goto error;
 	}
 	memset(ird->GameVersion, 0, 6);
@@ -11851,7 +11851,7 @@ ird_t *IRD_new(char *source)
 	memset(value, 0, 255);
 	ret = GetParamSFO("APP_VER", value, source);
 	if(ret==FAILED) {
-		print_debug("Error : ird_new failed to get APP_VER");
+		print_load("Error : ird_new failed to get APP_VER");
 		goto error;
 	}
 	memset(ird->AppVersion, 0, 6);
@@ -11861,7 +11861,7 @@ ird_t *IRD_new(char *source)
 	memset(ird->UpdateVersion, 0, 5);
 	ret = Get_PUPVersion(source, ird->UpdateVersion);
 	if(ret==FAILED) {
-		print_debug("Can't get PUP_VERSION, looking for PS3_SYSTEM_VERS");
+		print_load("Can't get PUP_VERSION, looking for PS3_SYSTEM_VERS");
 		memset(value, 0, 255);
 		ret = GetParamSFO("PS3_SYSTEM_VER", value, source);
 		if(ret==FAILED) {
@@ -11906,18 +11906,9 @@ IRD_extra_sig is the CRC of
 IRD_keys_sig is never used by mgz, it's just to be sure it have an unique file name per ird.
 IRD_keys_sig is the CRC of
 -Data1
--Data2 (without the 4 last bytes)
 -PIC
 
-I think IRD_keys_sig is not a per-disc key, I'm not sure...
-I think I already saw 2 different d1&d2 with the same disc.
-With my first try, I always had the same d1&d2 than the one I found inside 'official' ird made by 3key team.
-Months later, I dumped new d1&d2, they were completely different from the previous one. And now (more weeks later), I always have the new ones...
-The backup was always perfectly decrypted with these keys.
-Maybe these keys are calculated with the current date... or maybe I mixed the 'official' ird and mines...
-I need to do more test...
-
-
+Data2 seems to be a per-disc key.
 
 IRD files are named with the following pattern [IRD_META_SIG]_[IRD_FILES_SIG]_[IRD_EXTRA_SIG]_[IRD_KEYS_SIG].ird
 
@@ -11928,7 +11919,6 @@ u32 IRD_keys_sig(ird_t *ird)
 {
 	u32 crc = crc32(0L, Z_NULL, 0);
 	crc = crc32(crc,  (const unsigned char*) ird->Data1 , 0x10);
-	crc = crc32(crc,  (const unsigned char*) ird->Data2 , 0xC);
 	crc = crc32(crc,  (const unsigned char*) ird->PIC   , 0x73);
 	return crc;
 }
@@ -12186,12 +12176,8 @@ u8 dump_dec_bdvd(char *outdir)
 	char IRD_PATH[512];
 	char *IRD_NAME = NULL;
 	char *DATE=NULL;	
-	aes_context aes_d1;
 	u8 *sec0sec1=NULL;
 	u32 i;
-	
-	unsigned char key_d1[] = {0x38, 11, 0xcf, 11, 0x53, 0x45, 0x5b, 60, 120, 0x17, 0xab, 0x4f, 0xa3, 0xba, 0x90, 0xed};
-	unsigned char iv_d1[] = {0x69, 0x47, 0x47, 0x72, 0xaf, 0x6f, 0xda, 0xb3, 0x42, 0x74, 0x3a, 0xef, 170, 0x18, 0x62, 0x87};
 
 	print_debug("IRD_new");
 	ird = IRD_new("/dev_bdvd");
@@ -12200,26 +12186,18 @@ u8 dump_dec_bdvd(char *outdir)
 		goto error;
 	}
 
-	print_debug("Get decryption keys");
+	print_debug("Get decryption key");
 	if( get_keys(ird->Data1, ird->Data2, ird->PIC)==FAILED) {
 		print_load("Error : failed to get_keys");
 		goto error;
 	}
 	
-	print_debug("aes_setkey_enc");
-    if( aes_setkey_enc(&aes_d1, key_d1, 128 )!=0 ){
-		print_load(" Error : aes_setkey_enc aes_d1 ");
-		goto error;
-	}
-	
-	print_debug("aes_crypt_cbc");
-    if( aes_crypt_cbc(&aes_d1, AES_ENCRYPT, 16, iv_d1, ird->Data1, ird->Data1)!=0){
-		print_load(" Error : aes_crypt_cbc aes_d1 ");
-		goto error;
-	}
-	
+	u8 key[0x10];
+	memcpy(key, ird->Data1, 0x10);
+	enc_d1(key);
+
 	print_debug("Decryption key (d1) :");
-	hex_print_load((char *) ird->Data1, 16);
+	hex_print_load((char *) key, 16);
 
 	print_debug("sys_storage_open BDVD_DRIVE");
 	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
@@ -12252,7 +12230,7 @@ u8 dump_dec_bdvd(char *outdir)
 	
 	print_load("init aes");
 	aes_context aes;
-	if( aes_setkey_dec(&aes, ird->Data1, 128 )!=0 ) {
+	if( aes_setkey_dec(&aes, key, 128 )!=0 ) {
 		print_load(" Error : aes_setkey_dec ");
 		goto error;
 	}

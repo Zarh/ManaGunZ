@@ -60,9 +60,6 @@ void load_keys(unsigned char* EID4, unsigned char* CMAC, unsigned char* KE, unsi
 int get_dec_key(unsigned char* d1, unsigned char* d2);
 int get_data(unsigned char* data1, unsigned char* data2);
 
-void dec_d2(unsigned char* d2);
-void dec_d1(unsigned char* d1);
-
 int do_cdb(unsigned char* cdb, int cdb_len, unsigned char* transfer, int transfer_len, uint32_t proto, uint32_t type)
 {
 	int ret;
@@ -262,8 +259,8 @@ void triple_des_encrypt(unsigned char* Key, unsigned char* IV, unsigned char* So
 int get_dec_key(unsigned char* d1, unsigned char* d2)
 {
 	print_load("get dec key");
-	if(establish_session_keys(0, Key1, Key2)!=SUCCESS) return FAILED;
-	if(get_data(d1, d2)!=SUCCESS) {
+	if(establish_session_keys(0, Key1, Key2) == FAILED) return FAILED;
+	if(get_data(d1, d2)==FAILED) {
 		print_load("get data failed");
 		return FAILED;
 	}
@@ -287,9 +284,9 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 
 	AESEncrypt(KA, 128, IV1, source, 0, 0x10, destinationArray, 4);
 	
-	if(do_send_key(keyselection, destinationArray, 20) != SUCCESS) return FAILED;
+	if(do_send_key(keyselection, destinationArray, 20) == FAILED) return FAILED;
 	
-	if(do_report_key(keyselection, payload, 0x24) != SUCCESS) return FAILED;
+	if(do_report_key(keyselection, payload, 0x24) == FAILED) return FAILED;
 	
 	AESDecrypt(KB, 128, IV1, payload, 4, 0x10, destination, 0);
 	AESDecrypt(KB, 128, IV1, payload, 20, 0x10, buffer6, 0);
@@ -304,11 +301,11 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 	{
 		memcpy(destinationArray, sourceArray, 4);
 		AESEncrypt(KA, 128, IV1, buffer6, 0, 0x10, destinationArray, 4);
-		if(do_send_key(2, destinationArray, 20) != SUCCESS) return FAILED;
+		if(do_send_key(2, destinationArray, 20) == FAILED) return FAILED;
 	}
 	else
 	{
-		if(do_report_key(keyselection, payload, 0x24) != SUCCESS) return FAILED;
+		if(do_report_key(keyselection, payload, 0x24) == FAILED) return FAILED;
 	}
 	return SUCCESS;
 }
@@ -380,9 +377,9 @@ int get_data(unsigned char* data1, unsigned char* data2)
 	AESEncrypt(Key7, 128, IV3, buffer6, 0, 80, buffer5, 4);
 	triple_des_encrypt(Key7, IV2, source, 0, 8, buffer4, 0);
 	
-	if(do_unknown_e1(buffer4, buffer5) != SUCCESS) return FAILED;
+	if(do_unknown_e1(buffer4, buffer5) == FAILED) return FAILED;
 	triple_des_encrypt(Key7, IV2, buffer3, 0, 8, buffer4, 0);
-	if(do_unknown_e0(buffer4, buffer5) != SUCCESS) return FAILED;
+	if(do_unknown_e0(buffer4, buffer5) == FAILED) return FAILED;
 	
 	AESDecrypt(Key7, 128, IV3, buffer5, 4, 0x30, destination, 0);
 	AESDecrypt(Key8, 128, IV3, destination, 3, 0x10, data1, 0);
@@ -431,15 +428,32 @@ void load_keys(unsigned char* EID4, unsigned char* CMAC, unsigned char* KE, unsi
 	memcpy(Key2, destination+0x10, 0x10);
 }
 
+
+void dec_d1(unsigned char* d1)
+{
+	unsigned char key[]= { 0x38, 11, 0xcf, 11, 0x53, 0x45, 0x5b, 60, 120, 0x17, 0xab, 0x4f, 0xa3, 0xba, 0x90, 0xed };
+	unsigned char iV[] = { 0x69, 0x47, 0x47, 0x72, 0xaf, 0x6f, 0xda, 0xb3, 0x42, 0x74, 0x3a, 0xef, 170, 0x18, 0x62, 0x87 };
+	aes_cbc_decrypt(iV, key, 128, d1, 16, d1);
+}
+
 void dec_d2(unsigned char* d2)
 {
 	unsigned char key[]= { 0x7c, 0xdd, 14, 2, 7, 110, 0xfe, 0x45, 0x99, 0xb1, 0xb8, 0x2c, 0x35, 0x99, 0x19, 0xb3 };
 	unsigned char iV[] = { 0x22, 0x26, 0x92, 0x8d, 0x44, 3, 0x2f, 0x43, 0x6a, 0xfd, 0x26, 0x7e, 0x74, 0x8b, 0x23, 0x93 };
 	aes_cbc_decrypt(iV, key, 128, d2, 16, d2);
 }
-void dec_d1(unsigned char* d1)
+
+void enc_d1(unsigned char* d1)
 {
 	unsigned char key[]= { 0x38, 11, 0xcf, 11, 0x53, 0x45, 0x5b, 60, 120, 0x17, 0xab, 0x4f, 0xa3, 0xba, 0x90, 0xed };
 	unsigned char iV[] = { 0x69, 0x47, 0x47, 0x72, 0xaf, 0x6f, 0xda, 0xb3, 0x42, 0x74, 0x3a, 0xef, 170, 0x18, 0x62, 0x87 };
 	aes_cbc_encrypt(iV, key, 128, d1, 16, d1);
 }
+
+void enc_d2(unsigned char* d2)
+{
+	unsigned char key[]= { 0x7c, 0xdd, 14, 2, 7, 110, 0xfe, 0x45, 0x99, 0xb1, 0xb8, 0x2c, 0x35, 0x99, 0x19, 0xb3 };
+	unsigned char iV[] = { 0x22, 0x26, 0x92, 0x8d, 0x44, 3, 0x2f, 0x43, 0x6a, 0xfd, 0x26, 0x7e, 0x74, 0x8b, 0x23, 0x93 };
+	aes_cbc_encrypt(iV, key, 128, d2, 16, d2);
+}
+
