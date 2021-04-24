@@ -11982,13 +11982,13 @@ u32 IRD_files_sig(ird_t *ird)
 	return crc;
 }
 
-u32 IRD_meta_sig2(char *TITLE_ID, char *PS3_SYSTEM_VER, char *APP_VER, char *VERSION)
+u32 IRD_meta_sig2(char *TITLE_ID, char *PS3_SYSTEM_VER, char *GAME_VERSION, char *APP_VER)
 {
 	u32 crc = crc32(0L, Z_NULL, 0);
 	
 	crc = crc32(crc,  (const unsigned char*) TITLE_ID                , 9);
 	crc = crc32(crc,  (const unsigned char*) PS3_SYSTEM_VER          , 4);
-	crc = crc32(crc,  (const unsigned char*) VERSION                 , 5);
+	crc = crc32(crc,  (const unsigned char*) GAME_VERSION            , 5);
 	crc = crc32(crc,  (const unsigned char*) APP_VER                 , 5);
 	
 	return crc;
