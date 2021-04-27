@@ -553,10 +553,8 @@ static u32 WAVES_COLOR = WHITE-0xFF+0x20;
 #define FILTER_Y_DEFAULT 300.0
 static float filter_x = FILTER_X_DEFAULT;
 static float filter_y = FILTER_Y_DEFAULT;
-static u8 root_display = 1;
 static u8 LOG = NO;
 u8 DEBUG = NO;
-
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -565,7 +563,7 @@ u8 DEBUG = NO;
 #define STYLE4			4
 #define STYLE5			5
 #define STYLE6			6
-
+static u8 root_display = STYLE1;
 #define MAX_STYLE 6
 
 #define SMALL	0
@@ -2194,6 +2192,7 @@ int upload(char *url, char *src);
 int http_response(char *url);
 void add_GAMELIST(char *path);
 void sort_GAMELIST();
+void update_RootDisplay();
 
 void Draw_MENU();
 
@@ -12176,7 +12175,9 @@ u8 dump_dec_bdvd(char *outdir)
 	char *DATE=NULL;	
 	u8 *sec0sec1=NULL;
 	u32 i;
-
+	
+	u8 iso_done = NO;
+	
 	print_debug("IRD_new");
 	ird = IRD_new("/dev_bdvd");
 	if(ird==NULL) {
@@ -12348,6 +12349,9 @@ u8 dump_dec_bdvd(char *outdir)
 	
 	SetPerms(ISO_PATH);
 	
+	iso_done = YES;
+	
+	
 	print_head("Building IRD...");
 	u64 footer_offset;
 	u64 header_lenght;
@@ -12419,24 +12423,26 @@ u8 dump_dec_bdvd(char *outdir)
 	} else
 	if( ret == YES ) {
 		print_load("The ird already exists in DB");
-		ret = FAILED;
-		goto error;
+	} else 
+	if( ret == NO ) {	
+		print_load("uploading the ird");
+		if( IRD_DB_upload(IRD_PATH, IRD_NAME) == FAILED ) {
+			print_load("Error : failed to upload IRD");
+			ret = FAILED;
+			goto error;
+		}
 	}
-	
-	print_load("uploading the ird");
-	if( IRD_DB_upload(IRD_PATH, IRD_NAME) == FAILED ) {
-		print_load("Error : failed to upload IRD");
-		goto error;
-	}
-	
-	add_GAMELIST(ISO_PATH);
-	sort_GAMELIST();
-	init_Load_GAMEPIC();
-	read_fav();
 	
 	ret=SUCCESS;
 
 error:
+	
+	if( iso_done ) {
+		add_GAMELIST(ISO_PATH);
+		sort_GAMELIST();
+		init_Load_GAMEPIC();
+		read_fav();
+	}
 	
 	if( copy_cancel ) ret=FAILED;
 	
@@ -14669,6 +14675,8 @@ void remove_GAMELIST(s64 pos)
 	FREE(list_game_path[game_number]);
 	FREE(list_game_ID[game_number]);
 	
+	if(position == pos ) position++;
+	
 	game_number--;
 	if(position > game_number) position = game_number;
 	
@@ -14746,12 +14754,25 @@ void add_SCANDIR(char *scan_path)
 	sort_GAMELIST();
 }
 
+int GetPosition_GAMELIST(char *path)
+{
+	int j;
+	int len = strlen(path);
+	for(j=0; j<=game_number;  j++) {
+		if(strncmp(path, list_game_path[j], len)==0) {
+			return j;
+		}
+	}
+	return -1;
+}
+
 void Load_GAMELIST()
 {
 	free_GAMELIST();
 	game_number=-1;
 	
 	if( path_info("/dev_bdvd") != _NOT_EXIST ) add_GAMELIST("/dev_bdvd");
+	
 	//if( path_info("/dev_ps2dvd") != _NOT_EXIST ) add_GAMELIST("/dev_ps2dvd");
 	
 	int i, j;
@@ -16902,17 +16923,18 @@ u64 GetDeviceNumber()
 u8 do_Refresh=NO;
 u8 PlugAndPlay=NO;
 u8 RefreshRetry=NO;
-
+u64 Old_NumberOfDevice;
+u64 NumberOfDevice;
 static sys_ppu_thread_t PlugAndPlay_id;
 void PlugAndPlay_thread(void *unused)
 {
-	u64 Old_NumberOfDevice = 0;
+	Old_NumberOfDevice = 0;
 	
 	Old_NumberOfDevice = GetDeviceNumber();
 	
 	while(PlugAndPlay) {
 	
-		u64 NumberOfDevice = GetDeviceNumber();
+		NumberOfDevice = GetDeviceNumber();
 		
 		if ( Old_NumberOfDevice != NumberOfDevice) {
 			
@@ -16966,6 +16988,25 @@ void AutoRefresh_GAMELIST()
 	
 	start_loading();
 	
+	int bdvd_position = GetPosition_GAMELIST("/dev_bdvd");
+	
+	if( path_info("/dev_bdvd") == _NOT_EXIST) {
+		if( 0 <= bdvd_position) {
+			remove_GAMELIST(bdvd_position);
+			end_loading();
+			return;
+		}
+	} else {
+		if( bdvd_position < 0 ) {
+			add_GAMELIST("/dev_bdvd");
+			sort_GAMELIST();
+			init_Load_GAMEPIC();
+			read_fav();
+			end_loading();
+			return;
+		}
+	}
+	
 	int i=0, j=0, k;
 	char scan_path[128], temp[128];
 	
@@ -16974,7 +17015,7 @@ void AutoRefresh_GAMELIST()
 	
 	memcpy(list_device_OLD, list_device, sizeof(list_device));
 	device_number_OLD = device_number;
-		
+	
 	getDevices();
 	
 	s64 old_game_number = game_number;
@@ -16991,7 +17032,6 @@ void AutoRefresh_GAMELIST()
 			getDevices();
 		}
 	}
-	
 	
 	if(device_number < device_number_OLD) { // *** unplug device ***
 		
@@ -17078,6 +17118,7 @@ void AutoRefresh_GAMELIST()
 			}	
 		}
 	}	
+	
 	
 	if(game_number != old_game_number) {
 		print_load("Reloading...");
@@ -17657,26 +17698,68 @@ u8 md5_FromISO_WithFileName(char *iso_path, char *filename, unsigned char output
 	return md5_FromISO_WithFileOffset(iso_path, file_offset, file_size, output);
 }
 
-void IRD_search(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
+void IRD_addfile(char *filepath, u32 meta_sig, u32 **files_sigs, char ***IRD_Path, u32 *IRD_nPath)
+{
+	ird_t *ird_c = IRD_load(filepath);
+	if(ird_c==NULL) return;
+	
+	print_debug("IRD_meta_sig3");
+	u32 cur_meta_sig = IRD_meta_sig3(ird_c);
+	print_debug("cur_meta_sig %X", cur_meta_sig);
+	
+	print_debug("cur_files_sig");
+	
+	u32 cur_files_sig = IRD_files_sig(ird_c);
+	print_debug("cur_files_sig %X", cur_files_sig);
+	
+	print_debug("FREE_IRD");
+	FREE_IRD(ird_c);
+	
+	print_debug("cur_meta_sig==meta_sig");
+	if(cur_meta_sig!=meta_sig) return;
+	
+	print_debug("OK");
+	int j;
+	for(j=0; j<*IRD_nPath; j++) {
+		if(*files_sigs[j]==cur_files_sig) return;
+	}
+	*IRD_nPath = *IRD_nPath + 1;
+	print_debug("realloc");
+	*IRD_Path = (char **) realloc(*IRD_Path, *IRD_nPath * sizeof(char*));
+	print_debug("strcpy_malloc");
+	*IRD_Path[*IRD_nPath-1] = strcpy_malloc(filepath);
+	*files_sigs[*IRD_nPath-1]=cur_files_sig;
+	
+}
+
+void IRD_search(ird_t *ird, u32 meta_sig, char *g_path, char ***IRD_Path, u32 *IRD_nPath)
 {
 	print_head("Searching IRD...");
 	char IRD_dir[512]={0};
 	char meta_sig_str[8];
 	char filepath[512]={0};
-	int i, j;
+	int i;
 	
-	u32 files_sigs[128]={0};
+	u32 *files_sigs=(u32 * ) malloc(128 * sizeof(u32));
+	memset(files_sigs, 0, 128 * sizeof(u32));
+	
+	if( files_sigs==NULL) {
+		print_load("Error : malloc files_sigs");
+		return;
+	}
+	
 	sprintf(meta_sig_str, "%08X", meta_sig);
 	print_debug("meta sig %X", meta_sig);
 	
-	for(i=0; i<=device_number; i++) {
+	for(i=-1; i<=device_number; i++) {
 		memset(IRD_dir, 0, 512);
+		
+		if( i == -1 ) {
+			sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
+		} else
 		if(strstr(list_device[i], "dev_usb")) {
 			sprintf(IRD_dir, "/%s/IRD", list_device[i]);
-		} else 
-		if(strstr(list_device[i], "dev_hdd0")) {
-			sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
-		} else continue;
+		}
 		
 		DIR *d;
 		struct dirent *dir;
@@ -17692,47 +17775,23 @@ void IRD_search(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
 			sprintf(filepath, "%s/%s", IRD_dir, dir->d_name);
 			print_debug(filepath);
 			
-			if(strncmp(meta_sig_str, dir->d_name, 8) == 0 || strncmp(ird->GameId, dir->d_name, 9) == 0) {
-				
-				ird_t *ird = IRD_load(filepath);
-				if(ird==NULL) continue;
-				
-				print_debug("IRD_meta_sig3");
-				u32 cur_meta_sig = IRD_meta_sig3(ird);
-				print_debug("cur_meta_sig %X", cur_meta_sig);
-				
-				print_debug("cur_files_sig");
-				
-				u32 cur_files_sig = IRD_files_sig(ird);
-				print_debug("cur_files_sig %X", cur_files_sig);
-				
-				print_debug("FREE_IRD");
-				FREE_IRD(ird);
-				print_debug("cur_meta_sig==meta_sig");
-				
-				if(cur_meta_sig==meta_sig) 
-					print_debug("OK");
-				
-					u8 found = NO;
-					for(j=0; j<*IRD_nPath; j++) {
-						if( files_sigs[j]==cur_files_sig) {
-							found=YES;
-							break;
-						}
-					}
-					print_debug("FOUND %d", found);
-					if(found==NO) {
-						*IRD_nPath = *IRD_nPath + 1;
-						print_debug("realloc");
-						*IRD_Path = (char **) realloc(*IRD_Path, *IRD_nPath * sizeof(char*));
-						print_debug("strcpy_malloc");
-						*IRD_Path[*IRD_nPath-1] = strcpy_malloc(filepath);
-						files_sigs[*IRD_nPath-1]=cur_files_sig;
-					}
-			} else print_debug("NOK");
+			char *ext = GetExtension(filepath);
+			if( strcasecmp(ext, ".ird") != 0) continue;
+			if( strncmp(meta_sig_str, dir->d_name, 8) != 0 && strncmp(ird->GameId, dir->d_name, 9) != 0) continue;			
+			
+			IRD_addfile(filepath, meta_sig, &files_sigs, IRD_Path, IRD_nPath);
+			
 		}
 		closedir(d);
 	}
+	
+	strcpy(filepath, g_path);
+	RemoveExtension(filepath);
+	strcat(filepath, ".ird");
+	if( path_info(filepath) == _FILE) IRD_addfile(filepath, meta_sig, &files_sigs, IRD_Path, IRD_nPath);
+	
+	FREE(files_sigs);
+	
 	print_debug("End of search IRD");
 }
 
@@ -17886,7 +17945,7 @@ u8 IRD_check(char *G_PATH)
 	
 	meta_sig = IRD_meta_sig3(ird);
 	
-	IRD_search(ird, meta_sig, &IRD_Path, &IRD_nPath); 
+	IRD_search(ird, meta_sig, G_PATH, &IRD_Path, &IRD_nPath); 
 	if( IRD_nPath != 0 ) goto check;
 	
 // SEARCH
@@ -23398,7 +23457,7 @@ void read_setting()
 		fread(&DEBUG, sizeof(u8), 1, fp);
 		
 		fclose(fp);
-	}
+	} 
 	
 	read_RootSetting();
 }
@@ -24208,7 +24267,7 @@ void init_FileExplorer()
 	window_content_N = (int *) malloc(WINDOW_MAX * sizeof(int));
 	window_open = (u8 *) malloc(WINDOW_MAX * sizeof(u8));
 	//for(i=0; i<WINDOW_MAX; i++) window_open[i]=NO; freeze...
-	memset(window_open, 0, sizeof(window_open));
+	memset(window_open, 0, WINDOW_MAX * sizeof(u8));
 	
 	window_scroll_N = (u32 *) malloc(WINDOW_MAX * sizeof(u32));
 	window_scroll_P = (u32 *) malloc(WINDOW_MAX * sizeof(u32));
@@ -24819,6 +24878,9 @@ void Draw_RootIcon(char *mount_point, char *type, float x, float y, float z, u8 
 			DrawIcon_File(x, y, z, WHITE);
 		}
 	} else {
+		if( mount_point == NULL) { //root
+			DrawIcon(x, y, z, FILES, WHITE, readonly);
+		}
 		if( strncmp(mount_point, "dev_hdd", 7)==0) {
 			DrawIcon(x, y, z, HDD, WHITE, readonly);
 		} else
@@ -24878,7 +24940,7 @@ void Draw_window()
 {
 	int n;
 	
-	for(n=0; n<10; n++) {
+	for(n=0; n<WINDOW_MAX; n++) {
 		if(window_open[n]==NO) continue;
 		
 		SetFontZ(window_z[n]);	
@@ -24887,25 +24949,29 @@ void Draw_window()
 		if(window_activ==n) Draw_Box(window_x[n], window_y[n], window_z[n], 3, window_w[n], window_h[n], 0x4080D0FF, NO);
 		else Draw_Box(window_x[n], window_y[n], window_z[n], 3, window_w[n], window_h[n], 0x205070FF, NO);
 		
-		
 		//TOP
 		char TOP_str[255];
 		FontSize(TOP_H_FONT);
 		FontColor(WHITE);
 		
 		// TOP LEFT ICON
-		
 		u8 read_only=NO;
 		int e;
-		for(e=0; e<=DevicesInfo_N; e++) {
-			if( strncmp(DevicesInfo[e].MountPoint, window_path[n], strlen(DevicesInfo[e].MountPoint)) == 0) {								
-				read_only = DevicesInfo[e].ReadOnly;
-				break;
-			}
-		}
 		LINE_H=LINE_H1;
-		Draw_RootIcon(&window_path[n][1], _SDIR, window_x[n]+BORDER, window_y[n]+BORDER, window_z[n], read_only);
-		
+		if(strcmp(window_path[n], "/") != 0) {
+			for(e=0; e<=DevicesInfo_N; e++) {
+				if( strncmp(DevicesInfo[e].MountPoint, window_path[n], strlen(DevicesInfo[e].MountPoint)) == 0) {								
+					read_only = DevicesInfo[e].ReadOnly;
+					break;
+				}
+			}
+			Draw_RootIcon(&window_path[n][1], _SDIR, window_x[n]+BORDER, window_y[n]+BORDER, window_z[n], read_only);
+		} 
+/*		else {
+			Draw_RootIcon(NULL, _SFILE, window_x[n]+BORDER, window_y[n]+BORDER, window_z[n], YES);
+		}
+*/
+
 		// title	
 		strcpy(TOP_str, window_path[n]);
 		if(strcmp(TOP_str, "/") == 0) {
@@ -24939,7 +25005,6 @@ void Draw_window()
 			}
 		}
 		DrawString(window_x[n]+BORDER+LINE_H1+CONTROLBOX_GAP, window_y[n]+BORDER+1.5, TOP_str);
-		
 		
 		if(n==window_activ) {
 			//CLOSE
@@ -25042,7 +25107,7 @@ void Draw_window()
 			
 			DrawString(window_x[n]+window_w[n]-BORDER-SCROLL_W-window_w_col_size[n] + 5, window_y[n]+TOP_H+3, STR_SIZE);
 		}
-		
+
 		// CONTENT
 		int i;
 		for(i=0 ; i<=window_item_N[n]; i++) {
@@ -25268,8 +25333,7 @@ void Draw_window()
 				DrawString(window_x[n]+window_w[n]-BORDER-SCROLL_W-size_str_w - 5  , window_y[n]+TOP_H+COL_H+LINE_H*i, size_str);
 				free(size_str);
 			}
-		
-		
+				
 			char *ext = window_content_Type[n][window_scroll_P[n]+i];
 			
 			if( is_folder(ext) ) {
@@ -25912,6 +25976,8 @@ void CloseWindow(int window_id)
 
 u8 OpenWindow()
 {
+	print_debug("start of Open window");
+	
 	u32 n;
 	for(n=0; n<WINDOW_MAX; n++){
 		if( window_open[n] == NO ) {
@@ -25954,7 +26020,8 @@ u8 OpenWindow()
 	
 	window_z[window_activ]=1;
 	
-	//print_load("Error : End of Open window");
+	print_debug("End of Open window");
+	
 	return SUCCESS;
 }
 
@@ -26149,6 +26216,7 @@ void RefreshWindow(window_id)
 
 void Window(char *directory)
 {
+	print_debug("start of Window(directory)");
 	char temp[512];
 	
 	if(directory==NULL) {
@@ -26232,18 +26300,25 @@ void Window(char *directory)
 	}
 #endif
 	
+	print_debug("Window(directory) / NTFS_mount_all");
 	NTFS_mount_all();
 	
+	print_debug("Window(directory) / exFAT_mount_all");
 	exFAT_mount_all();
 	
+	print_debug("Window(directory) / sys_fs_mount(hdd1)");
 	if(path_info("/dev_hdd1")==_NOT_EXIST) {
 		sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
 		//sysFsAioInit("/dev_hdd1");
 	}
 	
+	print_debug("Window(directory) / RefreshDevices");
 	RefreshDevices();
 
+	print_debug("Window(directory) / RefreshWindow");
 	RefreshWindow(window_activ);
+	
+	print_debug("End of Window(directory)");
 }
 
 void GotoLastPath()
@@ -26932,7 +27007,6 @@ void Draw_SFO_viewer()
 
 void update_RootDisplay()
 {
-	
 	memset(fm_Format, 0, sizeof(fm_Format));
 	
 	switch(root_display)
@@ -27958,11 +28032,13 @@ void Open_option()
 			else {
 				add_option_item(STR_UNMOUNT_DEVBLIND);
 			}
+			/*
 			if(PEEKnPOKE) {
 				add_option_item(STR_DUMP_LV1);
 				add_option_item(STR_DUMP_LV2);
 			}
 			add_option_item(STR_DUMP_FLASH);
+			*/
 			add_option_item("Test");
 			//add_option_item("Test2");
 			
@@ -28959,7 +29035,9 @@ void preview_window(u8 show_window)
 		if(window_path!=NULL) finalize_FileExplorer();
 		return;
 	}
+	
 	if(window_path==NULL) {
+		update_RootDisplay();
 		init_FileExplorer();
 		Window(NULL);
 		window_x[window_activ]=275;
@@ -36608,11 +36686,11 @@ void init_SETTINGS()
 			ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		}
 	}
-	else { // NOT CUSTOM
+	else { // NOT CUSTOM STYLE
 				
 		add_item_MENU(STR_FM_ICON, ITEM_LOCKED);
-		if(fm_CustomIcons==0) add_item_value_MENU(STR_FM_FILEFOLDER);
-		if(fm_CustomIcons==1) add_item_value_MENU(STR_FM_CUSTOM);
+		if(fm_CustomIcons==NO ) add_item_value_MENU(STR_FM_FILEFOLDER);
+		if(fm_CustomIcons==YES) add_item_value_MENU(STR_FM_CUSTOM);
 				
 		add_item_MENU(STR_FM_ICONSIZE, ITEM_LOCKED);
 		if(fm_LineSize==0) add_item_value_MENU(STR_FM_SMALL);
@@ -36674,19 +36752,19 @@ void init_SETTINGS()
 	
 	
 	add_title_MENU(STR_SYSTEM_TOOLS);
-
-	if( ERK_DUMPER_SIZE != 0 ) {
-		add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
-		add_item_MENU(STR_DUMP_3DUMP, ITEM_TEXTBOX);
-	}
-	
-	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
+	
+	if( ERK_DUMPER_SIZE != 0 ) {
+		add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
+		add_item_MENU(STR_DUMP_3DUMP, ITEM_TEXTBOX);
+	}
+	
+	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
 	
 	add_item_MENU("MGZ log", ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LOG;
@@ -37434,7 +37512,9 @@ void open_SETTINGS()
 #ifndef FILEMANAGER
 	read_scan_dir();
 #endif
+	update_RootDisplay();
 	read_setting();
+	
 	
 	REC_UI_position=UI_position;
 	REC_Show_COVER=Show_COVER;
@@ -41175,6 +41255,7 @@ void Draw_MAIN()
 		Draw_FLOW_SCROLL(30, 400, 0, X_MAX-30*2);
 	}
 
+	DrawFormatString(10, 10, "Old_NumberOfDevice %d / %d NumberOfDevice", Old_NumberOfDevice, NumberOfDevice);
 }
 
 u8 Show_it(int pos)
