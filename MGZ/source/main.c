@@ -30478,7 +30478,7 @@ void CONFIG_check(char *IsoPath)
 		
 	if( Get_ID(IsoPath, ISO_PS2, PS2_ID) == FAILED) return;
 	
-	u8 MGZCFGS = MGZCONFIG();
+	u16 MGZCFGS = MGZCONFIG();
 	
 	if(MGZCFGS != NONE) {
 	
@@ -31052,7 +31052,7 @@ void init_PS2_CONFIG_EDITOR()
 	
 	add_title_MENU(STR_CONFIG);
 	
-	u8 MGZCFGS = MGZCONFIG();	
+	u16 MGZCFGS = MGZCONFIG();	
 	if(MGZCFGS != NONE) {
 		add_item_MENU(STR_LOAD, ITEM_TEXTBOX);
 		
