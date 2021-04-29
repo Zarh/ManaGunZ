@@ -6969,7 +6969,7 @@ void update_lang()
 	FREE(STR_DB_GX);
 	STR_DB_GX = sprintf_malloc( DB_PREFIX "%s", STR_GX);
 	FREE(STR_DB_CUSTOM);
-	STR_DB_CUSTOM = sprintf_malloc( DB_PREFIX "%s", STR_DB_CUSTOM);	
+	STR_DB_CUSTOM = sprintf_malloc( DB_PREFIX "%s", STR_CUSTOM);	
 	
 	FREE(flang);
 	lang_code_loaded = lang_code;
