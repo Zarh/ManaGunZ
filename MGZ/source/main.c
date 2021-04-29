@@ -2096,6 +2096,13 @@ static char *STR_SYSTEM_TOOLS=NULL;
 #define STR_SYSTEM_TOOLS_DEFAULT			"System tools"
 
 
+
+#define DB_PREFIX			"[DB] "
+static char *STR_DB_NET    = NULL;
+static char *STR_DB_SOFT   = NULL;
+static char *STR_DB_GX     = NULL;
+static char *STR_DB_CUSTOM = NULL;
+
 //***********************************************************
 // Functions
 //***********************************************************
@@ -6953,6 +6960,17 @@ void update_lang()
 	LANG(STR_DUMP_3DUMP, "STR_DUMP_3DUMP", STR_DUMP_3DUMP_DEFAULT);
 	LANG(STR_SYSTEM_TOOLS, "STR_SYSTEM_TOOLS", STR_SYSTEM_TOOLS_DEFAULT);
 
+	
+
+	FREE(STR_DB_NET);
+	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
+	FREE(STR_DB_SOFT);
+	STR_DB_SOFT = sprintf_malloc( DB_PREFIX "%s", STR_SOFT);
+	FREE(STR_DB_GX);
+	STR_DB_GX = sprintf_malloc( DB_PREFIX "%s", STR_GX);
+	FREE(STR_DB_CUSTOM);
+	STR_DB_CUSTOM = sprintf_malloc( DB_PREFIX "%s", STR_DB_CUSTOM);	
+	
 	FREE(flang);
 	lang_code_loaded = lang_code;
 }
@@ -11553,7 +11571,7 @@ void DumpDevicesData()
 		}
 		
 		
-		print_load("sys_storage_get_device_info");
+		print_load("sys_storage_get_device_info %s : %016llX",info[i].deviceName, device_id);
 		
 		device_info_t device_info;
 		memset(&device_info, 0, sizeof(device_info));
@@ -11562,7 +11580,9 @@ void DumpDevicesData()
 			print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
 			continue;
 		}
+		print_load("return %d", ret);
 		
+		continue;
 		
 		int source;
 		u32 read;
@@ -16900,9 +16920,12 @@ u64 GetDeviceNumber()
 	}
 	
 // BDVD_DRIVE
-	memset(&device_info, 0, sizeof(device_info));
-	r = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
-	if(r<0) {
+	// The BR reader is always connected, so, sys_storage_get_device_info always return 0. 
+	// Also, device_info isn't updated when we eject the disc.
+	// So, I'm checking the mount point "/dev_bdvd".
+	
+	r = path_info("/dev_bdvd");
+	if(r == _NOT_EXIST) {
 		if(PluggedDevices[DEVICE_BDVD_DRIVE] == YES) {
 			strcat(msg, "Disc is ejected.\n");
 		}
@@ -16914,7 +16937,7 @@ u64 GetDeviceNumber()
 		PluggedDevices[DEVICE_BDVD_DRIVE] = YES;
 		Number++;
 	}
-
+	
 	if(msg[0] != 0) show_msg(msg);
 	
 	return Number;
@@ -16923,18 +16946,17 @@ u64 GetDeviceNumber()
 u8 do_Refresh=NO;
 u8 PlugAndPlay=NO;
 u8 RefreshRetry=NO;
-u64 Old_NumberOfDevice;
-u64 NumberOfDevice;
+
 static sys_ppu_thread_t PlugAndPlay_id;
 void PlugAndPlay_thread(void *unused)
 {
-	Old_NumberOfDevice = 0;
+	u64 Old_NumberOfDevice = 0;
 	
 	Old_NumberOfDevice = GetDeviceNumber();
 	
 	while(PlugAndPlay) {
 	
-		NumberOfDevice = GetDeviceNumber();
+		u64 NumberOfDevice = GetDeviceNumber();
 		
 		if ( Old_NumberOfDevice != NumberOfDevice) {
 			
@@ -16990,7 +17012,9 @@ void AutoRefresh_GAMELIST()
 	
 	int bdvd_position = GetPosition_GAMELIST("/dev_bdvd");
 	
-	if( path_info("/dev_bdvd") == _NOT_EXIST) {
+	//if( path_info("/dev_bdvd") == _NOT_EXIST) 
+	if( PluggedDevices[DEVICE_BDVD_DRIVE] == NO)
+	{
 		if( 0 <= bdvd_position) {
 			remove_GAMELIST(bdvd_position);
 			end_loading();
@@ -28039,7 +28063,8 @@ void Open_option()
 			}
 			add_option_item(STR_DUMP_FLASH);
 			*/
-			add_option_item("Test");
+			
+			//add_option_item("Test");
 			//add_option_item("Test2");
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
@@ -29925,6 +29950,11 @@ void open_PS2_GAME_MENU();
 #define SOFTCONFIG	4
 #define CUSTCONFIG	8
 #define CURRCONFIG	16
+
+#define DB_NETCONFIG	32
+#define DB_GXCONFIG		64
+#define DB_SOFTCONFIG	128
+#define DB_CUSTCONFIG	256
 	
 int ps2_netemu_cobra(int param)
 {
@@ -30384,7 +30414,7 @@ CopyCustom:
 	return SUCCESS;
 }
 
-u8 MGZCONFIG()
+u16 MGZCONFIG()
 {
 	u8 ret=0;
 	char CONFIG_path[128];
@@ -30403,6 +30433,37 @@ u8 MGZCONFIG()
 	
 	sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
 	if(path_info(CONFIG_path) == _FILE) ret += CURRCONFIG;
+	
+	if(!(ret & NETCONFIG)) {
+		sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
+		if(path_info(CONFIG_path) == _FILE) ret += DB_NETCONFIG;	
+	}
+	
+	if(!(ret & GXCONFIG)) {
+		sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
+		if(path_info(CONFIG_path) == _FILE) ret += DB_GXCONFIG;
+	}
+	
+	if(!(ret & SOFTCONFIG)) {
+		sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
+		if(path_info(CONFIG_path) == _FILE) ret += DB_SOFTCONFIG;
+	}
+	
+	sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
+	if(path_info(CONFIG_path) == _FILE) {
+		if(ret & CUSTCONFIG) {
+			u8 MGZ_CONFIG_MD5[0x10];
+			u8 DB_CONFIG_MD5[0x10];
+			
+			md5_file(CONFIG_path, (u8 *) DB_CONFIG_MD5);
+			
+			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			
+			md5_file(CONFIG_path, (u8 *) MGZ_CONFIG_MD5);
+			
+			if( memcmp(DB_CONFIG_MD5, MGZ_CONFIG_MD5, 0x10) != 0) ret += DB_CUSTCONFIG;
+		}
+	}
 	
 	return ret;
 }
@@ -30425,23 +30486,39 @@ void CONFIG_check(char *IsoPath)
 			
 		u8 config_position=0;
 		s8 config_number=-1;
-		char CONFIG_STR[4][10];
+		char CONFIG_STR[10][10];
 		
 		if(MGZCFGS & NETCONFIG) {
 			config_number++;
-			strcpy(CONFIG_STR[config_number], "NET");
+			strcpy(CONFIG_STR[config_number], STR_NET);
 		}
 		if(MGZCFGS & GXCONFIG) {
 			config_number++;
-			strcpy(CONFIG_STR[config_number], "GX");
+			strcpy(CONFIG_STR[config_number], STR_GX);
 		}
 		if(MGZCFGS & SOFTCONFIG) {
 			config_number++;
-			strcpy(CONFIG_STR[config_number], "SOFT");
+			strcpy(CONFIG_STR[config_number], STR_SOFT);
 		}
 		if(MGZCFGS & CUSTCONFIG)  {
 			config_number++;
-			strcpy(CONFIG_STR[config_number], "CUSTOM");
+			strcpy(CONFIG_STR[config_number], STR_CUSTOM);
+		}
+		if(MGZCFGS & DB_NETCONFIG) {
+			config_number++;
+			strcpy(CONFIG_STR[config_number], STR_DB_NET);
+		}
+		if(MGZCFGS & DB_GXCONFIG) {
+			config_number++;
+			strcpy(CONFIG_STR[config_number], STR_DB_GX);
+		}
+		if(MGZCFGS & DB_SOFTCONFIG) {
+			config_number++;
+			sprintf(CONFIG_STR[config_number], STR_DB_SOFT);
+		}
+		if(MGZCFGS & DB_CUSTCONFIG)  {
+			config_number++;
+			sprintf(CONFIG_STR[config_number], STR_DB_CUSTOM);
 		}
 		
 		u8 LoopBreak=1;
@@ -30484,7 +30561,32 @@ void CONFIG_check(char *IsoPath)
 			}
 			if(NewPad(BUTTON_CROSS)) {
 				char CONFIG_path[128];
-				sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/%s/%s.CONFIG", ManaGunZ_id, CONFIG_STR[config_number], PS2_ID);
+				
+				if( strcmp(	CONFIG_STR[config_position], STR_CUSTOM) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_NET) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_GX) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_SOFT) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_DB_CUSTOM) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_DB_NET) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_DB_GX) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
+				} else
+				if( strcmp(	CONFIG_STR[config_position], STR_DB_SOFT) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
+				}
+				
 				CopyFile(CONFIG_path, CurrentCONFIG);
 				LoopBreak = 0;
 				break;
@@ -30968,6 +31070,18 @@ void init_PS2_CONFIG_EDITOR()
 		}
 		if(MGZCFGS & CUSTCONFIG) {
 			add_item_value_MENU(STR_CUSTOM);
+		}
+		if(MGZCFGS & DB_NETCONFIG) {
+			add_item_value_MENU(STR_DB_NET);
+		}
+		if(MGZCFGS & SOFTCONFIG) {
+			add_item_value_MENU(STR_DB_SOFT);
+		}
+		if(MGZCFGS & GXCONFIG) {
+			add_item_value_MENU(STR_DB_GX);
+		}
+		if(MGZCFGS & CUSTCONFIG) {
+			add_item_value_MENU(STR_DB_CUSTOM);
 		}
 	}
 		
@@ -31615,6 +31729,21 @@ void PS2_CONFIG_MENU_CROSS()
 		} else
 		if(item_value_is(STR_CUSTOM)) {
 			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+		} else
+		if(item_value_is(STR_CURRENT)) {
+			sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
+		} else
+		if(item_value_is(STR_DB_NET)) {
+			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
+		} else
+		if(item_value_is(STR_DB_SOFT)) {
+			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
+		} else
+		if(item_value_is(STR_DB_GX)) {
+			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
+		} else
+		if(item_value_is(STR_DB_CUSTOM)) {
+			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
 		}
 		if( DEBUG ) start_loading();
 		load_PS2_CONFIG(CONFIG_path);
@@ -40800,6 +40929,8 @@ void input_MAIN()
 	R2_SyncLeftJoystick();
 		
 	if(HoldCircleDelay()) {
+		//end_PlugAndPlay();
+		//end_MemMonitor();
 		end_Load_GAMEPIC();
 		end_load_CURPIC();
 		sysModuleUnload(SYSMODULE_PNGDEC);
@@ -40815,13 +40946,15 @@ void input_MAIN()
 	if(OldPad(BUTTON_R1)) Display_PIC1=YES;
 	else Display_PIC1=NO;
 	
-	
 	if(OldPad(BUTTON_L1)) {
 		if(NewPad(BUTTON_LEFT)) {
 			start_MemMonitor();
 		} else 
 		if(NewPad(BUTTON_RIGHT)) {
 			end_MemMonitor();
+		} else
+		if(NewPad(BUTTON_DOWN)) {
+			do_Refresh=YES;
 		}
 	}
 	
@@ -41126,7 +41259,7 @@ void Draw_MAIN_input()
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "CSO");
 		} else
 		if( list_game_platform[position]==BDVD) {
-			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "BLUERAY");
+			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "BLU-RAY");
 		} else {
 			x = DrawTAG(x, y, 0, tagbox_min_width, INPUT_SIZE, "JB");			
 		}
@@ -41254,8 +41387,6 @@ void Draw_MAIN()
 		
 		Draw_FLOW_SCROLL(30, 400, 0, X_MAX-30*2);
 	}
-
-	DrawFormatString(10, 10, "Old_NumberOfDevice %d / %d NumberOfDevice", Old_NumberOfDevice, NumberOfDevice);
 }
 
 u8 Show_it(int pos)

@@ -1,15 +1,14 @@
 TO DO :
 Fix : Shortcut pkg
 Add : FileManager : Click under the thumb will scroll down/up a page instead of 1 item.
-Add : Get custom PS2 CONFIG files from /dev_hdd0/game/PS2CONFIG
-Add : Detect new BR !
 Add : Dump decrypted splitted iso for FAT32 !
 
 v1.39
-Fix : Display issue with title containing new line character '\n'.
+Fix : Display issue with game title containing new line character '\n'.
 Fix : No more freeze when the firmware is unknown/new. I'm not sure how I fixed it tho.
 Fix : XMB UI won't display 'adjust your filters' on boot of MGZ if you unchecked 'PS3' filter.
-Add : IRD check is more accurate. See note (3)
+Add : Support new/different PS2 CONFIG from /dev_hdd0/game/PS2CONFIG. They are displayed with the prefix '[DB]'.
+Add : IRD check is more accurate. See notes (3)
 Add : Updated mamba to 8.3 from https://github.com/aldostools/Mamba
 Add : OffsetFinder support every symbols/hash needed to build cobra & mamba 8.3
 Add : Support exFAT. See notes (2).
@@ -24,7 +23,7 @@ Add : Reworked the game updates manager.
 Add : dev_bdvd is displayed.
 Add BDVD option : Dump encrypted Blu-Ray disc.
 Add BDVD option : Dump disc key.
-Add BDVD option : Dump decrypted Blu-Ray disc with its IRD. see NOTE (1).
+Add BDVD option : Dump decrypted Blu-Ray disc with its IRD. See notes (1).
 Add BDVD option : Copy, it will copy the content of the BR to a directory.
 Add BDVD option : Properties, same as JB backup.
 Add Settings/System tools : Dump eid_root_key, 3Dump.bin, lv1, lv2 and fix permission for dev_hdd0.
