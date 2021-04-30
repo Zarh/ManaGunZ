@@ -1,4 +1,4 @@
-STR_LANGUAGE				{简体中文 MRB00-8}
+STR_LANGUAGE				{简体中文}
 STR_LANGCODE				{\0x0B}
 
 STR_LANG					{语言}
@@ -123,7 +123,7 @@ STR_MOUNT_APPHOME_DESC		{将/APP_HOME重定向到/dev_bdvd.}
 STR_PATCH_EXP				{explore_plugin补丁}
 STR_PATCH_EXP_DESC			{将explore_plugin中的/APP_HOME替换为dev_bdvd.}
 STR_MAKE_SHTCUT_PKG			{制作PKG快捷方式}
-STR_MAKE_SHTCUT_PKG_DESC	{创建安装包文件到/dev_hdd0/packages. 安装后, 它将会变成用于在XMB挂载游戏的'快捷方式'.}
+STR_MAKE_SHTCUT_PKG_DESC	{创建安装包文件到/dev_hdd0/packages. 安装后, 它将会变成用于在XMB挂载游戏的快捷方式.}
 STR_PATCH_EBOOT				{EBOOT补丁}
 STR_PATCH_EBOOT_DESC		{将EBOOT文件的固件版本更改为4.21, 防止出现0x80010009错误.}
 STR_RESIGN					{重新签名}
@@ -222,13 +222,13 @@ STR_UI_DESC					{更改界面.}
 STR_SIDE_MENU				{游戏侧面菜单}
 STR_SIDE_MENU_DESC			{在屏幕右侧显示游戏菜单.}
 STR_SHOW_PIC1				{显示PIC1}
-STR_SHOW_PIC1_DESC			{显示当前选定游戏的背景图片'PIC1'. 在UI列表和网格内使用R1以显示它.}
+STR_SHOW_PIC1_DESC			{显示当前选定游戏的背景图片PIC1. 在UI列表和网格内使用R1以显示它.}
 STR_SHOW_COVER				{显示封面}
 STR_SHOW_COVER_DESC			{显示游戏封面.}
 STR_SHOW_GAMECASE			{展示游戏包装盒}
 STR_SHOW_GAMECASE_DESC		{用游戏包装盒显示游戏封面.}
 STR_SHOW_ICON0				{显示ICON0}
-STR_SHOW_ICON0_DESC			{显示游戏的主图片'ICON0'.}
+STR_SHOW_ICON0_DESC			{显示游戏的主图片ICON0.}
 STR_GRID_TYPE				{表格类型}
 STR_GRID_TYPE_DESC			{选择如何使网格移动.}
 STR_SCROLL					{翻页}
@@ -269,7 +269,7 @@ STR_SET_COLOR				{设置颜色}
 STR_HIDETV					{隐藏电视屏幕测试}
 STR_SHOWTV					{显示电视屏幕测试}
 STR_MOVE_TO_PLUGINS			{移动到/dev_hdd0/plugins}
-STR_ASK_PLUGINS				{要使用插件管理器, 插件必须位于'/dev_hdd0/plugins'中. \n是否同意使用此文件夹？}
+STR_ASK_PLUGINS				{要使用插件管理器, 插件必须位于/dev_hdd0/plugins中. \n是否同意使用此文件夹？}
 STR_CHANGE_VALUE			{变动值}
 STR_LOAD_IDPS_LV2			{从LV2加载IDPS}
 STR_LOAD_IDPS_EID5			{从EID5加载IDPS}
@@ -299,8 +299,8 @@ STR_UP2DATE					{已是最新}
 STR_SHOW_WAVES				{显示波浪}
 STR_SHOW_WAVES_DESC			{在背景中显示波浪.}
 STR_WAVES_COLOR				{波浪颜色}
-STR_WAVES_COLOR_DESC		{更改破浪的颜色.}
-STR_USE_CONFIG				{你没有使用PS2配置文件 '*.CONFIG'.}
+STR_WAVES_COLOR_DESC		{更改波浪的颜色.}
+STR_USE_CONFIG				{你没有使用PS2配置文件 *.CONFIG.}
 STR_COLORSET				{颜色设置}
 STR_COLORSET_DESC 			{选择要在ManaGunZ中使用的预定义颜色设置.}
 STR_GRID_SCROLL				{翻页}
@@ -359,23 +359,23 @@ STR_SYMLINK_SRC				{SymLink目标}
 STR_SYMLINK_TARGET			{SymLink源}
 STR_LOAD_MAMBA				{加载MAMBA}
 
-STR_CONVERT_TO_PNG			{Convert to PNG}
-STR_MOUNT_DEVBLIND			{Unprotect dev_flash}
-STR_UNMOUNT_DEVBLIND		{Protect dev_flash}
-STR_BT_AUDIO				{Game-pad audio out}
-STR_BT_AUDIO_DESC			{Play sound through the game-pad while playing. Tested with a DS4.}
-STR_GAME_UPDATE_TITLE		{PS3 game updates downloader}
-STR_CURRENT_VERS			{Current version}
-STR_CANT_MOUNT_PEEKPOKE		{Unmountable : PEEK and POKE unavailable, mamba can't be installed}
-STR_CANT_MOUNT_UNKFW		{Unmountable : unknown firmware, mamba can't be installed.}
-STR_CANT_MOUNT				{Unmountable}
-STR_ONLY_FAV				{Only favorites}
-STR_ALL_GAMES				{All games}
-STR_DISPLAY					{Display}
-STR_DUMP_DEC				{Dump decrypted Blu-Ray disc}
-STR_DUMP_DEC_DESC			{Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
-STR_DUMP_ENC				{Dump encrypted Blu-Ray disc}
-STR_DUMP_DISC_KEY			{Dump Blu-Ray disc key}
-STR_DUMP_ERK				{Dump eid root key}
-STR_DUMP_3DUMP				{Dump 3Dump.bin}
-STR_SYSTEM_TOOLS			{System tools}
+STR_CONVERT_TO_PNG			{转换为PNG}
+STR_MOUNT_DEVBLIND			{取消dev_flash分区保护}
+STR_UNMOUNT_DEVBLIND		{保护dev_flash分区}
+STR_BT_AUDIO				{手柄音频输出}
+STR_BT_AUDIO_DESC			{游戏中使用手柄输出音频. 已在DualShock4手柄测试.}
+STR_GAME_UPDATE_TITLE		{PS3游戏升级补丁下载器}
+STR_CURRENT_VERS			{当前版本}
+STR_CANT_MOUNT_PEEKPOKE		{无法挂载 : PEEK和POKE不可用, mamba无法安装}
+STR_CANT_MOUNT_UNKFW		{无法挂载 : 未知固件, mamba无法安装.}
+STR_CANT_MOUNT				{无法挂载}
+STR_ONLY_FAV				{仅收藏}
+STR_ALL_GAMES				{全部游戏}
+STR_DISPLAY					{显示}
+STR_DUMP_DEC				{提取解密的蓝光光盘}
+STR_DUMP_DEC_DESC			{使用IRD正确的将光盘转为ISO. 完成后 IRD将会上传至IRD数据库.}
+STR_DUMP_ENC				{提取加密的蓝光光盘}
+STR_DUMP_DISC_KEY			{提取蓝光光盘密钥}
+STR_DUMP_ERK				{提取eid根密钥}
+STR_DUMP_3DUMP				{提取3Dump.bin}
+STR_SYSTEM_TOOLS			{系统工具}
