@@ -1,7 +1,5 @@
 TO DO :
 Fix : Shortcut pkg
-Add : FileManager : Click under the thumb will scroll down/up a page instead of 1 item.
-Add : Dump decrypted splitted iso for FAT32 !
 
 v1.39
 Fix : Display issue with game title containing new line character '\n'.

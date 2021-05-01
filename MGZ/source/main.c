@@ -10509,8 +10509,6 @@ void Draw_Gathering(void *unused)
 	int i;
 	for(i=0; i<=20; i++) strcpy(loading_log[i], "\0");
 	
-	reset_gathering();
-	
 	while(gathering) {
 				
 		int x=50, y=40;
@@ -11654,61 +11652,78 @@ void DumpDevicesData()
 u8 dump_enc_bdvd(char *outdir)
 {
 	char ISO_PATH[512];
+	char SPLIT_ISO_PATH[512]={0};
 	char TITLE_ID[10];
-	
-	char *date = get_date();
-	if(date == NULL) return FAILED;
+	FILE *f=NULL;
+	int source = 0;
+	char *DATE = NULL;
+	int ret = FAILED;
+	u8 *buff=NULL;
 	
 	if( GetParamSFO("TITLE_ID", TITLE_ID, "/dev_bdvd") == FAILED) return FAILED;
 	TITLE_ID[9]=0;
 	
-	sprintf(ISO_PATH, "%s/%s_%s.enc.iso%c", outdir, TITLE_ID, date, '\0');
-	
-	free(date);
-	
-	int source;
+	DATE = get_date();
+	if(DATE == NULL) {
+		ret=FAILED;
+		goto error;
+	}
 	
 	device_info_t device_info;
 	memset(&device_info, 0, sizeof(device_info));
-	int ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
+	ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
 	if( ret != 0 ) {
 		print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
-		return FAILED;
+		ret = FAILED;
+		goto error;
 	}
 	
-	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
+	ret = sys_storage_open(BDVD_DRIVE, &source);
+	if( ret != 0) {
 		print_load("Error : sys_storage_open");
-		return FAILED;
+		ret=FAILED;
+		goto error;
 	}
 	
-	u8 *buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	buff = (u8 *) malloc(BDVD_BUFFSIZE);
 	if(buff==NULL) {
-		print_load("Error : DumpDevicesData malloc FAILED ! %X", ret);
-		sys_storage_close(source);
-		return FAILED;
+		print_load("Error : DumpDevicesData malloc FAILED !");
+		ret=FAILED;
+		goto error;
 	}
-	
-	FILE *f;
-	f = fopen(ISO_PATH, "wb");
-	if(f==NULL) {
-		free(buff);
-		sys_storage_close(source);
-		print_load("Error : DumpDevicesData fopen FAILED ! %s");
-		return FAILED;
-	}
-	
-	strcpy( copy_src, "/dev_bdvd");
-	strcpy( copy_dst, ISO_PATH);
 
 	u64 count = device_info.sector_count;
 	u32 read;
 	u64 current_sector=0;
 	u64 sector_nb = BDVD_BUFF_SEC_NB;
 	
+	u8 split = NO;
+	u32 N_SPLIT_ISO = 0;
+	u32 MAX_SPLIT_SECTOR = 0x1FFFFF; // 4GB MAX
+	
+	if( MAX_SPLIT_SECTOR < count )  split = is_FAT32(outdir);
+	
+	if(split) {
+		sprintf(ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
+	} else {
+		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
+	}
+	
+	print_load("fopen %s", ISO_PATH);
+	f = fopen(ISO_PATH, "wb");
+	if(f==NULL) {
+		print_load("Error : DumpDevicesData fopen FAILED ! %s");
+		ret=FAILED;
+		goto error;
+	}
+	
+	strcpy( copy_src, "/dev_bdvd");
+	strcpy( copy_dst, ISO_PATH);
+
 	gathering_nb_file = -1;
 	gathering_nb_directory = -1;
 	
-	gathering_total_size = count * 0x800;
+	gathering_total_size = (u64) count * 0x800ULL;
 	
 	while( current_sector < count ) {
 		memset(buff, 0, BDVD_BUFFSIZE);
@@ -11718,22 +11733,61 @@ u8 dump_enc_bdvd(char *outdir)
 		
 		sys_storage_read(source, current_sector, sector_nb, buff, &read, 0);
 		
-		fwrite(buff, sector_nb, 0x800, f);
+		if(copy_cancel || cancel) goto error;
+		
+		if( split ) {
+			u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+				
+			if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+				fwrite(buff, sector_nb, 0x800, f);
+			} else {
+				u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+				fwrite(buff, last_sectors, 0x800, f);
+				
+				FCLOSE(f);
+				
+				if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
+				memset(SPLIT_ISO_PATH, 0, 512);
+				
+				N_SPLIT_ISO++;
+				
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
+				
+				print_load("fopen %s", SPLIT_ISO_PATH);
+				f = fopen(SPLIT_ISO_PATH, "wb");
+				if(f==NULL) {
+					print_load("Error : fopen");
+					goto error;
+				}
+				
+				u32 sectors_left = sector_nb - last_sectors;
+				fwrite(buff, sectors_left, 0x800, f);
+			}
+		} else {
+			fwrite(buff, sector_nb, 0x800, f);
+		}
 		
 		current_sector += sector_nb;
 
-		copy_current_size += sector_nb*0x800;	
+		copy_current_size += (u64) sector_nb * 0x800ULL;	
 		
-		if(copy_cancel) break;
+		if(copy_cancel || cancel) goto error;
 	}
 	
-	fclose(f);
-	sys_storage_close(source);
-	free(buff);
+	SetPerms(ISO_PATH);
 	
-	if( copy_cancel) return FAILED;
+	ret = SUCCESS;
+
+error:
+
+	FCLOSE(f);
+	if(source != 0) sys_storage_close(source);
+	FREE(buff);
+	FREE(DATE);
 	
-	return SUCCESS;
+	if(copy_cancel || cancel) return FAILED;
+	
+	return ret;
 }
 
 u32 u8_to_u32(u8* arr)
@@ -11782,7 +11836,39 @@ FILE *openPUP(char *path, u64 *offset, char *mode)
 		int file_size=0;
 		ret = get_FileOffset(pup, "/PS3_UPDATE/PS3UPDAT.PUP",  &file_offset,  (u32 *) &file_size);
 		if(file_offset==0 || file_size==0 || ret == FAILED) {fclose(pup); return NULL;}
+		
+		if( is_splitted_iso(path)) {
+			FCLOSE(pup);
+			
+			
+			char iso_path[255];
+			char temp[255];
+			int i;
+			
+			strcpy(iso_path, path);
+			
+			int l= strlen(iso_path);
+			iso_path[l-1]=0;
+
+			for(i=0; i<100; i++) {
+				sprintf(temp , "%s%d" , iso_path, i);
+				u64 fsize = get_size(temp);		
+				if( fsize == 0) return NULL;
+				
+				if( fsize < file_offset ) file_offset -= fsize;
+				else break;
+			}
+			
+			pup = fopen(temp, mode);
+			if(pup==NULL) {
+				SetPerms(temp);
+				pup = fopen(temp, mode);
+				if(pup==NULL) return NULL;
+			}
+		}
+		
 		*offset=file_offset;
+		
 		return pup;	
 	} else
 	if(!strcmp(ext, _JB_PS3) || !strcmp(ext, _BDVD)) {
@@ -12191,12 +12277,17 @@ u8 dump_dec_bdvd(char *outdir)
 	ird_t *ird=NULL;
 	char ISO_PATH[512];
 	char IRD_PATH[512];
+	char SPLIT_ISO_PATH[512]={0};
 	char *IRD_NAME = NULL;
 	char *DATE=NULL;	
 	u8 *sec0sec1=NULL;
 	u32 i;
 	
 	u8 iso_done = NO;
+	
+	u8 split = NO;
+	u32 N_SPLIT_ISO = 0;
+	u32 MAX_SPLIT_SECTOR = 0x1FFFFF; // 4GB MAX
 	
 	print_debug("IRD_new");
 	ird = IRD_new("/dev_bdvd");
@@ -12214,7 +12305,7 @@ u8 dump_dec_bdvd(char *outdir)
 	u8 key[0x10];
 	memcpy(key, ird->Data1, 0x10);
 	enc_d1(key);
-
+	
 	print_debug("Decryption key (d1) :");
 	hex_print_load((char *) key, 16);
 
@@ -12235,15 +12326,6 @@ u8 dump_dec_bdvd(char *outdir)
 	DATE = get_date();
 	if( DATE == NULL) {
 		print_load("Error : dump_bdvd, failed to get_date");
-		goto error;
-	}
-	sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
-	sprintf(IRD_PATH, "%s/%s_%s.ird%c", outdir, ird->GameId, DATE, '\0');
-	
-	print_load("fopen %s", ISO_PATH);
-	f = fopen(ISO_PATH, "wb");
-	if(f==NULL) {
-		print_load("Error : fopen");
 		goto error;
 	}
 	
@@ -12275,11 +12357,28 @@ u8 dump_dec_bdvd(char *outdir)
 	u32 total_sectors=1+u8_to_u32(sec0sec1+12+((regions-1)*4));
 	
 	print_load("gathering data");	
-	strcpy( copy_src, "/dev_bdvd");
-	strcpy( copy_dst, ISO_PATH);
 	gathering_nb_file = -1;
 	gathering_nb_directory = -1;
 	gathering_total_size = (u64) total_sectors * 0x800ULL;
+	
+	if( MAX_SPLIT_SECTOR < total_sectors )  split = is_FAT32(outdir);
+	
+	sprintf(IRD_PATH, "%s/%s_%s.ird%c", outdir, ird->GameId, DATE, '\0');
+	if(split) {
+		sprintf(ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+	} else {
+		sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
+	}
+	
+	print_load("fopen %s", ISO_PATH);
+	f = fopen(ISO_PATH, "wb");
+	if(f==NULL) {
+		print_load("Error : fopen");
+		goto error;
+	}
+	
+	strcpy( copy_src, "/dev_bdvd");
+	strcpy( copy_dst, ISO_PATH);
 	
 	u64 current_sector=0;
 	u64 sector_nb;
@@ -12351,7 +12450,37 @@ u8 dump_dec_bdvd(char *outdir)
 			
 			md5_update(&ctx, buff, 0x800*sector_nb);
 			
-			fwrite(buff, sector_nb, 0x800, f);
+			if( split ) {	
+				u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+				
+				if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+					fwrite(buff, sector_nb, 0x800, f);
+				} else {
+					u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+					fwrite(buff, last_sectors, 0x800, f);
+					
+					FCLOSE(f);
+					
+					if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
+					memset(SPLIT_ISO_PATH, 0, 512);
+					
+					N_SPLIT_ISO++;
+					
+					sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+										
+					print_load("fopen %s", SPLIT_ISO_PATH);
+					f = fopen(SPLIT_ISO_PATH, "wb");
+					if(f==NULL) {
+						print_load("Error : fopen");
+						goto error;
+					}
+					
+					u32 sectors_left = sector_nb - last_sectors;
+					fwrite(buff, sectors_left, 0x800, f);
+				}
+			} else {
+				fwrite(buff, sector_nb, 0x800, f);
+			}
 			
 			current_sector += sector_nb;
 			
@@ -12370,7 +12499,6 @@ u8 dump_dec_bdvd(char *outdir)
 	SetPerms(ISO_PATH);
 	
 	iso_done = YES;
-	
 	
 	print_head("Building IRD...");
 	u64 footer_offset;
@@ -13153,7 +13281,7 @@ u64 get_size(char *path)
 	struct stat s;
 	
 	if(stat(path, &s) != 0) {
-		print_load("Error : %s doesn't exist", path);
+		print_debug("%s doesn't exist", path);
 		return 0;
 	} else 
 	if(!S_ISDIR(s.st_mode)) { //FILE
@@ -13281,8 +13409,6 @@ int Delete_Game(char *path, int position)
 
 void Get_Game_Size(char *path)
 {
-	reset_gathering();
-	
 	u8 split666 = is_66600(path);
 	if( is_splitted_iso(path) || split666) {
 		char iso_path[255];
@@ -13298,7 +13424,8 @@ void Get_Game_Size(char *path)
 		for(i=0; i<100; i++) {
 			if(split666) sprintf(temp , "%s%02d" , iso_path, i);
 			else sprintf(temp , "%s%d" , iso_path, i);
-			get_size(temp);
+			if( get_size(temp) == 0 ) break;
+			print_load("%s : %d", iso_path, gathering_total_size);
 		}
 	} 
 	else {
@@ -26240,7 +26367,6 @@ void RefreshWindow(window_id)
 
 void Window(char *directory)
 {
-	print_debug("start of Window(directory)");
 	char temp[512];
 	
 	if(directory==NULL) {
@@ -26324,25 +26450,18 @@ void Window(char *directory)
 	}
 #endif
 	
-	print_debug("Window(directory) / NTFS_mount_all");
 	NTFS_mount_all();
 	
-	print_debug("Window(directory) / exFAT_mount_all");
 	exFAT_mount_all();
 	
-	print_debug("Window(directory) / sys_fs_mount(hdd1)");
 	if(path_info("/dev_hdd1")==_NOT_EXIST) {
 		sys_fs_mount("CELL_FS_UTILITY:HDD1", "CELL_FS_FAT", "/dev_hdd1", 0);
 		//sysFsAioInit("/dev_hdd1");
 	}
 	
-	print_debug("Window(directory) / RefreshDevices");
 	RefreshDevices();
 
-	print_debug("Window(directory) / RefreshWindow");
 	RefreshWindow(window_activ);
-	
-	print_debug("End of Window(directory)");
 }
 
 void GotoLastPath()
@@ -29945,12 +30064,11 @@ void open_PS2_GAME_MENU();
 // return  0	disabled patch
 // return -1	its not a bc or semi bc ps3
 
-#define NETCONFIG	1
-#define GXCONFIG	2
-#define SOFTCONFIG	4
-#define CUSTCONFIG	8
-#define CURRCONFIG	16
-
+#define NETCONFIG		1
+#define GXCONFIG		2
+#define SOFTCONFIG		4
+#define CUSTCONFIG		8
+#define CURRCONFIG		16
 #define DB_NETCONFIG	32
 #define DB_GXCONFIG		64
 #define DB_SOFTCONFIG	128
@@ -41452,8 +41570,6 @@ int main(void)
 		PEEKnPOKE = YES;
 
 	print_load("Initialization");
-	
-	if( DEBUG ) sleep(2);
 	
 	if(PEEKnPOKE) {
 		if(init_fw() == FAILED) {

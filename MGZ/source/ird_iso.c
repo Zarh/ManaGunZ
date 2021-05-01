@@ -324,14 +324,12 @@ static int read_split(u64 position, u8 *mem, int size)
 
 u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
 {
-    struct stat s;
     int n;
     
 	char path1[0x420];
     char path2[0x420];
     int len_path2 = 0;
 
-	strcpy(path1, ISO_PATH);
     u8 *sectors = NULL;
     u8 *sectors2 = NULL;
     u8 *sectors3 = NULL;
@@ -352,49 +350,25 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
 	u32 size0;
     
 	directory_iso2 = NULL;
-
-    fp_split = NULL;
-    fp_split0 = NULL;
-    split_index = 0;
-
-    // libc test
-    if(sizeof(s.st_size) != 8) {
-        printf("Error!: stat st_size must be a 64 bit number!  (size %i)\n\nPress ENTER key to exit\n\n", sizeof(s.st_size));
-        return -1;
-    }
-    
-    fixpath(path1);
-
-    n = strlen(path1);
-
-    sprintf(split_file[0].path, "%s", path1);
 	
-    if(stat(split_file[0].path, &s)<0) {
-        printf("Error: ISO file don't exists!\n\nPress ENTER key to exit\n"); return -1;
-    }
-    split_file[0].size = s.st_size;
-    split_file[1].size = 0; // split off
-
+	strcpy(path1, ISO_PATH);
+	
+	fixpath(path1);
 
     FILE *fp = fopen(path1, "rb");
     if(!fp) {
-        printf("Error!: Cannot open ISO file\n\nPress ENTER key to exit\n\n");
+        printf("Error!: Cannot open ISO file");
         return -1;
     }
 
     
     if(fseek(fp, 0x8800, SEEK_SET)<0) {
-        printf("Error!: in sect_descriptor fseek\n\n");
+        printf("Error!: in sect_descriptor fseek");
         goto err;
     }
 
     if(fread((void *) &sect_descriptor, 1, 2048, fp) != 2048) {
-        printf("Error!: reading sect_descriptor\n\n");
-        goto err;
-    }
-
-    if(!(sect_descriptor.type[0] == 2 && !strncmp((const char *) &sect_descriptor.id[0], "CD001",5))) {
-        printf("Error!: UTF16 descriptor not found\n\nPress ENTER key to exit\n\n");
+        printf("Error!: reading sect_descriptor");
         goto err;
     }
 
@@ -402,17 +376,17 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
 
     lba0 = isonum_731(&sect_descriptor.type_l_path_table[0]); // lba
     size0 = isonum_733(&sect_descriptor.path_table_size[0]); // tamaño
-    //printf("lba0 %u size %u %u\n", lba0, size0, ((size0 + 2047)/2048) * 2048);
+    //printf("lba0 %u size %u %u", lba0, size0, ((size0 + 2047)/2048) * 2048);
     
     if(fseek(fp, lba0 * 2048, SEEK_SET)<0) {
-        printf("Error!: in path_table fseek\n\n");
+        printf("Error!: in path_table fseek");
         goto err;
     }
 
     directory_iso2 = (_directory_iso2 *) malloc((MAX_ISO_PATHS + 1) * sizeof(_directory_iso2));
 
     if(!directory_iso2) {
-        printf("Error!: in directory_is malloc()\n\n");
+        printf("Error!: in directory_is malloc()");
         goto err;
     }
 
@@ -421,34 +395,31 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
     sectors = (u8*) malloc(((size0 + 2047)/2048) * 2048);
 
     if(!sectors) {
-        printf("Error!: in sectors malloc()\n\n");
+        printf("Error!: in sectors malloc()");
         goto err;
     }
 
     sectors2 = (u8*) malloc(2048 * 2);
 
     if(!sectors2) {
-        printf("Error!: in sectors2 malloc()\n\n");
+        printf("Error!: in sectors2 malloc()");
         goto err;
     }
 
     sectors3 = (u8*) malloc(IRD_FILE_BUFFSIZE);
 
     if(!sectors3) {
-        printf("Error!: in sectors3 malloc()\n\n");
+        printf("Error!: in sectors3 malloc()");
         goto err;
     }
 
     if(fread((void *) sectors, 1, size0, fp) != size0) {
-        printf("Error!: reading path_table\n\n");
+        printf("Error!: reading path_table");
         goto err;
     }
 
     string2[0] = 0;
-
-    fp_split = NULL;
-    fp_split0 = NULL;
-
+	
     split_index = 0;
 
 
@@ -471,13 +442,13 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
         UTF16_to_UTF8(wstring, (u8 *) string);
 
         if(idx >= MAX_ISO_PATHS){
-            printf("Too much folders (max %i)\n\n", MAX_ISO_PATHS);
+            printf("Too much folders (max %i)", MAX_ISO_PATHS);
             goto err;
         }
 
         directory_iso2[idx].name = (char *) malloc(strlen(string) + 2);
         if(!directory_iso2[idx].name) {
-            printf("Error!: in directory_iso2.name malloc()\n\n");
+            printf("Error!: in directory_iso2.name malloc()");
             goto err;
         }
 
@@ -505,14 +476,14 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
         while(1) {
 
             if(fseek(fp, ((u64) lba) * 2048ULL, SEEK_SET)<0) {
-                printf("Error!: in directory_record fseek\n\n");
+                printf("Error!: in directory_record fseek");
                 goto err;
             }
 
             memset(sectors2 + 2048, 0, 2048);
 
             if(fread((void *) sectors2, 1, 2048, fp) != 2048) {
-                printf("Error!: reading directory_record sector\n\n");
+                printf("Error!: reading directory_record sector");
                 goto err;
             }
 
@@ -524,7 +495,7 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
                     size_directory = isonum_733((unsigned char *) idr->size);
                  
                 } else {
-                    printf("Error!: Bad first directory record! (LBA %i)\n\n", lba);
+                    printf("Error!: Bad first directory record! (LBA %i)", lba);
                     goto err;
                 }
             }
@@ -552,15 +523,15 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
 
                 if(idr->length[0]!=0 && (idr->length[0] + q) > 2048) {
 
-                    printf("Warning! Entry directory break the standard ISO 9660\n\nPress ENTER key\n\n");
+                    printf("Warning! Entry directory break the standard ISO 9660");
                    
                     if(fseek(fp, lba * 2048 + 2048, SEEK_SET)<0) {
-                        printf("Error!: in directory_record fseek\n\n");
+                        printf("Error!: in directory_record fseek");
                         goto err;
                     }
 
                     if(fread((void *) (sectors2 + 2048), 1, 2048, fp) != 2048) {
-                        printf("Error!: reading directory_record sector\n\n");
+                        printf("Error!: reading directory_record sector");
                         goto err;
                     }
 
@@ -578,12 +549,12 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
                     if(q2 >= size_directory) goto end_dir_rec;
 
                     if(fseek(fp, (((u64) lba) * 2048ULL), SEEK_SET)<0) {
-                        printf("Error!: in directory_record fseek\n\n");
+                        printf("Error!: in directory_record fseek");
                         goto err;
                     }
 
                     if(fread((void *) (sectors2), 1, 2048, fp) != 2048) {
-                        printf("Error!: reading directory_record sector\n\n");
+                        printf("Error!: reading directory_record sector");
                         goto err;
                     }
                     memset(sectors2 + 2048, 0, 2048);
@@ -606,7 +577,7 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
                     if(file_aux[0]) {
                         if(strcmp(string, file_aux)) {
     
-                            printf("Error!: in batch file %s\n\nPress ENTER key to exit\n\n", file_aux);
+                            printf("Error!: in batch file %s", file_aux);
                             goto err;
                         }
 
@@ -670,7 +641,6 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
     }
 
     if(fp) fclose(fp);
-    if(split_index && fp_split) {fclose(fp_split); fp_split = NULL;}
     if(sectors) free(sectors);
     if(sectors2) free(sectors2);
     if(sectors3) free(sectors3);
@@ -685,8 +655,7 @@ u8 IRD_GetFilesPath(char *ISO_PATH, ird_t *ird)
 err:
 
     if(fp) fclose(fp);
-    if(split_index && fp_split) {fclose(fp_split); fp_split = NULL;}
-
+	
     if(sectors) free(sectors);
     if(sectors2) free(sectors2);
     if(sectors3) free(sectors3);
@@ -704,7 +673,6 @@ u8 IRD_FilesInfo(char *ISO_PATH, s64 *nb_file, u64 *total_size)
 	*nb_file=0;
 	*total_size=0;
 	
-	struct stat s;
     int n;
     char path1[0x420];
 
@@ -721,46 +689,13 @@ u8 IRD_FilesInfo(char *ISO_PATH, s64 *nb_file, u64 *total_size)
 
     directory_iso2 = NULL;
 
-    fp_split = NULL;
-    fp_split0 = NULL;
     split_index = 0;
 
 	strcpy(path1, ISO_PATH);
 	
-    fixpath(path1);
+	fixpath(path1);
 
     n = strlen(path1);
-
-    if(n >= 4 && (!strcmp(&path1[n - 4], ".iso") || !strcmp(&path1[n - 4], ".ISO"))) {
-
-        sprintf(split_file[0].path, "%s", path1);
-        if(stat(split_file[0].path, &s)<0) {
-            printf("Error: ISO file don't exists!"); 
-			return FAILED;
-        }
-
-        split_file[0].size = s.st_size;
-        split_file[1].size = 0; // split off
-       
-    } else if(n >= 6 && (!strcmp(&path1[n - 6], ".iso.0") || !strcmp(&path1[n - 6], ".ISO.0"))) {
-
-        int m;
-
-        for(m = 0; m < 64; m++) {
-            strcpy(string2, path1);
-            string2[n - 2] = 0; 
-            sprintf(split_file[m].path, "%s.%i", string2, m);
-            if(stat(split_file[m].path, &s)<0) break;
-            split_file[m].size = s.st_size;
-        }
-
-        for(; m < 64; m++) {
-            split_file[m].size = 0;
-        }
-    } else {
-        printf("Error: file must be with .iso, .ISO .iso.0 or .ISO.0 extension");
-		return FAILED;
-    }
 	
     FILE *fp = fopen(path1, "rb");
     if(!fp) {
@@ -824,11 +759,6 @@ u8 IRD_FilesInfo(char *ISO_PATH, s64 *nb_file, u64 *total_size)
     u32 p = 0;
 
     string2[0] = 0;
-
-    fp_split = NULL;
-    fp_split0 = NULL;
-
-    split_index = 0;
 
     idx = 0;
 
@@ -1039,7 +969,6 @@ u8 IRD_FilesInfo(char *ISO_PATH, s64 *nb_file, u64 *total_size)
     }
 	
     if(fp) fclose(fp);
-    if(split_index && fp_split) {fclose(fp_split); fp_split = NULL;}
     if(sectors) free(sectors);
     if(sectors2) free(sectors2);
 
@@ -1053,8 +982,6 @@ u8 IRD_FilesInfo(char *ISO_PATH, s64 *nb_file, u64 *total_size)
 err:
 
     if(fp) fclose(fp);
-    if(split_index && fp_split) {fclose(fp_split); fp_split = NULL;}
-	
     if(sectors) free(sectors);
     if(sectors2) free(sectors2);
 
@@ -1461,27 +1388,28 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
 
     n = strlen(path1);
 	
-    if(n >= 4 && (!strcmp(&path1[n - 4], ".iso") || !strcmp(&path1[n - 4], ".ISO"))) {
+    if(n >= 4 && (!strncasecmp(&path1[n - 4], ".iso", 4))) {
 
         sprintf(split_file[0].path, "%s", path1);
         if(stat(split_file[0].path, &s)<0) {
             printf("Error: ISO file don't exists!"); 
 			return FAILED;
         }
-		
+
         split_file[0].size = s.st_size;
         split_file[1].size = 0; // split off
        
-    } else if(n >= 6 && (!strcmp(&path1[n - 6], ".iso.0") || !strcmp(&path1[n - 6], ".ISO.0"))) {
+    } else if(n >= 6 && (!strncasecmp(&path1[n - 6], ".iso.0", 6))) {
 
         int m;
 
         for(m = 0; m < 64; m++) {
             strcpy(string2, path1);
             string2[n - 2] = 0; 
-            sprintf(split_file[m].path, "%s.%i", string2, m);
+            sprintf(split_file[m].path, "%s.%i%c", string2, m, '\0');
             if(stat(split_file[m].path, &s)<0) break;
             split_file[m].size = s.st_size;
+			printf("%s : %llX", split_file[m].path, split_file[m].size);
         }
 
         for(; m < 64; m++) {
@@ -1491,13 +1419,15 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
         printf("Error: file must be with .iso, .ISO .iso.0 or .ISO.0 extension");
 		return FAILED;
     }
-	
-    FILE *fp = fopen(path1, "rb");
+    
+	FILE *fp = fopen(path1, "rb");
     if(!fp) {
         printf("Error!: Cannot open ISO file");
         return FAILED;
     }
-    
+	
+	fp_split0 = fp;
+	
     if(fseek(fp, 0x8800, SEEK_SET)<0) {
         printf("Error!: in sect_descriptor fseek");
         goto err;
@@ -1560,11 +1490,6 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
     u32 p = 0;
 
     string2[0] = 0;
-
-    fp_split = NULL;
-    fp_split0 = NULL;
-
-    split_index = 0;
 
     idx = 0;
 
