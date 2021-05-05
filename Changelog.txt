@@ -271,7 +271,7 @@ Add : [Settings] 'Update ManaGunZ'.
 Add : [PS1][PSP] Game menu.
 Add : [PS1][PS2] ICON0 creator. It allow you to 'cut' an ICON0 from the cover to use it as the main icon.
 Fix : [PS2] Function to apply patches.
-Add : [PS2] It can apply widescreen patches and another pnach file silmutaneously. 
+Add : [PS2] It can apply widescreen patches and another pnach file simultaneously. 
 Add : [PS2] '480P', 'YFIX' and 'FMV skip' options. ps2wide.net/480p.html
 
 v1.28

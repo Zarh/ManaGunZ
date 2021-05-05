@@ -10416,6 +10416,8 @@ void print_load(char *format, ...)
 		if( mgz_log != NULL) {
 			fputs(loading_log[0], mgz_log);
 			fputs("\n", mgz_log);
+			
+			//sys_fs_fsync
 		}
 	}
 	
@@ -11919,10 +11921,12 @@ ird_t *IRD_new(char *source)
 	ird->Attachments = 0;
 	
 	char value[255] = {0};
+	char param_sfo[512]={0};
+	sprintf(param_sfo, "%s/PS3_GAME/PARAM.SFO%c", source, '\0');
 	
 	print_debug("IRD_new TITLE");
 	memset(value, 0, 255);
-	ret = GetParamSFO("TITLE", value, source);
+	ret = GetParamSFO("TITLE", value, param_sfo);
 	if(ret==FAILED) {
 		print_load("Error : ird_new failed to get TITLE");
 		goto error;
@@ -11936,7 +11940,7 @@ ird_t *IRD_new(char *source)
 	print_debug("IRD_new TITLE_ID");
 	memset(value, 0, 255);
 	memset(ird->GameId, 0, 10);
-	ret = GetParamSFO("TITLE_ID", value, source);
+	ret = GetParamSFO("TITLE_ID", value, param_sfo);
 	if(ret==FAILED) {
 		print_load("Error : ird_new failed to get TITLE_ID");
 		goto error;
@@ -11947,14 +11951,14 @@ ird_t *IRD_new(char *source)
 	
 	memset(ird->GameVersion, 0, 6);
 	memset(value, 0, 255);
-	ret = GetParamSFO("VERSION", value, source);
+	ret = GetParamSFO("VERSION", value, param_sfo);
 	if(ret==FAILED) print_load("Error : ird_new failed to get VERSION");
 	else memcpy(ird->GameVersion, value, 5);
 
 	print_debug("IRD_new APP_VER");
 	memset(ird->AppVersion, 0, 6);
 	memset(value, 0, 255);
-	ret = GetParamSFO("APP_VER", value, source);
+	ret = GetParamSFO("APP_VER", value, param_sfo);
 	if(ret==FAILED) print_load("ird_new failed to get APP_VER");
 	else memcpy(ird->AppVersion, value, 5);
 	
@@ -11965,7 +11969,7 @@ ird_t *IRD_new(char *source)
 	if(ret==FAILED) {
 		print_load("Can't get PUP_VERSION, looking for PS3_SYSTEM_VERS");
 		memset(value, 0, 255);
-		ret = GetParamSFO("PS3_SYSTEM_VER", value, source);
+		ret = GetParamSFO("PS3_SYSTEM_VER", value, param_sfo);
 		if(ret==FAILED) {
 			print_load("failed to get SYSTEM_VERS");
 			strcpy(ird->UpdateVersion, "0000\0");
@@ -15715,6 +15719,8 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 	if(!strcmp(ext, _JB_PS3) || !strcmp(ext, _BDVD)) {
 	
 		char SFO_path[255];
+		
+		// todo PS3_EXTRA
 		sprintf(SFO_path, "%s/PS3_GAME/PKGDIR/PARAM.SFO", path);
 		if(path_info(SFO_path) == _NOT_EXIST) sprintf(SFO_path, "%s/PS3_GAME/PARAM.SFO", path);
 		if(path_info(SFO_path) == _NOT_EXIST) return NULL;
