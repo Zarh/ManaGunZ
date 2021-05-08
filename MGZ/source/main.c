@@ -112,6 +112,8 @@
 #include "bd/bd.h"
 #include "erk/dumper.h"
 
+#include "paged_file.h"
+
 #define NO_UID		-1
 #define SYSTEM_UID	0
 #define NO_GID		-1
@@ -4414,14 +4416,10 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 		if(pngLoadFromBuffer((const void *) mem, size, (pngData *) DataPic) == 0) {free(mem); return SUCCESS;}
 	} else	
 	if(list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) {
-		sprintf(temp, "%s/PS3_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
-		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 		sprintf(temp, "%s/PS3_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
 	if(list_game_platform[game_pos] == JB_PSP) {
-		sprintf(temp, "%s/PSP_GAME/PKGDIR/ICON0.PNG", list_game_path[game_pos]);
-		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 		sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
@@ -6527,13 +6525,11 @@ char *language(char *lang_mem, const char *strName, char *str_default)
 void init_lang()
 {
 	
-	char LOCPath[128];
-	char TXTPath[128];
+	char LOCPath[512];
+	char TXTPath[512];
 	
 	lang_N = 0;
-	STR_LANGUAGE[lang_N] = (char *)  malloc((size_t)18);
-	
-	strcpy(STR_LANGUAGE[lang_N], "English (default)");
+	STR_LANGUAGE[lang_N] = strcpy_malloc("English (default)");
 	LANGCODE[lang_N] = LANG_DEFAULT;
 
 	lang_N++;
@@ -6980,7 +6976,16 @@ void load_lang()
 	int i;
 	
 #ifndef RPCS3	
-	if(lang_code == LANG_UNDEFINED) lang_code = get_xreg_value((char*)"/setting/system/language");
+	if(lang_code == LANG_UNDEFINED) {
+		int res = get_xreg_value((char*)"/setting/system/language");
+		if( res == -1 ) {
+			lang = 0;
+			lang_code = LANG_DEFAULT;
+			write_setting();
+			return;
+		}
+		lang_code = (u8) res;
+	}
 #endif
 
 	for(i=0; i < lang_N ;i++) {
@@ -10280,7 +10285,7 @@ void Draw_Loading(void *unused)
 			x=Draw_checkbox(x-3, y, 0, "", shutdown, YES);
 		}
 		
-		if(AutoM == YES) {
+		if(AutoM) {
 			x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
 		}
 		if(prog_bar1_value >= 0 || task_ProgressBar1_max) {
@@ -10325,7 +10330,7 @@ void Draw_Loading(void *unused)
 		if(NewPad(BUTTON_CIRCLE) && (prog_bar1_value >= 0 || task_ProgressBar1_max)) {
 			cancel=YES;
 		}
-		if((NewPad(BUTTON_TRIANGLE) || OldPad(BUTTON_TRIANGLE)) && AutoM==YES) {
+		if((NewPad(BUTTON_TRIANGLE) || OldPad(BUTTON_TRIANGLE)) && AutoM) {
 			gui_called=YES;
 		}
 		if(NewPad(BUTTON_SELECT)) {
@@ -10416,15 +10421,13 @@ void print_load(char *format, ...)
 		if( mgz_log != NULL) {
 			fputs(loading_log[0], mgz_log);
 			fputs("\n", mgz_log);
-			
-			//sys_fs_fsync
+			fflush(mgz_log);
 		}
 	}
 	
 	// If it freeze, it allow to display every messages before the freeze (loading screen thread is async)
 	if( DEBUG ) {
-		if( loading ) sleep(1);
-		else if( LOG ) usleep(100); // just to be sure it's logged if we are not on a loading screen
+		if( loading || gathering || copy_flag) sleep(1);
 	}
 
 }
@@ -10450,13 +10453,13 @@ void print_head(char *format2, ...)
 		if( mgz_log != NULL ) {
 			fputs(head_title, mgz_log);
 			fputs("\n", mgz_log);
+			fflush(mgz_log);
 		}
 	}
 	
 	// If it freeze, it allow to display every messages before the freeze
 	if( DEBUG ) {
-		if( loading ) sleep(1);
-		else if( LOG ) usleep(100); // just to be sure it's logged if we are not on a loading screen
+		if( loading || gathering || copy_flag) sleep(1);
 	}
 }
 
@@ -11921,12 +11924,10 @@ ird_t *IRD_new(char *source)
 	ird->Attachments = 0;
 	
 	char value[255] = {0};
-	char param_sfo[512]={0};
-	sprintf(param_sfo, "%s/PS3_GAME/PARAM.SFO%c", source, '\0');
 	
 	print_debug("IRD_new TITLE");
 	memset(value, 0, 255);
-	ret = GetParamSFO("TITLE", value, param_sfo);
+	ret = GetParamSFO("TITLE", value, source);
 	if(ret==FAILED) {
 		print_load("Error : ird_new failed to get TITLE");
 		goto error;
@@ -11940,7 +11941,7 @@ ird_t *IRD_new(char *source)
 	print_debug("IRD_new TITLE_ID");
 	memset(value, 0, 255);
 	memset(ird->GameId, 0, 10);
-	ret = GetParamSFO("TITLE_ID", value, param_sfo);
+	ret = GetParamSFO("TITLE_ID", value, source);
 	if(ret==FAILED) {
 		print_load("Error : ird_new failed to get TITLE_ID");
 		goto error;
@@ -11951,14 +11952,14 @@ ird_t *IRD_new(char *source)
 	
 	memset(ird->GameVersion, 0, 6);
 	memset(value, 0, 255);
-	ret = GetParamSFO("VERSION", value, param_sfo);
+	ret = GetParamSFO("VERSION", value, source);
 	if(ret==FAILED) print_load("Error : ird_new failed to get VERSION");
 	else memcpy(ird->GameVersion, value, 5);
 
 	print_debug("IRD_new APP_VER");
 	memset(ird->AppVersion, 0, 6);
 	memset(value, 0, 255);
-	ret = GetParamSFO("APP_VER", value, param_sfo);
+	ret = GetParamSFO("APP_VER", value, source);
 	if(ret==FAILED) print_load("ird_new failed to get APP_VER");
 	else memcpy(ird->AppVersion, value, 5);
 	
@@ -11969,7 +11970,7 @@ ird_t *IRD_new(char *source)
 	if(ret==FAILED) {
 		print_load("Can't get PUP_VERSION, looking for PS3_SYSTEM_VERS");
 		memset(value, 0, 255);
-		ret = GetParamSFO("PS3_SYSTEM_VER", value, param_sfo);
+		ret = GetParamSFO("PS3_SYSTEM_VER", value, source);
 		if(ret==FAILED) {
 			print_load("failed to get SYSTEM_VERS");
 			strcpy(ird->UpdateVersion, "0000\0");
@@ -14579,7 +14580,7 @@ u8 Copy(char *src, char *dst)
 	char temp_src[255];
 	char temp_dst[255];
 	
-	if(path_info(dst) == _NOT_EXIST) mkdir(dst, 0777);
+	if(path_info(dst) == _NOT_EXIST) mkdir_recursive(dst);
 	
 	DIR *d;
 	struct dirent *dir;
@@ -15720,9 +15721,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 	
 		char SFO_path[255];
 		
-		// todo PS3_EXTRA
-		sprintf(SFO_path, "%s/PS3_GAME/PKGDIR/PARAM.SFO", path);
-		if(path_info(SFO_path) == _NOT_EXIST) sprintf(SFO_path, "%s/PS3_GAME/PARAM.SFO", path);
+		sprintf(SFO_path, "%s/PS3_GAME/PARAM.SFO", path);
 		if(path_info(SFO_path) == _NOT_EXIST) return NULL;
 		
 		sfo = fopen(SFO_path, mode);
@@ -22509,7 +22508,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	header.item_count = htonl((uint32_t)item_count);
 	header.data_offset = htonll((uint64_t)(PKG_HEADER__PKG_INFO_OFFSET + 0x40 + PKG_HEADER__PKG_INFO_SIZE + 0x40 ));
 	header.data_size = htonll(tmp);
-	header.pkg_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x60 + 0x40 + 0x40); 
+	header.pkg_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x40 + 0x40 + 0x60);  // +0x60 for sha_crap
 	memset(header.content_id, 0, sizeof(header.content_id));
 	memset(header.qa_digest, 0, sizeof(header.qa_digest));
 	memset(header.KLicensee, 0, sizeof(header.KLicensee));
@@ -22681,8 +22680,6 @@ void make_pkg(const char *dir_path)
 //*******************************************************
 //Extract PKG
 //*******************************************************
-
-#include "paged_file.h"
 
 static int pkg_debug_decrypt (PagedFile* f, PagedFileCryptOperation operation, u8 *ptr, u32 len, void *user_data)
 {
@@ -23007,6 +23004,40 @@ void pkg_unpack (const char *filename, const char *destination)
 //Make launcher package
 //*******************************************************
 
+u8 write_AutoMount_setting(char *path, u8 launcher)
+{
+	char Mount_path[128];
+	FILE* fp;
+	u16 path_size = strlen(path);
+	
+	if( launcher ) {
+		sprintf(Mount_path, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/AutoMount", ManaGunZ_id);
+	} else {
+		sprintf(Mount_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
+	}
+	
+	fp = fopen(Mount_path, "wb");
+	if(fp==NULL) return FAILED;
+	
+	fwrite(&direct_boot, sizeof(u8), 1, fp);
+	fwrite(&clean_syscall, sizeof(u8), 1, fp);
+	fwrite(&change_IDPS, sizeof(u8), 1, fp);
+	fwrite(&IDPS, sizeof(u8), 0x10, fp);
+	fwrite(&ext_game_data, sizeof(u8), 1, fp);
+	fwrite(&payload, sizeof(u8), 1, fp);
+	fwrite(&prim_USB, sizeof(u8), 1, fp);
+	fwrite(&emu, sizeof(u8), 1, fp);
+	fwrite(&libfs_from, sizeof(u8), 1, fp);
+	fwrite(&mount_app_home, sizeof(u8), 1, fp);
+	fwrite(&use_ex_plug, sizeof(u8), 1, fp);
+	fwrite(&bt_audio, sizeof(u8), 1, fp);
+	fwrite(&path_size, sizeof(u16), 1, fp);
+	fwrite(path, path_size, 1, fp);
+	fclose(fp);
+	
+	return SUCCESS;
+}
+	
 u8 read_AutoMount_setting()
 {
 	char Mount_path[128];
@@ -23033,10 +23064,49 @@ u8 read_AutoMount_setting()
 	fread(&bt_audio, sizeof(u8), 1, fp);	
 	
 	fread(&path_size, sizeof(u16), 1, fp);
-	list_game_path = (char **) malloc(sizeof(char *));
-	list_game_path[0] = (char *) malloc(path_size+1);
-	fread(list_game_path, path_size, 1, fp);
+	memset(temp_buffer, 0, 8192);
+	fread(temp_buffer, path_size, 1, fp);
 	fclose(fp);
+	
+	memcpy(GamPath, temp_buffer, 512); // it's used in case it returns 'failed'
+	
+	u8 Path_exist = YES;
+	if(path_info(temp_buffer) == _NOT_EXIST) {
+		print_load("Warning : Game path not exist.");
+		print_load("Searching in other devices...");
+		
+		Path_exist = NO;
+		
+		int n = 1, i; 
+		while(temp_buffer[n] != '/' && temp_buffer[n] != 0) n++;
+		
+		char temp[8192]={0};
+		
+		sprintf(temp, "%s", &temp_buffer[n]);
+		memset(temp_buffer, 0, 8192);
+		
+		for(i=0; i<=device_number; i++) {
+			sprintf(temp_buffer, "/%s%s", list_device[i], temp);
+			if(path_info(temp_buffer) != _NOT_EXIST) {
+				print_load("Game found !");
+				write_AutoMount_setting(temp_buffer, NO);
+				Path_exist = YES;
+				break;
+			}
+		}
+		if(Path_exist == NO) return FAILED;
+	}
+	
+	game_number = -1;
+	
+	add_GAMELIST(temp_buffer);
+	
+	if(game_number == -1) return FAILED;
+	
+	position = 0;
+	
+	iso = is_iso(list_game_path[position]);
+	usb = is_usb(list_game_path[position]);
 	
 	if(iso) payload=SNAKE;
 	if(!PEEKnPOKE) {
@@ -23049,50 +23119,12 @@ u8 read_AutoMount_setting()
 	return SUCCESS;
 }
 
-u8 write_AutoMount_setting(char *path)
-{
-	char Mount_path[128];
-	FILE* fp;
-	u16 path_size = strlen(path);
-	
-	sprintf(Mount_path, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/AutoMount", ManaGunZ_id);
-	
-	fp = fopen(Mount_path, "wb");
-	if(fp==NULL) return FAILED;
-	
-	fwrite(&direct_boot, sizeof(u8), 1, fp);
-	fwrite(&clean_syscall, sizeof(u8), 1, fp);
-	fwrite(&change_IDPS, sizeof(u8), 1, fp);
-	fwrite(&IDPS, sizeof(u8), 0x10, fp);
-	fwrite(&ext_game_data, sizeof(u8), 1, fp);
-	fwrite(&payload, sizeof(u8), 1, fp);
-	fwrite(&prim_USB, sizeof(u8), 1, fp);
-	fwrite(&emu, sizeof(u8), 1, fp);
-	fwrite(&libfs_from, sizeof(u8), 1, fp);
-	fwrite(&mount_app_home, sizeof(u8), 1, fp);
-	fwrite(&use_ex_plug, sizeof(u8), 1, fp);
-	fwrite(&bt_audio, sizeof(u8), 1, fp);
-	fwrite(&path_size, sizeof(u16), 1, fp);
-	fwrite(path, path_size, 1, fp);
-	fclose(fp);
-	
-	return SUCCESS;
-}
-
 int make_launcher_pkg(char *title_id, char *path)
 {
 
 print_load("Init...");
-	char title[512];
-	if( strcmp(path, list_game_path[position]) == 0) {
-		strcpy(title, list_game_title[position]);
-	} else {
-		
-		strcpy(title, &strrchr(path, '/')[1]);
-		RemoveExtension(title);
-		GetParamSFO("TITLE", title, path);
-	}
-	
+
+	char title[512];	
 	char content_id[37];
 	char src[128];
 	char dst[128];
@@ -23100,20 +23132,42 @@ print_load("Init...");
 	sprintf(lch, "/dev_hdd0/game/%s/USRDIR/launcher", ManaGunZ_id);
 	Delete(lch);
 	mkdir(lch, 0777);
-
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR", ManaGunZ_id);
-	mkdir(dst, 0777);
 	
-//	sys
-print_load("Copy sys...");
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys", ManaGunZ_id);
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys", ManaGunZ_id);
+	u8 _iso_ = is_iso(path);
+	
+//	loc
+print_load("Copy loc...");
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys/loc", ManaGunZ_id);
+	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys/loc", ManaGunZ_id);
 	if( Copy(src, dst) == FAILED ) {
-		print_load("Error : failed to copy sys directory");
+		print_load("Error : failed to copy loc directory");
 		Delete(lch);
 		return FAILED;
 	}
 
+// rawsceiso
+	if( _iso_ ) {
+print_load("Copy iso plugin...");
+		sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys/sprx_iso", ManaGunZ_id);
+		sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
+		if( Copy(src, dst) == FAILED ) {
+			print_load("Error : failed to copy sprx_iso directory");
+			Delete(lch);
+			return FAILED;
+		}
+	}
+	
+// data
+print_load("Copy scetool data...");
+	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys/data", ManaGunZ_id);
+	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys/data", ManaGunZ_id);
+	if( Copy(src, dst) == FAILED ) {
+		print_load("Error : failed to copy data directory");
+		Delete(lch);
+		return FAILED;
+	}
+	
+	
 //  self
 print_load("Copy self...");
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/ManaGunZ.self", ManaGunZ_id);
@@ -23127,7 +23181,7 @@ print_load("Copy self...");
 //	ICON0
 print_load("Copy icon0...");
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/ICON0.PNG", ManaGunZ_id);
-	if(is_iso(path)) {
+	if(_iso_) {
 		if( ExtractFromISO(path, "/PS3_GAME/ICON0.PNG", dst) == FAILED) {
 			print_load("Error : failed to get ICON0.PNG");
 			Delete(lch);
@@ -23162,6 +23216,10 @@ print_load("Set title ID...");
 	
 // TITLE
 print_load("Set title...");
+	if( GetParamSFO("TITLE", title, path) == FAILED) {
+		strcpy(title, &strrchr(path, '/')[1]);
+		RemoveExtension(title);
+	}
 	if( SetParamSFO("TITLE", title, dst) == FAILED ) {
 		print_load("Error : failed to change TITLE");
 		Delete(lch);
@@ -23170,7 +23228,7 @@ print_load("Set title...");
 	
 // AUTOMOUNT
 print_load("Create AutoMount...");
-	if( write_AutoMount_setting(path) == FAILED ) {
+	if( write_AutoMount_setting(path, YES) == FAILED ) {
 		print_load("Error : failed to write AutoMount file");
 		Delete(lch);
 		return FAILED;
@@ -23233,6 +23291,7 @@ print_load("Make Package...");
 		Delete(lch);
 		return FAILED;
 	}
+	
 // Delete launcher directory
 print_load("Delete launcher directory...");
 	Delete(lch);
@@ -23553,6 +23612,8 @@ void write_RootSetting()
 
 void read_setting()
 {
+	if( AutoM ) return;
+	
 	FILE* fp=NULL;
 	char setPath[128];
 	
@@ -27725,6 +27786,7 @@ void Option(char *item)
 	if(strcmp(item, STR_MAKE_SHTCUT_PKG) == 0) {
 	
 		start_loading();
+		read_game_setting(-1);
 		for(i=0; i<=option_sel_N; i++) {
 			char mk_pkg_ID[10];
 			srand(time(NULL));
@@ -32687,7 +32749,7 @@ void init_PS2_GAME_MENU()
 		}
 	}
 	
-	if(is_66600(list_game_path[position])==YES && is_usb(list_game_path[position])==NO) {
+	if(is_66600(list_game_path[position])==YES && is_FAT32(list_game_path[position])==NO) {
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 
@@ -33111,7 +33173,7 @@ void init_PSP_GAME_MENU()
 		}
 	}
 	
-	if(is_66600(list_game_path[position])==YES && is_usb(list_game_path[position])==NO) {
+	if(is_66600(list_game_path[position])==YES && is_FAT32(list_game_path[position])==NO) {
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 	
@@ -33334,7 +33396,7 @@ void init_PS1_GAME_MENU()
 		}
 	}
 	
-	if(is_66600(list_game_path[position])==YES && is_usb(list_game_path[position])==NO) {
+	if(is_66600(list_game_path[position])==YES && is_FAT32(list_game_path[position])==NO) {
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 	
@@ -34513,33 +34575,35 @@ void init_PS3_GAME_MENU()
 	
 	add_title_MENU(STR_GAME_OPTION);
 	
-	if(is_favorite(list_game_path[position]) == NO) {
-		add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
-	} else {
-		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
-	}
+	if( !AutoM ) {
+		if(is_favorite(list_game_path[position]) == NO) {
+			add_item_MENU(STR_ADD_FAV, ITEM_TEXTBOX);
+		} else {
+			add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
+		}
 	
-	add_item_MENU(STR_RENAME, ITEM_TEXTBOX);
+		add_item_MENU(STR_RENAME, ITEM_TEXTBOX);
 	
-	add_item_MENU(STR_DELETE, ITEM_TEXTBOX);
+		add_item_MENU(STR_DELETE, ITEM_TEXTBOX);
 	
-	if(device_number != 0) {
-		add_item_MENU(STR_COPY, ITEM_TEXTBOX);
-		for(j=0; j<=scan_dir_number; j++) {
-			for(i=0; i<=device_number; i++) {
-				if(strstr(list_game_path[position], list_device[i])) continue;
-				char tmp[255];
-				sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
-				add_item_value_MENU(tmp);
+		if(device_number != 0) {
+			add_item_MENU(STR_COPY, ITEM_TEXTBOX);
+			for(j=0; j<=scan_dir_number; j++) {
+				for(i=0; i<=device_number; i++) {
+					if(strstr(list_game_path[position], list_device[i])) continue;
+					char tmp[255];
+					sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+					add_item_value_MENU(tmp);
+				}
 			}
 		}
+		
+		if(is_66600(list_game_path[position])==YES && is_FAT32(list_game_path[position])==NO) {
+			add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
+		}
+		
+		add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);	
 	}
-	
-	if(is_66600(list_game_path[position])==YES && is_FAT32(list_game_path[position])==NO) {
-		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
-	}
-	
-	// add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);
 	
 	if( !HEN ) {
 		add_item_MENU(STR_PATCH_EBOOT, ITEM_TEXTBOX);
@@ -34553,16 +34617,18 @@ void init_PS3_GAME_MENU()
 		}
 	}
 	
-	if(iso) {
-		add_item_MENU(STR_EXTRACT_ISO, ITEM_TEXTBOX);
-	} else {
-		add_item_MENU(STR_CONVERT_ISO, ITEM_TEXTBOX);
-	}
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			char tmp[255];
-			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
-			add_item_value_MENU(tmp);
+	if( !AutoM ) {
+		if(iso) {
+			add_item_MENU(STR_EXTRACT_ISO, ITEM_TEXTBOX);
+		} else {
+			add_item_MENU(STR_CONVERT_ISO, ITEM_TEXTBOX);
+		}
+		for(j=0; j<=scan_dir_number; j++) {
+			for(i=0; i<=device_number; i++) {
+				char tmp[255];
+				sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+				add_item_value_MENU(tmp);
+			}
 		}
 	}
 	
@@ -34675,6 +34741,7 @@ u8 PS3_GAME_MENU_CROSS()
 			if(mk_pkg_ID[0]!=0) {
 				u8 ret;
 				start_loading();
+				read_game_setting(position);
 				ret=make_launcher_pkg(mk_pkg_ID, list_game_path[position]);
 				end_loading();
 				if(ret == SUCCESS) show_msg(STR_DONE);
@@ -37793,9 +37860,9 @@ u8 is_AutoMount()
 	
 	fp = fopen("/dev_hdd0/vsh/pushlist/game.dat", "rb");
 	if(fp==NULL) return FAILED;
-	
-	fgets(ManaGunZ_id, 10, fp);
+	fread(ManaGunZ_id, 9, 1, fp);
 	fclose(fp);
+	ManaGunZ_id[9]=0;
 	
 	char M_path[128];
 	sprintf(M_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
@@ -37805,49 +37872,21 @@ u8 is_AutoMount()
 	return YES;
 }
 
+void AutoMountCheckPad()
+{
+	if( AutoM && !gui_called ) {
+		ps3pad_read();
+		if((NewPad(BUTTON_TRIANGLE) || OldPad(BUTTON_TRIANGLE))) {
+			gui_called=YES;
+		}
+	}
+}
+
 void AutoMount()
 {
+	print_load("Read AutoMount settings");
 
-	if(read_AutoMount_setting()==FAILED) {
-		print_load("Error : Failed to read AutoMount file");
-		sleep(4);
-		exit(0);
-	}
-	
-	print_load("AutoMount = %s", list_game_path[0]);
-	
-	game_number=0;
-	position=0;
-	
-	GetParamSFO("TITLE", list_game_title[0], list_game_path[0]);
-	list_game_platform[0] = get_platform(list_game_path[0]);
-	iso = is_iso(list_game_path[0]);
-	usb = is_usb(list_game_path[0]);
-	
-	u8 Path_exist=NO;
-	
-	strcpy(GamPath, list_game_path[0]);
-	
-	//check GamPath
-	if(path_info(GamPath)==_NOT_EXIST) {
-		print_load("Warning : Game path not exist.");
-		print_load("Searching in other devices...");
-		
-		int n = 1, i; 
-		while(GamPath[n] != '/' && GamPath[n] != 0) n++;
-		strcpy(temp_buffer, &GamPath[n]);
-		
-		for(i=0; i<=device_number; i++) {
-			sprintf(GamPath, "/%s%s", list_device[i], temp_buffer);
-			if(path_info(GamPath) != _NOT_EXIST) {
-				print_load("Game found !");
-				Path_exist=YES;
-				break;
-			}
-		}
-	} else Path_exist=YES;
-	
-	if(Path_exist==NO) {	
+	if(read_AutoMount_setting()==FAILED) {	
 		end_loading();
 		u8 LoopBreak=1;
 		while(LoopBreak)
@@ -37861,8 +37900,9 @@ void AutoMount()
 			
 			DrawString(x, y, STR_NOGAME);
 			y+=20;
-			DrawFormatString(x, y, "%s = %s", STR_PATH, list_game_path[0]);
+			DrawFormatString(x, y, "%s = %s", STR_PATH, GamPath);
 			
+			DrawFormatString(10, 10, "%d", gui_called);
 			x=INPUT_X;
 			y=INPUT_Y;
 			FontColor(COLOR_1);
@@ -37874,17 +37914,13 @@ void AutoMount()
 			ScreenShot();
 			ps3pad_read();
 			
-			if(NewPad(BUTTON_CIRCLE)) {
-				ioPadEnd();
-				LoopBreak=0;
-				exit(0);
-			}
+			if(NewPad(BUTTON_CIRCLE)) exit(0);
 		}
 	}
 	
-	sleep(1);
+	AutoMountCheckPad();
 	
-	if(gui_called==YES) {
+	if(gui_called) {
 		end_loading();
 		
 		open_GameMenu();
@@ -37895,8 +37931,6 @@ void AutoMount()
 			Draw_MENU();
 			Draw_MENU_input();
 		
-			//AutoRefresh_GAMELIST();
-		
 			tiny3d_Flip();
 			ScreenShot();
 		
@@ -37905,15 +37939,14 @@ void AutoMount()
 			input_MENU();
 		}
 		
-		write_AutoMount_setting(GamPath);
+		write_AutoMount_setting(list_game_path[0], NO);
 	}
 	
-	MountGame(GamPath);	
+	MountGame(list_game_path[0]);
 	
 	end_loading();
 	
 	exit(0);
-
 }
 
 //*******************************************************
@@ -41532,11 +41565,11 @@ u8 Show_it(int pos)
 int main(void)
 {
 	u8 LoopBreak=1;
-
-	exFAT_init();
-
+	
 	AutoM = is_AutoMount(); // ManaGunZ_id
-
+	
+	exFAT_init();
+	
 	sysModuleLoad(SYSMODULE_PNGDEC);
 	sysModuleLoad(SYSMODULE_JPGDEC);
 	
@@ -41545,6 +41578,8 @@ int main(void)
 	ioPadInit(7);
 	ioPadSetPressMode(0,1);
 	SetCurrentFont(-1);
+
+	AutoMountCheckPad();
 	
 #ifdef RPCS3
 #ifdef FILEMANAGER
@@ -41561,16 +41596,19 @@ int main(void)
 	//strcpy(list_device[device_number], "dev_usb000");
 #endif // RPCS3
 
-	read_setting(); //Need ManaGunZ_id
-	
+	read_setting(); //it needs ManaGunZ_id
+
 	LoadFont();
+	
+	AutoMountCheckPad();
+
 	init_lang();
 	load_lang();
 
-	start_loading();
+	start_loading(); // it needs font and lang
 	
 	u64 test_peek = lv2peek(0x8000000000003000ULL);
-	if( test_peek == 0xFFFFFFFF80010003ULL || test_peek == 0 ) // rpcs3 return 0
+	if( test_peek == 0xFFFFFFFF80010003ULL || test_peek == 0 || test_peek == 0x80010003ULL) // rpcs3 return 80010003
 		PEEKnPOKE = NO;
 	else
 		PEEKnPOKE = YES;

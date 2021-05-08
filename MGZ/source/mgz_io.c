@@ -242,6 +242,15 @@ int MGZ_feof(MGZ_FILE *mgz_file)
 	return 0;	
 }
 
+int MGZ_fflush(MGZ_FILE *mgz_file)
+{
+	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_fsync(mgz_file->fd);
+	
+	if(mgz_file->type==TYPE_EXFAT) return f_sync(&mgz_file->fp);
+	
+	return -1;
+}
+
 #define FILE		MGZ_FILE
 
 #define fopen		MGZ_fopen
@@ -257,6 +266,7 @@ int MGZ_feof(MGZ_FILE *mgz_file)
 #define truncate 	MGZ_truncate
 //#define ferror		MGZ_ferror
 //#define feof			MGZ_feof
+#define fflush		MGZ_fflush
 
 //*******************************************************************************************
 //*******************************************************************************************
