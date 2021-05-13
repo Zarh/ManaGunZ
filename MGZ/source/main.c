@@ -12506,8 +12506,8 @@ u8 dump_dec_bdvd(char *outdir)
 	iso_done = YES;
 	
 	print_head("Building IRD...");
-	u64 footer_offset;
-	u64 header_lenght;
+	u64 footer_offset = 0;
+	u64 header_lenght = 0;
 	
 	strcpy( copy_src, ISO_PATH);
 	strcpy( copy_dst, IRD_PATH);
@@ -12516,6 +12516,8 @@ u8 dump_dec_bdvd(char *outdir)
 		print_load("Error : failed to IRD_FilesInfo");
 		goto error;
 	}
+	
+	if(copy_cancel) goto error;
 	
 	copy_current_size=0;
 	task_Init(gathering_total_size);
@@ -12526,9 +12528,13 @@ u8 dump_dec_bdvd(char *outdir)
 	}
 	task_End();
 	
-	print_load("Compressing header...");
+	if(header_lenght==0 || footer_offset==0 || ((u64) total_sectors * 0x800ULL) < footer_offset) goto error;
 	
-	u64 footer_lenght = total_sectors * 0x800 - footer_offset;
+	if(copy_cancel) goto error;
+	
+	u64 footer_lenght = (u64) total_sectors * 0x800ULL - footer_offset;
+	
+	print_load("Compressing header...");
 	gathering_nb_file = -1;
 	f = fopen(ISO_PATH, "rb");
 	if(f==NULL) {
@@ -12538,6 +12544,13 @@ u8 dump_dec_bdvd(char *outdir)
 	
 	if( GZ_compress2(f, (int) header_lenght, (char **) &ird->Header, (int *) &ird->HeaderLength) != Z_OK) {
 		print_load("Error : failed to compress header");
+		goto error;
+	}
+	
+	if(copy_cancel) goto error;
+		
+	if( ird->Header == NULL || ird->HeaderLength==0) {
+		print_load("Error : failed to get a proper compressed header");
 		goto error;
 	}
 	
@@ -12551,6 +12564,13 @@ u8 dump_dec_bdvd(char *outdir)
 	}
 	FCLOSE(f);
 	
+	if(copy_cancel) goto error;
+	
+	if( ird->Footer == NULL || ird->FooterLength==0) {
+		print_load("Error : failed to get a proper compressed footer");
+		goto error;
+	}
+	
 	copy_current_size = 0;
 	gathering_total_size = SIZEOF_IRD(ird);
 	print_load("Saving IRD");
@@ -12560,6 +12580,8 @@ u8 dump_dec_bdvd(char *outdir)
 	}
 	SetPerms(IRD_PATH);
 	
+	if(copy_cancel) goto error;
+		
 	print_head("Uploading IRD");
 	print_load("Getting ird signature");
 	IRD_NAME = IRD_sig2(ird);
@@ -12567,6 +12589,8 @@ u8 dump_dec_bdvd(char *outdir)
 		print_load("Error : failed  to get IRD_sig");
 		goto error;
 	}
+	
+	if(copy_cancel) goto error;
 	
 	print_load("Check if ird exist");
 	ret = IRD_DB_exist(IRD_NAME); 
@@ -14869,7 +14893,13 @@ void get_GAMELIST(char *scan_path)
 		char temp[512];
 		sprintf(temp, "%s/%s" , scan_path, dir->d_name);
 		
-		add_GAMELIST(temp);
+		char *ext = get_ext(temp);
+		
+		if( strcmp(ext, _SDIR) == 0) {
+			get_GAMELIST(temp);
+		} else {
+			add_GAMELIST(temp);
+		}
 	}
 	closedir(d);
 }
@@ -15070,7 +15100,7 @@ void Draw_GameProperties()
 		FontColor(COLOR_3);
 		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_TITLE);
 		FontColor(COLOR_1);
-		DrawString(xt+10 , y,  list_game_title[position]);
+		DrawTXTinLineBox(xt+10, y, 0, X_MAX-xt-10, list_game_title[position], 0, COLOR_1);
 		
 		y+=new_line(1);
 		

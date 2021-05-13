@@ -296,7 +296,7 @@ u8 IRD_save(char *IRD_PATH, ird_t *ird)
 	fwrite(ird->AppVersion		, sizeof(char), 5, irdu);
 	
 	if(ird->Version == 7) {
-		print_verbose("IRD_Load fwrite UniqueIdentifier = %X", ird->UniqueIdentifier);
+		print_verbose("IRD_Save fwrite UniqueIdentifier = %X", ird->UniqueIdentifier);
 		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
 		fwrite(&ird->UniqueIdentifier, sizeof(u32) , 1, irdu);
 		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
@@ -375,7 +375,7 @@ u8 IRD_save(char *IRD_PATH, ird_t *ird)
 	
 	print_verbose("IRD_Save fwrite crc = %X", ird->crc);
 	ird->crc = ENDIAN_SWAP(ird->crc);
-	ret = fwrite(&ird->crc  , sizeof(u32), 1, irdu);
+	fwrite(&ird->crc  , sizeof(u32), 1, irdu);
 	ird->crc = ENDIAN_SWAP(ird->crc);
 	
 	ret = SUCCESS;
