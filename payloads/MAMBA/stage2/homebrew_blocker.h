@@ -8,15 +8,14 @@
 //extern int disc_emulation; // storage_ext.c
 
 #ifdef DO_AUTO_RESTORE_SC
-uint8_t allow_restore_sc = 1; // allow re-create cfw syscalls accessing system update on XMB
+u8 allow_restore_sc = 1; // allow re-create cfw syscalls accessing system update on XMB
 #endif
 #ifdef DO_AUTO_MOUNT_DEV_BLIND
-uint8_t auto_dev_blind  = 1;  // auto-mount dev_blind
-
-static uint8_t mount_dev_blind  = 1;
+u8 auto_dev_blind  = 1; // auto-mount dev_blind
+static u8 mount_dev_blind  = 1;
 #endif
 #ifdef DO_CFW2OFW_FIX
-uint8_t CFW2OFW_game = 0;
+u8 CFW2OFW_game = 0;
 #endif
 
 #define BLACKLIST_FILENAME	"/dev_hdd0/tmp/blacklist.cfg"
@@ -24,10 +23,10 @@ uint8_t CFW2OFW_game = 0;
 
 #define MAX_LIST_ENTRIES	20 // Maximum elements for noth the custom blacklist and whitelist.
 
-static uint8_t __initialized_lists = 0; // Are the lists initialized ?
-static uint8_t __blacklist_entries = 0; // Module global var to hold the current blacklist entries.
+static u8 __initialized_lists = 0; // Are the lists initialized ?
+static u8 __blacklist_entries = 0; // Module global var to hold the current blacklist entries.
 static char  * __blacklist;
-static uint8_t __whitelist_entries = 0; // Module global var to hold the current whitelist entries.
+static u8 __whitelist_entries = 0; // Module global var to hold the current whitelist entries.
 static char  * __whitelist;
 
 static unsigned char no_exists[] = {"/fail"};
@@ -40,17 +39,17 @@ int read_text_line(int fd, char *line, unsigned int size, int *eof);
 // inits a list.
 // returns the number of elements read from file
 
-static uint8_t init_list(char *list, const char *path)
+static u8 init_list(char *list, const char *path)
 {
 	int f;
 
 	if (cellFsOpen(path, CELL_FS_O_RDONLY, &f, 0666, NULL, 0) != CELL_FS_SUCCEEDED) return 0; // failed to open
 
-	if(!list) list = alloc(9 * MAX_LIST_ENTRIES, 0x2F);
+	if(!list) list = palloc(9 * MAX_LIST_ENTRIES);
 
 	char line[0x10];
 
-	uint8_t loaded = 0;
+	u8 loaded = 0;
 	while (loaded < MAX_LIST_ENTRIES)
 	{
 		int eof;
@@ -76,7 +75,7 @@ static uint8_t init_list(char *list, const char *path)
 static int listed(int blacklist, const char *gameid)
 {
 	char *list;
-	uint8_t elements;
+	u8 elements;
 	if (!__initialized_lists)
 	{
 		// initialize the lists if not yet done
@@ -91,7 +90,7 @@ static int listed(int blacklist, const char *gameid)
 
 	if(!list) return 0;
 
-	for(uint8_t i = 0; i < elements; i++)
+	for(u8 i = 0; i < elements; i++)
 		if (!strncmp(list + (9 * i), gameid, 9))
 			return 1; // gameid is in the list
 
@@ -106,13 +105,13 @@ static int listed(int blacklist, const char *gameid)
 // ** WARNING ** If only a parcial disablement was made, this assumption WILL FAIL !!!
 static inline int block_homebrew(const char *path)
 {
-	uint8_t is_hdd0 = (path[1] == 'd' && path[5] == 'h' && !strncmp(path, "/dev_hdd0/", 10));
+	u8 is_hdd0 = (path[1] == 'd' && path[5] == 'h' && !strncmp(path, "/dev_hdd0/", 10));
 
-	uint8_t is_game_dir = (is_hdd0 && !strncmp(path + 10, "game/", 5));
+	u8 is_game_dir = (is_hdd0 && !strncmp(path + 10, "game/", 5));
 
 	if(is_game_dir)
 	{
-		uint8_t syscalls_disabled = ((*(uint64_t *)MKA(syscall_table_symbol + 8 * 6)) == (*(uint64_t *)MKA(syscall_table_symbol)));
+		u8 syscalls_disabled = ((*(u64 *)MKA(syscall_table_symbol + 8 * 6)) == (*(u64 *)MKA(syscall_table_symbol)));
 
 //		if(!syscalls_disabled && (!strncmp(path + 15, "ENSTONEXX", 9) || !strncmp(path + 15, "IDPSET000", 9))) syscalls_disabled = 1;
 
@@ -164,7 +163,7 @@ static inline int block_homebrew(const char *path)
 			// let's now block homebrews if the "allow" flag is false
 			if (!allow)
 			{
-				set_patched_func_param(1, (uint64_t)no_exists); // redirect to invalid path
+				set_patched_func_param(1, (u64)no_exists); // redirect to invalid path
 				#ifdef DO_AUTO_MOUNT_DEV_BLIND
 				mount_dev_blind = 1;
 				#endif
@@ -198,7 +197,7 @@ static inline int block_homebrew(const char *path)
 		{
 			if(!strcmp(path, "/dev_flash/vsh/module/software_update_plugin.sprx"))
 			{
-				uint8_t syscalls_disabled = ((*(uint64_t *)MKA(syscall_table_symbol + 8 * 6)) == (*(uint64_t *)MKA(syscall_table_symbol)));
+				u8 syscalls_disabled = ((*(u64 *)MKA(syscall_table_symbol + 8 * 6)) == (*(u64 *)MKA(syscall_table_symbol)));
 				if(syscalls_disabled)
 					create_syscalls();
 

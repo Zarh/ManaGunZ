@@ -21,11 +21,11 @@ int prx_get_module_name_by_address(process_t process, void *addr, char *name)
 }
 
 // load system modules by haxxxen
-int prx_start_modules(sys_prx_id_t id, process_t process, uint64_t flags, uint64_t arg)
+int prx_start_modules(sys_prx_id_t id, process_t process, u64 flags, u64 arg)
 {
 	int ret;
-	uint64_t meminfo[5];
-	uint32_t toc[2];
+	u64 meminfo[5];
+	u32 toc[2];
 
 	meminfo[0] = sizeof(meminfo);
 	meminfo[1] = 1;
@@ -44,13 +44,13 @@ int prx_start_modules(sys_prx_id_t id, process_t process, uint64_t flags, uint64
 	return prx_start_module(id, process, flags, meminfo);
 }
 
-int prx_start_module_with_thread(sys_prx_id_t id, process_t process, uint64_t flags, uint64_t arg)
+int prx_start_module_with_thread(sys_prx_id_t id, process_t process, u64 flags, u64 arg)
 {
 	int ret;
-	uint64_t meminfo[5];
-	uint32_t toc[2];
+	u64 meminfo[5];
+	u32 toc[2];
 	thread_t thread;
-	uint64_t exit_code;
+	u64 exit_code;
 
 	meminfo[0] = sizeof(meminfo);
 	meminfo[1] = 1;
@@ -74,13 +74,13 @@ int prx_start_module_with_thread(sys_prx_id_t id, process_t process, uint64_t fl
 	return prx_start_module(id, process, flags, meminfo);
 }
 
-int prx_stop_module_with_thread(sys_prx_id_t id, process_t process, uint64_t flags, uint64_t arg)
+int prx_stop_module_with_thread(sys_prx_id_t id, process_t process, u64 flags, u64 arg)
 {
 	int ret;
-	uint64_t meminfo[5];
-	uint32_t toc[2];
+	u64 meminfo[5];
+	u32 toc[2];
 	thread_t thread;
-	uint64_t exit_code;
+	u64 exit_code;
 
 	meminfo[0] = sizeof(meminfo);
 	meminfo[1] = 1;

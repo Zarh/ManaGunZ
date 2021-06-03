@@ -32,20 +32,20 @@ enum ps3dm_function_packet
 
 struct ps3dm_header
 {
-    uint32_t tag;
-    uint32_t fid;            /* enum ps3dm_function_packet */
-    uint32_t payload_length;
-    uint32_t reply_length;
+    u32 tag;
+    u32 fid;            /* enum ps3dm_function_packet */
+    u32 payload_length;
+    u32 reply_length;
 };
 
 struct ps3dm_ss_header
 {
-    uint64_t pid;            /* enum ps3dm_function_packet */
-    uint64_t fid;            /* enum ps3dm_function_packet */
-    uint32_t status;
-    uint8_t res[4];
-    uint64_t laid;
-    uint64_t paid;
+    u64 pid;            /* enum ps3dm_function_packet */
+    u64 fid;            /* enum ps3dm_function_packet */
+    u32 status;
+    u8 res[4];
+    u64 laid;
+    u64 paid;
 };
 
 struct ps3dm_scm_write_eeprom
@@ -60,7 +60,7 @@ struct ps3dm_scm_write_eeprom
     u8 buf[0x50];
 };
 
-static inline void ps3dm_init_header(struct ps3dm_header *hdr, uint32_t tag, uint32_t fid, uint32_t payload_length, uint32_t reply_length)
+static inline void ps3dm_init_header(struct ps3dm_header *hdr, u32 tag, u32 fid, u32 payload_length, u32 reply_length)
 {
     hdr->tag = tag;
     hdr->fid = fid;
@@ -68,7 +68,7 @@ static inline void ps3dm_init_header(struct ps3dm_header *hdr, uint32_t tag, uin
     hdr->reply_length = reply_length;
 }
 
-static inline void ps3dm_init_ss_header( struct ps3dm_ss_header *hdr, uint64_t pid, uint64_t laid, uint64_t paid)
+static inline void ps3dm_init_ss_header( struct ps3dm_ss_header *hdr, u64 pid, u64 laid, u64 paid)
 {
     hdr->pid = pid;
     hdr->fid = PS3DM_FID(pid);
@@ -86,7 +86,7 @@ static inline void lv1_poked2(u64 addr, u64 value)
     *(u64 *)(HV_BASE + addr) = value;
 }
 
-uint8_t read_qa_flag();
-int set_qa_flag(uint8_t value);
+u8 read_qa_flag();
+int set_qa_flag(u8 value);
 
 #endif /* _QA_H */

@@ -1,10 +1,12 @@
 TO DO :
-Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA
+Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA/INSDIR
 
 v1.40
 Fix : IRD build of backups with PKGDIR.
 Fix : Shortcut pkg.
-Add : It scans sub-folders.
+Add : Scans sub-folders to find backups.
+Add : Support fw 4.88C.
+Add : Updated mamba v8.40 from https://github.com/aldostools/Mamba June 06, 2021.
 
 v1.39
 Fix : Display issue with game title containing new line character '\n'.

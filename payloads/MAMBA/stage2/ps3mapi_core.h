@@ -40,7 +40,7 @@ int ps3mapi_get_fw_type(char *fw);
 #define PS3MAPI_OPCODE_GET_CURRENT_PROC			0x0024
 #define PS3MAPI_OPCODE_GET_CURRENT_PROC_CRIT	0x0025
 
-typedef uint32_t process_id_t;
+typedef u32 process_id_t;
 
 int ps3mapi_get_all_processes_pid(process_id_t *pid_list);
 int ps3mapi_get_process_name_by_pid(process_id_t pid, char *name);
@@ -57,9 +57,9 @@ int ps3mapi_get_current_process(process_t process);
 #define PS3MAPI_OPCODE_SET_PROC_MEM				0x0032
 #define PS3MAPI_OPCODE_PROC_PAGE_ALLOCATE		0x0033
 
-int ps3mapi_set_process_mem(process_id_t pid, uint64_t addr, char *buf, int size);
-int ps3mapi_get_process_mem(process_id_t pid, uint64_t addr, char *buf, int size);
-int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page_size, uint64_t flags, uint64_t is_executable, uint64_t *page_address); // TheRouletteBoi
+int ps3mapi_set_process_mem(process_id_t pid, u64 addr, char *buf, int size);
+int ps3mapi_get_process_mem(process_id_t pid, u64 addr, char *buf, int size);
+int ps3mapi_process_page_allocate(process_id_t pid, u64 size, u64 page_size, u64 flags, u64 is_executable, u64 *page_address); // TheRouletteBoi
 
 //-----------------------------------------------
 //MODULES
@@ -83,14 +83,14 @@ int ps3mapi_get_process_module_name_by_prx_id(process_id_t pid, sys_prx_id_t prx
 int ps3mapi_get_process_module_filename_by_prx_id(process_id_t pid, sys_prx_id_t prx_id, char *filename);
 int ps3mapi_get_process_module_info(process_t process, sys_prx_id_t prx_id, char *name, char *filename);
 int ps3mapi_get_process_module_segments(process_id_t pid, sys_prx_id_t prx_id, sys_prx_module_info_t *info); // TheRouletteBoi
-int ps3mapi_load_process_modules(process_id_t pid, char *path, void *arg, uint32_t arg_size);
+int ps3mapi_load_process_modules(process_id_t pid, char *path, void *arg, u32 arg_size);
 int ps3mapi_unload_process_modules(process_id_t pid, sys_prx_id_t prx_id);
 
 int ps3mapi_get_vsh_plugin_info(unsigned int slot, char *name, char *filename);
-int ps3mapi_get_vsh_plugin_slot_by_name(const char *name, uint8_t unload);
+int ps3mapi_get_vsh_plugin_slot_by_name(const char *name, u8 unload);
 int prx_unload_vsh_plugin(unsigned int slot);
 int ps3mapi_unload_vsh_plugin(char* name);
-int prx_start_modules(sys_prx_id_t id, process_t process, uint64_t flags, uint64_t arg);
+int prx_start_modules(sys_prx_id_t id, process_t process, u64 flags, u64 arg);
 
 //-----------------------------------------------
 //THREAD
@@ -98,7 +98,7 @@ int prx_start_modules(sys_prx_id_t id, process_t process, uint64_t flags, uint64
 
 //#define SYSCALL8_OPCODE_PROC_CREATE_THREAD			0x6E03 // not enough params for PS3MAPI_OPCODE
 
-int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entry, uint64_t arg, int prio, size_t stacksize, char *threadname); // TheRouletteBoi
+int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entry, u64 arg, int prio, size_t stacksize, char *threadname); // TheRouletteBoi
 
 //-----------------------------------------------
 //SYSCALL
@@ -156,7 +156,6 @@ int ps3mapi_disable_syscall(int num);
 //-----------------------------------------------
 #define PS3MAPI_OPCODE_AUTO_DEV_BLIND		0x2221
 #define PS3MAPI_OPCODE_PHOTO_GUI			0x2222
-#define PS3MAPI_OPCODE_AUTO_EARTH			0x2223
 
 #define PS3MAPI_OPCODE_GET_FAN_SPEED		0x2233
 #define PS3MAPI_OPCODE_SET_FAN_SPEED		0x2235
@@ -170,12 +169,11 @@ int ps3mapi_disable_syscall(int num);
 //-----------------------------------------------
 
 #define PS3MAPI_OPCODE_CHECK_QA 			0x2242
-#define PS3MAPI_OPCODE_ENABLE_QA 			0x2243
-#define PS3MAPI_OPCODE_DISABLE_QA 			0x2244
+#define PS3MAPI_OPCODE_SET_QA	 			0x2243
 
-int ps3mapi_get_idps(uint64_t *idps);
-int ps3mapi_set_idps(uint64_t part1, uint64_t part2);
-int ps3mapi_get_psid(uint64_t *psid);
-int ps3mapi_set_psid(uint64_t part1, uint64_t part2);
+int ps3mapi_get_idps(u64 *idps);
+int ps3mapi_set_idps(u64 part1, u64 part2);
+int ps3mapi_get_psid(u64 *psid);
+int ps3mapi_set_psid(u64 part1, u64 part2);
 
 #endif /* __PS3MAPI_H__ */

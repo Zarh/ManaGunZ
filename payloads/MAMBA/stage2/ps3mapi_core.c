@@ -37,17 +37,17 @@ int ps3mapi_get_fw_type(char *fw)
 
 int ps3mapi_get_all_processes_pid(process_id_t *pid_list)
 {
-	uint32_t tmp_pid_list[MAX_PROCESS];
-	uint64_t *proc_list = *(uint64_t **)MKA(TOC + process_rtoc_entry_1);
-	proc_list = *(uint64_t **)proc_list;
-	proc_list = *(uint64_t **)proc_list;
+	u32 tmp_pid_list[MAX_PROCESS];
+	u64 *proc_list = *(u64 **)MKA(TOC + process_rtoc_entry_1);
+	proc_list = *(u64 **)proc_list;
+	proc_list = *(u64 **)proc_list;
 
 	for (int i = 0; i < MAX_PROCESS; i++)
 	{
 		process_t process = (process_t)proc_list[1];
 		proc_list += 2;
 
-		if ((((uint64_t)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
+		if ((((u64)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
 		{
 			tmp_pid_list[i] = 0;
 			continue;
@@ -65,16 +65,16 @@ int ps3mapi_get_all_processes_pid(process_id_t *pid_list)
 
 process_t ps3mapi_internal_get_process_by_pid(process_id_t pid)
 {
-	uint64_t *proc_list = *(uint64_t **)MKA(TOC+process_rtoc_entry_1);
-	proc_list = *(uint64_t **)proc_list;
-	proc_list = *(uint64_t **)proc_list;
+	u64 *proc_list = *(u64 **)MKA(TOC+process_rtoc_entry_1);
+	proc_list = *(u64 **)proc_list;
+	proc_list = *(u64 **)proc_list;
 
 	for (int i = 0; i < MAX_PROCESS; i++)
 	{
 		process_t process = (process_t)proc_list[1];
 		proc_list += 2;
 
-		if ((((uint64_t)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
+		if ((((u64)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
 			continue;
 		if (process->pid == pid)
 			return process;
@@ -97,16 +97,16 @@ int ps3mapi_get_process_name_by_pid(process_id_t pid, char *name)
 
 int ps3mapi_get_process_by_pid(process_id_t pid, process_t process)
 {
-	uint64_t *proc_list = *(uint64_t **)MKA(TOC+process_rtoc_entry_1);
-	proc_list = *(uint64_t **)proc_list;
-	proc_list = *(uint64_t **)proc_list;
+	u64 *proc_list = *(u64 **)MKA(TOC+process_rtoc_entry_1);
+	proc_list = *(u64 **)proc_list;
+	proc_list = *(u64 **)proc_list;
 
 	for (int i = 0; i < MAX_PROCESS; i++)
 	{
 		process_t p = (process_t)proc_list[1];
 		proc_list += 2;
 
-		if ((((uint64_t)p) & 0xFFFFFFFF00000000ULL) != MKA(0))
+		if ((((u64)p) & 0xFFFFFFFF00000000ULL) != MKA(0))
 			continue;
 		if (p->pid == pid)
 			return copy_to_user(&p, get_secure_user_ptr(process), sizeof(process_t));
@@ -141,7 +141,7 @@ int ps3mapi_get_current_process(process_t process)
 //MEMORY
 //-----------------------------------------------
 
-int ps3mapi_set_process_mem(process_id_t pid, uint64_t addr, char *buf, int size)
+int ps3mapi_set_process_mem(process_id_t pid, u64 addr, char *buf, int size)
 {
 	process_t process = ps3mapi_internal_get_process_by_pid(pid);
 
@@ -155,7 +155,7 @@ int ps3mapi_set_process_mem(process_id_t pid, uint64_t addr, char *buf, int size
 #endif
 }
 
-int ps3mapi_get_process_mem(process_id_t pid, uint64_t addr, char *buf, int size)
+int ps3mapi_get_process_mem(process_id_t pid, u64 addr, char *buf, int size)
 {
 	process_t process = ps3mapi_internal_get_process_by_pid(pid);
 
@@ -179,7 +179,7 @@ int ps3mapi_get_process_mem(process_id_t pid, uint64_t addr, char *buf, int size
 
 // TheRouletteBoi
 #ifdef mmapper_flags_temp_patch
-int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page_size, uint64_t flags, uint64_t is_executable, uint64_t *page_address)
+int ps3mapi_process_page_allocate(process_id_t pid, u64 size, u64 page_size, u64 flags, u64 is_executable, u64 *page_address)
 {
 	process_t process = ps3mapi_internal_get_process_by_pid(pid);
 
@@ -205,8 +205,8 @@ int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page
 	}
 	else
 	{
-		uint64_t addr = MKA(mmapper_flags_temp_patch);
-		*(uint32_t *)(addr) = 0x3B804004; // li r28, 0x4004
+		u64 addr = MKA(mmapper_flags_temp_patch);
+		*(u32 *)(addr) = 0x3B804004; // li r28, 0x4004
 		clear_icache((void *)addr, 4);
 
 		ret = page_export_to_proc(process, kbuf, 0x40000, &vbuf);
@@ -217,12 +217,12 @@ int ps3mapi_process_page_allocate(process_id_t pid, uint64_t size, uint64_t page
 			return ENOMEM;
 		}
 
-		*(uint32_t *)(addr) = 0x3B804000; // li r28, 0x4000
+		*(u32 *)(addr) = 0x3B804000; // li r28, 0x4000
 		clear_icache((void *)addr, 4);
 	}
 
-	uint64_t temp_address = (uint64_t)vbuf;
-	ret = copy_to_user(&temp_address, get_secure_user_ptr(page_address), sizeof(uint64_t));
+	u64 temp_address = (u64)vbuf;
+	ret = copy_to_user(&temp_address, get_secure_user_ptr(page_address), sizeof(u64));
 
 	if (ret) // (ret != SUCCEEDED)
 	{
@@ -249,10 +249,10 @@ int ps3mapi_get_all_process_modules_prx_id(process_id_t pid, sys_prx_id_t *prx_i
 	if (process <= 0)
 		return ESRCH;
 
-	uint32_t *unk;
-	uint32_t n, unk2;
+	u32 *unk;
+	u32 n, unk2;
 
-	unk = kalloc(MAX_MODULES*sizeof(uint32_t));
+	unk = kalloc(MAX_MODULES*sizeof(u32));
 	if (!unk) return ENOMEM;
 
 	sys_prx_id_t list[MAX_MODULES];
@@ -381,7 +381,7 @@ int ps3mapi_get_process_module_filename_by_prx_id(process_id_t pid, sys_prx_id_t
 #define PS3MAPI_FIND_FREE_SLOT		0
 #define MAX_VSH_PLUGINS 			7
 
-int ps3mapi_get_vsh_plugin_slot_by_name(const char *name, uint8_t unload)
+int ps3mapi_get_vsh_plugin_slot_by_name(const char *name, u8 unload)
 {
 	char *tmp_name = kalloc(30);
 	if (!tmp_name)
@@ -391,7 +391,7 @@ int ps3mapi_get_vsh_plugin_slot_by_name(const char *name, uint8_t unload)
 	if (!tmp_filename)
 		{kfree(tmp_name); return ENOMEM;}
 
-	uint8_t find_free_slot = (!name || (*name == PS3MAPI_FIND_FREE_SLOT));
+	u8 find_free_slot = (!name || (*name == PS3MAPI_FIND_FREE_SLOT));
 
 	unsigned int slot;
 	for (slot = 1; slot < MAX_VSH_PLUGINS; slot++)
@@ -419,7 +419,7 @@ int ps3mapi_get_vsh_plugin_slot_by_name(const char *name, uint8_t unload)
 	return slot;
 }
 
-int ps3mapi_load_process_modules(process_id_t pid, char *path, void *arg, uint32_t arg_size)
+int ps3mapi_load_process_modules(process_id_t pid, char *path, void *arg, u32 arg_size)
 {
 	process_t process = ps3mapi_internal_get_process_by_pid(pid);
 
@@ -450,9 +450,9 @@ int ps3mapi_load_process_modules(process_id_t pid, char *path, void *arg, uint32
 		vbuf = NULL;
 
 	if(!strncmp(path, "/dev_flash/", 11) || !strncmp(path, "/dev_hdd0/z", 11))
-		ret = prx_start_modules(prx, process, 0, (uint64_t)vbuf);	// <- this will load system modules //by haxxxen
+		ret = prx_start_modules(prx, process, 0, (u64)vbuf);	// <- this will load system modules //by haxxxen
 	else
-		ret = prx_start_module_with_thread(prx, process, 0, (uint64_t)vbuf);	// <- this will load custom modules
+		ret = prx_start_module_with_thread(prx, process, 0, (u64)vbuf);	// <- this will load custom modules
 
 	if (vbuf)
 	{
@@ -488,7 +488,7 @@ int ps3mapi_unload_process_modules(process_id_t pid, sys_prx_id_t prx_id)
 //THREAD
 //-----------------------------------------------
 
-int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entry, uint64_t arg, int prio, size_t stacksize, char *threadname) // TheRouletteBoi
+int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entry, u64 arg, int prio, size_t stacksize, char *threadname) // TheRouletteBoi
 {
 	process_t process = ps3mapi_internal_get_process_by_pid(pid);
 
@@ -500,7 +500,7 @@ int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entr
 	threadname = get_secure_user_ptr(threadname);
 
 	int ret;
-	uint64_t exit_code;
+	u64 exit_code;
 
 	ret = ppu_user_thread_create(process, thread, entry, arg, prio, stacksize, PPU_THREAD_CREATE_JOINABLE, (const char *)threadname);
 
@@ -518,20 +518,14 @@ int ps3mapi_create_process_thread(process_id_t pid, thread_t *thread, void *entr
 
 int ps3mapi_check_syscall(int num)
 {
-	uint64_t sc_null = *(uint64_t *)MKA(syscall_table_symbol);
-	if (*(uint64_t *)MKA(syscall_table_symbol + (8 * num)) != sc_null)
-	{
-		uint64_t syscall_not_impl = *(uint64_t *)sc_null;
-		if ((*(uint64_t *)MKA(syscall_table_symbol + (8 * num))) != syscall_not_impl)
-			return SUCCEEDED;
-	}
-	return ENOSYS;
+	u64 sc_null = *(u64 *)MKA(syscall_table_symbol);
+	return *(u64 *)MKA(syscall_table_symbol + (8 * num)) != sc_null ? SUCCEEDED : ENOSYS;
 }
 
 int ps3mapi_disable_syscall(int num)
 {
-	uint64_t syscall_not_impl = *(uint64_t *)MKA(syscall_table_symbol);
-	*(uint64_t *)MKA(syscall_table_symbol + 8 * num) = syscall_not_impl;
+	u64 syscall_not_impl = *(u64 *)MKA(syscall_table_symbol);
+	*(u64 *)MKA(syscall_table_symbol + 8 * num) = syscall_not_impl;
 	return SUCCEEDED;
 }
 
@@ -539,55 +533,55 @@ int ps3mapi_disable_syscall(int num)
 //PSID/IDPS
 //-----------------------------------------------
 
-int ps3mapi_get_idps(uint64_t *idps)
+int ps3mapi_get_idps(u64 *idps)
 {
 	if (!PS3MAPI_IDPS_1)
 		return ESRCH;
 
-	uint64_t idps_tmp[2];
-	idps_tmp[0] = *(uint64_t *)PS3MAPI_IDPS_1;
-	idps_tmp[1] = *(uint64_t *)(PS3MAPI_IDPS_1 + 8);
+	u64 idps_tmp[2];
+	idps_tmp[0] = *(u64 *)PS3MAPI_IDPS_1;
+	idps_tmp[1] = *(u64 *)(PS3MAPI_IDPS_1 + 8);
 
 	return copy_to_user(&idps_tmp, get_secure_user_ptr(idps), sizeof(idps_tmp));
 }
 
 
-int ps3mapi_set_idps(uint64_t part1, uint64_t part2)
+int ps3mapi_set_idps(u64 part1, u64 part2)
 {
 	if (!PS3MAPI_IDPS_1)
 		return ESRCH;
 
-	*(uint64_t *)PS3MAPI_IDPS_1 = part1;
-	*(uint64_t *)(PS3MAPI_IDPS_1 + 8) = part2;
+	*(u64 *)PS3MAPI_IDPS_1 = part1;
+	*(u64 *)(PS3MAPI_IDPS_1 + 8) = part2;
 
 	if (!PS3MAPI_IDPS_2)
 		return ESRCH;
 
-	*(uint64_t *)PS3MAPI_IDPS_2 = part1;
-	*(uint64_t *)(PS3MAPI_IDPS_2 + 8) = part2;
+	*(u64 *)PS3MAPI_IDPS_2 = part1;
+	*(u64 *)(PS3MAPI_IDPS_2 + 8) = part2;
 
 	return SUCCEEDED;
 }
 
-int ps3mapi_get_psid(uint64_t *psid)
+int ps3mapi_get_psid(u64 *psid)
 {
 	if (!PS3MAPI_PSID)
 		return ESRCH;
 
-	uint64_t psid_tmp[2];
-	psid_tmp[0] = *(uint64_t *)PS3MAPI_PSID;
-	psid_tmp[1] = *(uint64_t *)(PS3MAPI_PSID + 8);
+	u64 psid_tmp[2];
+	psid_tmp[0] = *(u64 *)PS3MAPI_PSID;
+	psid_tmp[1] = *(u64 *)(PS3MAPI_PSID + 8);
 
 	return copy_to_user(&psid_tmp, get_secure_user_ptr(psid), sizeof(psid_tmp));
 }
 
-int ps3mapi_set_psid(uint64_t part1, uint64_t part2)
+int ps3mapi_set_psid(u64 part1, u64 part2)
 {
 	if (!PS3MAPI_PSID)
 		return ESRCH;
 
-	*(uint64_t *)PS3MAPI_PSID = part1;
-	*(uint64_t *)(PS3MAPI_PSID+8) = part2;
+	*(u64 *)PS3MAPI_PSID = part1;
+	*(u64 *)(PS3MAPI_PSID+8) = part2;
 
 	return SUCCEEDED;
 }

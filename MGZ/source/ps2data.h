@@ -267,5 +267,11 @@
 #include "ps2gxemu_stage2_487C_bin.h"
 #include "ps2netemu_stage2_487C_bin.h"
 
+#include "ps2hwemu_stage1_488C_bin.h"
+#include "ps2hwemu_stage2_488C_bin.h"
+#include "ps2gxemu_stage1_488C_bin.h"
+#include "ps2gxemu_stage2_488C_bin.h"
+#include "ps2netemu_stage2_488C_bin.h"
+
 
 #endif /* __PS2DATA_H__ */

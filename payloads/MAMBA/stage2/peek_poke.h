@@ -2,7 +2,7 @@
 // LV1 / LV2 SYSCALLS PEEK/POKE/CALL
 //----------------------------------------
 
-LV2_SYSCALL2(uint64_t, sys_cfw_lv1_peek, (uint64_t lv1_addr))
+LV2_SYSCALL2(u64, sys_cfw_lv1_peek, (u64 lv1_addr))
 {
 	#ifdef DEBUG
 	DPRINTF("lv1_peek %p\n", (void*)lv1_addr);
@@ -11,7 +11,7 @@ LV2_SYSCALL2(uint64_t, sys_cfw_lv1_peek, (uint64_t lv1_addr))
 	return lv1_peekd(lv1_addr);
 }
 
-LV2_SYSCALL2(void, sys_cfw_lv1_poke, (uint64_t lv1_addr, uint64_t lv1_value))
+LV2_SYSCALL2(void, sys_cfw_lv1_poke, (u64 lv1_addr, u64 lv1_value))
 {
 	#ifdef DEBUG
 	DPRINTF("LV1 poke %p %016lx\n", (void*)lv1_addr, lv1_value);
@@ -20,7 +20,7 @@ LV2_SYSCALL2(void, sys_cfw_lv1_poke, (uint64_t lv1_addr, uint64_t lv1_value))
 	lv1_poked(lv1_addr, lv1_value);
 }
 
-LV2_SYSCALL2(void, sys_cfw_lv1_call, (uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5, uint64_t a6, uint64_t a7, uint64_t num))
+LV2_SYSCALL2(void, sys_cfw_lv1_call, (u64 a1, u64 a2, u64 a3, u64 a4, u64 a5, u64 a6, u64 a7, u64 num))
 {
 	/* DO NOT modify */
 	asm("mflr 0\n");
@@ -32,7 +32,7 @@ LV2_SYSCALL2(void, sys_cfw_lv1_call, (uint64_t a1, uint64_t a2, uint64_t a3, uin
 	asm("blr\n");
 }
 
-LV2_SYSCALL2(void, sys_cfw_lv2_func, (uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5, uint64_t a6, uint64_t a7, uint64_t num))
+LV2_SYSCALL2(void, sys_cfw_lv2_func, (u64 a1, u64 a2, u64 a3, u64 a4, u64 a5, u64 a6, u64 a7, u64 num))
 {
 	/* DO NOT modify */
 	asm("mflr 0\n");
@@ -49,21 +49,21 @@ LV2_SYSCALL2(void, sys_cfw_lv2_func, (uint64_t a1, uint64_t a2, uint64_t a3, uin
 //LV2 SYSCALL PEEK/POKE
 //----------------------------------------
 
-LV2_SYSCALL2(uint64_t, sys_cfw_peek, (uint64_t *addr))
+LV2_SYSCALL2(u64, sys_cfw_peek, (u64 *addr))
 {
 	#ifdef DEBUG
 	DPRINTF("peek %p\n", addr);
 	#endif
 
-	uint64_t ret = *addr;
+	u64 ret = *addr;
 
 	// Fix compatibilty issue with prx loader (before v1.08 [U]). It searches for a string... that is also in this payload, and then lv2_peek((vsh_str + 0x70)) crashes the system.
 	if (ret == 0x5F6D61696E5F7673)
 	{
-		extern uint64_t _start;
-		extern uint64_t __self_end;
+		extern u64 _start;
+		extern u64 __self_end;
 
-		if ((uint64_t)addr >= (uint64_t)&_start && (uint64_t)addr < (uint64_t)&__self_end)
+		if ((u64)addr >= (u64)&_start && (u64)addr < (u64)&__self_end)
 		{
 			#ifdef DEBUG
 			DPRINTF("peek to addr %p blocked for compatibility.\n", addr);
@@ -75,9 +75,9 @@ LV2_SYSCALL2(uint64_t, sys_cfw_peek, (uint64_t *addr))
 	return ret;
 }
 
-void _sys_cfw_poke(uint64_t *addr, uint64_t value);
+void _sys_cfw_poke(u64 *addr, u64 value);
 
-LV2_HOOKED_FUNCTION(void, sys_cfw_new_poke, (uint64_t *addr, uint64_t value))
+LV2_HOOKED_FUNCTION(void, sys_cfw_new_poke, (u64 *addr, u64 value))
 {
 	#ifdef DEBUG
 	DPRINTF("New poke called %p %016lx\n", addr, value);
@@ -87,7 +87,7 @@ LV2_HOOKED_FUNCTION(void, sys_cfw_new_poke, (uint64_t *addr, uint64_t value))
 	asm volatile("icbi 0,%0; isync" :: "r"(addr));
 }
 
-LV2_HOOKED_FUNCTION(void *, sys_cfw_memcpy, (void *dst, void *src, uint64_t len))
+LV2_HOOKED_FUNCTION(void *, sys_cfw_memcpy, (void *dst, void *src, u64 len))
 {
 	#ifdef DEBUG
 	DPRINTF("sys_cfw_memcpy: %p %p 0x%lx\n", dst, src, len);
@@ -95,22 +95,22 @@ LV2_HOOKED_FUNCTION(void *, sys_cfw_memcpy, (void *dst, void *src, uint64_t len)
 
 	if (len == 8)
 	{
-		_sys_cfw_poke(dst, *(uint64_t *)src);
+		_sys_cfw_poke(dst, *(u64 *)src);
 		return dst;
 	}
 
 	return memcpy(dst, src, len);
 }
 
-static uint8_t isLoadedFromIrisManager = 0;
+static u8 isLoadedFromIrisManager = 0;
 
-int64_t syscall8(uint64_t function, uint64_t param1, uint64_t param2, uint64_t param3, uint64_t param4, uint64_t param5, uint64_t param6, uint64_t param7);
+int64_t syscall8(u64 function, u64 param1, u64 param2, u64 param3, u64 param4, u64 param5, u64 param6, u64 param7);
 f_desc_t extended_syscall8;
 static void *current_813;
 
-LV2_SYSCALL2(void, sys_cfw_poke, (uint64_t *ptr, uint64_t value))
+LV2_SYSCALL2(void, sys_cfw_poke, (u64 *ptr, u64 value))
 {
-	uint64_t addr = (uint64_t)ptr;
+	u64 addr = (u64)ptr;
 
 	#ifdef DEBUG
 	DPRINTF("poke %016lx %016lx\n", addr, value);
@@ -118,19 +118,19 @@ LV2_SYSCALL2(void, sys_cfw_poke, (uint64_t *ptr, uint64_t value))
 
 	if (addr >= MKA(syscall_table_symbol))
 	{
-		uint64_t syscall_num = (addr-MKA(syscall_table_symbol)) / 8;
+		u64 syscall_num = (addr-MKA(syscall_table_symbol)) / 8;
 
 		if ((syscall_num >= 6 && syscall_num <= 10) || syscall_num == 35)//Rewrite protection
 		{
-			uint64_t sc_null = *(uint64_t *)MKA(syscall_table_symbol);
-			uint64_t syscall_not_impl = *(uint64_t *)sc_null;
+			u64 sc_null = *(u64 *)MKA(syscall_table_symbol);
+			u64 syscall_not_impl = *(u64 *)sc_null;
 
 			if (syscall_num == 8 && (value & 0xFFFFFFFF00000000ULL) == MKA(0))
 			{
 				// Probably iris manager or similar
 				// Lets extend our syscall 8 so that it can call this other syscall 8
 				// First check if it is trying to restore our syscall8
-				if (*(uint64_t *)syscall8 == value)
+				if (*(u64 *)syscall8 == value)
 				{
 					#ifdef DEBUG
 					DPRINTF("Removing syscall 8 extension\n");
@@ -140,11 +140,11 @@ LV2_SYSCALL2(void, sys_cfw_poke, (uint64_t *ptr, uint64_t value))
 					return;
 				}
 
-				extended_syscall8.addr = (void *) *(uint64_t *)value;
+				extended_syscall8.addr = (void *) *(u64 *)value;
 				if (isLoadedFromIrisManager == 0)
-					extended_syscall8.toc = (void *) *(uint64_t *)(value+8);
+					extended_syscall8.toc = (void *) *(u64 *)(value+8);
 				else
-					extended_syscall8.toc = (void *) *(uint64_t *)(MKA(0x3000));
+					extended_syscall8.toc = (void *) *(u64 *)(MKA(0x3000));
 
 				#ifdef DEBUG
 				DPRINTF("Adding syscall 8 extension %p %p\n", extended_syscall8.addr, extended_syscall8.toc);
@@ -188,7 +188,7 @@ LV2_SYSCALL2(void, sys_cfw_poke, (uint64_t *ptr, uint64_t value))
 	}
 	else
 	{
-		uint64_t sc813 = get_syscall_address(813);
+		u64 sc813 = get_syscall_address(813);
 
 		if (addr == sc813)
 		{

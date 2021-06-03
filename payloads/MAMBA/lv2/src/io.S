@@ -25,6 +25,10 @@ LV2_FUNCTION(cellFsLseek, cellFsLseek_symbol)
 LV2_FUNCTION(cellFsStat, cellFsStat_symbol)
 #endif
 
+#ifdef cellFsMkdir_symbol
+LV2_FUNCTION(cellFsMkdir, cellFsMkdir_symbol)
+#endif
+
 #ifdef cellFsUtime_symbol
 LV2_FUNCTION(cellFsUtime, cellFsUtime_symbol)
 #endif

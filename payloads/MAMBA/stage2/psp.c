@@ -14,13 +14,13 @@
 #include "psp.h"
 #include "modulespatch.h"
 
-uint32_t psp_tag;
-uint8_t  psp_keys[0x10];
-uint8_t  psp_code;
+u32 psp_tag;
+u8  psp_keys[0x10];
+u8  psp_code;
 //char pspemu_path[36];
 //char psptrans_path[37];
 
-static uint32_t base_offset = 0;
+static u32 base_offset = 0;
 
 #define SPRX_NUM		90
 #define NUM_SCE_PSP_MODULES	5
@@ -39,9 +39,9 @@ static mutex_t mutex;
 static int user_mutex;
 static int umd_fd=-1;
 static char psp_id[11];
-static uint64_t pemucorelib_base;
-static uint64_t emulator_api_base;
-static uint32_t *savedata_param;
+static u64 pemucorelib_base;
+static u64 emulator_api_base;
+static u32 *savedata_param;
 
 /* vsh.self */
 static SprxPatch psp_drm_patches[] =
@@ -60,7 +60,7 @@ static SprxPatch psp_drm_patches[] =
 };
 
 static SprxPatch *patches_backup;
-static uint64_t psp_extra_drm_fix = 0xDEADFACE;
+static u64 psp_extra_drm_fix = 0xDEADFACE;
 
 static INLINE void psp_patches_type()
 {
@@ -118,7 +118,7 @@ static INLINE int get_psp_patches()
 	patches_found = 0;
 
 	int i = 0, n = 0, mv_offset = 0;
-	uint64_t value = 0, value2 = 0, addr = 0;
+	u64 value = 0, value2 = 0, addr = 0;
 
 	psp_patches_type();
 
@@ -424,9 +424,9 @@ static INLINE int get_psp_patches()
 	return EINVAL;
 }
 
-static INLINE uint32_t swap32(uint32_t data)
+static INLINE u32 swap32(u32 data)
 {
-	uint32_t ret = (((data) & 0xff) << 24);
+	u32 ret = (((data) & 0xff) << 24);
 	ret |= (((data) & 0xff00) << 8);
 	ret |= (((data) & 0xff0000) >> 8);
 	ret |= (((data) >> 24) & 0xff);
@@ -436,7 +436,7 @@ static INLINE uint32_t swap32(uint32_t data)
 
 static INLINE uint16_t swap16(uint16_t data)
 {
-	uint32_t ret = (data<<8)&0xFF00;
+	u32 ret = (data<<8)&0xFF00;
 	ret |= ((data>>8)&0xFF);
 
 	return ret;
@@ -453,13 +453,13 @@ static INLINE __attribute__((unused)) int is_sce_psp_module(char *name)
 	return 0;
 }
 
-int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
+int sys_psp_read_header(int fd, char *buf, u64 nbytes, u64 *nread)
 {
 	int ret;
-	uint32_t n, unk2;
-	uint64_t umd_size;
+	u32 n, unk2;
+	u64 umd_size;
 	sys_prx_id_t *list;
-	uint32_t *unk;
+	u32 *unk;
 	process_t process;
 
 	#ifdef DEBUG
@@ -475,7 +475,7 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 	pemucorelib_base = 0;
 	emulator_api_base = 0;
 	list = kalloc(SPRX_NUM * sizeof(sys_prx_module_info_t));
-	unk  = kalloc(SPRX_NUM * sizeof(uint32_t));
+	unk  = kalloc(SPRX_NUM * sizeof(u32));
 	process = get_current_process();
 
 	ret = prx_get_module_list(process, list, unk, SPRX_NUM, &n, &unk2);
@@ -534,9 +534,9 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 
 	// Fake header. We will write only values actually used
 	memset(buf, 0, 0x100);
-	*(uint32_t *)(buf + 0x0c) = 0x10;
-	*(uint32_t *)(buf + 0x64) = (umd_size/0x800)-1; // Last sector of umd
-	strncpy(buf+0x70, psp_id, 10);
+	*(u32 *)(buf + 0x0c) = 0x10;
+	*(u32 *)(buf + 0x64) = (umd_size/0x800)-1; // Last sector of umd
+	strncpy(buf + 0x70, psp_id, 10);
 
 	#ifdef DEBUG
 	DPRINTF("ID: %s\n", psp_id);
@@ -552,9 +552,9 @@ int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread)
 	return 0;
 }
 
-int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t size)
+int sys_psp_read_umd(int unk, void *buf, u64 sector, u64 ofs, u64 size)
 {
-	uint64_t offset, dummy;
+	u64 offset, dummy;
 	int ret;
 
 	#ifdef DEBUG
@@ -566,7 +566,7 @@ int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t
 		object_handle_t obj_handle;
 		void *object_table = get_current_process()->object_table;
 
-		int ret = open_kernel_object(object_table, *(uint32_t *)(emulator_api_base+umd_mutex_offset), (void **)&mutex, &obj_handle, SYS_MUTEX_OBJECT);
+		int ret = open_kernel_object(object_table, *(u32 *)(emulator_api_base+umd_mutex_offset), (void **)&mutex, &obj_handle, SYS_MUTEX_OBJECT);
 
 		if (ret) // (ret != SUCCEEDED)
 		{
@@ -712,14 +712,14 @@ int sys_psp_set_umdfile(char *file, char *id, int prometheus)
 			lv1_pokew(psp_drm_patches[i].offset, psp_drm_patches[i].data);
 
 			#ifdef DEBUG
-			DPRINTF("Offset: 0x%08X | Poked Data: 0x%08X | Original Data: 0x%08X\n", (uint32_t)psp_drm_patches[i].offset, (uint32_t)psp_drm_patches[i].data, (uint32_t)patches_backup[i].data);
+			DPRINTF("Offset: 0x%08X | Poked Data: 0x%08X | Original Data: 0x%08X\n", (u32)psp_drm_patches[i].offset, (u32)psp_drm_patches[i].data, (u32)patches_backup[i].data);
 			#endif
 		}
 	}
 	return 0;
 }
 
-int sys_psp_set_decrypt_options(int decrypt_patch, uint32_t tag, uint8_t *keys, uint8_t code, uint32_t tag2, uint8_t *keys2, uint8_t code2)
+int sys_psp_set_decrypt_options(int decrypt_patch, u32 tag, u8 *keys, u8 code, u32 tag2, u8 *keys2, u8 code2)
 {
 	if (!umd_file)
 		return EABORT;
@@ -740,7 +740,7 @@ int sys_psp_set_decrypt_options(int decrypt_patch, uint32_t tag, uint8_t *keys, 
 	return 0;
 }
 
-int sys_psp_prx_patch(uint32_t *unk, uint8_t *elf_buf, void *link_register)
+int sys_psp_prx_patch(u32 *unk, u8 *elf_buf, void *link_register)
 {
 	unk = get_secure_user_ptr(unk);
 	elf_buf = get_secure_user_ptr(elf_buf);
@@ -751,7 +751,7 @@ int sys_psp_prx_patch(uint32_t *unk, uint8_t *elf_buf, void *link_register)
 
 	if (link_register == (void *)(pemucorelib_base+prx_patch_call_lr))
 	{
-		if (*(uint32_t *)&elf_buf[0] == 0x7F454C46)
+		if (*(u32 *)&elf_buf[0] == 0x7F454C46)
 		{
 			Elf32_Ehdr *ehdr;
 			Elf32_Phdr *phdr;
@@ -838,7 +838,7 @@ Known values:
 0098 -> text size
 */
 
-int sys_psp_sony_bug(uint32_t *mips_registers, void *unk, uint32_t mips_PC)
+int sys_psp_sony_bug(u32 *mips_registers, void *unk, u32 mips_PC)
 {
 	DPRINTF("sys_psp_sony_bug, game is gonna crash\n");
 	DPRINTF("PSP registers info:\n");

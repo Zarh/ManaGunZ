@@ -63,35 +63,35 @@ static void get_rif_key(unsigned char *rap, unsigned char *key)
 	}
 }
 
-static uint8_t make_rif_buf[0x20 + 0x28 + 0x50 + 0x20 + 0x28]; // ACT_DAT[0x20] + CONTENT_ID[0x28] + RAP_PATH[0x50] + RIF_BUFFER[0x20] (rif_buffer reuse rap_path + 0x20 = 0x70) +0x28(signaturs)
+static u8 make_rif_buf[0x20 + 0x28 + 0x50 + 0x20 + 0x28]; // ACT_DAT[0x20] + CONTENT_ID[0x28] + RAP_PATH[0x50] + RIF_BUFFER[0x20] (rif_buffer reuse rap_path + 0x20 = 0x70) +0x28(signaturs)
 
 //////// make_rif memory allocation ////////////
-#define ALLOC_ACT_DAT	 (uint8_t*)(make_rif_buf)
+#define ALLOC_ACT_DAT	 (u8*)(make_rif_buf)
 #define ALLOC_CONTENT_ID	(char*)(make_rif_buf + 0x20)
 #define ALLOC_PATH_BUFFER	(char*)(make_rif_buf + 0x20 + 0x28)
-#define ALLOC_RIF_BUFFER (uint8_t*)(make_rif_buf + 0x20 + 0x28)
+#define ALLOC_RIF_BUFFER (u8*)(make_rif_buf + 0x20 + 0x28)
 ////////////////////////////////////////////////
 
-static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char *content_id, const char *rif_path)
+static void read_act_dat_and_make_rif(u8 *rap, u8 *act_dat, const char *content_id, const char *rif_path)
 {
 	int fd;
 	if(cellFsOpen(rif_path, CELL_FS_O_WRONLY | CELL_FS_O_CREAT | CELL_FS_O_TRUNC, &fd, 0666, NULL, 0) == CELL_FS_SUCCEEDED)
 	{
-		uint8_t idps_const[0x10]    = {0x5E,0x06,0xE0,0x4F,0xD9,0x4A,0x71,0xBF,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
-		uint8_t rif_key_const[0x10] = {0xDA,0x7D,0x4B,0x5E,0x49,0x9A,0x4F,0x53,0xB1,0xC1,0xA1,0x4A,0x74,0x84,0x44,0x3B};
+		u8 idps_const[0x10]    = {0x5E,0x06,0xE0,0x4F,0xD9,0x4A,0x71,0xBF,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
+		u8 rif_key_const[0x10] = {0xDA,0x7D,0x4B,0x5E,0x49,0x9A,0x4F,0x53,0xB1,0xC1,0xA1,0x4A,0x74,0x84,0x44,0x3B};
 
-		uint8_t *rif = ALLOC_RIF_BUFFER;
-		uint8_t *key_index = rif + 0x40;
-		uint8_t *rif_key   = rif + 0x50;
+		u8 *rif = ALLOC_RIF_BUFFER;
+		u8 *key_index = rif + 0x40;
+		u8 *rif_key   = rif + 0x50;
 		memset(rif, 0, 0x70);
 
 		get_rif_key(rap, rif_key); //convert rap to rifkey (klicensee)
 
-		uint8_t *iv = rif + 0x60;
+		u8 *iv = rif + 0x60;
 	//	memset(iv, 0, 0x10); // already done
 		aescbccfb_enc(idps_const, idps_const, 0x10, (void*)PS3MAPI_IDPS_2, IDPS_KEYBITS, iv);
 
-		uint8_t *act_dat_key = rap;
+		u8 *act_dat_key = rap;
 		memcpy(act_dat_key, act_dat + 0x10, 0x10);
 
 		clear_key(iv);
@@ -103,10 +103,10 @@ static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char
 		clear_key(iv);
 		aescbccfb_enc(key_index, key_index, 0x10, rif_key_const, RIF_KEYBITS, iv);
 
-		const uint32_t version_number = 1;
-		const uint32_t license_type = 0x00010002;
-		const uint64_t timestamp = 0x000001619BF6DDCA;
-		const uint64_t expiration_time = 0;
+		const u32 version_number = 1;
+		const u32 license_type = 0x00010002;
+		const u64 timestamp = 0x000001619BF6DDCA;
+		const u64 expiration_time = 0;
 
 		memcpy(rif,        &version_number,  4); // 0x00 version_number
 		memcpy(rif + 0x04, &license_type,    4); // 0x04 license_type
@@ -118,7 +118,7 @@ static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char
 		memcpy(rif + 0x68, &expiration_time, 8); // 0x68 expiration time
 		memset(rif + 0x70, 0x11, 0x28);			 // 0x70 ECDSA Signature
 
-		uint64_t size;
+		u64 size;
 		cellFsWrite(fd, rif, 0x98, &size);
 		cellFsClose(fd);
 	}
@@ -126,26 +126,26 @@ static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char
 #else
 #define KPLUGIN_ADDRESS		0x7f0000
 
-static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char *content_id, const char *rif_path)
+static void read_act_dat_and_make_rif(u8 *rap, u8 *act_dat, const char *content_id, const char *rif_path)
 {
 	CellFsStat stat;
 	if(cellFsStat("/dev_usb000/reactPSN.BIN",   &stat) /* != CELL_FS_SUCCEEDED */)
 	if(cellFsStat("/dev_usb001/reactPSN.BIN",   &stat) /* != CELL_FS_SUCCEEDED */)
 	if(cellFsStat("/dev_hdd0/hen/reactPSN.BIN", &stat) /* != CELL_FS_SUCCEEDED */) return;
 	{
-		uint64_t payload_size = stat.st_size; if(payload_size < 0x5000) return;
+		u64 payload_size = stat.st_size; if(payload_size < 0x5000) return;
 
 		int fd;
 		if(cellFsOpen("/dev_usb000/reactPSN.BIN",   CELL_FS_O_RDONLY, &fd, 0666, NULL, 0) /* != CELL_FS_SUCCEEDED */)
 		if(cellFsOpen("/dev_usb001/reactPSN.BIN",   CELL_FS_O_RDONLY, &fd, 0666, NULL, 0) /* != CELL_FS_SUCCEEDED */)
 		if(cellFsOpen("/dev_hdd0/hen/reactPSN.BIN", CELL_FS_O_RDONLY, &fd, 0666, NULL, 0) /* != CELL_FS_SUCCEEDED */) return;
 		{
-			uint64_t nread;
+			u64 nread;
 
 			f_desc_t f;
 			f.addr = (void*)MKA(KPLUGIN_ADDRESS); //malloc(payload_size);
 			f.toc = (void*)MKA(TOC);
-			int(*reactpsn_plugin)(uint8_t *idps,uint8_t *rap, uint8_t *act_dat, const char *content_id, const char *out) = (void *)&f;
+			int(*reactpsn_plugin)(u8 *idps,u8 *rap, u8 *act_dat, const char *content_id, const char *out) = (void *)&f;
 
 			cellFsRead(fd, f.addr, payload_size, &nread);
 			cellFsClose(fd);
@@ -154,7 +154,7 @@ static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char
 			DPRINTF("calling reactPSN.BIN %s -> %s\n", content_id, rif_path);
 			#endif
 
-			uint8_t idps[0x10];
+			u8 idps[0x10];
 			memcpy(idps, (void*)PS3MAPI_IDPS_2, 0x10);
 
 			if(payload_size == nread) reactpsn_plugin(idps, rap, act_dat, content_id, rif_path);
@@ -164,7 +164,7 @@ static void read_act_dat_and_make_rif(uint8_t *rap, uint8_t *act_dat, const char
 }
 #endif
 
-uint8_t skip_existing_rif = 1;
+u8 skip_existing_rif = 1;
 
 static void make_rif(const char *path)
 {
@@ -188,17 +188,22 @@ static void make_rif(const char *path)
 
 		char *rap_path = ALLOC_PATH_BUFFER;
 
-		uint8_t is_ps2_classic = !strcmp(content_id, "2P0001-PS2U10000_00-0000111122223333");
+		u8 is_ps2_classic = !strcmp(content_id, "2P0001-PS2U10000_00-0000111122223333");
 
 		if(!is_ps2_classic)
 		{
-			sprintf(rap_path, "/dev_usb000/exdata/%.36s.rap", content_id);
+			const char *ext = ".rap";
+			for(u8 i = 0; i < 2; i++)
+			{
+				sprintf(rap_path, "/dev_usb000/exdata/%.36s%s", content_id, ext);
 			if(cellFsStat(rap_path, &stat) /* != CELL_FS_SUCCEEDED */) {rap_path[10] = '1'; //usb001
-			if(cellFsStat(rap_path, &stat) /* != CELL_FS_SUCCEEDED */) sprintf(rap_path, "/dev_hdd0/exdata/%.36s.rap", content_id);}
+				if(cellFsStat(rap_path, &stat) /* != CELL_FS_SUCCEEDED */) sprintf(rap_path, "/dev_hdd0/exdata/%.36s%s", content_id, ext);}
+				if(cellFsStat(rap_path, &stat)) ext = ".RAP"; else break;
+			}
 		}
 
 		// default: ps2classic rap
-		uint8_t rap[0x10] = {0xF5, 0xDE, 0xCA, 0xBB, 0x09, 0x88, 0x4F, 0xF4, 0x02, 0xD4, 0x12, 0x3C, 0x25, 0x01, 0x71, 0xD9};
+		u8 rap[0x10] = {0xF5, 0xDE, 0xCA, 0xBB, 0x09, 0x88, 0x4F, 0xF4, 0x02, 0xD4, 0x12, 0x3C, 0x25, 0x01, 0x71, 0xD9};
 
 		if(is_ps2_classic || (read_file(rap_path, rap, 0x10) == 0x10))
 		{
@@ -214,7 +219,7 @@ static void make_rif(const char *path)
 			DPRINTF("act_path:%s content_id:%s\n", act_path, content_id);
 			#endif
 
-			uint8_t *act_dat = ALLOC_ACT_DAT;
+			u8 *act_dat = ALLOC_ACT_DAT;
 			if(read_file(act_path, act_dat, 0x20) == 0x20)
 			{
 				char *rif_path = ALLOC_PATH_BUFFER;

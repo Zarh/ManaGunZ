@@ -1,6 +1,6 @@
 #define kplugin_base_address	0x80000000007f0000
 
-int inst_and_run_kernel(uint8_t *payload, int size)
+int inst_and_run_kernel(u8 *payload, int size)
 {
 	if((size < 4) || (size > KB(64)))
 		return EINVAL;
@@ -20,7 +20,7 @@ int inst_and_run_kernel(uint8_t *payload, int size)
 	return SUCCEEDED;
 }
 
-int inst_and_run_kernel_dynamic(uint8_t *payload, int size, uint64_t *residence)
+int inst_and_run_kernel_dynamic(u8 *payload, int size, u64 *residence)
 {
 	if(size < 4)
 		return EINVAL;
@@ -42,7 +42,7 @@ int inst_and_run_kernel_dynamic(uint8_t *payload, int size, uint64_t *residence)
 		func = (void *)&f;
 		func();
 
-		uint64_t resident = (uint64_t)skprx;
+		u64 resident = (u64)skprx;
 		copy_to_user(&resident, get_secure_user_ptr(residence), 8);
 
 		return SUCCEEDED;
@@ -51,10 +51,10 @@ int inst_and_run_kernel_dynamic(uint8_t *payload, int size, uint64_t *residence)
 	return FAILED;
 }
 
-int unload_plugin_kernel(uint64_t residence)
+int unload_plugin_kernel(u64 residence)
 {
 	if(residence)
-		free((uint64_t *)residence);
+		free((u64 *)residence);
 
 	return SUCCEEDED;
 }

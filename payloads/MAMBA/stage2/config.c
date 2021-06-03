@@ -15,23 +15,20 @@
 MambaConfig config;
 
 #ifdef FAN_CONTROL
-extern uint8_t set_fan_speed;		// fan_control.h
+extern u8 set_fan_speed;		// fan_control.h
 void load_fan_control(void);
 #endif
 #ifdef DO_AUTO_MOUNT_DEV_BLIND
-extern uint8_t auto_dev_blind;		// homebrew_blocker.h
+extern u8 auto_dev_blind;		// homebrew_blocker.h
 #endif
 #ifdef DO_AUTO_RESTORE_SC
-extern uint8_t allow_restore_sc;	// homebrew_blocker.h
+extern u8 allow_restore_sc;	// homebrew_blocker.h
 #endif
 #ifdef DO_PHOTO_GUI
-extern uint8_t photo_gui;			// mappath.c
-#endif
-#ifdef DO_AUTO_EARTH
-extern uint8_t auto_earth;			// mappath.c
+extern u8 photo_gui;			// mappath.c
 #endif
 #ifdef MAKE_RIF
-extern uint8_t skip_existing_rif;	// make_rif.h;
+extern u8 skip_existing_rif;	// make_rif.h;
 #endif
 
 static void check_and_correct(MambaConfig *cfg)
@@ -93,7 +90,7 @@ static void check_and_correct(MambaConfig *cfg)
 /*
 static uint16_t checksum(MambaConfig *cfg)
 {
-	uint8_t *buf = &cfg->bd_video_region;
+	u8 *buf = &cfg->bd_video_region;
 	uint16_t size = cfg->size - sizeof(cfg->size) - sizeof(cfg->checksum);
 	uint16_t cs = 0;
 
@@ -125,9 +122,6 @@ int read_mamba_config(void)
 	#endif
 	#ifdef DO_PHOTO_GUI
 	photo_gui        = config.photo_gui;		// 1 = Allow Photo GUI				 | 0 = Does not allow Photo GUI
-	#endif
-	#ifdef DO_AUTO_EARTH
-	auto_earth       = config.auto_earth;		// 1 = Allow auto-map earth.qrc      | 0 = Does not allow auto-map earth.qrc
 	#endif
 	#ifdef FAN_CONTROL
 	set_fan_speed    = config.fan_speed;		// 1 = DISABLED, 1 = SYSCON, 2 = Dynamic Fan Controller, 0x33 to 0xFF = Set manual fan speed
@@ -198,9 +192,6 @@ int sys_write_mamba_config(MambaConfig *cfg)
 	#endif
 	#ifdef DO_PHOTO_GUI
 	photo_gui = config.photo_gui;
-	#endif
-	#ifdef DO_AUTO_EARTH
-	auto_earth = config.auto_earth
 	#endif
 	#ifdef DO_AUTO_MOUNT_DEV_BLIND
 	auto_dev_blind = config.auto_dev_blind;

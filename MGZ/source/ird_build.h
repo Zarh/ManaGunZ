@@ -14,21 +14,8 @@
 #include "mgz_io.h"
 #include "ird_gz.h"
 #include "md5.h"
+#include "extern.h"
 
-#define SUCCESS		1
-#define FAILED 		0
-
-#define ENDIAN_SWAP_16(x)		(((x) & 0x00FF) << 8 | ((x) & 0xFF00) >> 8)
-#define ENDIAN_SWAP_32(x)		(((x) & 0x000000FF) << 24 | ((x) & 0x0000FF00) << 8 | \
-								 ((x) & 0x00FF0000) >>  8 | ((x) & 0xFF000000) >> 24  )
-#define ENDIAN_SWAP_64(x)		(((x) & 0x00000000000000FFULL) << 56 | ((x) & 0x000000000000FF00ULL) << 40 | \
-								 ((x) & 0x0000000000FF0000ULL) << 24 | ((x) & 0x00000000FF000000ULL) <<  8 | \
-								 ((x) & 0x000000FF00000000ULL) >>  8 | ((x) & 0x0000FF0000000000ULL) >> 24 | \
-								 ((x) & 0x00FF000000000000ULL) >> 40 | ((x) & 0xFF00000000000000ULL) >> 56 )
-#define ENDIAN_SWAP(x)			(sizeof(x) == 2 ? ENDIAN_SWAP_16(x) : (sizeof(x) == 4 ? ENDIAN_SWAP_32(x) : ENDIAN_SWAP_64(x)))
-
-#define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
-#define FCLOSE(x) 				if(x!=NULL) {fclose(x);x=NULL;}
 #define FREE_IRD(x)				if(x!=NULL) {                                                                  \
 									int o;                                                                     \
 									FREE(x->GameName);                                                         \
@@ -44,15 +31,6 @@
 #define SIZEOF_IRD(x)  (4+1+9+1+x->GameName_length+4+5+5+4+x->HeaderLength+4+x->FooterLength+\
 						1+x->RegionHashesNumber*0x10+4+x->FileHashesNumber*(0x8+0x10)+2+2+\
 						0x73+0x10+0x10+4+4)
-
-
-#define print_debug(...) if( DEBUG ) print_load(__VA_ARGS__)
-#define printf		  print_load
-#define print_verbose print_debug
-
-extern u8 DEBUG;
-extern void print_load(char *format, ...);
-extern void Delete(char* path);
 
 typedef struct
 {

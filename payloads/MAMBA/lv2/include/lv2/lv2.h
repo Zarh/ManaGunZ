@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <lv1/inttypes.h>
 
 #ifdef __cplusplus
 #define LONGCALL extern "C" __attribute__((longcall))

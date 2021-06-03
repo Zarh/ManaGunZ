@@ -16,7 +16,7 @@ static INLINE void get_rebug_vsh()
 	#endif
 }
 
-uint64_t vsh_offset = vsh_pos_in_ram;
+u64 vsh_offset = vsh_pos_in_ram;
 
 static INLINE int get_vsh_offset()
 {
@@ -78,11 +78,11 @@ static INLINE int ps2_vsh_patches()
 	if(vsh_offset == 0)
 		return EINVAL;
 
-	uint64_t addr = 0, addr2 = 0;
+	u64 addr = 0, addr2 = 0;
 	int i = 0, mv_offset = 0;
 
 	#ifdef ps2tonet_patch
-	uint64_t ps2tonet = ps2tonet_patch, ps2tonet_size = ps2tonet_size_patch;
+	u64 ps2tonet = ps2tonet_patch, ps2tonet_size = ps2tonet_size_patch;
 
 	if(vsh_type == 0xCE)
 	{
@@ -107,7 +107,7 @@ static INLINE int ps2_vsh_patches()
 
 	//Find ps2tonet_patch patches
 	//First try with static offset..
-	uint64_t value = 0;
+	u64 value = 0;
 	addr = (vsh_offset + ps2tonet_size);
 	addr2 = (vsh_offset + ps2tonet);
 

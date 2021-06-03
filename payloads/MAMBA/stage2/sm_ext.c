@@ -11,14 +11,14 @@
 static int patch_done = 0;
 static int is_reboot = 0;
 
-LV2_HOOKED_FUNCTION_COND_POSTCALL_4(int, send_poweroff_event, (uint64_t *event_data1, uint64_t *event_data2, uint64_t *event_data3, uint32_t unk))
+LV2_HOOKED_FUNCTION_COND_POSTCALL_4(int, send_poweroff_event, (u64 *event_data1, u64 *event_data2, u64 *event_data3, u32 unk))
 {
 	process_t p = get_current_process_critical();
 
 	if (!vsh_process) vsh_process = get_vsh_process(); //NzV
 	if (p == vsh_process)
 	{
-		uint64_t data1, data2, data3;
+		u64 data1, data2, data3;
 
 		if (is_reboot)
 		{

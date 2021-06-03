@@ -227,7 +227,7 @@ static void elt_copy(u8 *d, u8 *a)
 
 static int elt_is_zero(u8 *d)
 {
-	for (u32 i = 0; i < 20; i++)
+	for (u8 i = 0; i < 20; i++)
 		if (d[i])
 			return 0; // false
 
@@ -521,7 +521,7 @@ static int rif_fd = 0;  // *.rif
 static int act_fd = 0;  // act.dat
 static int edat_fd = 0; // *.edat or CONFIG
 
-static int sha1(u8 *buf, uint64_t size, u8 *out)
+static int sha1(u8 *buf, u64 size, u8 *out)
 {
 	SHACtx *ctx;
 	page_allocate_auto(NULL, 0x100, (void *)&ctx);
@@ -538,7 +538,7 @@ static void ecdsa_sign(u8 *hash, u8 *R, u8 *S)
 	generate_ecdsa(R, S, ec_k, hash);
 }
 
-LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_6(int,sys_fs_open,(const char *path, int flags, int *fd, uint64_t mode, const void *arg, uint64_t size))
+LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_6(int,sys_fs_open,(const char *path, int flags, int *fd, u64 mode, const void *arg, u64 size))
 {
 /*
 	process_t process = get_current_process_critical();
@@ -557,14 +557,14 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_6(int,sys_fs_open,(const char *path, int fla
 	if(!strcmp(path + path_len - 4, ".rif"))
 	{
 		#ifdef DEBUG
-		DPRINTF("RIF fd open called:%s %x %x %x %x %x \n", path, (unsigned int)flags, *fd, (unsigned int)mode, (unsigned int)(uint64_t)arg, (unsigned int)size);
+		DPRINTF("RIF fd open called:%s %x %x %x %x %x \n", path, (unsigned int)flags, *fd, (unsigned int)mode, (unsigned int)(u64)arg, (unsigned int)size);
 		#endif
 		rif_fd = *fd;
 	}
 	else if(!strcmp(path + path_len - 7, "act.dat"))
 	{
 		#ifdef DEBUG
-		DPRINTF("act.dat fd open called:%s %x %x %x %x %x \n", path, (unsigned int)flags, *fd, (unsigned int)mode, (unsigned int)(uint64_t)arg, (unsigned int)size);
+		DPRINTF("act.dat fd open called:%s %x %x %x %x %x \n", path, (unsigned int)flags, *fd, (unsigned int)mode, (unsigned int)(u64)arg, (unsigned int)size);
 		#endif
 		act_fd = *fd;
 	}
@@ -572,14 +572,14 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_6(int,sys_fs_open,(const char *path, int fla
 			(!strcmp(path + path_len - 11, "ISO.BIN.ENC")) || (!strcmp(path + path_len - 6, "CONFIG")))
 	{
 		#ifdef DEBUG
-		DPRINTF("edat fd open called:%s %x %x %x %x %x \n", path, (unsigned int)flags, *fd, (unsigned int)mode, (unsigned int)(uint64_t)arg, (unsigned int)size);
+		DPRINTF("edat fd open called:%s %x %x %x %x %x \n", path, (unsigned int)flags, *fd, (unsigned int)mode, (unsigned int)(u64)arg, (unsigned int)size);
 		#endif
 		edat_fd = *fd;
 	}
 	return SUCCEEDED;
 }
 
-LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_4(int,sys_fs_read,(int fd, void *buf, uint64_t nbytes, uint64_t *nread))
+LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_4(int,sys_fs_read,(int fd, void *buf, u64 nbytes, u64 *nread))
 {
 	uint16_t gen_ecdsa = 0;
 
@@ -622,7 +622,7 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_4(int,sys_fs_read,(int fd, void *buf, uint64
 	if(gen_ecdsa)
 	{
 		#ifdef DEBUG
-		DPRINTF("fd read called:%x %x %x %x\n", (unsigned int)fd, (unsigned int)(uint64_t)buf, (unsigned int)nbytes, (unsigned int)(uint64_t)nread);
+		DPRINTF("fd read called:%x %x %x %x\n", (unsigned int)fd, (unsigned int)(u64)buf, (unsigned int)nbytes, (unsigned int)(u64)nread);
 		#endif
 		u8 *buffer = (u8 *)buf;
 		uint16_t bsize  = gen_ecdsa - 0x28;

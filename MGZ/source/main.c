@@ -114,6 +114,8 @@
 
 #include "paged_file.h"
 
+#include "npdata_make.h"
+
 #define NO_UID		-1
 #define SYSTEM_UID	0
 #define NO_GID		-1
@@ -2202,6 +2204,7 @@ int http_response(char *url);
 void add_GAMELIST(char *path);
 void sort_GAMELIST();
 void update_RootDisplay();
+float DrawTXTinLineBox(float x, float y, float z, float w, char *string, u32 bg_color, u32 font_color);
 
 void Draw_MENU();
 
@@ -10412,6 +10415,10 @@ void print_load(char *format, ...)
 	ERR = FALSE;
 	WAR = FALSE;
 	
+// TTY
+	fprintf(stdout, loading_log[0]);
+	fprintf(stdout, "\n");
+	
 	if( LOG ) {
 		
 		if( mgz_log == NULL ) {
@@ -10443,6 +10450,9 @@ void print_head(char *format2, ...)
 	va_end(opt2);
 	
 	strcpy(head_title, str2);
+	
+	fprintf(stdout, head_title);
+	fprintf(stdout, "\n");
 	
 	if( LOG ) {	
 		if( mgz_log == NULL ) {
@@ -18841,7 +18851,7 @@ int Sign_PS2ELF(char *in, char *out)
 
 }
 
-int Extract(char *in, char *out)
+int Extract_SELF(char *in, char *out)
 {
 	_template = NULL;
 	_file_type = NULL;
@@ -18912,7 +18922,7 @@ u8 re_sign_EBOOT(char *path)
 	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
-	if(Extract(local_path, elf)==FAILED) {
+	if(Extract_SELF(local_path, elf)==FAILED) {
 		print_load("Error : Failed extract EBOOT.BIN");
 		return FAILED;
 	}
@@ -18964,7 +18974,7 @@ u8 re_sign_SELF(char *path)
 	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
-	if(Extract(local_path, elf)==FAILED) {
+	if(Extract_SELF(local_path, elf)==FAILED) {
 		print_load("Error : Failed extract %s", filename);
 		return FAILED;
 	}
@@ -19016,7 +19026,7 @@ u8 re_sign_SPRX(char *path)
 	RemoveExtension(prx);
 	strcat(prx, ".prx");
 	
-	if(Extract(local_path, prx)==FAILED) {
+	if(Extract_SELF(local_path, prx)==FAILED) {
 		print_load("Error : Failed extract %s", filename);
 		return FAILED;
 	}
@@ -19121,10 +19131,27 @@ u8 re_sign_GAME(char *path)
 	}
 	closedir(d);
 	
-	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", list_game_path[position]) == FAILED) return FAILED;
+	char param_mgzbak[512]={0};
+	char param[512]={0};
+	
+	sprintf(param_mgzbak, "%s/PS3_GAME/PARAM.SFO.MGZBAK", list_game_path[position]);
+	sprintf(param, "%s/PS3_GAME/PARAM.SFO", list_game_path[position]);
+	
+	if(CopyFile(param, param_mgzbak) != SUCCESS) {
+		print_load("Error : failed to save original param.sfo");
+		return FAILED;
+	}
+		
+	if(SetParamSFO("PS3_SYSTEM_VER", "04.2100", param) == FAILED) return FAILED;
 
 	return SUCCESS;
 }
+
+//*******************************************************
+// NPDATA (EDAT SDAT)
+//*******************************************************
+
+
 
 //*******************************************************
 // Common Mount stuff
@@ -19891,7 +19918,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 
-		if(Extract(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
 			return NOK;
 		}
 		
@@ -19958,7 +19985,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 
-		if(Extract(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
 			return NOK;
 		}
 		
@@ -20022,7 +20049,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 
-		if(Extract(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
 			return NOK;
 		}
 		
@@ -20135,7 +20162,7 @@ int patch_exp_plug()
 			return NOK;
 		}
 
-		if(Extract(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
 			return NOK;
 		}
 		
@@ -20200,7 +20227,7 @@ char *get_libaudio_path()
 	sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/libaudio_%X.prx", ManaGunZ_id, firmware);
 	sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.prx", ManaGunZ_id, firmware);
 	
-	if( Extract("/dev_flash/sys/external/libaudio.sprx", ori_prx) == FAILED ) {
+	if( Extract_SELF("/dev_flash/sys/external/libaudio.sprx", ori_prx) == FAILED ) {
 		FREE(libaudio_path);
 		return NULL;
 	}
@@ -23268,7 +23295,7 @@ print_load("Create AutoMount...");
 print_load("Extract EBOOT...");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/EBOOT.BIN", ManaGunZ_id);
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
-	if( Extract(src, dst) == FAILED ) {
+	if( Extract_SELF(src, dst) == FAILED ) {
 		print_load("Error : Failed extract EBOOT.BIN");
 		Delete(lch);
 		return FAILED;
@@ -27498,6 +27525,32 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
+		char *edat = "/dev_hdd0/game/NPEB02082/USRDIR/data/data000.edat";
+		char *dat = "/dev_hdd0/game/NPEB02082/USRDIR/data/data000.dat";
+		char *eboot_elf = "/dev_hdd0/game/NPEB02082/USRDIR/EBOOT.ELF";
+		char *eboot_bin = "/dev_hdd0/game/NPEB02082/USRDIR/EBOOT.BIN";
+		char *rap = "/dev_hdd0/home/00000001/exdata/EP0002-NPEB02082_00-LEGENDOFKORRAPS3.rap";
+		char *dev_klics_txt = "/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/dev_klics.txt";
+		
+		u8 dev_klicensee[0x10]={0};
+
+		print_load("Search dev_klicensee inside local db");
+		if( npdata_bruteforce(edat, dev_klics_txt, NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
+			print_load("Found !");
+			hex_print_load((char *)dev_klicensee, 0x10);
+		} else 
+		if( npdata_bruteforce(edat, eboot_elf, NPDATA_BF_MODE_BINARY | NPDATA_BF_MODE_TEXT | NPDATA_BF_MODE_UNICODE, dev_klicensee) == SUCCESS) {
+			print_load("Found !");
+			hex_print_load((char *)dev_klicensee, 0x10);
+		} else {
+			print_load("Not found !");
+		}
+		
+		if( npdata_decrypt(edat, dat, dev_klicensee, rap, NULL) == SUCCESS) {
+			print_load("SUCCESS");
+		} else {
+			print_load("FAILED");
+		}
 		
 		end_loading();
 	} else
@@ -27661,7 +27714,7 @@ void Option(char *item)
 			
 			if( path_info(elf) != _NOT_EXIST) Delete(elf);
 			
-			if(Extract(option_sel[i], elf)==FAILED) {
+			if(Extract_SELF(option_sel[i], elf)==FAILED) {
 				print_load("Error : Failed to extract");
 			}
 		}
@@ -27689,7 +27742,7 @@ void Option(char *item)
 			
 			if( path_info(elf) != _NOT_EXIST) Delete(elf);
 			
-			if(Extract(option_sel[i], elf)==FAILED) {
+			if(Extract_SELF(option_sel[i], elf)==FAILED) {
 				print_load("Error : Failed to extract");
 			}
 		}
@@ -27763,7 +27816,7 @@ void Option(char *item)
 			RemoveExtension(prx);
 			strcat(prx, ".prx");
 			if( path_info(prx) != _NOT_EXIST) Delete(prx);
-			if(Extract(option_sel[i], prx)==FAILED) {
+			if(Extract_SELF(option_sel[i], prx)==FAILED) {
 				print_load("Error : Failed to extract");
 			}
 		}
@@ -28281,7 +28334,7 @@ void Open_option()
 			add_option_item(STR_DUMP_FLASH);
 			*/
 			
-			//add_option_item("Test");
+			add_option_item("Test");
 			//add_option_item("Test2");
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
@@ -34525,27 +34578,29 @@ void init_PS3_GAME_MENU()
 			if( PAYLOAD_SKY_SIZE != 0 ) add_item_value_MENU("Iris");
 			if( BASE_ADDR != 0 ) add_item_value_MENU("multiMAN");
 		}
-		if(ITEMS_VALUE_NUMBER[ITEMS_POSITION] == -1) {
+		if(ITEMS_VALUE_NUMBER[ITEMS_NUMBER] == -1) {
+			ITEMS_TYPE[ITEMS_NUMBER]=ITEM_LOCKED;
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER]=0;
 			add_item_value_MENU(STR_CANT_MOUNT);
-		}	
+		}
 	}
 	
 	u8 have_payload = YES;
 	
 	u8 temp_payload=0;
-	for(temp_payload=0; temp_payload<=ITEMS_VALUE_NUMBER[ITEMS_POSITION]; temp_payload++) {
+	for(temp_payload=0; temp_payload<=ITEMS_VALUE_NUMBER[ITEMS_NUMBER]; temp_payload++) {
 	
-		if(ITEMS_VALUE[ITEMS_POSITION][temp_payload]==NULL) break;
+		if(ITEMS_VALUE[ITEMS_NUMBER][temp_payload]==NULL) break;
 		
 		if(payload==SNAKE) {
-			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "Mamba") == 0 ) break;
-			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "Cobra") == 0 ) break;
+			if(strcmp(ITEMS_VALUE[ITEMS_NUMBER][temp_payload], "Mamba") == 0 ) break;
+			if(strcmp(ITEMS_VALUE[ITEMS_NUMBER][temp_payload], "Cobra") == 0 ) break;
 		} else
 		if(payload==IRIS) {
-			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "Iris") == 0 ) break;
+			if(strcmp(ITEMS_VALUE[ITEMS_NUMBER][temp_payload], "Iris") == 0 ) break;
 		} else
 		if(payload==MM) {
-			if(strcmp(ITEMS_VALUE[ITEMS_POSITION][temp_payload], "multiMAN") == 0 ) break;
+			if(strcmp(ITEMS_VALUE[ITEMS_NUMBER][temp_payload], "multiMAN") == 0 ) break;
 		} else
 		if(payload==NO_PAYLOAD) {
 			have_payload = NO;
@@ -35190,7 +35245,7 @@ void close_BDVD_MENU()
 void init_BDVD_MENU()
 {
 	
-	print_debug("init_PS3_GAME_MENU");
+	print_debug("init_BDVD_MENU");
 	
 	int i, j;
 	char tmp[255];
