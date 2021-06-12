@@ -11734,6 +11734,8 @@ u8 dump_enc_bdvd(char *outdir)
 		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
 	}
 	
+	if(path_info(outdir)==_NOT_EXIST) mkdir_recursive(outdir);
+	
 	print_load("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
 	if(f==NULL) {
@@ -12394,6 +12396,8 @@ u8 dump_dec_bdvd(char *outdir)
 	} else {
 		sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
 	}
+	
+	if(path_info(outdir)==_NOT_EXIST) mkdir_recursive(outdir);
 	
 	print_load("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
