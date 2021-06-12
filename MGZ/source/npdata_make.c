@@ -2,6 +2,7 @@
 // Licensed under the terms of the GNU GPL, version 3
 // http://www.gnu.org/licenses/gpl-3.0.txt
 
+#include "mgz_io.h"
 #include "npdata_make.h"
 #include "extern.h"
 
@@ -1510,25 +1511,25 @@ bool pack_data(FILE *input, FILE *output, const char* input_file_name, unsigned 
 	return 0;
 }
 
-
-u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klicensee)
+// too slow !
+u8 npdata_bruteforce_old(char *npdata_file, char *source_file, u8 mode, u8 *dev_klicensee)
 {
 	FILE* input = NULL;
 	FILE* source = NULL;
-	
+
 	u8 found = NO;
 	
 	input = fopen(npdata_file, "rb");
 	if (input == NULL)
 	{
-		printf("Error: Please check your input file!\n");
+		printf("Error: Please check your input file : %s", npdata_file);
 		goto end;
 	}
 	
 	source = fopen(source_file, "rb");
 	if (source == NULL)
 	{
-		printf("Error: Please check your source file!\n");
+		printf("Error: Please check your source file : %s", source_file);
 		goto end;
 	}
 	
@@ -1583,14 +1584,17 @@ u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klic
 	// Read the NPD header dev_hash.
 	fread(test_dev_hash, 0x10, 1, input);
 	
+	task_Init(source_file_size);
 	printf("Brute-forcing dev_klicensee, source %s", source_file);
-	int i;
+	u64 i;
 	for (i = 0; i < source_file_size; i++)
 	{	
+     	task_Update2(i);
+		
 		// Binary
 		if( (mode & NPDATA_BF_MODE_BINARY) || (mode & NPDATA_BF_MODE_BINARY_STREAM))
 		{
-			if( !(mode & NPDATA_BF_MODE_BINARY_STREAM) ) fseek(source, i, SEEK_SET);
+			if( mode & NPDATA_BF_MODE_BINARY ) fseek(source, i, SEEK_SET);
 			
 			memset(dev_klicensee, 0, 0x10);
 			fread(dev_klicensee, 0x10, 1, source);
@@ -1612,7 +1616,7 @@ u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klic
 		// Text
 		if( (mode & NPDATA_BF_MODE_TEXT) || (mode & NPDATA_BF_MODE_TEXT_STREAM) || (mode & NPDATA_BF_MODE_LINES_STREAM))
 		{
-			if( !(mode & NPDATA_BF_MODE_TEXT_STREAM) || !(mode & NPDATA_BF_MODE_LINES_STREAM)) fseek(source, i, SEEK_SET);
+			if( mode & NPDATA_BF_MODE_TEXT) fseek(source, i, SEEK_SET);
 			
 			memset(test_klicensee_text, 0, 0x20);
 			if(mode & NPDATA_BF_MODE_LINES_STREAM) {
@@ -1645,7 +1649,7 @@ u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klic
 		// Unicode mode
 		if( (mode & NPDATA_BF_MODE_UNICODE) || (mode & NPDATA_BF_MODE_UNICODE_STREAM))
 		{
-			if(!(mode & NPDATA_BF_MODE_UNICODE_STREAM)) fseek(source, i, SEEK_SET);
+			if(mode & NPDATA_BF_MODE_UNICODE) fseek(source, i, SEEK_SET);
 			
 			memset(test_klicensee_unicode_text, 0, 0x40);
 			fread(test_klicensee_unicode_text, 0x40, 1, source);
@@ -1676,7 +1680,8 @@ u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klic
 	}
 
 end:
-
+	task_End();
+	
 	if(found) {
 		printf("Found valid dev_klicensee!");
 	} else {
@@ -1691,6 +1696,238 @@ end:
 	return found;
 }
 
+void read_double_mem(char *data, u64 size, u8 **buffer, s64 *buffer_s, u64 buffer_o, u8 swap)
+{
+	memset(data, 0, size);
+	if( buffer_s[swap] < buffer_o ) return;
+	
+	if( buffer_o + size <= buffer_s[swap]){
+		memcpy(data, buffer[swap], size);
+	} else
+	if( buffer_s[swap] < buffer_o + size && buffer_o + size - buffer_s[swap] <= buffer_s[!swap]) {
+		memcpy(data, buffer[swap], buffer_s[swap] - buffer_o);
+		memcpy(data + buffer_s[swap] - buffer_o, buffer[!swap], buffer_o + size - buffer_s[swap]);
+	}
+}
+
+u8 is_empty(char *data, u32 size)
+{
+	u32 i;
+	for(i=0; i<size; i++) {
+		if(data[0]!=0) return NO;
+	}
+	return YES;
+}
+
+#define BUFFER_SIZE	0x20000
+u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klicensee)
+{
+	if(mode & NPDATA_BF_MODE_LINES_STREAM) return npdata_bruteforce_old(npdata_file, source_file, mode, dev_klicensee);
+	
+	FILE* input = NULL;
+	FILE* source = NULL;
+	u8 **buffer=NULL;
+
+	u8 found = NO;
+	
+	input = fopen(npdata_file, "rb");
+	if (input == NULL)
+	{
+		printf("Error: Please check your input file : %s", npdata_file);
+		goto end;
+	}
+	
+	source = fopen(source_file, "rb");
+	if (source == NULL)
+	{
+		printf("Error: Please check your source file %s", source_file);
+		goto end;
+	}
+	
+	buffer = (u8 **) malloc( 2 * sizeof(u8 *));
+	if( buffer==NULL) 
+	{
+		printf("Error: malloc buffer");
+		goto end;
+	}
+	buffer[0] = (u8 *) malloc(BUFFER_SIZE);
+	buffer[1] = (u8 *) malloc(BUFFER_SIZE);
+	if( buffer[0] == NULL || buffer[1] == NULL) 
+	{
+		printf("Error: malloc buffer[0], buffer[1]");
+		goto end;
+	}
+	
+	// Get the source file size.
+	fseek(source, 0, SEEK_END);
+	long long source_file_size = ftell(source);
+	fseek(source, 0, SEEK_SET);
+
+	// Set up testing keys and hash.
+	unsigned char test_key[0x10];
+	unsigned char test_dev_hash[0x10];
+	memset(test_key, 0, 0x10);
+	memset(dev_klicensee, 0, 0x10);
+	memset(test_dev_hash, 0, 0x10);
+	
+	// Buffer to handle klicensee as text.
+	char test_klicensee_text[0x20];
+	memset(test_klicensee_text, 0, 0x20);
+
+	// Buffer to handle klicensee as unicode text.
+	char test_klicensee_unicode_text[0x40];
+	memset(test_klicensee_unicode_text, 0, 0x40);
+
+	// Read the file's header magic and seek back.
+	unsigned char magic[0x4];
+	fread(magic, 0x4, 1, input);
+	fseek(input, 0, SEEK_SET);
+
+	// If header starts with SCE, the file is a SELF or SPRX.
+	// If not, assume regular EDAT/SDAT (NPD).
+	unsigned char sce_magic[4] = { 0x53, 0x43, 0x45, 0x00 };  //SCE0
+	if (!memcmp(magic, sce_magic, 4))
+	{
+		// File is SCE, read the NPD dev_hash offset from the
+		// first 0x10 bytes of the SCE header and seek to the NPD area.	
+		unsigned char sce_header[0x10];
+		fread(sce_header, 0x10, 1, input);
+		short npd_offset = se16(*(short*)&sce_header[0xE]) - 0x60;
+		fseek(input, npd_offset, SEEK_SET);
+
+		if (DEBUG)
+		{
+			printf("SCE file detected!\n");
+			printf("NPD offset inside SCE: 0x%08x", npd_offset);
+		}
+	}
+
+	// Read the first 0x60 bytes of the NPD header.
+	unsigned char npd_buf[0x60];
+	fread(npd_buf, 0x60, 1, input);
+
+	// Read the NPD header dev_hash.
+	fread(test_dev_hash, 0x10, 1, input);
+	
+	task_Init(source_file_size);
+	printf("Brute-forcing dev_klicensee, source %s", source_file);
+	
+	u8 swap=0; 
+	u64 buffer_p=0; // global buffer offset
+	u64 buffer_o = 0; // local buffer offset
+	s64 buffer_s[2] = {0}; // buffer sizes	
+	u64 offset = 0; // global file offset
+	
+	buffer_s[0] = fread(buffer[0], BUFFER_SIZE, 1, source);
+	buffer_s[1] = fread(buffer[1], BUFFER_SIZE, 1, source);
+	
+	while( 1 )
+	{
+		
+		buffer_o = offset - buffer_p;
+		
+		if(	buffer_s[swap] < buffer_o ) {
+			memset(buffer[swap], 0, BUFFER_SIZE);
+			buffer_p += buffer_s[swap];
+			buffer_s[swap] = fread(buffer[swap], BUFFER_SIZE, 1, source);
+			swap = !swap;
+		}
+		
+		if( buffer_s[swap] <= 0) break;
+		if( source_file_size < offset) break;
+		
+		//if( cancel ) break;
+		
+     	task_Update2(offset);
+		
+		// Binary
+		if( (mode & NPDATA_BF_MODE_BINARY) || (mode & NPDATA_BF_MODE_BINARY_STREAM))
+		{
+			
+			read_double_mem((char *) dev_klicensee, 0x10, buffer, buffer_s, buffer_o, swap);
+			
+			if( !is_empty(dev_klicensee, 0x10) ) { // probably already tested from the db : "dev_klic.txt"
+				//test
+				xor(test_key, dev_klicensee, NPDRM_OMAC_KEY_2, 0x10);
+				if (cmac_hash_compare(test_key, 0x10, npd_buf, 0x60, test_dev_hash, 0x10))
+				{
+					found = YES;
+					goto end;
+				}
+			}
+			
+			if( mode & NPDATA_BF_MODE_BINARY_STREAM ) { offset+=0x10; continue; }
+		}
+		
+		// Text
+		if( (mode & NPDATA_BF_MODE_TEXT) || (mode & NPDATA_BF_MODE_TEXT_STREAM) || (mode & NPDATA_BF_MODE_LINES_STREAM))
+		{
+			read_double_mem(test_klicensee_text, 0x20, buffer, buffer_s, buffer_o, swap);
+			
+			// If the string is not a valid hexadecimal string, continue the loop.
+			if (!is_hex(test_klicensee_text, 0x20)) {
+				hex_to_bytes(dev_klicensee, test_klicensee_text, 0x20);
+				
+				//test
+				xor(test_key, dev_klicensee, NPDRM_OMAC_KEY_2, 0x10);
+				if (cmac_hash_compare(test_key, 0x10, npd_buf, 0x60, test_dev_hash, 0x10))
+				{
+					found = YES;
+					goto end;
+				}
+			}
+			
+			if( mode & NPDATA_BF_MODE_TEXT_STREAM) { offset+=0x20; continue; }
+		}
+		
+		// Unicode mode
+		if( (mode & NPDATA_BF_MODE_UNICODE) || (mode & NPDATA_BF_MODE_UNICODE_STREAM))
+		{
+			read_double_mem(test_klicensee_unicode_text, 0x40, buffer, buffer_s, buffer_o, swap);
+	
+			// Convert unicode fullwidth to plain text.
+			int uni_count;
+			int txt_count = 0;
+			for (uni_count = 0; uni_count < 0x40; uni_count += 2)
+				test_klicensee_text[txt_count++] = test_klicensee_unicode_text[uni_count + 1];
+
+			// If the string is not a valid hexadecimal string, continue the loop.
+			if (!is_hex(test_klicensee_text, 0x20)) {
+				hex_to_bytes(dev_klicensee, test_klicensee_text, 0x20);
+				
+				//test
+				xor(test_key, dev_klicensee, NPDRM_OMAC_KEY_2, 0x10);
+				if (cmac_hash_compare(test_key, 0x10, npd_buf, 0x60, test_dev_hash, 0x10))
+				{
+					found = true;
+					goto end;
+				}
+			}
+			if(mode & NPDATA_BF_MODE_UNICODE_STREAM) { offset+=0x40; continue; }
+		}
+		offset+=1;
+	}
+
+end:
+	task_End();
+	
+	if(found) {
+		printf("Found valid dev_klicensee!");
+	} else {
+		printf("Failed to brute-force dev_klicensee!");
+		memset(dev_klicensee, 0, 0x10);
+	}
+	
+	// Cleanup.
+	FCLOSE(input);
+	FCLOSE(source);
+	FREE(buffer[0]);
+	FREE(buffer[1]);
+	FREE(buffer);
+	
+	return found;
+}
+
 u8 npdata_decrypt(char *npdata_file, char *output_file, u8 *dev_klicensee, char *rap_file, char *rif_file)
 {
 	FILE* input = NULL;
@@ -1701,7 +1938,7 @@ u8 npdata_decrypt(char *npdata_file, char *output_file, u8 *dev_klicensee, char 
 	input = fopen(npdata_file, "rb");
 	if (input == NULL)
 	{
-		printf("Error: Please check your input file!");
+		printf("Error: Please check your input file : %s", npdata_file);
 		goto end;
 	}
 	
@@ -1738,7 +1975,7 @@ u8 npdata_decrypt(char *npdata_file, char *output_file, u8 *dev_klicensee, char 
 	output = fopen(output_file, "wb");
 	if (output == NULL)
 	{
-		printf("Error: Please check your output file!");
+		printf("Error: Please check your output file %s", output_file);
 		goto end;
 	}
 	// Delete the bad output file if any errors arise.
@@ -1766,7 +2003,7 @@ u8 npdata_encrypt(char *input_file, char *npdata_file, u8 *dev_klicensee, char *
 	input = fopen(input_file, "rb");
 	if (input == NULL)
 	{
-		printf("Error: Please check your input file!");
+		printf("Error: Please check your input file : %s", input_file);
 		goto end;
 	}
 

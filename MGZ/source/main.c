@@ -9955,6 +9955,16 @@ void task_Update(u64 val)
 	task_ProgressBar2_val+= val;
 }
 
+void task_Update2(u64 val)
+{
+	if( task_ProgressBar2_max != 0 ) {
+		task_ProgressBar1_val += val - task_ProgressBar2_val;
+		task_ProgressBar2_val = val;
+	} else {
+		task_ProgressBar1_val = val;
+	}
+}
+
 void task_End()
 {
 	if(task_ProgressBar2_max != 0) {
@@ -27525,21 +27535,21 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		char *edat = "/dev_hdd0/game/NPEB02082/USRDIR/data/data000.edat";
-		char *dat = "/dev_hdd0/game/NPEB02082/USRDIR/data/data000.dat";
-		char *eboot_elf = "/dev_hdd0/game/NPEB02082/USRDIR/EBOOT.ELF";
-		char *eboot_bin = "/dev_hdd0/game/NPEB02082/USRDIR/EBOOT.BIN";
-		char *rap = "/dev_hdd0/home/00000001/exdata/EP0002-NPEB02082_00-LEGENDOFKORRAPS3.rap";
+		char *edat = "/dev_hdd0/data000.edat";
+		char *dat = "/dev_hdd0/data000.dat";
+		char *eboot_elf = "/dev_hdd0/EBOOT.elf";
+		char *eboot_bin = "/dev_hdd0/EBOOT.BIN";
+		char *rap = "/dev_hdd0/EP0002-NPEB02082_00-LEGENDOFKORRAPS3.rap";
 		char *dev_klics_txt = "/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/dev_klics.txt";
 		
 		u8 dev_klicensee[0x10]={0};
-
+		
 		print_load("Search dev_klicensee inside local db");
 		if( npdata_bruteforce(edat, dev_klics_txt, NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
 			print_load("Found !");
 			hex_print_load((char *)dev_klicensee, 0x10);
 		} else 
-		if( npdata_bruteforce(edat, eboot_elf, NPDATA_BF_MODE_BINARY | NPDATA_BF_MODE_TEXT | NPDATA_BF_MODE_UNICODE, dev_klicensee) == SUCCESS) {
+		if( npdata_bruteforce(edat, eboot_elf, NPDATA_BF_MODE_BINARY, dev_klicensee) == SUCCESS) {
 			print_load("Found !");
 			hex_print_load((char *)dev_klicensee, 0x10);
 		} else {
@@ -28334,7 +28344,7 @@ void Open_option()
 			add_option_item(STR_DUMP_FLASH);
 			*/
 			
-			add_option_item("Test");
+			//add_option_item("Test");
 			//add_option_item("Test2");
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
@@ -28825,14 +28835,13 @@ u8 window_input()
 				return CONTINUE;
 			}
 			
-			
 			//DOCK_LEFT
 			CONTROLBOX_X -= CONTROLBOX_GAP + CONTROLBOX_W;
 			mouse_over = NO;
 			if( CONTROLBOX_X	< curs_x && curs_x < CONTROLBOX_X + CONTROLBOX_W
 			&&  CONTROLBOX_Y	< curs_y && curs_y < CONTROLBOX_Y + CONTROLBOX_H )
 			{
-				if(GetWindowLocation() != WINDOW_LOC_MAX) {
+				if(GetWindowLocation() != WINDOW_LOC_LEFT) {
 					SetWindowLocation(WINDOW_LOC_LEFT);
 				} else {
 					SetWindowLocation(WINDOW_LOC_DEFAULT);
@@ -41702,6 +41711,9 @@ int main(void)
 	
 	if(PEEKnPOKE) {
 		if(init_fw() == FAILED) {
+			if( HEN ) {
+				PEEKnPOKE=NO;
+			} else
 			if( init_fw_unk() == FAILED ) {
 				PEEKnPOKE = NO;
 			}

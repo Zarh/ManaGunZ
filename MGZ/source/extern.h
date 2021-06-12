@@ -28,3 +28,7 @@ extern void Delete(char* path);
 extern void print_head(char *format2, ...);
 extern void print_load(char *format, ...);
 extern u8 DEBUG;
+extern void task_Init(const u64 max);
+extern void task_Update(u64 val);
+extern void task_Update2(u64 val);
+extern void task_End();

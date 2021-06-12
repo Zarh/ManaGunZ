@@ -1,7 +1,9 @@
 TO DO :
 Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA/INSDIR
+Add : Decrypt EDAT/SDAT
 
 v1.40
+Fix : Dock buttons when the window is docked to the left.
 Fix : IRD build of backups with PKGDIR.
 Fix : Shortcut pkg.
 Add : Scans sub-folders to find backups.

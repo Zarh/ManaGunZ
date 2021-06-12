@@ -48,6 +48,7 @@ extern u64 lv1peek(u64 addr);
 extern int64_t prog_bar1_value;
 extern char ManaGunZ_id[10];
 extern u8 SetFilePerms(char *path);
+extern void Delete(char* path);
 
 u8 compare(u8 ignore, char *mem, char *flag, u32 size)
 {
@@ -243,6 +244,8 @@ u8 read_fw_unk()
 		firmware = fw_unk;
 		return SUCCESS;
 	}
+	
+	Delete(fw_unk_path);
 	
 	init_values();
 	return FAILED;
