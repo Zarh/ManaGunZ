@@ -2902,7 +2902,7 @@ u8 support_big_files(char *path)
 
 // this one support use mgz_io.h, 
 // so, it support ntfs/exfat
-int MGZ_mkdir_recursive(const char *path)
+int MGZ_mkdir_recursive(char *path)
 {
 	struct stat stat_buf;
 	if (stat(path, &stat_buf) == 0 ) return 0;

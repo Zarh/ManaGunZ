@@ -15,19 +15,19 @@ u32 IRD_crc(ird_t *ird)
 	crc = crc32(crc,  (const unsigned char*) ird->AppVersion                  , 5);
 	
 	if(ird->Version == 7) {
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 		crc = crc32(crc,  (const unsigned char*) &ird->UniqueIdentifier       , 4);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 	}
 	
-	ird->HeaderLength = ENDIAN_SWAP(ird->HeaderLength);
+	ird->HeaderLength = SWAP_LE(ird->HeaderLength);
 	crc = crc32(crc,  (const unsigned char*) &ird->HeaderLength               , 4);
-	ird->HeaderLength = ENDIAN_SWAP(ird->HeaderLength);
+	ird->HeaderLength = SWAP_LE(ird->HeaderLength);
 	crc = crc32(crc,  (const unsigned char*) ird->Header                      , ird->HeaderLength);
 	
-	ird->FooterLength = ENDIAN_SWAP(ird->FooterLength);
+	ird->FooterLength = SWAP_LE(ird->FooterLength);
 	crc = crc32(crc,  (const unsigned char*) &ird->FooterLength               , 4);
-	ird->FooterLength = ENDIAN_SWAP(ird->FooterLength);
+	ird->FooterLength = SWAP_LE(ird->FooterLength);
 	crc = crc32(crc,  (const unsigned char*) ird->Footer                      , ird->FooterLength);
 	
 	crc = crc32(crc,  (const unsigned char*) &ird->RegionHashesNumber         , 1);
@@ -35,24 +35,24 @@ u32 IRD_crc(ird_t *ird)
 		crc = crc32(crc,  (const unsigned char*) ird->RegionHashes[i]         ,  0x10);
 	}
 	
-	ird->FileHashesNumber = ENDIAN_SWAP(ird->FileHashesNumber);
+	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
 	crc = crc32(crc,  (const unsigned char*) &ird->FileHashesNumber           , 4);
-	ird->FileHashesNumber = ENDIAN_SWAP(ird->FileHashesNumber);
+	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
 	
 	for(i=0; i<ird->FileHashesNumber; i++) {
-		ird->FileHashes[i].Sector =  ENDIAN_SWAP(ird->FileHashes[i].Sector);
+		ird->FileHashes[i].Sector =  SWAP_LE(ird->FileHashes[i].Sector);
 		crc = crc32(crc,  (const unsigned char*) &ird->FileHashes[i].Sector    , 0x8);
-		ird->FileHashes[i].Sector =  ENDIAN_SWAP(ird->FileHashes[i].Sector);
+		ird->FileHashes[i].Sector =  SWAP_LE(ird->FileHashes[i].Sector);
 		crc = crc32(crc,  (const unsigned char*) ird->FileHashes[i].FileHash   , 0x10);
 	}
 	
-	ird->ExtraConfig = ENDIAN_SWAP(ird->ExtraConfig);
+	ird->ExtraConfig = SWAP_LE(ird->ExtraConfig);
 	crc = crc32(crc,  (const unsigned char*) &ird->ExtraConfig                 , 2);
-	ird->ExtraConfig = ENDIAN_SWAP(ird->ExtraConfig);
+	ird->ExtraConfig = SWAP_LE(ird->ExtraConfig);
 	
-	ird->Attachments = ENDIAN_SWAP(ird->Attachments);
+	ird->Attachments = SWAP_LE(ird->Attachments);
 	crc = crc32(crc,  (const unsigned char*) &ird->Attachments                 , 2);
-	ird->Attachments = ENDIAN_SWAP(ird->Attachments);
+	ird->Attachments = SWAP_LE(ird->Attachments);
 	
 	if(ird->Version >= 9) {
 		crc = crc32(crc,  (const unsigned char*) ird->PIC                     , 0x73);
@@ -63,9 +63,9 @@ u32 IRD_crc(ird_t *ird)
 		crc = crc32(crc,  (const unsigned char*) ird->PIC                     , 0x73);
 	}
 	if(ird->Version > 7) {
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 		crc = crc32(crc,  (const unsigned char*) &ird->UniqueIdentifier       , 4);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 	}
 	
 	return crc;
@@ -151,13 +151,13 @@ ird_t *IRD_load(char *IRD_PATH)
 	if(ird->Version == 7) {
 		print_verbose("IRD_Load fread UniqueIdentifier = ");
 		fread(&ird->UniqueIdentifier, sizeof(u32) , 1, irdu);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 		print_verbose("%d",  ird->UniqueIdentifier);
 	}
 	
 	print_verbose("IRD_Load fread headerlength = ");
 	fread(&ird->HeaderLength		, sizeof(u32) , 1, irdu);
-	ird->HeaderLength = ENDIAN_SWAP(ird->HeaderLength);
+	ird->HeaderLength = SWAP_LE(ird->HeaderLength);
 	print_verbose("%d",  ird->HeaderLength);
 	
 	print_verbose("IRD_Load malloc iso header");
@@ -168,7 +168,7 @@ ird_t *IRD_load(char *IRD_PATH)
 	
 	print_verbose("IRD_Load fread iso footerlength = ");
 	fread(&ird->FooterLength		, sizeof(u32) , 1, irdu);
-	ird->FooterLength = ENDIAN_SWAP(ird->FooterLength);
+	ird->FooterLength = SWAP_LE(ird->FooterLength);
 	print_verbose("%X", ird->FooterLength);
 	
 	print_verbose("IRD_Load malloc footer");
@@ -195,7 +195,7 @@ ird_t *IRD_load(char *IRD_PATH)
 	
 	print_verbose("IRD_Load fread filehashesnumber");
 	fread(&ird->FileHashesNumber	, sizeof(u32) , 1, irdu);
-	ird->FileHashesNumber = ENDIAN_SWAP(ird->FileHashesNumber);
+	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
 	print_load("%X", ird->FileHashesNumber);
 	
 	print_verbose("IRD_Load malloc filehashes");
@@ -205,17 +205,17 @@ ird_t *IRD_load(char *IRD_PATH)
 	print_verbose("IRD_Load fread filehashes");
 	for(i=0; i<ird->FileHashesNumber; i++) {
 		fread(&ird->FileHashes[i].Sector, sizeof(u64), 1, irdu);
-		ird->FileHashes[i].Sector =  ENDIAN_SWAP(ird->FileHashes[i].Sector);
+		ird->FileHashes[i].Sector =  SWAP_LE(ird->FileHashes[i].Sector);
 		fread(&ird->FileHashes[i].FileHash, sizeof(u8), 0x10, irdu);
 		ird->FileHashes[i].FilePath=NULL;
 	}
 	
 	print_verbose("IRD_Load fread ExtraConfig");
 	fread(&ird->ExtraConfig, sizeof(u16), 1, irdu);
-	ird->ExtraConfig = ENDIAN_SWAP(ird->ExtraConfig);
+	ird->ExtraConfig = SWAP_LE(ird->ExtraConfig);
 	print_verbose("IRD_Load fread Attachments");
 	fread(&ird->Attachments, sizeof(u16), 1, irdu);
-	ird->Attachments = ENDIAN_SWAP(ird->Attachments);
+	ird->Attachments = SWAP_LE(ird->Attachments);
 	
 	if(ird->Version >= 9) {
 		print_verbose("IRD_Load fread PIC");
@@ -235,13 +235,13 @@ ird_t *IRD_load(char *IRD_PATH)
 	if(ird->Version > 7) {
 		print_verbose("IRD_Load fread UniqueIdentifier = %X");
 		fread(&ird->UniqueIdentifier, sizeof(u32), 1, irdu);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 		print_verbose("%X", ird->UniqueIdentifier); 
 	}
 	
 	print_verbose("IRD_Load fread crc = ");
 	fread(&ird->crc, sizeof(u32), 1, irdu);
-	ird->crc = ENDIAN_SWAP(ird->crc);
+	ird->crc = SWAP_LE(ird->crc);
 	print_verbose("%X", ird->crc); 
 	ret = SUCCESS;
 	
@@ -297,23 +297,23 @@ u8 IRD_save(char *IRD_PATH, ird_t *ird)
 	
 	if(ird->Version == 7) {
 		print_verbose("IRD_Save fwrite UniqueIdentifier = %X", ird->UniqueIdentifier);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 		fwrite(&ird->UniqueIdentifier, sizeof(u32) , 1, irdu);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 	}
 	
 	print_verbose("IRD_Save fwrite headerlength = %X",  ird->HeaderLength);
-	ird->HeaderLength = ENDIAN_SWAP(ird->HeaderLength);
+	ird->HeaderLength = SWAP_LE(ird->HeaderLength);
 	fwrite(&ird->HeaderLength		, sizeof(u32) , 1, irdu);
-	ird->HeaderLength = ENDIAN_SWAP(ird->HeaderLength);
+	ird->HeaderLength = SWAP_LE(ird->HeaderLength);
 	
 	print_verbose("IRD_Save fwrite iso header");
 	fwrite(ird->Header			, sizeof(u8) , ird->HeaderLength, irdu);
 	
 	print_verbose("IRD_Save fwrite iso footerlength = %X", ird->FooterLength);
-	ird->FooterLength = ENDIAN_SWAP(ird->FooterLength);
+	ird->FooterLength = SWAP_LE(ird->FooterLength);
 	fwrite(&ird->FooterLength		, sizeof(u32) , 1, irdu);
-	ird->FooterLength = ENDIAN_SWAP(ird->FooterLength);
+	ird->FooterLength = SWAP_LE(ird->FooterLength);
 	
 	print_verbose("IRD_Save fwrite footer");
 	fwrite(ird->Footer			, sizeof(u8) , ird->FooterLength, irdu);
@@ -327,27 +327,27 @@ u8 IRD_save(char *IRD_PATH, ird_t *ird)
 	}
 	
 	print_verbose("IRD_Save fwrite filehashesnumber");
-	ird->FileHashesNumber = ENDIAN_SWAP(ird->FileHashesNumber);
+	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
 	fwrite(&ird->FileHashesNumber	, sizeof(u32) , 1, irdu);
-	ird->FileHashesNumber = ENDIAN_SWAP(ird->FileHashesNumber);
+	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
 	
 	print_verbose("IRD_Save fwrite filehashes");
 	for(i=0; i<ird->FileHashesNumber; i++) {
-		ird->FileHashes[i].Sector =  ENDIAN_SWAP(ird->FileHashes[i].Sector);
+		ird->FileHashes[i].Sector =  SWAP_LE(ird->FileHashes[i].Sector);
 		fwrite(&ird->FileHashes[i].Sector, sizeof(u64), 1, irdu);
-		ird->FileHashes[i].Sector =  ENDIAN_SWAP(ird->FileHashes[i].Sector);
+		ird->FileHashes[i].Sector =  SWAP_LE(ird->FileHashes[i].Sector);
 		fwrite(&ird->FileHashes[i].FileHash, sizeof(u8), 0x10, irdu);
 	}
 	
 	print_verbose("IRD_Save fwrite ExtraConfig");
-	ird->ExtraConfig = ENDIAN_SWAP(ird->ExtraConfig);
+	ird->ExtraConfig = SWAP_LE(ird->ExtraConfig);
 	fwrite(&ird->ExtraConfig, sizeof(u16), 1, irdu);
-	ird->ExtraConfig = ENDIAN_SWAP(ird->ExtraConfig);
+	ird->ExtraConfig = SWAP_LE(ird->ExtraConfig);
 	
 	print_verbose("IRD_Save fwrite Attachments");
-	ird->Attachments = ENDIAN_SWAP(ird->Attachments);
+	ird->Attachments = SWAP_LE(ird->Attachments);
 	fwrite(&ird->Attachments, sizeof(u16), 1, irdu);
-	ird->Attachments = ENDIAN_SWAP(ird->Attachments);
+	ird->Attachments = SWAP_LE(ird->Attachments);
 	
 	if(ird->Version >= 9) {
 		print_verbose("IRD_Load fwrite PIC");
@@ -366,17 +366,17 @@ u8 IRD_save(char *IRD_PATH, ird_t *ird)
 	
 	if(ird->Version > 7) {
 		print_verbose("IRD_Load fread UniqueIdentifier = %X", ird->UniqueIdentifier );
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 		fwrite(&ird->UniqueIdentifier, sizeof(u32), 1, irdu);
-		ird->UniqueIdentifier = ENDIAN_SWAP(ird->UniqueIdentifier);
+		ird->UniqueIdentifier = SWAP_LE(ird->UniqueIdentifier);
 	}
 	
 	ird->crc = IRD_crc(ird);
 	
 	print_verbose("IRD_Save fwrite crc = %X", ird->crc);
-	ird->crc = ENDIAN_SWAP(ird->crc);
+	ird->crc = SWAP_LE(ird->crc);
 	fwrite(&ird->crc  , sizeof(u32), 1, irdu);
-	ird->crc = ENDIAN_SWAP(ird->crc);
+	ird->crc = SWAP_LE(ird->crc);
 	
 	ret = SUCCESS;
 error:

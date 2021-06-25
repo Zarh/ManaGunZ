@@ -165,29 +165,20 @@ struct iso_path_table{
 	char name[1];
 };
 
-u16 SWAP16(u16 value)
-{
-    u16 result = ENDIAN_SWAP(value);
-    
-    if(result == value) return ENDIAN_SWAP_16(value);
-    
-    return result;
-}
-
 static void UTF16_to_UTF8(u16 *stw, u8 *stb)
 {
-    while(SWAP16(stw[0])) {
-        if((SWAP16(stw[0]) & 0xFF80) == 0) {
-            *(stb++) = SWAP16(stw[0]) & 0xFF;   // utf16 00000000 0xxxxxxx utf8 0xxxxxxx
-        } else if((SWAP16(stw[0]) & 0xF800) == 0) { // utf16 00000yyy yyxxxxxx utf8 110yyyyy 10xxxxxx
-            *(stb++) = ((SWAP16(stw[0])>>6) & 0xFF) | 0xC0; *(stb++) = (SWAP16(stw[0]) & 0x3F) | 0x80;
-        } else if((SWAP16(stw[0]) & 0xFC00) == 0xD800 && (SWAP16(stw[1]) & 0xFC00) == 0xDC00 ) { // utf16 110110ww wwzzzzyy 110111yy yyxxxxxx (wwww = uuuuu - 1) 
+    while(SWAP_BE(stw[0])) {
+        if((SWAP_BE(stw[0]) & 0xFF80) == 0) {
+            *(stb++) = SWAP_BE(stw[0]) & 0xFF;   // utf16 00000000 0xxxxxxx utf8 0xxxxxxx
+        } else if((SWAP_BE(stw[0]) & 0xF800) == 0) { // utf16 00000yyy yyxxxxxx utf8 110yyyyy 10xxxxxx
+            *(stb++) = ((SWAP_BE(stw[0])>>6) & 0xFF) | 0xC0; *(stb++) = (SWAP_BE(stw[0]) & 0x3F) | 0x80;
+        } else if((SWAP_BE(stw[0]) & 0xFC00) == 0xD800 && (SWAP_BE(stw[1]) & 0xFC00) == 0xDC00 ) { // utf16 110110ww wwzzzzyy 110111yy yyxxxxxx (wwww = uuuuu - 1) 
                                                                              // utf8 1111000uu 10uuzzzz 10yyyyyy 10xxxxxx  
-            *(stb++)= (((SWAP16(stw[0]) + 64)>>8) & 0x3) | 0xF0; *(stb++)= (((SWAP16(stw[0])>>2) + 16) & 0x3F) | 0x80; 
-            *(stb++)= ((SWAP16(stw[0])>>4) & 0x30) | 0x80 | ((SWAP16(stw[1])<<2) & 0xF); *(stb++)= (SWAP16(stw[1]) & 0x3F) | 0x80;
+            *(stb++)= (((SWAP_BE(stw[0]) + 64)>>8) & 0x3) | 0xF0; *(stb++)= (((SWAP_BE(stw[0])>>2) + 16) & 0x3F) | 0x80; 
+            *(stb++)= ((SWAP_BE(stw[0])>>4) & 0x30) | 0x80 | ((SWAP_BE(stw[1])<<2) & 0xF); *(stb++)= (SWAP_BE(stw[1]) & 0x3F) | 0x80;
             stw++;
         } else { // utf16 zzzzyyyy yyxxxxxx utf8 1110zzzz 10yyyyyy 10xxxxxx
-            *(stb++)= ((SWAP16(stw[0])>>12) & 0xF) | 0xE0; *(stb++)= ((SWAP16(stw[0])>>6) & 0x3F) | 0x80; *(stb++)= (SWAP16(stw[0]) & 0x3F) | 0x80;
+            *(stb++)= ((SWAP_BE(stw[0])>>12) & 0xF) | 0xE0; *(stb++)= ((SWAP_BE(stw[0])>>6) & 0x3F) | 0x80; *(stb++)= (SWAP_BE(stw[0]) & 0x3F) | 0x80;
         } 
         
         stw++;
