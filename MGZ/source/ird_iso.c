@@ -171,7 +171,7 @@ u16 SWAP16(u16 value)
     
     if(result == value) return ENDIAN_SWAP_16(value);
     
-    return value;
+    return result;
 }
 
 static void UTF16_to_UTF8(u16 *stw, u8 *stb)
@@ -1121,7 +1121,6 @@ void IRD_check_md5(char *GAME_PATH, char **IRD_PATH, u32 IRD_nPATH)
 		print_load("Gathering data...");
 		s64 nFiles;
 		u64 tSize;
-		u64 unused1, unused2;
 		
 		if( IRD_FilesInfo(GAME_PATH, &nFiles, &tSize) == FAILED) {
 			print_load("Error : failed to IRD_FilesInfo");
@@ -1130,7 +1129,7 @@ void IRD_check_md5(char *GAME_PATH, char **IRD_PATH, u32 IRD_nPATH)
 		
 		print_load("Calculating files' MD5...");
 		task_Init(tSize);
-		int ret = IRD_FilesHashes(GAME_PATH, game_ird, &unused1, &unused2);
+		int ret = IRD_FilesHashes(GAME_PATH, game_ird, NULL, NULL);
 		task_End();
 		
 		if(ret == FAILED) {
@@ -1355,9 +1354,9 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
 	FileHash_t *TempFH=NULL;
 	u32 nFileHashes = 0;
 	
-	ird->FileHashesNumber=0;
-	*start_filetable=0;
-	*end_filetable=0;
+	if( ird != NULL ) ird->FileHashesNumber=0;
+	if( start_filetable != NULL) *start_filetable=0;
+	if( end_filetable != NULL) *end_filetable=0;
 	
 	struct stat s;
     int n, i;
@@ -1675,64 +1674,82 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
                     len = strlen(string2);
                     if(len!=1) strcat(string2, "/");
                     strcat(string2, string);
-
-					if(*start_filetable==0) *start_filetable = (u64) file_lba*0x800ULL;
-					if(file_lba*0x800 < *start_filetable) *start_filetable = (u64) file_lba*0x800;
 					
-					u64 footer = (u64) file_lba* 0x800ULL + (u64) file_size;
-					footer = ((footer + 2047)/2048) * 2048;
-					
-					if(*end_filetable==0) *end_filetable = footer;
-					if(*end_filetable < footer) *end_filetable = footer;
-					
-					nFileHashes = nFileHashes + 1;
-					
-					TempFH = (FileHash_t *) realloc(TempFH, nFileHashes * sizeof(FileHash_t));
-	
-					TempFH[nFileHashes-1].FilePath = strcpy_malloc(string2);
-									
-					TempFH[nFileHashes-1].Sector = file_lba;
-					memset(TempFH[nFileHashes-1].FileHash, 0, 0x10);
-					
-					md5_context ctx;
-					md5_starts( &ctx );
-										
-					strcpy(copy_file, string2);
-					copy_file_prog_bar=0;
-					
-					u32 fsize;
-					u64 to_read = file_size;
-										
-					u64 read_position = (u64) file_lba * 0x800ULL;
-					
-					task_Init(to_read);
-					while(to_read > 0) {
-						if(to_read > IRD_FILE_BUFFSIZE) fsize = IRD_FILE_BUFFSIZE;
-						else fsize = (u32) to_read;
-						
-						memset(sectors3, 0, IRD_FILE_BUFFSIZE);
-						
-						int read_ret = read_split(read_position, sectors3, (int) fsize);
-						if(read_ret < 0) {
-							printf("Error!: reading ISO file: fzise %lX, file_offset %llX : return %d", fsize, read_position, read_ret);
-							goto err;
+					/* I prefer not using this just in case I use this function with a not proper/original iso
+					if( start_filetable != NULL ) {
+						if( strcmp(string2, "/PS3_DISC.SFB") == 0 ) {
+							*start_filetable = (u64) file_lba*0x800ULL;
 						}
-						
-						md5_update(&ctx, sectors3, fsize);
-
-						to_read-= (u64) fsize;
-						
-						read_position += fsize;
-						
-						if( copy_cancel || cancel) goto err;
-						copy_current_size+=fsize;
-						task_Update(fsize);
-						
-						copy_file_prog_bar=((file_size - to_read) * 100)/ file_size;
 					}
-					task_End();
+					if( end_filetable != NULL ) {	
+						if( strcmp(string2, "/PS3_UPDATE/PS3UPDAT.PUP") == 0 ) {
+							*end_filetable = (u64) file_lba* 0x800ULL + (u64) file_size;
+						}
+					}
+					*/
 					
-					md5_finish(&ctx, TempFH[nFileHashes-1].FileHash);
+					if( start_filetable != NULL ) {
+						if(*start_filetable==0) *start_filetable = (u64) file_lba*0x800ULL;
+						if((u64) file_lba*0x800ULL < *start_filetable) *start_filetable = (u64) file_lba*0x800ULL;
+					}
+					if( end_filetable != NULL ) {	
+						u64 footer = (u64) file_lba* 0x800ULL + (u64) file_size;
+						footer = ((footer + 2047)/2048) * 2048;
+						
+						if(*end_filetable==0) *end_filetable = footer;
+						if(*end_filetable < footer) *end_filetable = footer;
+					}
+					
+					if( ird != NULL) {
+						nFileHashes = nFileHashes + 1;
+						
+						TempFH = (FileHash_t *) realloc(TempFH, nFileHashes * sizeof(FileHash_t));
+		
+						TempFH[nFileHashes-1].FilePath = strcpy_malloc(string2);
+										
+						TempFH[nFileHashes-1].Sector = file_lba;
+						memset(TempFH[nFileHashes-1].FileHash, 0, 0x10);
+						
+						md5_context ctx;
+						md5_starts( &ctx );
+											
+						strcpy(copy_file, string2);
+						copy_file_prog_bar=0;
+						
+						u32 fsize;
+						u64 to_read = file_size;
+											
+						u64 read_position = (u64) file_lba * 0x800ULL;
+						
+						task_Init(to_read);
+						while(to_read > 0) {
+							if(to_read > IRD_FILE_BUFFSIZE) fsize = IRD_FILE_BUFFSIZE;
+							else fsize = (u32) to_read;
+							
+							memset(sectors3, 0, IRD_FILE_BUFFSIZE);
+							
+							int read_ret = read_split(read_position, sectors3, (int) fsize);
+							if(read_ret < 0) {
+								printf("Error!: reading ISO file: fzise %lX, file_offset %llX : return %d", fsize, read_position, read_ret);
+								goto err;
+							}
+							
+							md5_update(&ctx, sectors3, fsize);
+
+							to_read-= (u64) fsize;
+							
+							read_position += fsize;
+							
+							if( copy_cancel || cancel) goto err;
+							copy_current_size+=fsize;
+							task_Update(fsize);
+							
+							copy_file_prog_bar=((file_size - to_read) * 100)/ file_size;
+						}
+						task_End();
+						
+						md5_finish(&ctx, TempFH[nFileHashes-1].FileHash);
+					}
 					
                     string2[len] = 0;                   
                 }
@@ -1767,27 +1784,29 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
 
 	
 // sort
-	ird->FileHashes = malloc(nFileHashes * sizeof(FileHash_t) );
-	ird->FileHashesNumber = nFileHashes;
-	
-	u64 smallest_sector = 0;
-	for(n=0; n<nFileHashes; n++) {
+	if( ird != NULL ) {
+		ird->FileHashes = malloc(nFileHashes * sizeof(FileHash_t) );
+		ird->FileHashesNumber = nFileHashes;
 		
-		for(i=0; i<nFileHashes; i++) {
-			if( TempFH[i].Sector < TempFH[smallest_sector].Sector ) {
-				smallest_sector = i;
+		u64 smallest_sector = 0;
+		for(n=0; n<nFileHashes; n++) {
+			
+			for(i=0; i<nFileHashes; i++) {
+				if( TempFH[i].Sector < TempFH[smallest_sector].Sector ) {
+					smallest_sector = i;
+				}
 			}
+			
+			memcpy(ird->FileHashes[n].FileHash, TempFH[smallest_sector].FileHash, 0x10);
+			ird->FileHashes[n].Sector = TempFH[smallest_sector].Sector;
+			ird->FileHashes[n].FilePath = strcpy_malloc(TempFH[smallest_sector].FilePath);
+			
+			TempFH[smallest_sector].Sector = -1; // MAX !
 		}
 		
-		memcpy(ird->FileHashes[n].FileHash, TempFH[smallest_sector].FileHash, 0x10);
-		ird->FileHashes[n].Sector = TempFH[smallest_sector].Sector;
-		ird->FileHashes[n].FilePath = strcpy_malloc(TempFH[smallest_sector].FilePath);
-		
-		TempFH[smallest_sector].Sector = -1; // MAX !
+		for(n=0; n<nFileHashes; n++) FREE(TempFH[n].FilePath);
+		FREE(TempFH);
 	}
-	
-	for(n=0; n<nFileHashes; n++) FREE(TempFH[n].FilePath);
-	FREE(TempFH);
 	
     return SUCCESS;
 

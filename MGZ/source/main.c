@@ -27569,9 +27569,8 @@ void Option(char *item)
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
-		start_copy_loading();
-		
-		end_copy_loading();
+		start_loading();
+		end_loading();
 	} else
 	if(strcmp(item, STR_SYMLINK_SRC) == 0) {
 		FREE(FM_OLD_PATH);
@@ -28348,8 +28347,8 @@ void Open_option()
 			add_option_item(STR_DUMP_FLASH);
 			*/
 			
-			//add_option_item("Test");
-			//add_option_item("Test2");
+			add_option_item("Test");
+			add_option_item("Test2");
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
 				add_option_item(STR_LOAD_MAMBA);
