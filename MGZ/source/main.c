@@ -2900,6 +2900,40 @@ u8 support_big_files(char *path)
 	return NO;
 }
 
+// this one support use mgz_io.h, 
+// so, it support ntfs/exfat
+int MGZ_mkdir_recursive(const char *path)
+{
+	struct stat stat_buf;
+	if (stat(path, &stat_buf) == 0 ) return 0;
+	
+	int len = strlen (path);
+	char *temp = malloc (len + 1);
+	int i;
+	int ret = 0;
+
+	memcpy (temp, path, len);
+
+	if (temp[0] == '/')
+		i = 1;
+	else
+		i = 0;
+	while (i < len) {
+		for (; i < len && temp[i] != '/'; i++);
+		temp[i] = 0;
+		if (stat (temp, &stat_buf) != 0) {
+			ret = mkdir(temp, 0777);
+			if (ret != 0) goto end;
+		}
+		if (i < len)
+			temp[i] = '/';
+		i++;
+	}
+end:
+	free(temp);
+	return ret;
+}
+
 u8 path_info(char *path) 
 {
 	struct stat s;
@@ -11734,7 +11768,7 @@ u8 dump_enc_bdvd(char *outdir)
 		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
 	}
 	
-	if(path_info(outdir)==_NOT_EXIST) mkdir_recursive(outdir);
+	MGZ_mkdir_recursive(outdir);
 	
 	print_load("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
@@ -12292,6 +12326,28 @@ error:
 	return ret;
 }
 
+u8 dump_disc_key(char *outfile)
+{	
+	u8 d1[0x10];
+	u8 d2[0x20];
+	u8 pic[0x73];
+	
+	if( get_keys(d1, d2, pic) == FAILED ) return FAILED;
+	
+	FILE *f = fopen(outfile, "wb");
+	if(f==NULL) {
+		print_load("Error : failed to fopen %s", outfile);
+		return FAILED;
+	}
+	fputs("Encrypted 3K RIP", f);
+	fwrite(&d1, 1, 0x10, f);
+	fwrite(&d2, 1, 0x10, f);
+	fwrite(&pic, 1, 0x73, f);
+	fclose(f);
+	
+	return SUCCESS;
+}
+
 u8 dump_dec_bdvd(char *outdir)
 {
 	print_head("Initialization...");
@@ -12397,7 +12453,7 @@ u8 dump_dec_bdvd(char *outdir)
 		sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
 	}
 	
-	if(path_info(outdir)==_NOT_EXIST) mkdir_recursive(outdir);
+	MGZ_mkdir_recursive(outdir);
 	
 	print_load("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
@@ -14628,7 +14684,7 @@ u8 Copy(char *src, char *dst)
 	char temp_src[255];
 	char temp_dst[255];
 	
-	if(path_info(dst) == _NOT_EXIST) mkdir_recursive(dst);
+	MGZ_mkdir_recursive(dst);
 	
 	DIR *d;
 	struct dirent *dir;
@@ -23029,7 +23085,7 @@ void pkg_unpack (const char *filename, const char *destination)
 	} else {
 		strncpy (out_dir, destination, sizeof(out_dir));
 	}
-	mkdir_recursive (out_dir);
+	MGZ_mkdir_recursive (out_dir);
 	
 	prog_bar1_value = 0;
 	for (i = 0; i < header.item_count; i++) {
@@ -23045,13 +23101,13 @@ void pkg_unpack (const char *filename, const char *destination)
 
 		snprintf (path, sizeof(path), "%s/%s", out_dir, pkg_file_path);
 		if ((files[i].type & 0xFF) == 4) {
-			mkdir_recursive (path);
+			MGZ_mkdir_recursive (path);
 		} else {
 			j = strlen (path);
 			while (j > 0 && path[j] != '/') j--;
 			if (j > 0) {
 				path[j] = 0;
-				mkdir_recursive (path);
+				MGZ_mkdir_recursive (path);
 				path[j] = '/';
 			}
 			paged_file_seek (&in, files[i].file_offset + header.data_offset);
@@ -35365,6 +35421,7 @@ u8 BDVD_MENU_CROSS()
 		char outfile[512];
 		char *date = get_date();
 		if( date != NULL) {
+			MGZ_mkdir_recursive(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 			sprintf(outfile, "%s/%s_%s.disc.key", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], list_game_ID[position], date);
 			free(date);
 			ret = dump_disc_key(outfile);

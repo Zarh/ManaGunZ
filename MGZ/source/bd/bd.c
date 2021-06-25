@@ -16,7 +16,6 @@
 #define FAILED 		0
 #define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
 
-
 extern void print_load(char *format, ...);
 extern void print_head(char *format, ...);
 extern void hex_print_load(char *data, size_t len);
@@ -170,29 +169,6 @@ error:
 	FREE(d_3dump);
 	
 	return ret;
-}
-
-u8 dump_disc_key(char *outfile)
-{	
-	u8 d1[0x10];
-	u8 d2[0x20];
-	u8 pic[0x73];
-	
-	if( get_keys(d1, d2, pic) == FAILED ) return FAILED;
-	
-	FILE *f;
-	f = fopen(outfile, "wb");
-	if(f==NULL) {
-		print_load("Error : failed to fopen %s", outfile);
-		return FAILED;
-	}
-	fputs("Encrypted 3K RIP", f);
-	fwrite(&d1, 1, 0x10, f);
-	fwrite(&d2, 1, 0x10, f);
-	fwrite(&pic, 1, 0x73, f);
-	fclose(f);
-	
-	return SUCCESS;
 }
 
 /*glevand*/
