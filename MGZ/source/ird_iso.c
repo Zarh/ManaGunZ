@@ -1023,9 +1023,9 @@ u8 IRD_get_md5(char *GAME_PATH, ird_t *ird, int len)
 		}
 		
 		ird->FileHashesNumber = ird->FileHashesNumber + 1;
-			
+		
 		ird->FileHashes = (FileHash_t *) realloc(ird->FileHashes, ird->FileHashesNumber * sizeof(FileHash_t));
-
+		
 		ird->FileHashes[ird->FileHashesNumber-1].FilePath = strcpy_malloc(&FULL_PATH[len]);
 								
 		memset(ird->FileHashes[ird->FileHashesNumber-1].FileHash, 0, 0x10);
@@ -1046,6 +1046,8 @@ void IRD_search_md5(char *FILE_PATH, ird_t *ird, u8 output_md5[0x10])
 	memset(output_md5, 0, 0x10);
 	
 	u64 len = strlen(FILE_PATH);
+	//see https://www.psx-place.com/threads/how-does-the-ps3-interpret-filenames-ending-with-a-dot.34448/page-2#post-302668
+	if(FILE_PATH[len-1]=='.') len--;
 	for(j=0; j<ird->FileHashesNumber; j++) {
 		if( !memcmp(FILE_PATH, ird->FileHashes[j].FilePath, len) ) {
 			memcpy(output_md5, ird->FileHashes[j].FileHash, 0x10);
@@ -1118,7 +1120,7 @@ void IRD_check_md5(char *GAME_PATH, char **IRD_PATH, u32 IRD_nPATH)
 			goto error;
 		}
 		
-		print_load("Calculating files' MD5...");
+		print_load("Calculating MD5...");
 		task_Init(tSize);
 		int ret = IRD_FilesHashes(GAME_PATH, game_ird, NULL, NULL);
 		task_End();

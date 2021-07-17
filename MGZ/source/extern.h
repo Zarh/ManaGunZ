@@ -33,12 +33,16 @@
 #define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
 #define FCLOSE(x) 				if(x!=NULL) {fclose(x);x=NULL;}
 
-
+extern u8 dump_3Dump();
+extern u8 *Load_3Dump();
+extern void hex_print_load(char *data, size_t len);
 extern u8 Copy(char *src, char *dst);
 extern void Delete(char* path);
 extern void print_head(char *format2, ...);
 extern void print_load(char *format, ...);
 extern u8 DEBUG;
+extern u8 cancel;
+extern u8 copy_cancel;
 extern void task_Init(const u64 max);
 extern void task_Update(u64 val);
 extern void task_Update2(u64 val);

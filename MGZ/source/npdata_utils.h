@@ -14,10 +14,6 @@
 #include "lz.h"
 #include "ec.h"
 
-#define se16(x) x
-#define se32(x)	x
-#define se64(x) x
-
 void xor(unsigned char *dest, unsigned char *src1, unsigned char *src2, int size);
 void prng(unsigned char *dest, int size);
 char* extract_file_name(const char* file_path, char real_file_name[MAX_PATH]);

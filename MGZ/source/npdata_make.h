@@ -81,8 +81,9 @@ typedef struct
 } EDAT_HEADER;
 
 u8 npdata_bruteforce(char *npdata_file, char *source_file, u8 mode, u8 *dev_klicensee);
-u8 npdata_decrypt(char *npdata_file, char *output_file, u8 *dev_klicensee, char *rap_file, char *rif_file);
+u8 npdata_decrypt(char *npdata_file, char *output_file, u8 *dev_klicensee, u8 *rifkey);
 u8 npdata_encrypt(char *input_file, char *npdata_file, u8 *dev_klicensee, char *raf_file, char *rif_file, 
 					u8 format, u8 data, u8 version, u8 compression, u8 block, u8 license, u8 type, char *cID);
+u8 get_rifkey(char *rif_file, char *rap_file, u8 *rifkey);
 
 #endif

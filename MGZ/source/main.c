@@ -2091,14 +2091,21 @@ static char *STR_DUMP_DEC_DESC=NULL;
 static char *STR_DUMP_ENC=NULL;
 #define STR_DUMP_ENC_DEFAULT				"Dump encrypted Blu-Ray disc"
 static char *STR_DUMP_DISC_KEY=NULL;
-#define STR_DUMP_DISC_KEY_DEFAULT			"Dump Blu-Ray disc key"
+#define STR_DUMP_DISC_KEY_DEFAULT			"Dump Blu-Ray disc key (3k3y header only)"
 static char *STR_DUMP_ERK=NULL;
 #define STR_DUMP_ERK_DEFAULT				"Dump eid root key"
 static char *STR_DUMP_3DUMP=NULL;
 #define STR_DUMP_3DUMP_DEFAULT				"Dump 3Dump.bin"
 static char *STR_SYSTEM_TOOLS=NULL;
 #define STR_SYSTEM_TOOLS_DEFAULT			"System tools"
-
+static char *STR_DECRYPT_NPDATA=NULL;
+#define STR_DECRYPT_NPDATA_DEFAULT			"Decrypt edat/sdat"
+static char *STR_DUMP_DEC_3K3Y=NULL;
+#define STR_DUMP_DEC_3K3Y_DEFAULT			"Dump decrypted Blu-Ray disc (3k3y header)"
+static char *STR_DUMP_ENC_3K3Y=NULL;
+#define STR_DUMP_ENC_3K3Y_DEFAULT			"Dump encrypted Blu-Ray disc (3k3y header)"
+static char *STR_DDK_REDUMP=NULL;
+#define STR_DDK_REDUMP_DEFAULT				"Dump Blu-Ray disc key, redump.org logs"
 
 
 #define DB_PREFIX			"[DB] "
@@ -2205,6 +2212,7 @@ void add_GAMELIST(char *path);
 void sort_GAMELIST();
 void update_RootDisplay();
 float DrawTXTinLineBox(float x, float y, float z, float w, char *string, u32 bg_color, u32 font_color);
+int Extract_SELF(char *in, char *out, u8 *rif);
 
 void Draw_MENU();
 
@@ -3718,6 +3726,206 @@ void ScreenShot()
 	FREE(mem);
 
 	end_loading();
+}
+
+//*******************************************************
+// NPDATA  -  EDAT / SDAT
+//*******************************************************
+
+u8 npd_bf_elf(char *dir_path, char *npd_file, u8 *rifkey, u8 *dev_klicensee)
+{
+	u8 ret = FAILED;
+	
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir(dir_path);
+	if(d==NULL) return ret;
+	
+	while ((dir = readdir(d))) {
+		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+		
+		char full_path[1024]={0};
+		sprintf(full_path, "%s/%s", dir_path, dir->d_name);
+		
+		if(dir->d_type & DT_DIR) {
+			npd_bf_elf(full_path, npd_file, rifkey, dev_klicensee);
+			continue;
+		}
+		
+		char *ext = GetExtension(dir->d_name);
+		
+		if( !strcasecmp(ext, ".elf") || !strcasecmp(ext, ".prx") || !strcasecmp(dir->d_name, _EBOOT_ELF)) {
+			ret = npdata_bruteforce(npd_file, full_path, NPDATA_BF_MODE_BINARY | NPDATA_BF_MODE_TEXT | NPDATA_BF_MODE_UNICODE, dev_klicensee);
+			if(ret == SUCCESS) {
+				break;
+			}
+		} else
+		if( !strcasecmp(dir->d_name, _EBOOT_BIN) || !strcasecmp(ext, ".self") || !strcasecmp(ext, ".sprx") ) {
+			char out[1024]={0};
+			strcpy(out, full_path);
+			RemoveExtension(out);
+			if( !strcasecmp(dir->d_name, _EBOOT_BIN) ) {
+				strcat(out, ".elf");
+			} else
+			if( !strcasecmp(ext, ".self") ) {
+				strcat(out, ".elf");
+			} else
+			if( !strcasecmp(ext, ".sprx") ) {
+				strcat(out, ".prx");
+			}
+			
+			if( Extract_SELF(full_path, out, rifkey) == SUCCESS) {
+				ret = npdata_bruteforce(npd_file, out, NPDATA_BF_MODE_BINARY | NPDATA_BF_MODE_TEXT | NPDATA_BF_MODE_UNICODE, dev_klicensee);
+				Delete(out);
+				if(ret == SUCCESS) {
+					break;
+				}
+			}
+		}
+	}
+	
+	closedir(d);
+	
+	return ret;
+}
+
+u8 npd_decrypt(char *in)
+{
+	char out[1024]={0};
+	char content_id[36]={0};
+	char rap_path[1024]={0};
+	char rif_path[1024]={0};
+	u8 rifkey[0x10]={0};
+	char home[] = "/dev_hdd0/home";
+	char klic_db[512]={0};
+	u8 dev_klicensee[0x10]={0};
+	int i;
+	
+	
+//	get content_id
+	FILE *fi = fopen(in, "rb");
+	if(fi==NULL) {
+		print_load("Error : cannot fopen %s", in);
+		return FAILED;
+	}
+	fseek(fi, 0x10, SEEK_SET);
+	fread(content_id, 36, 1, fi);
+	fclose(fi);
+	
+//	set out
+	strcpy(out, in);
+	RemoveExtension(out);
+	strcat(out, ".dat");
+	
+//	search rap/rif file
+	DIR *d;
+	struct dirent *dir;
+	
+	d = opendir(home);
+	if(d!=NULL) {
+		while ((dir = readdir(d))) {
+			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
+			
+			memset(rap_path, 0, 1024);
+			memset(rif_path, 0, 1024);
+			 
+			sprintf(rap_path, "%s/%s/exdata/%s.rap", home, dir->d_name, content_id);
+			print_load(rap_path);
+			if(path_info(rap_path) == _FILE) {
+				closedir(d);
+				goto get_rif_key;
+			}
+			sprintf(rif_path, "%s/%s/exdata/%s.rif", home, dir->d_name, content_id);
+			print_load(rif_path);
+			if(path_info(rif_path) == _FILE) {
+				closedir(d);
+				goto get_rif_key;
+			}
+		}
+		closedir(d);
+	}
+	
+	for(i=0; i<=device_number; i++) {
+		memset(rap_path, 0, 1024);
+		memset(rif_path, 0, 1024);
+		
+		sprintf(rap_path, "/%s/exdata/%s.rap", list_device[i], content_id);
+		if(path_info(rap_path) == _FILE) {
+			goto get_rif_key;
+		}
+		
+		sprintf(rif_path, "/%s/exdata/%s.rif", list_device[i], content_id);
+		if(path_info(rif_path) == _FILE) {
+			goto get_rif_key;
+		}
+	}
+	
+get_rif_key:
+	get_rifkey(rif_path, rap_path, rifkey);
+
+// get dev_klic
+	sprintf(klic_db, "/dev_hdd0/game/%s/USRDIR/sys/dev_klics.txt", ManaGunZ_id);
+	if( npdata_bruteforce(in, klic_db, NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
+		goto decrypt;
+	}
+	
+	// webman MOD
+	if( npdata_bruteforce(in, "/dev_hdd0/klic.log", NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
+		goto db_add;
+	}
+	
+	// evilnat CFW
+	if( npdata_bruteforce(in, "/dev_hdd0/tmp/cfw_settings.log", NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
+		goto db_add;
+	}
+	
+	// mysis xai_plugin
+	if( npdata_bruteforce(in, "/dev_hdd0/tmp/cfw-settings.log", NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
+		goto db_add;
+	}
+	
+	// mysis poc
+	if( npdata_bruteforce(in, "/dev_hdd0/game/PRXLOADER/USRDIR/PS3_PPU_Project1.log", NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
+		goto db_add;
+	}
+	
+	// search in self, sprx -> elf, prx
+	char *pt = strstr(in, "USRDIR");
+	char usrdir[512]={0};
+	if(pt) {
+		strncpy(usrdir, in, pt - in + 6);
+		printf(usrdir);
+		if( npd_bf_elf(usrdir, in, rifkey, dev_klicensee) == SUCCESS) {
+			goto db_add;	
+		}
+	}
+	
+	print_load("Error : cannot find dev_klicensee");
+	return FAILED;
+		
+db_add: ;
+	char rifkey_str[0x20]={0};
+	FILE *db = fopen(klic_db, "a");
+	if( db == NULL) goto db_upload;
+	for(i=0; i<0x10; i++) {
+		sprintf(rifkey_str + i*2, "%02X", rifkey[i]);
+	}
+	fputs(rifkey_str, db);
+	fputs("\n", db);
+	fclose(db);
+	
+// todo
+db_upload:
+	
+	
+decrypt:
+	if( npdata_decrypt(in, out, dev_klicensee, rifkey) == FAILED ) {
+		print_debug("Error : failed to decrypt %s", in);
+		return FAILED;
+	}
+	
+	return SUCCESS;
 }
 
 //*******************************************************
@@ -6992,8 +7200,10 @@ void update_lang()
 	LANG(STR_DUMP_ERK, "STR_DUMP_ERK", STR_DUMP_ERK_DEFAULT);
 	LANG(STR_DUMP_3DUMP, "STR_DUMP_3DUMP", STR_DUMP_3DUMP_DEFAULT);
 	LANG(STR_SYSTEM_TOOLS, "STR_SYSTEM_TOOLS", STR_SYSTEM_TOOLS_DEFAULT);
-
-	
+	LANG(STR_DECRYPT_NPDATA, "STR_DECRYPT_NPDATA", STR_DECRYPT_NPDATA_DEFAULT);
+	LANG(STR_DUMP_DEC_3K3Y, "STR_DUMP_DEC_3K3Y", STR_DUMP_DEC_3K3Y_DEFAULT);
+	LANG(STR_DUMP_ENC_3K3Y, "STR_DUMP_ENC_3K3Y", STR_DUMP_ENC_3K3Y_DEFAULT);
+	LANG(STR_DDK_REDUMP, "STR_DDK_REDUMP", STR_DDK_REDUMP_DEFAULT);
 
 	FREE(STR_DB_NET);
 	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
@@ -10358,7 +10568,6 @@ void Draw_Loading(void *unused)
 			if(OldPad(BUTTON_R1) ) DEBUG = NO;
 			else DEBUG = YES;
 		}
-		
 		if(loading_can_turnoff && NewPad(BUTTON_L1)) {
 			shutdown= !shutdown;
 		}
@@ -11705,152 +11914,6 @@ void DumpDevicesData()
 	free(info);
 }
 
-#define BDVD_BUFF_SEC_NB		0x400
-#define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
-
-u8 dump_enc_bdvd(char *outdir)
-{
-	char ISO_PATH[512];
-	char SPLIT_ISO_PATH[512]={0};
-	char TITLE_ID[10];
-	FILE *f=NULL;
-	int source = 0;
-	char *DATE = NULL;
-	int ret = FAILED;
-	u8 *buff=NULL;
-	
-	if( GetParamSFO("TITLE_ID", TITLE_ID, "/dev_bdvd") == FAILED) return FAILED;
-	TITLE_ID[9]=0;
-	
-	DATE = get_date();
-	if(DATE == NULL) {
-		ret=FAILED;
-		goto error;
-	}
-	
-	device_info_t device_info;
-	memset(&device_info, 0, sizeof(device_info));
-	ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
-	if( ret != 0 ) {
-		print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
-		ret = FAILED;
-		goto error;
-	}
-	
-	ret = sys_storage_open(BDVD_DRIVE, &source);
-	if( ret != 0) {
-		print_load("Error : sys_storage_open");
-		ret=FAILED;
-		goto error;
-	}
-	
-	buff = (u8 *) malloc(BDVD_BUFFSIZE);
-	if(buff==NULL) {
-		print_load("Error : DumpDevicesData malloc FAILED !");
-		ret=FAILED;
-		goto error;
-	}
-
-	u64 count = device_info.sector_count;
-	u32 read;
-	u64 current_sector=0;
-	u64 sector_nb = BDVD_BUFF_SEC_NB;
-	
-	u8 split = NO;
-	u32 N_SPLIT_ISO = 0;
-	u32 MAX_SPLIT_SECTOR = 0x1FFFFF; // 4GB MAX
-	
-	if( MAX_SPLIT_SECTOR < count )  split = is_FAT32(outdir);
-	
-	if(split) {
-		sprintf(ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
-	} else {
-		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
-	}
-	
-	MGZ_mkdir_recursive(outdir);
-	
-	print_load("fopen %s", ISO_PATH);
-	f = fopen(ISO_PATH, "wb");
-	if(f==NULL) {
-		print_load("Error : DumpDevicesData fopen FAILED ! %s");
-		ret=FAILED;
-		goto error;
-	}
-	
-	strcpy( copy_src, "/dev_bdvd");
-	strcpy( copy_dst, ISO_PATH);
-
-	gathering_nb_file = -1;
-	gathering_nb_directory = -1;
-	
-	gathering_total_size = (u64) count * 0x800ULL;
-	
-	while( current_sector < count ) {
-		memset(buff, 0, BDVD_BUFFSIZE);
-		
-		if(count < current_sector + BDVD_BUFF_SEC_NB) sector_nb = count - current_sector;
-		else sector_nb = BDVD_BUFF_SEC_NB;
-		
-		sys_storage_read(source, current_sector, sector_nb, buff, &read, 0);
-		
-		if(copy_cancel || cancel) goto error;
-		
-		if( split ) {
-			u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
-				
-			if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
-				fwrite(buff, sector_nb, 0x800, f);
-			} else {
-				u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
-				fwrite(buff, last_sectors, 0x800, f);
-				
-				FCLOSE(f);
-				
-				if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
-				memset(SPLIT_ISO_PATH, 0, 512);
-				
-				N_SPLIT_ISO++;
-				
-				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
-				
-				print_load("fopen %s", SPLIT_ISO_PATH);
-				f = fopen(SPLIT_ISO_PATH, "wb");
-				if(f==NULL) {
-					print_load("Error : fopen");
-					goto error;
-				}
-				
-				u32 sectors_left = sector_nb - last_sectors;
-				fwrite(buff, sectors_left, 0x800, f);
-			}
-		} else {
-			fwrite(buff, sector_nb, 0x800, f);
-		}
-		
-		current_sector += sector_nb;
-
-		copy_current_size += (u64) sector_nb * 0x800ULL;	
-		
-		if(copy_cancel || cancel) goto error;
-	}
-	
-	SetPerms(ISO_PATH);
-	
-	ret = SUCCESS;
-
-error:
-
-	FCLOSE(f);
-	if(source != 0) sys_storage_close(source);
-	FREE(buff);
-	FREE(DATE);
-	
-	if(copy_cancel || cancel) return FAILED;
-	
-	return ret;
-}
-
 u32 u8_to_u32(u8* arr)
 {
 	return (0x1000000*arr[0] + 0x10000*arr[1] + 0x100*arr[2] + arr[3]);
@@ -12055,7 +12118,7 @@ IRD_meta_sig is the CRC2 of these values :
 
 I didn't include the TITLE because sometimes it's modified by the user.
 The value PS3_SYSTEM_VER from param.sfo is used if PS3UPDAT.PUP doesn't exist.
-Otherwise, it will get the version from the PUP like it's done by 3key tools.
+Otherwise, it will get the version from the PUP like it's done by 3k3y tools.
 
 IRD_files_sig is used when mgz check md5 of file,
 It won't download 2 ird with the same IRD_meta_sig+IRD_file_sig
@@ -12326,29 +12389,195 @@ error:
 	return ret;
 }
 
-u8 dump_disc_key(char *outfile)
-{	
-	u8 d1[0x10];
-	u8 d2[0x20];
-	u8 pic[0x73];
+// Zefie header https://github.com/zefie/getkey_gameos_zefie
+#define EncryptedZefieISO			"Encrypted 3K RIP"
+
+// cobra headers
+// dump
+#define EncryptedCobraISO			"Encr. COBRA ISO "
+#define DecryptedCobraISO			"Decr. COBRA ISO "
+
+// build
+#define EncryptedCobraBuild			"Encr. COBRA IRD "
+#define DecryptedCobraBuild			"Decr. COBRA IRD "
+
+// 3k3y headers
+// dump
+#define Encrypted3KISO				"Encrypted 3K ISO"
+#define Decrypted3KISO				"Decrypted 3K ISO"
+
+// build
+#define Encrypted3KBuild			"Encrypted 3K BLD"
+#define Decrypted3KBuild			"Decrypted 3K BLD"
+#define Encrypted3KHomebrew			"Encrypted 3K BLH"
+#define Decrypted3KHomebrew			"Decrypted 3K BLH"
+#define Encrypted3KFailedBuild		"Encrypted 3K BLF"
+#define Decrypted3KFailedBuild		"Decrypted 3K BLF"
+
+// manager
+#define Encrypted3KManager			"Encrypted 3K MNU"
+#define Decrypted3KManager			"Decrypted 3K MNU"
+
+#define BDVD_BUFF_SEC_NB		0x400
+#define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
+
+u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
+{
+	char ISO_PATH[512];
+	char SPLIT_ISO_PATH[512]={0};
+	char TITLE_ID[10];
+	FILE *f=NULL;
+	int source = 0;
+	char *DATE = NULL;
+	int ret = FAILED;
+	u8 *buff=NULL;
 	
-	if( get_keys(d1, d2, pic) == FAILED ) return FAILED;
+	if( GetParamSFO("TITLE_ID", TITLE_ID, "/dev_bdvd") == FAILED) return FAILED;
+	TITLE_ID[9]=0;
 	
-	FILE *f = fopen(outfile, "wb");
-	if(f==NULL) {
-		print_load("Error : failed to fopen %s", outfile);
-		return FAILED;
+	DATE = get_date();
+	if(DATE == NULL) {
+		ret=FAILED;
+		goto error;
 	}
-	fputs("Encrypted 3K RIP", f);
-	fwrite(&d1, 1, 0x10, f);
-	fwrite(&d2, 1, 0x10, f);
-	fwrite(&pic, 1, 0x73, f);
-	fclose(f);
 	
-	return SUCCESS;
+	device_info_t device_info;
+	memset(&device_info, 0, sizeof(device_info));
+	ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
+	if( ret != 0 ) {
+		print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
+		ret = FAILED;
+		goto error;
+	}
+	
+	ret = sys_storage_open(BDVD_DRIVE, &source);
+	if( ret != 0) {
+		print_load("Error : sys_storage_open");
+		ret=FAILED;
+		goto error;
+	}
+	
+	buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	if(buff==NULL) {
+		print_load("Error : DumpDevicesData malloc FAILED !");
+		ret=FAILED;
+		goto error;
+	}
+
+	u64 count = device_info.sector_count;
+	u32 read;
+	u64 current_sector=0;
+	u64 sector_nb = BDVD_BUFF_SEC_NB;
+	
+	u8 split = NO;
+	u32 N_SPLIT_ISO = 0;
+	u32 MAX_SPLIT_SECTOR = 0x1FFFFF; // 4GB MAX
+	
+	if( MAX_SPLIT_SECTOR < count )  split = is_FAT32(outdir);
+	
+	if(split) {
+		sprintf(ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
+	} else {
+		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
+	}
+	
+	MGZ_mkdir_recursive(outdir);
+	
+	print_load("fopen %s", ISO_PATH);
+	f = fopen(ISO_PATH, "wb");
+	if(f==NULL) {
+		print_load("Error : DumpDevicesData fopen FAILED ! %s");
+		ret=FAILED;
+		goto error;
+	}
+	
+	strcpy( copy_src, "/dev_bdvd");
+	strcpy( copy_dst, ISO_PATH);
+
+	gathering_nb_file = -1;
+	gathering_nb_directory = -1;
+	
+	gathering_total_size = (u64) count * 0x800ULL;
+	
+	while( current_sector < count ) {
+		memset(buff, 0, BDVD_BUFFSIZE);
+		
+		if(count < current_sector + BDVD_BUFF_SEC_NB) sector_nb = count - current_sector;
+		else sector_nb = BDVD_BUFF_SEC_NB;
+		
+		sys_storage_read(source, current_sector, sector_nb, buff, &read, 0);
+		
+		if(current_sector==0 && is_3k3y) {
+			u8 d1[0x10];
+			u8 d2[0x20];
+			u8 pic[0x73];
+			
+			if( get_keys(d1, d2, pic) == SUCCESS ) {
+				memcpy((u8 *) buff+0xF70, Encrypted3KISO, 0x10);
+				memcpy((u8 *) buff+0xF80, d1, 0x10);
+				memcpy((u8 *) buff+0xF90, d2, 0x10);
+				memcpy((u8 *) buff+0xFA0, pic, 0x73);
+			}
+		}
+		
+		if(copy_cancel || cancel) goto error;
+		
+		if( split ) {
+			u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+				
+			if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+				fwrite(buff, sector_nb, 0x800, f);
+			} else {
+				u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+				fwrite(buff, last_sectors, 0x800, f);
+				
+				FCLOSE(f);
+				
+				if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
+				memset(SPLIT_ISO_PATH, 0, 512);
+				
+				N_SPLIT_ISO++;
+				
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
+				
+				print_load("fopen %s", SPLIT_ISO_PATH);
+				f = fopen(SPLIT_ISO_PATH, "wb");
+				if(f==NULL) {
+					print_load("Error : fopen");
+					goto error;
+				}
+				
+				u32 sectors_left = sector_nb - last_sectors;
+				fwrite(buff, sectors_left, 0x800, f);
+			}
+		} else {
+			fwrite(buff, sector_nb, 0x800, f);
+		}
+		
+		current_sector += sector_nb;
+
+		copy_current_size += (u64) sector_nb * 0x800ULL;	
+		
+		if(copy_cancel || cancel) goto error;
+	}
+	
+	SetPerms(ISO_PATH);
+	
+	ret = SUCCESS;
+
+error:
+
+	FCLOSE(f);
+	if(source != 0) sys_storage_close(source);
+	FREE(buff);
+	FREE(DATE);
+	
+	if(copy_cancel || cancel) return FAILED;
+	
+	return ret;
 }
 
-u8 dump_dec_bdvd(char *outdir)
+u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 {
 	print_head("Initialization...");
 	u8 ret=FAILED;
@@ -12603,7 +12832,7 @@ u8 dump_dec_bdvd(char *outdir)
 	task_Init(gathering_total_size);
 	print_load("Calculating files' MD5...");
 	if( IRD_FilesHashes(ISO_PATH, ird, &header_lenght, &footer_offset) == FAILED) {
-		print_load("Error : failed to get filehashes");
+		print_load("Error : failed to get file-hashes");
 		goto error;
 	}
 	task_End();
@@ -12695,6 +12924,21 @@ u8 dump_dec_bdvd(char *outdir)
 error:
 	
 	if( iso_done ) {
+		if(is_3k3y) {
+			FCLOSE(f);
+			
+			f = fopen(ISO_PATH, "rb+");
+			if(f) {
+				fseek(f, 0xF70, SEEK_SET);
+				fputs(Decrypted3KISO, f);
+				fwrite(ird->Data1, 0x10, 1, f);
+				fwrite(ird->Data2, 0x10, 1, f);
+				fwrite(ird->PIC  , 0x73, 1, f);
+				FCLOSE(f);
+			}
+			
+		}
+		
 		add_GAMELIST(ISO_PATH);
 		sort_GAMELIST();
 		init_Load_GAMEPIC();
@@ -12713,6 +12957,28 @@ error:
 	FREE(sec0sec1);
 	
 	return ret;
+}
+
+u8 dump_3k3y_header(char *outfile)
+{	
+	u8 d1[0x10];
+	u8 d2[0x20];
+	u8 pic[0x73];
+	
+	if( get_keys(d1, d2, pic) == FAILED ) return FAILED;
+	
+	FILE *f = fopen(outfile, "wb");
+	if(f==NULL) {
+		print_load("Error : failed to fopen %s", outfile);
+		return FAILED;
+	}
+	fputs(Encrypted3KISO, f);
+	fwrite(&d1, 1, 0x10, f);
+	fwrite(&d2, 1, 0x10, f);
+	fwrite(&pic, 1, 0x73, f);
+	fclose(f);
+	
+	return SUCCESS;
 }
 
 //*******************************************************
@@ -18921,7 +19187,7 @@ int Sign_PS2ELF(char *in, char *out)
 
 }
 
-int Extract_SELF(char *in, char *out)
+int Extract_SELF(char *in, char *out, u8 *rif)
 {
 	_template = NULL;
 	_file_type = NULL;
@@ -18947,13 +19213,16 @@ int Extract_SELF(char *in, char *out)
 	_klicensee = NULL;
 	_real_fname = NULL;
 	_add_sig = NULL;
-
+	
 	_decrypt_file = FALSE;
 	_encrypt_file = FALSE;
 	
 	_file_type=(char*) "SELF";
 	_decrypt_file = TRUE;
 	
+	if(rif) np_set_klicensee(rif);
+	
+	print_load("Extracting %s", in);
 	memset(temp_buffer, 0, sizeof(temp_buffer));
 	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
@@ -18992,7 +19261,7 @@ u8 re_sign_EBOOT(char *path)
 	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
-	if(Extract_SELF(local_path, elf)==FAILED) {
+	if(Extract_SELF(local_path, elf, NULL)==FAILED) {
 		print_load("Error : Failed extract EBOOT.BIN");
 		return FAILED;
 	}
@@ -19044,7 +19313,7 @@ u8 re_sign_SELF(char *path)
 	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
-	if(Extract_SELF(local_path, elf)==FAILED) {
+	if(Extract_SELF(local_path, elf, NULL)==FAILED) {
 		print_load("Error : Failed extract %s", filename);
 		return FAILED;
 	}
@@ -19096,7 +19365,7 @@ u8 re_sign_SPRX(char *path)
 	RemoveExtension(prx);
 	strcat(prx, ".prx");
 	
-	if(Extract_SELF(local_path, prx)==FAILED) {
+	if(Extract_SELF(local_path, prx, NULL)==FAILED) {
 		print_load("Error : Failed extract %s", filename);
 		return FAILED;
 	}
@@ -19988,7 +20257,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 
-		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx, NULL)==NOK) {
 			return NOK;
 		}
 		
@@ -20055,7 +20324,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 
-		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx, NULL)==NOK) {
 			return NOK;
 		}
 		
@@ -20119,7 +20388,7 @@ int patch_libfs(int8_t device)
 			return NOK;
 		}
 
-		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx, NULL)==NOK) {
 			return NOK;
 		}
 		
@@ -20232,7 +20501,7 @@ int patch_exp_plug()
 			return NOK;
 		}
 
-		if(Extract_SELF(ori_sprx, ori_prx)==NOK) {
+		if(Extract_SELF(ori_sprx, ori_prx, NULL)==NOK) {
 			return NOK;
 		}
 		
@@ -20297,7 +20566,7 @@ char *get_libaudio_path()
 	sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/libaudio_%X.prx", ManaGunZ_id, firmware);
 	sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.prx", ManaGunZ_id, firmware);
 	
-	if( Extract_SELF("/dev_flash/sys/external/libaudio.sprx", ori_prx) == FAILED ) {
+	if( Extract_SELF("/dev_flash/sys/external/libaudio.sprx", ori_prx, NULL) == FAILED ) {
 		FREE(libaudio_path);
 		return NULL;
 	}
@@ -22106,10 +22375,12 @@ u8 MountGame(char *GamePath)
 		
 	strcpy(GamPath, GamePath);	
 	Get_ID(GamPath, platform, GamID);
-	
+
 	iso = is_iso(GamePath);
 	
 	if(platform == ISO_PS3 || platform == JB_PS3) {
+		
+		if(GamID[0]==0) strcpy(GamID, "TEST01234\0");
 		
 		if(payload == NO_PAYLOAD) {
 			print_load("Error : can't be mounted, no payload available");
@@ -23365,7 +23636,7 @@ print_load("Create AutoMount...");
 print_load("Extract EBOOT...");
 	sprintf(src, "/dev_hdd0/game/%s/USRDIR/EBOOT.BIN", ManaGunZ_id);
 	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
-	if( Extract_SELF(src, dst) == FAILED ) {
+	if( Extract_SELF(src, dst, NULL) == FAILED ) {
 		print_load("Error : Failed extract EBOOT.BIN");
 		Delete(lch);
 		return FAILED;
@@ -26228,7 +26499,6 @@ void sort(int window_id)
 		FREE(list_Fil_type[i]);
 		list_Fil_type[i] = strcpy_malloc(ta);
 	}
-	
 	FREE(ta);
 	FREE(tb);
 	
@@ -27594,33 +27864,18 @@ void Option(char *item)
 		}
 	} else
 	if(strcmp(item, "Test") == 0) {
+
 		start_loading();
-		char *edat = "/dev_hdd0/data000.edat";
-		char *dat = "/dev_hdd0/data000.dat";
-		char *eboot_elf = "/dev_hdd0/EBOOT.elf";
-		char *eboot_bin = "/dev_hdd0/EBOOT.BIN";
-		char *rap = "/dev_hdd0/EP0002-NPEB02082_00-LEGENDOFKORRAPS3.rap";
-		char *dev_klics_txt = "/dev_hdd0/game/MANAGUNZ0/USRDIR/sys/dev_klics.txt";
 		
-		u8 dev_klicensee[0x10]={0};
+		strcpy(temp, "/dev_bdvd/PS3_GAME/USRDIR/Common/res/TitleUpdate/tutorialDiff");
+		print_load("Path : %s", temp);
+		u64 tsize = get_size(temp);
+		print_load("Size : %llX", tsize);
 		
-		print_load("Search dev_klicensee inside local db");
-		if( npdata_bruteforce(edat, dev_klics_txt, NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
-			print_load("Found !");
-			hex_print_load((char *)dev_klicensee, 0x10);
-		} else 
-		if( npdata_bruteforce(edat, eboot_elf, NPDATA_BF_MODE_BINARY, dev_klicensee) == SUCCESS) {
-			print_load("Found !");
-			hex_print_load((char *)dev_klicensee, 0x10);
-		} else {
-			print_load("Not found !");
-		}
-		
-		if( npdata_decrypt(edat, dat, dev_klicensee, rap, NULL) == SUCCESS) {
-			print_load("SUCCESS");
-		} else {
-			print_load("FAILED");
-		}
+		strcpy(temp, "/dev_bdvd/PS3_GAME/USRDIR/Common/res/TitleUpdate/tutorialDiff.");
+		print_load("Path : %s", temp);
+		tsize = get_size(temp);
+		print_load("Size : %llX", tsize);
 		
 		end_loading();
 	} else
@@ -27783,7 +28038,7 @@ void Option(char *item)
 			
 			if( path_info(elf) != _NOT_EXIST) Delete(elf);
 			
-			if(Extract_SELF(option_sel[i], elf)==FAILED) {
+			if(Extract_SELF(option_sel[i], elf, NULL)==FAILED) {
 				print_load("Error : Failed to extract");
 			}
 		}
@@ -27811,7 +28066,7 @@ void Option(char *item)
 			
 			if( path_info(elf) != _NOT_EXIST) Delete(elf);
 			
-			if(Extract_SELF(option_sel[i], elf)==FAILED) {
+			if(Extract_SELF(option_sel[i], elf, NULL)==FAILED) {
 				print_load("Error : Failed to extract");
 			}
 		}
@@ -27885,13 +28140,19 @@ void Option(char *item)
 			RemoveExtension(prx);
 			strcat(prx, ".prx");
 			if( path_info(prx) != _NOT_EXIST) Delete(prx);
-			if(Extract_SELF(option_sel[i], prx)==FAILED) {
+			if(Extract_SELF(option_sel[i], prx, NULL)==FAILED) {
 				print_load("Error : Failed to extract");
 			}
 		}
 		end_loading();
 		Window(".");
 	} else
+	if(strcmp(item, STR_DECRYPT_NPDATA) == 0) {
+		start_loading();
+		for(i=0; i<=option_sel_N; i++) npd_decrypt(option_sel[i]);
+		end_loading();
+		Window(".");
+	} else	
 	if(strcmp(item, STR_RESIGN_SPRX) == 0) {
 		start_loading();
 		for(i=0; i<=option_sel_N; i++) {
@@ -28299,8 +28560,10 @@ void Option(char *item)
 	if(strcmp(item, STR_MOUNTGAME) == 0) {
 		start_loading();
 		read_game_setting(-1);
-		MountGame(option_sel[0]);
+		ret = MountGame(option_sel[0]);
 		end_loading();
+		if(ret) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
 	}
 	else
 	if(strcmp(item, STR_DOCK_FULL) == 0) {
@@ -28473,6 +28736,10 @@ void Open_option()
 					if( can_read(ext) == YES) {
 						if(option_sel_N==0) add_option_item(STR_VIEW_TXT);
 					}
+					
+					if(!strcasecmp(ext, ".edat") || !strcasecmp(ext, ".sdat")) {
+						add_option_item(STR_DECRYPT_NPDATA);
+					} else
 					if(!strcasecmp(ext, ".sfo")) {
 						if(option_sel_N==0) add_option_item(STR_VIEW_SFO);
 					} else
@@ -29580,7 +29847,7 @@ void Draw_HELP()
 	FontColor(COLOR_1);
 	FontSize(13);
 	
-	if(item_is(STR_DUMP_DEC)) {
+	if(item_is(STR_DUMP_DEC) || item_is(STR_DUMP_DEC_3K3Y)) {
 		DrawString(x, y, STR_DUMP_DEC_DESC);
 	} else
 	if(item_is(STR_BT_AUDIO)) {
@@ -35335,6 +35602,13 @@ void init_BDVD_MENU()
 			add_item_value_MENU(tmp);
 		}
 	}
+	add_item_MENU(STR_DUMP_DEC_3K3Y, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
 	
 	add_item_MENU(STR_DUMP_ENC, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
@@ -35343,8 +35617,22 @@ void init_BDVD_MENU()
 			add_item_value_MENU(tmp);
 		}
 	}
+	add_item_MENU(STR_DUMP_ENC_3K3Y, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
 	
 	add_item_MENU(STR_DUMP_DISC_KEY, ITEM_TEXTBOX);
+	for(j=0; j<=scan_dir_number; j++) {
+		for(i=0; i<=device_number; i++) {
+			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+			add_item_value_MENU(tmp);
+		}
+	}
+	add_item_MENU(STR_DDK_REDUMP, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
 			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
@@ -35403,14 +35691,28 @@ u8 BDVD_MENU_CROSS()
 	} else
 	if(item_is(STR_DUMP_DEC)) {
 		start_copy_loading();
-		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], NO);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(item_is(STR_DUMP_DEC_3K3Y)) {
+		start_copy_loading();
+		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], YES);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
 	} else
 	if(item_is(STR_DUMP_ENC)) {
 		start_copy_loading();
-		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], NO);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(item_is(STR_DUMP_ENC_3K3Y)) {
+		start_copy_loading();
+		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], YES);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
@@ -35424,7 +35726,24 @@ u8 BDVD_MENU_CROSS()
 			MGZ_mkdir_recursive(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
 			sprintf(outfile, "%s/%s_%s.disc.key", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], list_game_ID[position], date);
 			free(date);
-			ret = dump_disc_key(outfile);
+			ret = dump_3k3y_header(outfile);
+		}
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(item_is(STR_DDK_REDUMP)) {
+		start_copy_loading();
+		u8 ret =FAILED;
+		char log_path[512];
+		char pic_path[512];
+		char *date = get_date();
+		if( date != NULL) {
+			MGZ_mkdir_recursive(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+			sprintf(log_path, "%s/%s_%s.getkey.log", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], list_game_ID[position], date);
+			sprintf(pic_path, "%s/%s_%s.disc.pic", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], list_game_ID[position], date);
+			free(date);
+			ret = get_redump_log(log_path, pic_path);
 		}
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);

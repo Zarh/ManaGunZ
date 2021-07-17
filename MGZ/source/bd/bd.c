@@ -8,18 +8,10 @@
 #include "storage.h"
 #include "ioctl.h"
 #include "bd.h"
+#include "../extern.h"
 
 #define SG_DXFER_TO_DEV		ATAPI_PIO_DATA_OUT_PROTO, ATAPI_DIR_WRITE
 #define SG_DXFER_FROM_DEV		ATAPI_PIO_DATA_IN_PROTO, ATAPI_DIR_READ
-
-#define SUCCESS 	1
-#define FAILED 		0
-#define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
-
-extern void print_load(char *format, ...);
-extern void print_head(char *format, ...);
-extern void hex_print_load(char *data, size_t len);
-extern u8 *Load_3Dump();
 
 unsigned int version=2;
 
@@ -46,7 +38,7 @@ unsigned char Key8[0x10];
 
 /* Handler to the BD-ROM */
 int g_fd = 0;
-FILE *g_file_binlog = NULL;
+FILE *g_file_log = NULL;
 
 void calculate_session_keys(unsigned char* r1, unsigned char* r2);
 int do_send_key(char keyFormat, unsigned char* payload, int payload_len);
@@ -58,6 +50,7 @@ int do_unknown_e1(unsigned char* header, unsigned char* payload);
 void load_keys(unsigned char* EID4, unsigned char* CMAC, unsigned char* KE, unsigned char* IE);
 int get_dec_key(unsigned char* d1, unsigned char* d2);
 int get_data(unsigned char* data1, unsigned char* data2);
+void hex_fprintf(FILE *fp, unsigned char *buf, size_t len);
 
 int do_cdb(unsigned char* cdb, int cdb_len, unsigned char* transfer, int transfer_len, uint32_t proto, uint32_t type)
 {
@@ -69,12 +62,13 @@ int do_cdb(unsigned char* cdb, int cdb_len, unsigned char* transfer, int transfe
 	if(transfer_len == 0 || transfer == NULL) atapi_cmnd.blocks = 0;
 	
 	ret = sys_storage_send_atapi_command(g_fd, &atapi_cmnd, transfer);
-
 	if(ret != 0) {
 		print_load("ioctl indicates command failed: %d", ret);
+		if(g_file_log) fprintf(g_file_log, "ioctl indicates command failed: %d\r\n", ret);
 		return FAILED;
 	}
-
+	
+	if(g_file_log) fprintf(g_file_log, "return value of ioctl indicates success\r\n");
 	print_load("SUCCESS");
 	return SUCCESS;
 }
@@ -82,14 +76,188 @@ int do_cdb(unsigned char* cdb, int cdb_len, unsigned char* transfer, int transfe
 int test_unit_ready()
 {
 	print_load("Test unit ready: ");
+	if(g_file_log) fprintf(g_file_log, "Test unit ready: ");
 	unsigned char cdb[]= {0, 0, 0, 0, 0, 0};
 	return do_cdb(cdb, 6, NULL, 0, ATAPI_NON_DATA_PROTO, ATAPI_DIR_WRITE);
 }
 
-int read_pic(unsigned char* ret)
+int read_pic(unsigned char* ret, int len)
 {
+	if(g_file_log) fprintf(g_file_log, "Read pic: ");
 	unsigned char cdb[]= { 0xad, 1, 0, 0, 0, 0, 0, 0, 0x10, 0x04, 0, 0 };
-	return do_cdb(cdb, 12, ret, PIC_LEN, SG_DXFER_FROM_DEV);
+	return do_cdb(cdb, 12, ret, len, SG_DXFER_FROM_DEV);
+}
+
+u8 get_redump_log(char *log_path, char *pic_path)
+{
+	FILE* file_io=NULL;
+
+	unsigned char d_3dump[0x60];
+	unsigned char* eid4=d_3dump;
+	unsigned char* cmac=d_3dump+0x20;
+	unsigned char* ke=d_3dump+0x30;
+	unsigned char* ie=d_3dump+0x50;
+	unsigned char d1[16];
+	unsigned char d2[16];
+	
+	unsigned char* pic;
+	int pic_len;
+	unsigned char all=3;
+	
+	g_file_log = fopen(log_path, "wb");
+	if( g_file_log == NULL) {
+		print_load("Error : failed to fopen %s", log_path);
+		return FAILED;
+	}
+	fprintf(g_file_log, "\r\nGetKey r%u\r\n", version);
+	
+	memset(d1, 0, 16);
+	memset(d2, 0, 16);
+	
+	dump_3Dump();
+	
+	/*Read 3Dump.bin*/
+	if( (file_io=fopen("/dev_hdd0/tmp/3Dump.bin", "rb"))==NULL )
+	{
+		fprintf(g_file_log, "Error opening 3Dump.bin\r\n");
+		FCLOSE(g_file_log);
+		return FAILED;
+	}
+	if( fread(d_3dump, 1, 0x60, file_io)!=0x60 )
+	{
+		fprintf(g_file_log, "Error reading 3Dump.bin\r\n");
+		FCLOSE(g_file_log);
+		return FAILED;
+	}
+	FCLOSE(file_io);
+	
+	load_keys(eid4, cmac, ke, ie);
+	
+	/* Start the drive communication */
+	if(sys_storage_open(BD_DEVICE, &g_fd) != 0) {
+		fprintf(g_file_log, "sys_storage_open failed...\n");
+	    FCLOSE(g_file_log);
+		return FAILED;
+	}
+
+	if(test_unit_ready()!=SUCCESS)
+	{
+		fprintf(g_file_log, "Test unit failed, are you sure a disc is in the drive?\r\n");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		return FAILED;
+	}
+	
+	/*get PIC*/
+	pic=malloc(4100);
+	if(pic==NULL) {
+		print_load("Error : cannot malloc pic");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		return FAILED;
+	}
+	memset(pic, 0, 4100);
+	read_pic(pic, 4100);
+	pic_len=0x83;
+	while(pic[pic_len]==0 && pic_len>=0)
+		--pic_len;
+	
+	++pic_len;
+	if(pic_len==0)
+	{
+		fprintf(g_file_log, "  Empty PIC, probably wrong. Continuing anyway to try and get key\r\n");
+		all-=1;
+	}
+	
+	if(get_dec_key(d1, d2)==SUCCESS)
+	{
+		fprintf(g_file_log, "get_dec_key succeeded!\r\n");
+		dec_d1(d1);
+		dec_d2(d2);
+	}
+	else
+	{
+		fprintf(g_file_log, "get_dec_key failed, key was not dumped\r\n");
+		if(pic_len==0)
+		{
+			fprintf(g_file_log, "Nothing could be dumped. Your drive may be unsupported, please report it\r\n");
+			sys_storage_close(g_fd);
+			FCLOSE(g_file_log);
+			FREE(pic);
+			return FAILED;
+		}
+		all-=2;
+	}
+	
+	if(all>1)
+	{
+		fprintf(g_file_log, "\r\n\r\ndisc_key = ");
+		hex_fprintf(g_file_log, d1, 16);
+		fprintf(g_file_log, "\r\n\r\ndisc_id = ");
+		if(d2[12]==0 && d2[13]==0 && d2[14]==0 && d2[15]==0)
+			hex_fprintf(g_file_log, d2, 16);
+		else
+		{
+			hex_fprintf(g_file_log, d2, 12);
+			fprintf(g_file_log, "XXXXXXXX");
+		}
+	}
+	if(pic_len!=0)
+	{
+		fprintf(g_file_log, "\r\nPIC:\r\n");
+		hex_fprintf(g_file_log, pic, 0x84);
+		fprintf(g_file_log, "\r\n");
+	}
+	
+	/*dump pic in full*/
+	if( (file_io=fopen(pic_path, "wb"))==NULL )
+	{
+		fprintf(g_file_log, "Failed to open big.pic for writing\r\n");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		FREE(pic);
+		return FAILED;
+	}
+	if(fwrite(pic, 1, 4100, file_io)!=4100)
+	{
+		fprintf(g_file_log, "Failed to write to big.pic\r\n");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		FCLOSE(file_io);
+		FREE(pic);
+		return FAILED;
+	}
+	FCLOSE(file_io);
+	FREE(pic);
+	
+	if(all==3)
+	{
+		fprintf(g_file_log, "\r\nSUCCESS: Everything was correctly dumped.\r\n");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		return SUCCESS;
+	}
+	else if(all==2)
+	{
+		fprintf(g_file_log, "\r\nWARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\r\n\r\n");
+		fprintf(g_file_log, "WARNING: Not everything was correctly dumped (PIC missing)\r\n");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		return FAILED;
+	}
+	else if(all==1)
+	{
+		fprintf(g_file_log, "\r\nWARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING\r\n\r\n");
+		fprintf(g_file_log, "WARNING: Not everything was correctly dumped (d1 missing)\r\n");
+		sys_storage_close(g_fd);
+		FCLOSE(g_file_log);
+		return FAILED;
+	}
+	
+	sys_storage_close(g_fd);
+	FCLOSE(g_file_log);
+	
+	return SUCCESS;/*suppress warning*/
 }
 
 u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
@@ -125,7 +293,7 @@ u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 	memset(pic, 0, PIC_LEN);
 	
 	print_load("Getting PIC");
-	if( read_pic(pic) == FAILED ) {
+	if( read_pic(pic, PIC_LEN) == FAILED ) {
 		print_load("Error : failed to get PIC");
 		goto error;
 	}
@@ -261,9 +429,11 @@ void triple_des_encrypt(unsigned char* Key, unsigned char* IV, unsigned char* So
 int get_dec_key(unsigned char* d1, unsigned char* d2)
 {
 	print_load("get dec key");
+	if(g_file_log) fprintf(g_file_log, "get dec key\r\n");
 	if(establish_session_keys(0, Key1, Key2) == FAILED) return FAILED;
 	if(get_data(d1, d2)==FAILED) {
 		print_load("get data failed");
+		if(g_file_log) fprintf(g_file_log, "  get data failed\r\n");
 		return FAILED;
 	}
 	return SUCCESS;
@@ -280,7 +450,7 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 	unsigned char buffer6[0x10];
 	
 	print_load("establish session keys");
-	
+ 	if(g_file_log) fprintf(g_file_log, "  establish session keys:\r\n");
 	buffer7[1] = 0x10;
 	memcpy(destinationArray, sourceArray, 4);
 
@@ -296,6 +466,7 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 	if(memcmp(source, destination, 0x10)!=0)
 	{
 		print_load("Error : Memory comparison failed (rnd1 mismatch?). Check your 3Dump.bin is correct.");
+		if(g_file_log) fprintf(g_file_log, "    Memory comparison failed (rnd1 mismatch?)\r\n");
 		return FAILED;
 	}
 	calculate_session_keys(destination, buffer6);
@@ -312,10 +483,27 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 	return SUCCESS;
 }
 
+void hex_fprintf(FILE *fp, unsigned char *buf, size_t len)
+{
+	int i=0;
+
+	if (len <= 0)
+		return;
+	
+	while(i < len)
+	{
+		if(i>0&&i%16==0)
+			fprintf(fp, "\r\n");
+		fprintf(fp, "%02x", buf[i]);
+		++i;
+	}
+}
+
 int do_report_key(char keyFormat, unsigned char* payload, int payload_len)
 {
 	unsigned char buffer2[12];
 	print_load("do report key");
+	if(g_file_log) fprintf(g_file_log, "    do report key: ");
 	memset(buffer2, 0, 12);
 	buffer2[0] = 0xa4;
 	buffer2[7] = 0xe0;
@@ -329,6 +517,7 @@ int do_send_key(char keyFormat, unsigned char* payload, int payload_len)
 {
 	unsigned char buffer2[12];
 	print_load("do send key");
+	if(g_file_log) fprintf(g_file_log, "    do send key: ");
 	memset(buffer2, 0, 12);
 	buffer2[0] = 0xa3;
 	buffer2[7] = 0xe0;
@@ -342,6 +531,7 @@ void calculate_session_keys(unsigned char* r1, unsigned char* r2)
 {
 	unsigned char destinationArray[0x10];
 	print_load("calculate session keys");
+	if(g_file_log) fprintf(g_file_log, "    calculate session keys\r\n");
 	memcpy(destinationArray, r1, 8);
 	memcpy(destinationArray+8, r2+8, 8);
 	AESEncrypt(Key3, 128, IV1, destinationArray, 0, 0x10, Key7, 0);
@@ -367,7 +557,7 @@ int get_data(unsigned char* data1, unsigned char* data2)
 	};
 	
 	print_load("get data");
-	
+	if(g_file_log) fprintf(g_file_log, "  get data\r\n");
 	memset(buffer7, 0, 8);
 	buffer7[6] = 10;
 	buffer7[7] = 0xf5;
@@ -393,12 +583,18 @@ int do_unknown_e1(unsigned char* header, unsigned char* payload)
 {
 	unsigned char buffer2[12];
 	print_load("do unknown e1: ");
+	if(g_file_log) fprintf(g_file_log, "    do unknown e1:\r\n");
 	memset(buffer2, 0, 12);
 	buffer2[0]=0xe1;
 	buffer2[2]=0x54;
 	memcpy(buffer2+4, header, 8);
 	print_load("unknown e1 cdb: ");
 	hex_print_load((char *)buffer2, 12);
+	if(g_file_log) {
+		fprintf(g_file_log, "    unknown e1 cdb: ");
+		hex_fprintf(g_file_log, buffer2, 12);
+		fprintf(g_file_log, "\r\n    ");
+	}
 	return do_cdb(buffer2, 12, payload, 0x54, SG_DXFER_TO_DEV);/*orig: SG_DXFER_TO_DEV*/
 }
 
@@ -406,12 +602,18 @@ int do_unknown_e0(unsigned char* header, unsigned char* payload)
 {
 	unsigned char buffer2[12];
 	print_load("do unknown e0: ");
+	if(g_file_log) fprintf(g_file_log, "    do unknown e0:\r\n");
 	memset(buffer2, 0, 12);
 	buffer2[0]=0xe0;
 	buffer2[2]=0x34;
 	memcpy(buffer2+4, header, 8);
 	print_load("unknown e0 cdb: ");
 	hex_print_load((char *)buffer2, 12);
+	if(g_file_log) {
+		fprintf(g_file_log, "    unknown e0 cdb: ");
+		hex_fprintf(g_file_log, buffer2, 12);
+		fprintf(g_file_log, "\r\n    ");
+	}
 	return do_cdb(buffer2, 12, payload, 0x34, SG_DXFER_FROM_DEV);
 }
 
@@ -422,6 +624,7 @@ void load_keys(unsigned char* EID4, unsigned char* CMAC, unsigned char* KE, unsi
 	unsigned char destination[0x40];
 
 	print_load("Load keys");
+	if(g_file_log) fprintf(g_file_log, "Load keys\r\n");
 	AESEncrypt(KE, 256, IE, InitialSeed, 0, 0x40, destination, 0);
 	memcpy(destinationArray, destination+0x20, 0x20);
 	memcpy(buffer2, destination+0x10, 0x10);
@@ -429,7 +632,6 @@ void load_keys(unsigned char* EID4, unsigned char* CMAC, unsigned char* KE, unsi
 	memcpy(Key1, destination, 0x10);
 	memcpy(Key2, destination+0x10, 0x10);
 }
-
 
 void dec_d1(unsigned char* d1)
 {
