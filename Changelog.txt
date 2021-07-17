@@ -1,10 +1,14 @@
 TO DO :
 Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA/INSDIR
-Add : Decrypt EDAT/SDAT
-Add : Dump disc key (ascii) for redump.org
 
 v1.41
-Fix : IRD build, sometimes the iso header length was too big
+Fix : IRD build, sometimes the iso header length was too big.
+Add : Decrypt EDAT/SDAT.
+Fix : JB md5 check, it remove the ultimate dot from filename.
+Add : Dump encrypted and decrypted Blu-ray with 3k3y extra header.
+Change : "Dump disc key" uses the original 3k3y name of header "Encrypted 3K ISO" instead of "Encrypted 3K RIP".
+Add : Dump disc key for redump.org. It generates the same files as GetKey-r2-GameOS.
+Fix : Freeze when creating directory inside ntfs/exFAT devices.
 
 v1.40
 Fix : Dock buttons when the window is docked to the left.
