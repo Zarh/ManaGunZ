@@ -559,6 +559,8 @@ static float filter_x = FILTER_X_DEFAULT;
 static float filter_y = FILTER_Y_DEFAULT;
 static u8 LOG = NO;
 u8 DEBUG = NO;
+u8 IGNORE_ERR = NO;
+u8 with_3k3y_header = NO;
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -2087,27 +2089,37 @@ static char *STR_DISPLAY=NULL;
 static char *STR_DUMP_DEC=NULL;
 #define STR_DUMP_DEC_DEFAULT				"Dump decrypted Blu-Ray disc"
 static char *STR_DUMP_DEC_DESC=NULL;
-#define STR_DUMP_DEC_DESC_DEFAULT			"Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished."
+#define STR_DUMP_DEC_DESC_DEFAULT			"Get a 'proper' iso of your disc with the IRD. It will upload the IRD to the database once it's finished."
 static char *STR_DUMP_ENC=NULL;
 #define STR_DUMP_ENC_DEFAULT				"Dump encrypted Blu-Ray disc"
-static char *STR_DUMP_DISC_KEY=NULL;
-#define STR_DUMP_DISC_KEY_DEFAULT			"Dump Blu-Ray disc key (3k3y header)"
+static char *STR_DUMP_ENC_DESC=NULL;
+#define STR_DUMP_ENC_DESC_DEFAULT			"Get a raw iso of your Blu-Ray disc."
 static char *STR_DUMP_ERK=NULL;
 #define STR_DUMP_ERK_DEFAULT				"Dump eid root key"
+static char *STR_DUMP_ERK_DESC=NULL;
+#define STR_DUMP_ERK_DESC_DEFAULT			"This is the 'main' key to decrypt your system. It's used everywhere. Path: /dev_hdd0/tmp/eid_root_key"
 static char *STR_DUMP_3DUMP=NULL;
 #define STR_DUMP_3DUMP_DEFAULT				"Dump 3Dump.bin"
+static char *STR_DUMP_3DUMP_DESC=NULL;
+#define STR_DUMP_3DUMP_DESC_DEFAULT			"It's the needed file to dump a Blu-Ray with 3k3y IsoTools. Path: /dev_hdd0/tmp/3Dump.bin"
 static char *STR_SYSTEM_TOOLS=NULL;
 #define STR_SYSTEM_TOOLS_DEFAULT			"System tools"
 static char *STR_DECRYPT_NPDATA=NULL;
 #define STR_DECRYPT_NPDATA_DEFAULT			"Decrypt edat/sdat"
-static char *STR_DUMP_DEC_3K3Y=NULL;
-#define STR_DUMP_DEC_3K3Y_DEFAULT			"Get decrypted 3k3y iso"
-static char *STR_DUMP_ENC_3K3Y=NULL;
-#define STR_DUMP_ENC_3K3Y_DEFAULT			"Get encrypted 3k3y iso"
-static char *STR_DDK_REDUMP=NULL;
-#define STR_DDK_REDUMP_DEFAULT				"Get files for redump.org"
-static char *STR_DUMP_3K3Y_DESC=NULL;
-#define STR_DUMP_3K3Y_DESC_DEFAULT			"Get an iso with embedded 3k3y header. 3k3y IsoTools will be able to recognize it."
+static char *STR_REDUMP_LOG=NULL;
+#define STR_REDUMP_LOG_DEFAULT				"Get files for redump.org"
+static char *STR_REDUMP_LOG_DESC=NULL;
+#define STR_REDUMP_LOG_DESC_DEFAULT			"It generates files needed to submit a dump to redump.org."
+static char *STR_DUMP_OPTION=NULL;
+#define STR_DUMP_OPTION_DEFAULT				"Blu-Ray dumper"
+static char *STR_IGNORE_ERR=NULL;
+#define STR_IGNORE_ERR_DEFAULT				"Ignore errors"
+static char *STR_IGNORE_ERR_DESC=NULL;
+#define STR_IGNORE_ERR_DESC_DEFAULT			"It ignores reading errors during the Blu-Ray dumping process."
+static char *STR_3K3Y_HEADER=NULL;
+#define STR_3K3Y_HEADER_DEFAULT				"Include 3k3y header"
+static char *STR_3K3Y_HEADER_DESC=NULL;
+#define STR_3K3Y_HEADER_DESC_DEFAULT		"It dumps the Blu-ray to an iso with embedded 3k3y header. 3k3y IsoTools will be able to recognize it."
 
 
 #define DB_PREFIX			"[DB] "
@@ -7198,16 +7210,21 @@ void update_lang()
 	LANG(STR_DUMP_DEC, "STR_DUMP_DEC", STR_DUMP_DEC_DEFAULT);
 	LANG(STR_DUMP_DEC_DESC, "STR_DUMP_DEC_DESC", STR_DUMP_DEC_DESC_DEFAULT);
 	LANG(STR_DUMP_ENC, "STR_DUMP_ENC", STR_DUMP_ENC_DEFAULT);
-	LANG(STR_DUMP_DISC_KEY, "STR_DUMP_DISC_KEY", STR_DUMP_DISC_KEY_DEFAULT);
+	LANG(STR_DUMP_ENC_DESC, "STR_DUMP_ENC_DESC", STR_DUMP_ENC_DESC_DEFAULT);
 	LANG(STR_DUMP_ERK, "STR_DUMP_ERK", STR_DUMP_ERK_DEFAULT);
+	LANG(STR_DUMP_ERK_DESC, "STR_DUMP_ERK_DESC", STR_DUMP_ERK_DESC_DEFAULT);
 	LANG(STR_DUMP_3DUMP, "STR_DUMP_3DUMP", STR_DUMP_3DUMP_DEFAULT);
+	LANG(STR_DUMP_3DUMP_DESC, "STR_DUMP_3DUMP_DESC", STR_DUMP_3DUMP_DESC_DEFAULT);
 	LANG(STR_SYSTEM_TOOLS, "STR_SYSTEM_TOOLS", STR_SYSTEM_TOOLS_DEFAULT);
 	LANG(STR_DECRYPT_NPDATA, "STR_DECRYPT_NPDATA", STR_DECRYPT_NPDATA_DEFAULT);
-	LANG(STR_DUMP_DEC_3K3Y, "STR_DUMP_DEC_3K3Y", STR_DUMP_DEC_3K3Y_DEFAULT);
-	LANG(STR_DUMP_ENC_3K3Y, "STR_DUMP_ENC_3K3Y", STR_DUMP_ENC_3K3Y_DEFAULT);
-	LANG(STR_DDK_REDUMP, "STR_DDK_REDUMP", STR_DDK_REDUMP_DEFAULT);
-	LANG(STR_DUMP_3K3Y_DESC, "STR_DUMP_3K3Y_DESC", STR_DUMP_3K3Y_DESC_DEFAULT);
-	
+	LANG(STR_REDUMP_LOG, "STR_REDUMP_LOG", STR_REDUMP_LOG_DEFAULT);
+	LANG(STR_REDUMP_LOG_DESC, "STR_REDUMP_LOG_DESC", STR_REDUMP_LOG_DESC_DEFAULT);
+	LANG(STR_DUMP_OPTION, "STR_DUMP_OPTION", STR_DUMP_OPTION_DEFAULT);
+	LANG(STR_IGNORE_ERR, "STR_IGNORE_ERR", STR_IGNORE_ERR_DEFAULT);
+	LANG(STR_IGNORE_ERR_DESC, "STR_IGNORE_ERR_DESC", STR_IGNORE_ERR_DESC_DEFAULT);
+	LANG(STR_3K3Y_HEADER, "STR_3K3Y_HEADER", STR_3K3Y_HEADER_DEFAULT);
+	LANG(STR_3K3Y_HEADER_DESC, "STR_3K3Y_HEADER_DESC", STR_3K3Y_HEADER_DESC_DEFAULT);
+
 	FREE(STR_DB_NET);
 	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
 	FREE(STR_DB_SOFT);
@@ -12424,8 +12441,9 @@ error:
 #define BDVD_BUFF_SEC_NB		0x400
 #define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
 #define MAX_TRY					30
+#define MAX_SPLIT_SECTOR		0x1FFFFF // 4GB MAX (0xFFFFFFFF / 0x800)
 
-u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
+u8 dump_enc_bdvd(char *outdir, char *result_log)
 {
 	char ISO_PATH[512];
 	char SPLIT_ISO_PATH[512]={0};
@@ -12435,9 +12453,24 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 	char *DATE = NULL;
 	int ret = FAILED;
 	u8 *buff=NULL;
+	u8 try;
+	u64 n;
+	u8 split = NO;
+	u32 N_SPLIT_ISO = 0; 
+	u8 corrupt=NO;
 	
-	if( GetParamSFO("TITLE_ID", TITLE_ID, "/dev_bdvd") == FAILED) return FAILED;
-	TITLE_ID[9]=0;
+	char result_str[512]={0};
+	FILE *rlog=NULL;
+	rlog =  fopen(result_log, "wb");
+	if(rlog) {
+		fputs("**** Result of the dump ****\n\n", rlog);
+		fputs("Type : Encrypted Blu-Ray (RAW)", rlog);
+		if( with_3k3y_header ) {
+			fputs("with 3k3y header\n", rlog);
+		} else {
+			fputs("\n", rlog);
+		}
+	}
 	
 	DATE = get_date();
 	if(DATE == NULL) {
@@ -12445,6 +12478,19 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 		goto error;
 	}
 	
+	if(rlog) {
+		sprintf(result_str, "Started at %c%c:%c%c\n", DATE[9], DATE[10], DATE[11], DATE[12]); fputs(result_str, rlog);
+	}
+	
+	print_debug("GetParamSFO");
+	if( GetParamSFO("TITLE_ID", TITLE_ID, "/dev_bdvd") == FAILED) return FAILED;
+	TITLE_ID[9]=0;
+	
+	if(rlog) {
+		sprintf(result_str, "Title ID : %s\n", TITLE_ID); fputs(result_str, rlog);
+	}
+	
+	print_debug("sys_storage_get_device_info");
 	device_info_t device_info;
 	memset(&device_info, 0, sizeof(device_info));
 	ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
@@ -12454,6 +12500,7 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 		goto error;
 	}
 	
+	print_debug("sys_storage_open");
 	ret = sys_storage_open(BDVD_DRIVE, &source);
 	if( ret != 0) {
 		print_load("Error : sys_storage_open");
@@ -12461,21 +12508,18 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 		goto error;
 	}
 	
+	print_debug("malloc");
 	buff = (u8 *) malloc(BDVD_BUFFSIZE);
 	if(buff==NULL) {
 		print_load("Error : DumpDevicesData malloc FAILED !");
 		ret=FAILED;
 		goto error;
 	}
-
+	
 	u64 count = device_info.sector_count;
 	u32 read;
 	u64 current_sector=0;
 	u64 sector_nb = BDVD_BUFF_SEC_NB;
-	
-	u8 split = NO;
-	u32 N_SPLIT_ISO = 0;
-	u32 MAX_SPLIT_SECTOR = 0x1FFFFF; // 4GB MAX
 	
 	if( MAX_SPLIT_SECTOR < count )  split = is_FAT32(outdir);
 	
@@ -12485,14 +12529,19 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
 	}
 	
+	print_debug("mkdir");
 	MGZ_mkdir_recursive(outdir);
 	
-	print_load("fopen %s", ISO_PATH);
+	print_debug("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
 	if(f==NULL) {
 		print_load("Error : DumpDevicesData fopen FAILED ! %s");
 		ret=FAILED;
 		goto error;
+	}
+	
+	if(rlog) {
+		sprintf(result_str, "Path : %s\n\n", ISO_PATH); fputs(result_str, rlog);
 	}
 	
 	strcpy( copy_src, "/dev_bdvd");
@@ -12503,24 +12552,54 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 	
 	gathering_total_size = (u64) count * 0x800ULL;
 	
-	u8 corrupt=NO;
+	ret = FAILED;
 	while( current_sector < count ) {
 		memset(buff, 0, BDVD_BUFFSIZE);
 		
 		if(count < current_sector + BDVD_BUFF_SEC_NB) sector_nb = count - current_sector;
 		else sector_nb = BDVD_BUFF_SEC_NB;
 		
-		int try;
+		u8 old_corrupt = corrupt;
 		for(try=0; try<MAX_TRY; try++) {
 			memset(buff, 0, BDVD_BUFFSIZE);
-			if( sys_storage_read(source, current_sector, sector_nb, buff, &read, 0) == 0) break;
+			if( sys_storage_read(source, current_sector, sector_nb, buff, &read, 0) == 0) goto next;
 			
-			print_load("Failed to read sector %X size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
+			if(copy_cancel || cancel) goto error;
+			print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
 			
-			if(try+1==MAX_TRY) corrupt=YES;
+			if(try+1==MAX_TRY) {
+				corrupt=YES;
+				if( !IGNORE_ERR ) goto error;
+			}
 		}
 		
-		if(current_sector==0 && is_3k3y) {
+		//2nd chance with sector per sector (only if IGNORE_ERR is enabled (to reduce the amount of corrupted sector);
+		corrupt = old_corrupt;
+		print_load("Warning : Now, it's reading sector per sector...");
+		for(n=0; n<sector_nb; n++) {
+			for(try=0; try<MAX_TRY; try++) {
+				memset(buff, 0, BDVD_BUFFSIZE);
+				if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, &read, 0) == 0) {
+					print_load("Succeeded to read sector %X", current_sector+n);
+					break;
+				}
+				
+				if(copy_cancel || cancel) goto error;
+				print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, MAX_TRY); 
+				
+				if(try+1==MAX_TRY) {
+					corrupt=YES;
+					if( !IGNORE_ERR ) goto error;
+					if( rlog ) {
+						fputs(loading_log[0], rlog);
+						fputs("\n", rlog);
+					}
+				}
+			}
+		}
+	
+next:
+		if(current_sector==0 && with_3k3y_header) {
 			u8 d1[0x10];
 			u8 d2[0x20];
 			u8 pic[0x73];
@@ -12553,10 +12632,10 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 				
 				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
 				
-				print_load("fopen %s", SPLIT_ISO_PATH);
+				print_debug("fopen %s", SPLIT_ISO_PATH);
 				f = fopen(SPLIT_ISO_PATH, "wb");
 				if(f==NULL) {
-					print_load("Error : fopen");
+					print_load("Error : SPLIT_ISO_PATH fopen %s", SPLIT_ISO_PATH);
 					goto error;
 				}
 				
@@ -12577,20 +12656,54 @@ u8 dump_enc_bdvd(char *outdir, u8 is_3k3y)
 	SetPerms(ISO_PATH);
 	
 	ret = SUCCESS;
-
 error:
 
+	if(ret==FAILED) {
+		if( split ) {
+			int i;
+			for(i=0; i<N_SPLIT_ISO; i++) {
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, i, '\0');
+				Delete(SPLIT_ISO_PATH);
+			}
+		} else {
+			Delete(ISO_PATH);
+		}
+	}
+	
 	FCLOSE(f);
 	if(source != 0) sys_storage_close(source);
 	FREE(buff);
 	FREE(DATE);
 	
-	if(copy_cancel || cancel) return FAILED;
+	if(rlog) {
+		if(ret==FAILED) {
+			if( copy_cancel || cancel ) {
+					fputs("RESULT: The user canceled.\n", rlog);
+			} else {
+				fputs("RESULT: Something went wrong: '", rlog);
+				fputs(loading_log[0], rlog);
+				fputs("'\n", rlog);
+					
+			}
+		} else
+		if(ret==SUCCESS) {
+			if( corrupt && IGNORE_ERR ) {
+				fputs("RESULT: The dump is probably corrupted.", rlog);
+			} else {
+				fputs("RESULT: Everything went well!", rlog);
+			}
+		}
+		
+		DATE = get_date();
+		sprintf(result_str, "\nFinished at %c%c:%c%c\n", DATE[9], DATE[10], DATE[11], DATE[12]); fputs(result_str, rlog);
+		FREE(DATE);
+	}
+	FCLOSE(rlog);
 	
 	return ret;
 }
 
-u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
+u8 dump_dec_bdvd(char *outdir, char *result_log)
 {
 	print_head("Initialization...");
 	u8 ret=FAILED;
@@ -12608,19 +12721,45 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	u8 *sec0sec1=NULL;
 	u8 corrupt=NO;
 	u8 try;
+	u64 n;
 	u32 i;
-	
 	u8 iso_done = NO;
-	
 	u8 split = NO;
 	u32 N_SPLIT_ISO = 0;
-	u32 MAX_SPLIT_SECTOR = 0x1FFFFF; // 4GB MAX
+	
+	char result_str[512]={0};
+	FILE *rlog=NULL;
+	rlog =  fopen(result_log, "wb");
+	if(rlog) {
+		fputs("**** Result of the dump ****\n\n", rlog);
+		fputs("Type : Decrypted Blu-Ray", rlog);
+		if( with_3k3y_header ) {
+			fputs("with 3k3y header\n", rlog);
+		} else {
+			fputs("\n", rlog);
+		}
+	}
+	
+	print_debug("Get current date");
+	DATE = get_date();
+	if( DATE == NULL) {
+		print_load("Error : dump_bdvd, failed to get_date");
+		goto error;
+	}
+	
+	if(rlog) {
+		sprintf(result_str, "Started at %c%c:%c%c\n", DATE[9], DATE[10], DATE[11], DATE[12]); fputs(result_str, rlog);
+	}
 	
 	print_debug("IRD_new");
 	ird = IRD_new("/dev_bdvd");
 	if(ird==NULL) {
 		print_load("Error : failed to IRD_new");
 		goto error;
+	}
+	
+	if(rlog) {
+		sprintf(result_str, "Title ID : %s\n", ird->GameId); fputs(result_str, rlog);
 	}
 
 	print_debug("Get decryption key");
@@ -12642,47 +12781,40 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 		goto error;
 	}
 
-	print_load("malloc BDVD_BUFFSIZE");
+	print_debug("malloc BDVD_BUFFSIZE");
 	buff = (u8 *) malloc(BDVD_BUFFSIZE);
 	if(buff==NULL) {
 		print_load("Error : malloc BDVD_BUFFSIZE");
 		goto error;
 	}
 	
-	print_load("Get current date");
-	DATE = get_date();
-	if( DATE == NULL) {
-		print_load("Error : dump_bdvd, failed to get_date");
-		goto error;
-	}
-	
-	print_load("init aes");
+	print_debug("init aes");
 	aes_context aes;
 	if( aes_setkey_dec(&aes, key, 128 )!=0 ) {
 		print_load(" Error : aes_setkey_dec ");
 		goto error;
 	}
 	
-	print_load("malloc iv");
+	print_debug("malloc iv");
 	iv = (u8 *) malloc(0x10);
 	if( iv == NULL ) {
 		print_load(" Error : malloc iv ");
 		goto error;
 	}
 	
-	print_load("malloc sec0sec1");
+	print_debug("malloc sec0sec1");
 	sec0sec1 = (u8 *) malloc( 0x800 * 2 );
 	if( sec0sec1 == NULL ) {
 		print_load(" Error : malloc sec0sec1 ");
 		goto error;
 	}
 	
-	print_load("sys_storage_read sec0sec1");
-	
+	print_debug("sys_storage_read sec0sec1");
 	for(try=0; try<MAX_TRY; try++) {
 		memset(sec0sec1, 0, 0x800*2);
 		if( sys_storage_read(source, 0, 2, sec0sec1, &read, 0) == 0) break;
 		
+		if(copy_cancel || cancel) goto error;
 		print_load("Failed to read sector 0 size 2, try %d/%d", try+1, MAX_TRY); 
 		
 		if(try+1==MAX_TRY) corrupt=YES;
@@ -12691,7 +12823,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	u32 regions=(u8_to_u32(sec0sec1)*2)-1;
 	u32 total_sectors=1+u8_to_u32(sec0sec1+12+((regions-1)*4));
 	
-	print_load("gathering data");	
+	print_debug("Gathering data");	
 	gathering_nb_file = -1;
 	gathering_nb_directory = -1;
 	gathering_total_size = (u64) total_sectors * 0x800ULL;
@@ -12707,7 +12839,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	MGZ_mkdir_recursive(outdir);
 	
-	print_load("fopen %s", ISO_PATH);
+	print_debug("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
 	if(f==NULL) {
 		print_load("Error : fopen");
@@ -12721,9 +12853,9 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	u64 sector_nb;
 	u8 plain = YES;
 	
-	print_load("regions :  0x%X\n", regions);
-	print_load("total_sectors :  0x%X\n", total_sectors);
-	print_load("gathering_total_size :  0x%llX\n", gathering_total_size);
+	print_debug("regions :  0x%X\n", regions);
+	print_debug("total_sectors :  0x%X\n", total_sectors);
+	print_debug("gathering_total_size :  0x%llX\n", gathering_total_size);
 	
 	ird->RegionHashesNumber=regions;
 	ird->RegionHashes = (u8 **) malloc(ird->RegionHashesNumber * sizeof(u8*));
@@ -12740,20 +12872,25 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 		}
 	}
 	
+	if(rlog) {
+		sprintf(result_str, "Path : %s\n\n", ISO_PATH); fputs(result_str, rlog);
+	}
+	
+	ret=FAILED;
 	print_head("Dumping...");
 	i=0;
 	while(i<regions)
 	{	
 		u32 region_last_sector=u8_to_u32(sec0sec1+12+(i*4)) + 1;
 		
-		print_load("Region #%02d", i);
+		print_debug("Region #%02d", i);
 		
 		if( plain == YES ) {
-			print_load("Copying offset 0x%llX to 0x%llX", 
+			print_debug("Copying offset 0x%llX to 0x%llX", 
 						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
 		} else {
 			region_last_sector -= 1;
-			print_load("Decrypting offset 0x%llX to 0x%llX\n", 
+			print_debug("Decrypting offset 0x%llX to 0x%llX\n", 
 						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
 		}
 		
@@ -12767,16 +12904,39 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 			
 			if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
 			else sector_nb = BDVD_BUFF_SEC_NB;
-			
+					 
 			for(try=0; try<MAX_TRY; try++) {
-				memset(buff, 0, sector_nb * 0x800);
-				if( sys_storage_read(source, current_sector, sector_nb, buff, &read, 0) == 0) break;
+				memset(buff, 0, BDVD_BUFFSIZE);
+				if( sys_storage_read(source, current_sector, sector_nb, buff, &read, 0) == 0) goto next;
 				
-				print_load("Failed to read sector %X size %X, try %d/%d", current_sector, sector_nb, try+1, MAX_TRY); 
+				if(copy_cancel || cancel) goto error;
+				print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
 				
-				if(try+1==MAX_TRY) corrupt=YES;
+				if(try+1==MAX_TRY) {
+					corrupt=YES;
+					if( !IGNORE_ERR ) goto error;
+				}
 			}
-			
+			print_load("Warning : Now, it's trying to read sector per sector inside the corrupted area...");
+			for(n=0; n<sector_nb; n++) {
+				for(try=0; try<MAX_TRY; try++) {
+					memset(buff, 0, BDVD_BUFFSIZE);
+					if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, &read, 0) == 0) {
+						print_load("Succeeded to read sector %X", current_sector+i);
+						break;
+					}
+					
+					if(copy_cancel || cancel) goto error;
+					print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, MAX_TRY); 
+					
+					
+					if(try+1==MAX_TRY) {
+						corrupt=YES;
+						if( !IGNORE_ERR ) goto error;
+					}
+				}
+			}
+next:
 			if(copy_cancel) goto error;
 			
 			if( plain == NO ) {
@@ -12812,7 +12972,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 					
 					sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
 										
-					print_load("fopen %s", SPLIT_ISO_PATH);
+					print_debug("fopen %s", SPLIT_ISO_PATH);
 					f = fopen(SPLIT_ISO_PATH, "wb");
 					if(f==NULL) {
 						print_load("Error : fopen");
@@ -12844,7 +13004,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	iso_done = YES;
 	if( corrupt == YES) {
-		print_load("Skip IRD building because the iso is corrupted.");
+		print_load("Skip IRD building because the iso is probably corrupted.");
 		goto error;
 	}
 	
@@ -12854,7 +13014,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	strcpy( copy_src, ISO_PATH);
 	strcpy( copy_dst, IRD_PATH);
-	print_load("Gathering data...");
+	print_debug("Gathering data...");
 	if( IRD_FilesInfo(ISO_PATH, &gathering_nb_file, &gathering_total_size) == FAILED) {
 		print_load("Error : failed to IRD_FilesInfo");
 		goto error;
@@ -12864,7 +13024,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	copy_current_size=0;
 	task_Init(gathering_total_size);
-	print_load("Calculating files' MD5...");
+	print_debug("Calculating files' MD5...");
 	if( IRD_FilesHashes(ISO_PATH, ird, &header_lenght, &footer_offset) == FAILED) {
 		print_load("Error : failed to get file-hashes");
 		goto error;
@@ -12877,7 +13037,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	u64 footer_lenght = (u64) total_sectors * 0x800ULL - footer_offset;
 	
-	print_load("Compressing header...");
+	print_debug("Compressing header...");
 	gathering_nb_file = -1;
 	f = fopen(ISO_PATH, "rb");
 	if(f==NULL) {
@@ -12897,7 +13057,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 		goto error;
 	}
 	
-	print_load("Compressing footer...");
+	print_debug("Compressing footer...");
 	fseek(f, footer_offset, SEEK_SET);
 	copy_current_size =0;
 	gathering_total_size = footer_lenght;
@@ -12916,7 +13076,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	copy_current_size = 0;
 	gathering_total_size = SIZEOF_IRD(ird);
-	print_load("Saving IRD");
+	print_debug("Saving IRD");
 	if(IRD_save(IRD_PATH, ird)==FAILED) {
 		print_load("Error : failed to save IRD");
 		goto error;
@@ -12926,7 +13086,7 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	if(copy_cancel) goto error;
 		
 	print_head("Uploading IRD");
-	print_load("Getting ird signature");
+	print_debug("Getting ird signature");
 	IRD_NAME = IRD_sig2(ird);
 	if(IRD_NAME == NULL) {
 		print_load("Error : failed  to get IRD_sig");
@@ -12935,17 +13095,17 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	
 	if(copy_cancel) goto error;
 	
-	print_load("Check if ird exist");
+	print_debug("Check if ird exist");
 	ret = IRD_DB_exist(IRD_NAME); 
 	if( ret == NET_ERROR) {
 		ret = FAILED;
 		goto error;
 	} else
 	if( ret == YES ) {
-		print_load("The ird already exists in DB");
+		print_debug("The ird already exists in DB");
 	} else 
 	if( ret == NO ) {	
-		print_load("uploading the ird");
+		print_debug("Uploading the ird");
 		if( IRD_DB_upload(IRD_PATH, IRD_NAME) == FAILED ) {
 			print_load("Error : failed to upload IRD");
 			ret = FAILED;
@@ -12954,11 +13114,10 @@ u8 dump_dec_bdvd(char *outdir, u8 is_3k3y)
 	}
 	
 	ret=SUCCESS;
-
 error:
 	
 	if( iso_done ) {
-		if(is_3k3y) {
+		if(with_3k3y_header) {
 			FCLOSE(f);
 			
 			f = fopen(ISO_PATH, "rb+");
@@ -12977,9 +13136,19 @@ error:
 		sort_GAMELIST();
 		init_Load_GAMEPIC();
 		read_fav();
+	} else {
+		if( split ) {
+			int i;
+			for(i=0; i<N_SPLIT_ISO; i++) {
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+				Delete(SPLIT_ISO_PATH);
+			}
+		} else {
+			Delete(ISO_PATH);
+		}
 	}
 	
-	if( copy_cancel ) ret=FAILED;
+	if( copy_cancel || cancel ) ret=FAILED;
 	
 	if(!source) sys_storage_close(source);
 	FCLOSE(f);
@@ -12989,6 +13158,30 @@ error:
 	FREE(buff);
 	FREE(iv);
 	FREE(sec0sec1);
+	
+	if(rlog) {
+		if(ret==FAILED) {
+			if( copy_cancel || cancel ) {
+				fputs("RESULT: The user canceled.\n", rlog);
+			} else {
+				fputs("RESULT: Something went wrong: '", rlog);
+				fputs(loading_log[0], rlog);
+				fputs("'\n", rlog);
+			}
+		} else
+		if(ret==SUCCESS) {
+			if( corrupt && IGNORE_ERR ) {
+				fputs("RESULT: The dump is probably corrupted.", rlog);
+			} else {
+				fputs("RESULT: Everything went well!", rlog);
+			}
+		}
+		
+		DATE = get_date();
+		sprintf(result_str, "\nFinished at %c%c:%c%c\n", DATE[9], DATE[10], DATE[11], DATE[12]); fputs(result_str, rlog);
+		FREE(DATE);
+	}
+	FCLOSE(rlog);
 	
 	return ret;
 }
@@ -24105,6 +24298,8 @@ void read_setting()
 		fread(&root_display, sizeof(u8), 1, fp);
 		fread(&LOG, sizeof(u8), 1, fp);
 		fread(&DEBUG, sizeof(u8), 1, fp);
+		fread(&IGNORE_ERR, sizeof(u8), 1, fp);
+		fread(&with_3k3y_header, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 	} 
@@ -24176,6 +24371,8 @@ void write_setting()
 		fwrite(&root_display, sizeof(u8), 1, fp);
 		fwrite(&LOG, sizeof(u8), 1, fp);
 		fwrite(&DEBUG, sizeof(u8), 1, fp);
+		fwrite(&IGNORE_ERR, sizeof(u8), 1, fp);
+		fwrite(&with_3k3y_header, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 		SetFilePerms(setPath);
@@ -29880,13 +30077,27 @@ void Draw_HELP()
 	float y=23;
 	FontColor(COLOR_1);
 	FontSize(13);
-	
-	
-	if(item_is(STR_DUMP_DEC_3K3Y) || item_is(STR_DUMP_ENC_3K3Y)) {
-		DrawString(x, y, STR_DUMP_3K3Y_DESC);
-	} else 
+
 	if(item_is(STR_DUMP_DEC)) {
 		DrawString(x, y, STR_DUMP_DEC_DESC);
+	} else
+	if(item_is(STR_DUMP_ENC)) {
+		DrawString(x, y, STR_DUMP_ENC_DESC);
+	} else
+	if(item_is(STR_DUMP_ERK)) {
+		DrawString(x, y, STR_DUMP_ERK_DESC);
+	} else
+	if(item_is(STR_DUMP_3DUMP)) {
+		DrawString(x, y, STR_DUMP_3DUMP_DESC);
+	} else
+	if(item_is(STR_REDUMP_LOG)) {
+		DrawString(x, y, STR_REDUMP_LOG_DESC);
+	} else
+	if(item_is(STR_IGNORE_ERR)) {
+		DrawString(x, y, STR_IGNORE_ERR_DESC);
+	} else
+	if(item_is(STR_3K3Y_HEADER)) {
+		DrawString(x, y, STR_3K3Y_HEADER_DESC);
 	} else
 	if(item_is(STR_BT_AUDIO)) {
 		DrawString(x, y, STR_BT_AUDIO_DESC);
@@ -35640,14 +35851,6 @@ void init_BDVD_MENU()
 			add_item_value_MENU(tmp);
 		}
 	}
-	add_item_MENU(STR_DUMP_DEC_3K3Y, ITEM_TEXTBOX);
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
-			add_item_value_MENU(tmp);
-		}
-	}
-	
 	add_item_MENU(STR_DUMP_ENC, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
@@ -35655,22 +35858,7 @@ void init_BDVD_MENU()
 			add_item_value_MENU(tmp);
 		}
 	}
-	add_item_MENU(STR_DUMP_ENC_3K3Y, ITEM_TEXTBOX);
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
-			add_item_value_MENU(tmp);
-		}
-	}
-	
-	add_item_MENU(STR_DUMP_DISC_KEY, ITEM_TEXTBOX);
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
-			add_item_value_MENU(tmp);
-		}
-	}
-	add_item_MENU(STR_DDK_REDUMP, ITEM_TEXTBOX);
+	add_item_MENU(STR_REDUMP_LOG, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
 			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
@@ -35729,48 +35917,25 @@ u8 BDVD_MENU_CROSS()
 	} else
 	if(item_is(STR_DUMP_DEC)) {
 		start_copy_loading();
-		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], NO);
+		char result_log[64]={0};
+		sprintf(result_log, "/dev_hdd0/game/%s/USRDIR/sys/result.log", ManaGunZ_id);
+		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], result_log);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
-	} else
-	if(item_is(STR_DUMP_DEC_3K3Y)) {
-		start_copy_loading();
-		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], YES);
-		end_copy_loading();
-		if( ret ) show_msg(STR_DONE);
-		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
 	} else
 	if(item_is(STR_DUMP_ENC)) {
 		start_copy_loading();
-		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], NO);
+		char result_log[64]={0};
+		sprintf(result_log, "/dev_hdd0/game/%s/USRDIR/sys/result.log", ManaGunZ_id);
+		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], result_log);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
 	} else
-	if(item_is(STR_DUMP_ENC_3K3Y)) {
-		start_copy_loading();
-		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], YES);
-		end_copy_loading();
-		if( ret ) show_msg(STR_DONE);
-		else show_msg(STR_FAILED);
-	} else
-	if(item_is(STR_DUMP_DISC_KEY)) {
-		start_copy_loading();
-		u8 ret =FAILED;
-		char outfile[512];
-		char *date = get_date();
-		if( date != NULL) {
-			MGZ_mkdir_recursive(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-			sprintf(outfile, "%s/%s_%s.disc.key", ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], list_game_ID[position], date);
-			free(date);
-			ret = dump_3k3y_header(outfile);
-		}
-		end_copy_loading();
-		if( ret ) show_msg(STR_DONE);
-		else show_msg(STR_FAILED);
-	} else
-	if(item_is(STR_DDK_REDUMP)) {
+	if(item_is(STR_REDUMP_LOG)) {
 		start_copy_loading();
 		u8 ret =FAILED;
 		char log_path[512];
@@ -35820,6 +35985,7 @@ u8 BDVD_MENU_R1()
 void input_BDVD_MENU()
 {
 	if(MENU==NO) return;
+	if(txt_viewer_activ) return;
 	
 	int i;
 	
@@ -35994,6 +36160,7 @@ void input_BDVD_MENU()
 void Draw_BDVD_MENU_input()
 {
 	if(MENU==NO) return;
+	if(txt_viewer_activ) return;
 	
 	float x=INPUT_X;
 	float y=INPUT_Y;
@@ -37581,16 +37748,24 @@ void init_SETTINGS()
 		}
 	}
 	
+	add_title_MENU(STR_DUMP_OPTION);
+	
+	add_item_MENU(STR_IGNORE_ERR, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = IGNORE_ERR;
+	
+	add_item_MENU(STR_3K3Y_HEADER, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = with_3k3y_header;
 	
 	add_title_MENU(STR_SYSTEM_TOOLS);
 	
-	add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
-	
-	add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
+	if( PEEKnPOKE ) {
+		if( !HEN ) add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
+		add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
+	}
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
 	
-	if( ERK_DUMPER_SIZE != 0 ) {
+	if( ERK_DUMPER_SIZE != 0 && PEEKnPOKE ) {
 		add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
 		add_item_MENU(STR_DUMP_3DUMP, ITEM_TEXTBOX);
 	}
@@ -37606,6 +37781,12 @@ void init_SETTINGS()
 
 void update_SETTINGS()
 {
+	if(item_is(STR_3K3Y_HEADER)) {
+		with_3k3y_header = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is(STR_IGNORE_ERR)) {
+		IGNORE_ERR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
 	if(item_is("MGZ log")) {
 		LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else

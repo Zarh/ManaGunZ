@@ -1,21 +1,25 @@
 TO DO :
 Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA/INSDIR
+add new STR in loc/*.txt
 
 v1.41
-Add : On dump BR functions, it checks if sys_storage_read succeed. See notes (1).
+Add : On dump BR functions, it checks if sys_storage_read succeeded. See notes (1).
+Add : Toggle in "Settings/Blu-Ray dumper" to disable/enable the check on sys_storage_read.
+Add : Toggle in "Settings/Blu-Ray dumper" to add an embedded 3k3y header inside the iso.
+Remove : Disc key 3k3y header. See note (2).
+Add : A result screen is displayed just after the dumping process finished.
 Fix : IRD build, sometimes the iso header length was too big.
 Add : Decrypt EDAT/SDAT.
-Fix : JB md5 check, it remove the ultimate dot from filename.
-Add : Dump encrypted and decrypted Blu-ray with 3k3y extra header.
-Change : "Dump disc key" uses the original 3k3y name of header "Encrypted 3K ISO" instead of "Encrypted 3K RIP".
-Add : Dump disc key for redump.org. It generates the same files as GetKey-r2-GameOS.
-Fix : Freeze when creating directory inside ntfs/exFAT devices.
+Fix : JB md5 check, it removes the ultimate dot from filename. See: https://www.psx-place.com/threads/34448
+Add : Dump files for redump.org. It generates the same files as GetKey-r2-GameOS.
+Fix : Freeze when creating directory inside ntfs/exFAT devices. (bug introduced in v1.39)
 
 Notes:
 (1) This is mostly for damaged disc, some sectors might be unreadable because of scratches.
 It will try to read the damaged sector 30 times. 
-If it's still no readable, the process will continue but the ird creation will be skipped.
-The user still have the possibility to cancel it.
+If it's still no readable, the process will stop.
+(2) I removed this because I don't see the point of having this file alone, I didn't find any tool using it alone.
+To have a backup with an embedded 3k3y header go to "Settings/Blu-Ray dumper" and enable "Include 3k3y header".
 
 v1.40
 Fix : Dock buttons when the window is docked to the left.
