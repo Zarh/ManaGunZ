@@ -1,0 +1,398 @@
+STR_LANGUAGE                  {Deutsch}
+STR_LANGCODE                  {\x00}
+
+STR_LANG                      {Sprache}
+STR_LANG_DESC                 {Wählen Sie Ihre Sprache.}
+STR_GATHERING                 {Daten sammeln.}
+STR_COPYING                   {Kopieren.}
+STR_FROM                      {von}
+STR_TO                        {bis}
+STR_FILES                     {Dateien}
+STR_DIRS                      {Verzeichnisse}
+STR_UNKNOWN                   {Unbekannt}
+STR_FILE                      {Datei}
+STR_CANCEL                    {Abbrechen}
+STR_TURNOFF                   {Ausschalten}
+STR_CANCELLED                 {Abgebrochen}
+STR_UNIT                      {Bytes}
+STR_TOTALSIZE                 {Gesamtgröße}
+STR_HIDELOGS                  {Protokolle verbergen}
+STR_SHOWLOGS                  {Logs anzeigen}
+STR_BOOST                     {Boost!}
+STR_GAMEMENU                  {Spiel Menu}
+STR_SETTINGS                  {Einstellungen}
+STR_MOUNTGAME                 {Mount Game}
+STR_FILTER                    {Filter}
+STR_FAVORITE                  {Favorit}
+STR_FILEMANAGER               {Der erste}
+STR_HOLD                      {Warte.}
+STR_EXIT                      {Aus}
+STR_GAME_PROP                 {Spieleigenschaften}
+STR_GAME_TITLE                {Titel}
+STR_GAME_PATH                 {Pfad}
+STR_GAME_FORMAT               {Format}
+STR_GAME_SIZE                 {Größe}
+STR_GAME_PLATFORM             {Plattform}
+STR_SYSVERS                   {Firmware}
+STR_GAMEID                    {Kennung}
+STR_ELFCRC                    {ELF CRC}
+STR_ELFCRCO                   {ELF CRC (Original)}
+STR_BACK                      {Zurück}
+STR_ENTER                     {Geben Sie}
+STR_UPDATE_FOUND              {Update gefunden}
+STR_UPDATE                    {Aktualisierung}
+STR_SIZE                      {Größe}
+STR_SYSTEM                    {System}
+STR_DL                        {Downloads}
+STR_DL_ALL                    {ALLE}
+STR_UNPLUG                    {Löschen Sie folgende Geräte:}
+STR_PATH                      {Pfad}
+STR_TYPE                      {Typ}
+STR_FOLDER                    {Ordner}
+STR_DIR                       {Verzeichnis}
+STR_MULT                      {mehrere}
+STR_THM_SETTINGS              {Themeneinstellungen}
+STR_THM                       {Thema}
+STR_THM_DESC                  {Laden Sie das gewünschte Thema. Sie können sie von dev_usbXXX/Themes installieren.}
+STR_CREATE                    {Erstellen}
+STR_ZOOM_OUT                  {Zoom}
+STR_ZOOM_IN                   {In den Warenkorb}
+STR_MOVE_FRAME                {Bewegt euch}
+STR_CHECK                     {Prüfverfahren}
+STR_UNCHECK                   {Uncheck}
+STR_GAME_OPTION               {Spieloptionen}
+STR_ADD_FAV                   {Zu den Favoriten hinzufügen}
+STR_REM_FAV                   {Von Favoriten entfernen}
+STR_FAV_DESC                  {Verwalten Sie eine Liste Ihrer Lieblingsspiele.}
+STR_RENAME                    {Name}
+STR_RENAME_DESC               {Umbenennen Sie den Titel Ihrer Sicherung.}
+STR_DELETE                    {Löschen}
+STR_DELETE_DESC               {Löschen Sie Ihr Backup.}
+STR_COPY                      {Kopie}
+STR_COPY_DESC                 {Kopieren Sie Ihr Backup auf einen anderen Pfad.}
+STR_CREATE_ICON0              {ICON0 erstellen}
+STR_CREATE_ICON0_DESC         {Erstellen Sie eine gefälschte ICON0 aus dem Cover.}
+STR_REST_PNACH                {Restore PNACH}
+STR_REST_PNACH_DESC           {Entfernen Sie die von der pnach-Datei auf das Backup angewendeten Patches.}
+STR_APPLY_PNACH               {PNACH anwenden}
+STR_APPLY_PNACH_DESC          {Bewerben Sie die Patches von pnach-Datei auf das Backup.}
+STR_DISABLE_WS                {Deaktivieren Sie WideScreen}
+STR_ENABLE_WS                 {Enable WideScreen}
+STR_WS_DESC                   {Zeigen Sie das Spiel in 16:9 statt 4:3.}
+STR_DISABLE_480P              {480P deaktivieren}
+STR_ENABLE_480P               {Ermöglicht 480P}
+STR_480P_DESC                 {Progressive Scan-Modus in 480P.}
+STR_DISABLE_YFIX              {Deaktivieren Sie YFIX}
+STR_ENABLE_YFIX               {Aktivieren Sie YFIX}
+STR_YFIX_DESC                 {Die vertikale Position fixieren.}
+STR_DISABLE_FMVSKIP           {Ausführende FMV Schweine}
+STR_ENABLE_FMVSKIP            {FMV aktivieren Schweine}
+STR_FMVSKIP_DESC              {Erlauben Sie, die vollen Bewegungsvideos zu überspringen.}
+STR_DISABLE_NETEMU            {Netto-WWU}
+STR_ENABLE_NETEMU             {NetEMU aktivieren}
+STR_NETEMU_DESC               {Erzwingen Sie die Verwendung von ps2 netemu.}
+STR_SAVE_CONFIG               {CONFIG speichern}
+STR_CONFIG                    {Konfiguration}
+STR_CONFIG_DESC               {(Erfahren) Erstellen Sie Ihre eigene CONFIG-Datei, um Ihr ps2 Backup zu beheben.}
+STR_NONE                      {Keine}
+STR_CHECK_MD5                 {Prüfen Sie MD5}
+STR_PROPS                     {Eigenschaften}
+STR_PROPS_DESC                {Zeigen Sie die Eigenschaften Ihres Backups.}
+STR_ASK_DEL                   {Möchten Sie löschen}
+STR_GAME_SETTINGS             {Spieleinstellungen}
+STR_DIRECT_BOOT               {Direkter Schuh}
+STR_DIRECT_BOOT_DESC          {Starten Sie das Spiel direkt ohne zurück zu XMB.}
+STR_YES                       {Ja.}
+STR_NO                        {Nein}
+STR_CLEAN_SYSCALL             {Saubere Syscall}
+STR_CLEAN_SYSCALL_DESC        {Deaktivieren Sie Peek- & Poke-Solben.}
+STR_CHANGE_IDPS               {IDPS ändern}
+STR_CHANGE_IDPS_DESC          {Ändern Sie Ihre IDPS im lv2.}
+STR_EXT_GAME_DATA             {Ext. Spieldaten}
+STR_EXT_GAME_DATA_DESC        {Installieren Sie Gamedata in Ihrem USB-Gerät anstelle Ihres Systems.}
+STR_PAYLOAD                   {Nutzlast}
+STR_PAYLOAD_DESC              {Wählen Sie die Nutzlast, um Ihr Backup zu montieren.}
+STR_PRIM_USB                  {Set Primär USB}
+STR_PRIM_USB_DESC             {Setzen Sie das USB-Gerät, wo das Spiel als Haupt-USB-Gerät gespeichert ist.}
+STR_BDEMU                     {BD-Emulation}
+STR_BDEMU_DESC                {Wählen Sie die Art der Emulation, um Sie zu sichern.}
+STR_PATCH_LIBFS               {Patch-Lifes}
+STR_PATCH_LIBFS_DESC          {Wählen Sie, welche gepatchte libfs Sie verwenden möchten.}
+STR_MOUNT_APPHOME             {Berg /App_home}
+STR_MOUNT_APPHOME_DESC        {Redirect the path /app_home to /dev_bdvd.}
+STR_PATCH_EXP                 {Patch-Erforscher_plugin}
+STR_PATCH_EXP_DESC            {Der Pfad /app_home wird durch /dev_bdvd innerhalb des Plugins explore_plugin ersetzt.}
+STR_MAKE_SHTCUT_PKG           {Machen Sie Shortcut PKG}
+STR_MAKE_SHTCUT_PKG_DESC      {Erstellen Sie eine Paketdatei, die in dev_hd0/Pakete gespeichert ist. Nach der Installation wird es eine Verknüpfung sein, um Ihr Backup von der XMB zu montieren.}
+STR_PATCH_EBOOT               {Auf den Wunschzettel}
+STR_PATCH_EBOOT_DESC          {Ändern Sie die Firmware-Version auf 4.21 der EBOOT-Datei, um den Fehler 0x80010009 zu verhindern.}
+STR_RESIGN                    {Rücktritt}
+STR_RESIGN_DESC               {Alle Ausführbaren Ihrer Sicherung mit den 4.21 Tasten erneut zuordnen.}
+STR_RESTORE                   {Zurück zur Übersicht}
+STR_RESTORE_DESC              {Wiederherstellen Sie die Originale ausführbare Ihrer Sicherung.}
+STR_EXTRACT_ISO               {ISO}
+STR_EXTRACT_ISO_DESC          {Extrahieren Sie Dateien von Ihrer ISO in einen Ordner.}
+STR_CONVERT_ISO               {Nach ISO umrechnen}
+STR_CONVERT_ISO_DESC          {Konvertieren Sie Ihr JB-Backup in eine ISO.}
+STR_FIX_PERMS                 {Berechtigungen festlegen}
+STR_FIX_PERMS_DESC            {Setzen Sie den Berechtigungswert auf 0777 jeder Ordner und Dateien Ihrer Sicherung.}
+STR_CHECK_IRD                 {Dateien prüfen (IRD)}
+STR_CHECK_DESC                {Überprüfen Sie, ob die Dateien Ihrer Backups nicht geändert werden.}
+STR_DL_UPDATE                 {Update herunterladen}
+STR_DL_UPDATE_DESC            {Laden Sie die Updates Ihres Backups auf dev_hdd0/Pakete herunter.}
+STR_OPEN_WINDOW               {Neues Fenster öffnen}
+STR_DUMP_LV1                  {Hanf lv1}
+STR_DUMP_LV2                  {Hanf lv2}
+STR_DUMP_FLASH                {Dump Flash}
+STR_REFRESH                   {Refreshing}
+STR_NEWFOLDER                 {Neue Ordner}
+STR_NEWFILE                   {Neue Datei}
+STR_PASTE                     {Paste}
+STR_CUT                       {Schnitt}
+STR_UNSELECT_ALL              {Alle auswählen}
+STR_SELECT_ALL                {Wählen Sie alle}
+STR_MAKE_PKG                  {Machen Sie PKG}
+STR_GETMD5                    {MD5}
+STR_GETSHA1                   {SHA1}
+STR_VIEW                      {Blick}
+STR_VIEW_TXT                  {TXT ansehen}
+STR_VIEW_SFO                  {SFO ansehen}
+STR_READ_XREG                 {Lesen Sie xReg}
+STR_EXTRACT_ELF               {Extrakt ELF}
+STR_RESIGN_SELF               {Rücktritt SELF}
+STR_LAUNCH_SELF               {Starten Sie SELF}
+STR_EXTRACT_EBOOT             {EBOOT}
+STR_RESIGN_EBOOT              {Rücktritt EBOOT}
+STR_LAUNCH_EBOOT              {EBOOT}
+STR_SIGN_ELF                  {ELF}
+STR_SIGN_EBOOT                {EBOOT}
+STR_SIGN_PRX                  {Unterschrift}
+STR_EXTRACT_PRX               {Auszug aus der VRX}
+STR_RESIGN_SPRX               {Rücktritt SPRX}
+STR_REMOVE_PRXLOADER          {Entfernen von PRX Loader}
+STR_ADD_PRXLOADER             {Zu PRX Loader hinzufügen}
+STR_REMOVE_PRXLOADER2         {Entfernen von PRXLoader}
+STR_ADD_PRXLOADER2            {Zu PRXLoader hinzufügen}
+STR_REMOVE_MAMBA              {Entfernen von Mamba-Liste}
+STR_ADD_MAMBA                 {Zur Mamba-Liste hinzufügen}
+STR_REMOVE_COBRA              {Entfernen aus Cobra Liste}
+STR_ADD_COBRA                 {Zur Cobra-Liste hinzufügen}
+STR_EXTRACT_RCO               {Extrakt RCO}
+STR_EXTRACT_PKG               {PKG}
+STR_PKG_INFO                  {PKG info}
+STR_EXTRACT_TRP               {TRP extrahieren}
+STR_COMPRESS_ISO              {Kompressor ISO}
+STR_CHECK_CRC32               {Prüfen Sie CRC32}
+STR_DECOMPRESS_CSO            {Dekomprimieren CSO}
+STR_EXTRACT_THM               {THM extrahieren}
+STR_EXTRACT_P3T               {Extrakt P3T}
+STR_EXTRACT_RAF               {Auszug RAF}
+STR_EXTRACT_QRC               {QRC extrahieren}
+STR_EXTRACT_HERE              {hier extrahieren}
+STR_CONVERT_JSX_JS            {JSX nach JS umrechnen}
+STR_CONVERT_VAG_WAV           {VAG nach WAV umrechnen}
+STR_CONVERT_GTF_DDS           {GTF nach DDS umrechnen}
+STR_CONVERT_DDS_PNG           {DDS in PNG umrechnen}
+STR_MAKE_APNG                 {Machen Sie APNG}
+STR_SET_PERMS                 {Berechtigung einstellen}
+STR_NOGAME                    {Kein Spiel gefunden}
+STR_GLOB_SETTINGS             {Globale Einstellungen}
+STR_ADJUST                    {Bildschirm anpassen}
+STR_ADJUST_DESC               {Kalibrieren Sie Ihr Display.}
+STR_DL_COVER                  {Covers herunterladen}
+STR_DL_COVER_DESC             {Laden Sie alle fehlenden Spielabdeckungen auf USRDIR/covers/[gameID].jpg herunter}
+STR_PLUGIN_MANAGER            {Plugin Manager}
+STR_PLUGIN_MANAGER_DESC       {Verwalten Sie Ihre Plugins in dev_hdd0/plugins gespeichert.}
+STR_UPD_MGZ                   {Update ManaGunZ}
+STR_UPD_MGZ_DESC              {Downloaden und installieren Sie die neueste Version von ManaGunZ.}
+STR_GAME_PATHS                {Spielsicherungspfade}
+STR_GAME_PATHS_DESC           {Konfigurieren Sie den Namen der Verzeichnisse, in denen ManaGunZ Ihre Backups finden wird.}
+STR_XMB_PRIO                  {XMB Priorität}
+STR_XMB_PRIO_DESC             {Das Symbol von ManaGunZ in XMB wird oben angezeigt. Es wird nach dem nächsten System-Boot wirksam sein.}
+STR_HELP                      {Hilfe anzeigen}
+STR_HELP_DESC                 {Zeigen Sie die Sätze, die Sie hier lesen.}
+STR_COLOR_1                   {Farbe 1}
+STR_COLOR_2                   {Farbe 2}
+STR_COLOR_3                   {Farbe 3}
+STR_COLOR_4                   {Farbe 4}
+STR_COLOR_DESC                {Ändern Sie die von ManaGunZ verwendeten Farben.}
+STR_UI_SETTINGS               {Benutzeroberflächeneinstellungen}
+STR_UI                        {Benutzeroberfläche}
+STR_UI_DESC                   {Ändern Sie die Schnittstelle.}
+STR_SIDE_MENU                 {Spiel SideMenu}
+STR_SIDE_MENU_DESC            {Anzeige des Spielmenüs auf der rechten Seite des Bildschirms.}
+STR_SHOW_PIC1                 {PIC1 anzeigen}
+STR_SHOW_PIC1_DESC            {Zeige das Hintergrundbild der aktuell ausgewählten Spiele PIC1 an. Verwenden Sie R1 mit dem UI LIST und GRID, um es anzuzeigen.}
+STR_SHOW_COVER                {Details anzeigen}
+STR_SHOW_COVER_DESC           {Zeigen Sie die Spielabdeckung.}
+STR_SHOW_GAMECASE             {Spiel Case anzeigen}
+STR_SHOW_GAMECASE_DESC        {Zeigen Sie die Spielabdeckung mit dem Spiel Fall.}
+STR_SHOW_ICON0                {Zeige ICON0}
+STR_SHOW_ICON0_DESC           {Zeige das Hauptbild des Spiels ICON0 an.}
+STR_GRID_TYPE                 {Netztyp}
+STR_GRID_TYPE_DESC            {Wählen Sie, wie Sie das Gitter bewegen.}
+STR_SCROLL                    {Scroll}
+STR_PAGE                      {Seite}
+STR_DIRECTION                 {Richtung}
+STR_DIRECTION_DESC            {Wählen Sie in welcher Richtung das Gitter bewegt wird.}
+STR_VERTICAL                  {Vertikal}
+STR_HORIZONTAL                {Horizontale}
+STR_ANIMATED                  {Animiert}
+STR_ANIMATED_DESC             {Machen Sie die Bewegungen des Gitters gleiten.}
+STR_KEEP_PROP                 {Anteil}
+STR_KEEP_PROP_DESC            {Halten Sie das ursprüngliche Aspektverhältnis des ICON0.}
+STR_NB_COL                    {Anzahl der Spalten}
+STR_NB_COL_DESC               {Wählen Sie die Anzahl der Spalten des Rasters.}
+STR_NB_LINE                   {Anzahl der Zeilen}
+STR_NB_LINE_DESC              {Wählen Sie die Anzahl der Zeilen des Rasters.}
+STR_INVERSE                   {Inverse Taste}
+STR_INVERSE_DESC              {Inverse die Tasten rechts und links.}
+STR_3D                        {3D}
+STR_3D_DESC                   {Zeigen Sie das Menü mit 3D-Modellen von Spielfällen an.}
+STR_ADD                       {In den Warenkorb}
+STR_LOAD                      {Last}
+STR_CHANGE                    {Veränderung}
+STR_COLOR                     {Farbe}
+STR_RESET                     {Zurück zur Übersicht}
+STR_FAILED                    {Versäumt}
+STR_DONE                      {Artikel 2}
+STR_OPEN                      {Open}
+STR_CLOSE                     {Schließen}
+STR_OPTION                    {Option}
+STR_SELECT                    {Wählen}
+STR_WINDOW                    {Wind}
+STR_CLICK                     {Klicken Sie auf}
+STR_CURSOR                    {Cursor}
+STR_NEXT                      {Nächste}
+STR_PREVIOUS                  {Vorherige}
+STR_SET_COLOR                 {Farbe auswählen}
+STR_HIDETV                    {TV-Bildschirmtest verbergen}
+STR_SHOWTV                    {TV-Bildschirmtest anzeigen}
+STR_MOVE_TO_PLUGINS           {Verschieben Sie dev_hd0/plugins}
+STR_ASK_PLUGINS               {Um den Plugin-Manager zu verwenden, müssen die Plugins in dev_hdd0/plugins' sein.\n Akzeptieren Sie diesen Ordner?}
+STR_CHANGE_VALUE              {Veränderungswert}
+STR_LOAD_IDPS_LV2             {IDPS von lv2 laden}
+STR_LOAD_IDPS_EID5            {IDPS von EID5 laden}
+STR_NAME                      {Name}
+STR_DOCK_RIGHT                {Dock nach rechts}
+STR_DOCK_LEFT                 {Dock nach links}
+STR_DOCK_FULL                 {Dock to full}
+STR_PLUGIN_MONITOR            {Plugin Monitor}
+STR_UNUSED                    {Nicht verwendet}
+STR_UNLOAD                    {Entladen}
+STR_BOOT_FILE                 {Boot Datei}
+STR_CURRENT                   {Laufende}
+STR_NET                       {Netto}
+STR_SOFT                      {Weich}
+STR_GX                        {GX}
+STR_CUSTOM                    {Zoll}
+STR_NEW_CMD                   {Neuer Befehl}
+STR_PNACH                     {Pnach}
+STR_WIDESCREEN                {Großansicht}
+STR_480P                      {480P}
+STR_YFIX                      {YFIX}
+STR_FMV                       {FMV-Schiff}
+STR_SIMPLE                    {Einfach}
+STR_ADVANCED                  {Fortgeschritten}
+STR_INSTALL_MGZ               {Möchten Sie ManaGunZ installieren?}
+STR_UP2DATE                   {Es ist aktuell}
+STR_SHOW_WAVES                {Wellen zeigen}
+STR_SHOW_WAVES_DESC           {Zeige Wellen im Hintergrund an.}
+STR_WAVES_COLOR               {Wellen Farbe}
+STR_WAVES_COLOR_DESC          {Ändern Sie die Farbe der Wellen.}
+STR_USE_CONFIG                {Sie verwenden keine PS2-Konfigurationsdatei *CONFIG}
+STR_COLORSET                  {Farbe und Farbe}
+STR_COLORSET_DESC             {Wählen Sie einen vordefinierten Farbsatz in ManaGunZ.}
+STR_GRID_SCROLL               {Scroll}
+STR_ADD_LIMG                  {LIMG}
+STR_REMOVE_LIMG               {Entfernen von LIMG}
+STR_LIMG_DESC                 {Es kann einige Spiele beheben.}
+STR_FONT                      {Schriftart}
+STR_FONT_DESC                 {Ändern Sie die Schriftart.}
+STR_MOVE                      {Los.}
+STR_JOIN                      {Mitglied}
+STR_JOIN_DESC                 {Dateien .666XX verschmelzen.}
+STR_COLOR_FILTER              {Farbfilter}
+STR_COLOR_NOTIF               {Anmeldung}
+STR_COLOR_BOXHEAD             {Box Header}
+STR_COLOR_BOXBODY             {Feldkörper}
+STR_COLOR_SIDEBAR             {Seitenleiste}
+STR_COLOR_BGS                 {Hintergrund}
+STR_COLOR_BG                  {Hintergrund}
+STR_ROOT_DISPLAY              {Root-Anzeige}
+STR_ROOT_DISPLAY_DESC         {Ändern Sie die Darstellung der Wurzel in FileManager.}
+STR_STYLE                     {Stil}
+STR_STYLE_CUSTOM              {Individueller Stil}
+STR_STYLE1                    {Stil 1}
+STR_STYLE2                    {Stil 2}
+STR_STYLE3                    {Stil 3}
+STR_STYLE4                    {Stil 4}
+STR_STYLE5                    {Stil 5}
+STR_STYLE6                    {Stil 6}
+STR_FREEOF                    {frei von}
+STR_ROOTLABEL                 {Root}
+STR_FM_ICONSIZE               {Icongröße}
+STR_FM_BIG                    {Groß}
+STR_FM_SMALL                  {Klein}
+STR_FM_ROWNUMBER              {Textzeilennummer}
+STR_FM_ROWSIZE                {Größe der Kuh}
+STR_FM_LEFT_CONTENT           {Zeileninhalt [LEFT]}
+STR_FM_RIGHT_CONTENT          {Zeileninhalt [RECHT]}
+STR_FM_EMPTY                  {Leere}
+STR_FM_MOUNTPOINT             {Befestigungspunkt}
+STR_FM_DEVICE                 {Gerät}
+STR_FM_LABEL                  {Bezeichnung}
+STR_FM_CAPACITY               {Kapazitätsleiste}
+STR_FM_MEMINSIDE              {In Erinnerung}
+STR_FM_MEMOUTSIDE             {Außenspeicher}
+STR_FM_FILESYSTEM             {Dateisystem}
+STR_FM_CB_WIDTH               {Breite der Kapazitätsleiste}
+STR_FM_MEMORY                 {Speichermedien}
+STR_FM_ICON                   {Ikonen}
+STR_FM_FILEFOLDER             {Datei und Ordner}
+STR_FM_CUSTOM                 {Benutzerdefinierte Symbole}
+STR_FM_CB_FILL                {Füllung}
+STR_EDIT_IDPS                 {IDPS bearbeiten}
+STR_FILTER_NOGAME             {Kein Spiel gefunden. Passen Sie Ihre Filter an.}
+STR_SYMLINK_SRC               {SymLink Quelle}
+STR_SYMLINK_TARGET            {SymLink Ziel}
+STR_LOAD_MAMBA                {Die mamba}
+STR_CONVERT_TO_PNG            {Umrechnen in PNG}
+STR_MOUNT_DEVBLIND            {Unprotekt dev_flash}
+STR_UNMOUNT_DEVBLIND          {Schützen Sie das}
+STR_BT_AUDIO                  {Game-Pad Audio aus}
+STR_BT_AUDIO_DESC             {Spielen Sie den Sound durch das Spielfeld beim Spielen. Getestet mit einem DS4.}
+STR_GAME_UPDATE_TITLE         {PS3 Spiele Updates Downloader}
+STR_CURRENT_VERS              {Aktuelle Version}
+STR_CANT_MOUNT_PEEKPOKE       {Unmountable : PEEK und POKE nicht verfügbar, mamba kann nicht installiert werden}
+STR_CANT_MOUNT_UNKFW          {Unmountable: unbekannte Firmware, mamba kann nicht installiert werden.}
+STR_CANT_MOUNT                {Unzahlbar}
+STR_ONLY_FAV                  {Nur Favoriten}
+STR_ALL_GAMES                 {Alle Spiele}
+STR_DISPLAY                   {Anzeige}
+STR_DUMP_DEC                  {Entschlüsselte Blu-Ray Disc}
+STR_DUMP_DEC_DESC             {Holen Sie sich ein richtiges Iso Ihrer Disc mit der IRD. Es wird die IRD nach Fertigstellung in die Datenbank hochladen.}
+STR_DUMP_ENC                  {Dump verschlüsselt Blu-Ray Disc}
+STR_DUMP_DISC_KEY             {Dump Blu-Ray Disc Schlüssel}
+STR_DUMP_ERK                  {Dump eid Wurzelschlüssel}
+STR_DUMP_3DUMP                {Dump 3Dump.bin}
+STR_SYSTEM_TOOLS              {Systemwerkzeuge}
+STR_DUMP_ENC_DESC             {Holen Sie sich eine rohe Iso Ihrer Blu-Ray-Disk.}
+STR_DUMP_ERK_DESC             {Dies ist der Hauptschlüssel, um Ihr System zu entschlüsseln. Es wird überall benutzt. Pfad: dev_hd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {Es ist die benötigte Datei, um einen Blu-Ray mit 3k3y IsoTools abzugeben. Pfad: dev_hd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {Entschlüsselung von edat/sdat}
+STR_REDUMP_LOG                {GetKey Dump generieren}
+STR_REDUMP_LOG_DESC           {Generieren Sie Dateien, die für redump.org Einreichungen erforderlich sind.}
+STR_DUMP_OPTION               {Blu-Ray Dumper}
+STR_IGNORE_ERR                {Fehler ignorieren}
+STR_IGNORE_ERR_DESC           {Es ignoriert das Lesen von Fehlern während des Blu-Ray-Dumpprozesses.}
+STR_3K3Y_HEADER               {Include 3k3y header}
+STR_3K3Y_HEADER_DESC          {Es gibt den Blu-ray zu einer Iso mit eingebetteten 3k3y Header. 3k3y IsoTools wird es erkennen können.}
+STR_ELAPSED                   {Verstrichen}
+STR_REMAINING                 {Bleiben}
+STR_DYNAREC                   {Dynare}
+STR_DYNAREC_DESC              {Es ermöglicht Emulatoren, dynamische Rekompilation zu verwenden.}
+STR_BUILD_ISO                 {Baustoff}
+STR_BUILD_ISO_DESC            {Erstellen Sie eine Backup-Iso aus Blu-Rays Dateien.}
+STR_UPLOADER                  {Name des Uploaders}
+STR_UPLOADER_DESC             {Geben Sie Ihren Namen ein, wenn Sie Kredite für Ihre ird Uploads wünschen, lassen Sie ihn leer, um anonym zu bleiben.}

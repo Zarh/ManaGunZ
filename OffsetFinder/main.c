@@ -1309,6 +1309,9 @@ extern u64 TOC;\n\
 extern u64 SYSCALL_TABLE;\n\
 extern u64 HV_START_OFFSET;\n\
 extern u64 HTAB_OFFSET;\n\
+extern u64 HTAB_PATCH1;\n\
+extern u64 HTAB_PATCH2;\n\
+extern u64 HTAB_PATCH3;\n\
 extern u64 MMAP_OFFSET1;\n\
 extern u64 MMAP_OFFSET2;\n\
 extern u64 SPE_OFFSET;\n\
@@ -1412,6 +1415,9 @@ u8 init_fw()\n\
 		TOC = TOC_%s;\n\
 		SYSCALL_TABLE = SYSCALL_TABLE_%s;\n\
 		HTAB_OFFSET = HTAB_OFFSET_%s;\n\
+		HTAB_PATCH1 = HTAB_PATCH1_%s;\n\
+		HTAB_PATCH2 = HTAB_PATCH2_%s;\n\
+		HTAB_PATCH3 = HTAB_PATCH3_%s;\n\
 		MMAP_OFFSET1 = MMAP_OFFSET1_%s;\n\
 		MMAP_OFFSET2 = MMAP_OFFSET2_%s;\n\
 		SPE_OFFSET = SPE_OFFSET_%s;\n\
@@ -1436,7 +1442,8 @@ u8 init_fw()\n\
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
-		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, 
+		ent->d_name);
 		
 		fputs(temp, fwc);
 		
@@ -1466,6 +1473,14 @@ u8 init_fw()\n\
 		u64 MMAP_OFFSET1=0;
 		u64 MMAP_OFFSET2=0;
 		u64 SPE_OFFSET=0;
+		
+		u64 HTAB_PATCH1=0;
+		u64 HTAB_PATCH2=0;
+		u64 HTAB_PATCH3=0;
+		
+		u8 htab_patch1_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x7C, 0x1B, 0x78, 0x41, 0xE2, 0xFD, 0x64};
+		u8 htab_patch2_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x7B, 0x1B, 0x78, 0x40, 0xC2, 0x00, 0xAC};
+		u8 htab_patch3_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x78, 0x1B, 0x78, 0x40, 0xC2, 0x02, 0xD8};
 		
 		u64 LPAR=0;
 		
@@ -2183,6 +2198,15 @@ u8 init_fw()\n\
 						}
 					}
 				}
+			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch1_flag, sizeof(htab_patch1_flag))) {
+				HTAB_PATCH1 = n;
+			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch2_flag, sizeof(htab_patch2_flag))) {
+				HTAB_PATCH2 = n;
+			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch3_flag, sizeof(htab_patch3_flag))) {
+				HTAB_PATCH3 = n;
 			}
 			if(compare(0xFF, (char *) &memLV2[n], (char *) flag_lpar, sizeof(flag_lpar))) {
 				LPAR = n;
@@ -2936,6 +2960,9 @@ u8 init_fw()\n\
 		sprintf(str, "#define SYSCALL_TABLE_%lld%c         0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, common);
 		sprintf(str, "#define HV_START_OFFSET_%lld%c       0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, common);
 		sprintf(str, "#define HTAB_OFFSET_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_OFFSET); fputs(str, common);
+		sprintf(str, "#define HTAB_PATCH1_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_PATCH1); fputs(str, common);
+		sprintf(str, "#define HTAB_PATCH2_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_PATCH2); fputs(str, common);
+		sprintf(str, "#define HTAB_PATCH3_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_PATCH3); fputs(str, common);
 		sprintf(str, "#define MMAP_OFFSET1_%lld%c          0x%06llX\n", FIRMWARE, D, MMAP_OFFSET1); fputs(str, common);		
 		sprintf(str, "#define MMAP_OFFSET2_%lld%c          0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, common);		
 		sprintf(str, "#define SPE_OFFSET_%lld%c            0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, common);
@@ -2954,6 +2981,8 @@ u8 init_fw()\n\
 		sprintf(str, "#define FW_DATE_2_%lld%c             0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, common);
 		sprintf(str, "#define OFFSET_1_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, common);
 		sprintf(str, "#define OFFSET_2_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, common);
+		
+		
 		
 		fputs("\n", SKY);
 		sprintf(str, "#ifdef CFW_%lld%c\n", FIRMWARE, D); fputs(str, SKY);

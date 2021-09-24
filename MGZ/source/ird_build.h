@@ -21,7 +21,6 @@
 									FREE(x->GameName);                                                         \
 									FREE(x->Header);                                                           \
 									FREE(x->Footer);                                                           \
-									for(o=0; o<x->RegionHashesNumber; o++) FREE(x->RegionHashes[o]);           \
 									FREE(x->RegionHashes);                                                     \
 									for(o=0; o<x->FileHashesNumber; o++) FREE(x->FileHashes[o].FilePath);      \
 									FREE(x->FileHashes);                                                       \
@@ -36,8 +35,16 @@ typedef struct
 {
 	u64 Sector;
 	u8 FileHash[0x10];
+	u64 FileSize;
 	char *FilePath; // not inside ird
 } FileHash_t;
+
+typedef struct
+{
+	u32 Start;
+	u32 End;
+	u8 RegionHash[0x10];
+} RegionHash_t;
 
 typedef struct
 {
@@ -54,7 +61,7 @@ typedef struct
 	u32 FooterLength; // Length of iso footer (just after the last file which is always PS3UPDATE.PUP
 	u8 *Footer; // iso's footer
 	u8 RegionHashesNumber; // without the 1st and the last region
-	u8 **RegionHashes; // md5
+	RegionHash_t *RegionHashes; // md5
 	u32 FileHashesNumber; // ..
 	FileHash_t *FileHashes; // md5
 	u16 ExtraConfig; // unused

@@ -63,19 +63,19 @@ int do_cdb(unsigned char* cdb, int cdb_len, unsigned char* transfer, int transfe
 	
 	ret = sys_storage_send_atapi_command(g_fd, &atapi_cmnd, transfer);
 	if(ret != 0) {
-		print_load("ioctl indicates command failed: %d", ret);
+		print_debug("ioctl indicates command failed: %d", ret);
 		if(g_file_log) fprintf(g_file_log, "ioctl indicates command failed: %d\r\n", ret);
 		return FAILED;
 	}
 	
 	if(g_file_log) fprintf(g_file_log, "return value of ioctl indicates success\r\n");
-	print_load("SUCCESS");
+	print_debug("SUCCESS");
 	return SUCCESS;
 }
 
 int test_unit_ready()
 {
-	print_load("Test unit ready: ");
+	print_debug("Test unit ready: ");
 	if(g_file_log) fprintf(g_file_log, "Test unit ready: ");
 	unsigned char cdb[]= {0, 0, 0, 0, 0, 0};
 	return do_cdb(cdb, 6, NULL, 0, ATAPI_NON_DATA_PROTO, ATAPI_DIR_WRITE);
@@ -265,19 +265,22 @@ u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 	u8 ret = FAILED;
 	u8* d_3dump = NULL;
 	
-	/* Start the drive communication */
+	print_debug("sys_storage_open");
 	if(sys_storage_open(BD_DEVICE, &g_fd) != 0) {
 		print_load("Error : sys_storage_open failed...");
 		return FAILED;
 	}
-
+	
+	print_debug("test_unit_ready");
 	if(test_unit_ready()==FAILED) {
 		print_load("Error : Test unit failed, are you sure a disc is in the drive?");
 		goto error;	
 	}
 	
+	print_debug("Load_3Dump");
 	d_3dump = Load_3Dump();
 	if(d_3dump==NULL) {
+		print_load("Error : Failed to load 3Dump");
 		goto error;
 	}
 	
@@ -286,19 +289,20 @@ u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 	u8* ke=d_3dump+0x30;
 	u8* ie=d_3dump+0x50;
 	
+	print_debug("load_keys");
 	load_keys(eid4, cmac, ke, ie);
 	
 	memset(d1,  0, 0x10);
 	memset(d1,  0, 0x10);
 	memset(pic, 0, PIC_LEN);
 	
-	print_load("Getting PIC");
+	print_debug("Getting PIC");
 	if( read_pic(pic, PIC_LEN) == FAILED ) {
 		print_load("Error : failed to get PIC");
 		goto error;
 	}
 	
-	print_load("Getting D1 and D2");
+	print_load("Getting Data1 and Data2"); // If I remove this line it doesn't work, I don't know why ! Even if I use sleep(1);
 	if( get_dec_key(d1, d2)==FAILED ) {
 		print_load("Error : failed to get d1 and d2");
 		goto error;
@@ -321,18 +325,20 @@ u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 **/
 
 	dec_d2(d2);
-
-	d2[12]=0;
-	d2[13]=0;
-	d2[14]=0;
-	d2[15]=1;
 	
+	u32 id = *(u32 *) &d2[12];
+	if( id != 0 ) {
+		d2[12]=0;
+		d2[13]=0;
+		d2[14]=0;
+		d2[15]=1;
+	}
 	enc_d2(d2);
-	
 	
 	ret=SUCCESS;
 error:
-	
+
+	print_debug("sys_storage_close");
 	sys_storage_close(g_fd);
 	FREE(d_3dump);
 	
@@ -428,11 +434,14 @@ void triple_des_encrypt(unsigned char* Key, unsigned char* IV, unsigned char* So
 
 int get_dec_key(unsigned char* d1, unsigned char* d2)
 {
-	print_load("get dec key");
+	print_debug("get dec key");
 	if(g_file_log) fprintf(g_file_log, "get dec key\r\n");
-	if(establish_session_keys(0, Key1, Key2) == FAILED) return FAILED;
+	if(establish_session_keys(0, Key1, Key2) == FAILED) {
+		print_load("Error : establish_session_keys failed");
+		return FAILED;
+	}
 	if(get_data(d1, d2)==FAILED) {
-		print_load("get data failed");
+		print_load("Error: get data failed");
 		if(g_file_log) fprintf(g_file_log, "  get data failed\r\n");
 		return FAILED;
 	}
@@ -449,7 +458,7 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 	unsigned char destination[0x10];
 	unsigned char buffer6[0x10];
 	
-	print_load("establish session keys");
+	print_debug("establish session keys");
  	if(g_file_log) fprintf(g_file_log, "  establish session keys:\r\n");
 	buffer7[1] = 0x10;
 	memcpy(destinationArray, sourceArray, 4);
@@ -465,7 +474,7 @@ int establish_session_keys(char keyselection, unsigned char* KA, unsigned char* 
 	
 	if(memcmp(source, destination, 0x10)!=0)
 	{
-		print_load("Error : Memory comparison failed (rnd1 mismatch?). Check your 3Dump.bin is correct.");
+		print_load("Error : Memory comparison failed (rnd1 mismatch?). Check if your 3Dump.bin is correct.");
 		if(g_file_log) fprintf(g_file_log, "    Memory comparison failed (rnd1 mismatch?)\r\n");
 		return FAILED;
 	}
@@ -502,7 +511,7 @@ void hex_fprintf(FILE *fp, unsigned char *buf, size_t len)
 int do_report_key(char keyFormat, unsigned char* payload, int payload_len)
 {
 	unsigned char buffer2[12];
-	print_load("do report key");
+	print_debug("do report key");
 	if(g_file_log) fprintf(g_file_log, "    do report key: ");
 	memset(buffer2, 0, 12);
 	buffer2[0] = 0xa4;
@@ -516,7 +525,7 @@ int do_report_key(char keyFormat, unsigned char* payload, int payload_len)
 int do_send_key(char keyFormat, unsigned char* payload, int payload_len)
 {
 	unsigned char buffer2[12];
-	print_load("do send key");
+	print_debug("do send key");
 	if(g_file_log) fprintf(g_file_log, "    do send key: ");
 	memset(buffer2, 0, 12);
 	buffer2[0] = 0xa3;
@@ -530,7 +539,7 @@ int do_send_key(char keyFormat, unsigned char* payload, int payload_len)
 void calculate_session_keys(unsigned char* r1, unsigned char* r2)
 {
 	unsigned char destinationArray[0x10];
-	print_load("calculate session keys");
+	print_debug("calculate session keys");
 	if(g_file_log) fprintf(g_file_log, "    calculate session keys\r\n");
 	memcpy(destinationArray, r1, 8);
 	memcpy(destinationArray+8, r2+8, 8);
@@ -556,7 +565,7 @@ int get_data(unsigned char* data1, unsigned char* data2)
 		 0x8a, 11, 0x80, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	};
 	
-	print_load("get data");
+	print_debug("get data");
 	if(g_file_log) fprintf(g_file_log, "  get data\r\n");
 	memset(buffer7, 0, 8);
 	buffer7[6] = 10;
@@ -582,14 +591,14 @@ int get_data(unsigned char* data1, unsigned char* data2)
 int do_unknown_e1(unsigned char* header, unsigned char* payload)
 {
 	unsigned char buffer2[12];
-	print_load("do unknown e1: ");
+	print_debug("do unknown e1: ");
 	if(g_file_log) fprintf(g_file_log, "    do unknown e1:\r\n");
 	memset(buffer2, 0, 12);
 	buffer2[0]=0xe1;
 	buffer2[2]=0x54;
 	memcpy(buffer2+4, header, 8);
-	print_load("unknown e1 cdb: ");
-	hex_print_load((char *)buffer2, 12);
+	print_debug("unknown e1 cdb: ");
+	if( DEBUG ) hex_print_load((char *)buffer2, 12);
 	if(g_file_log) {
 		fprintf(g_file_log, "    unknown e1 cdb: ");
 		hex_fprintf(g_file_log, buffer2, 12);
@@ -601,14 +610,14 @@ int do_unknown_e1(unsigned char* header, unsigned char* payload)
 int do_unknown_e0(unsigned char* header, unsigned char* payload)
 {
 	unsigned char buffer2[12];
-	print_load("do unknown e0: ");
+	print_debug("do unknown e0: ");
 	if(g_file_log) fprintf(g_file_log, "    do unknown e0:\r\n");
 	memset(buffer2, 0, 12);
 	buffer2[0]=0xe0;
 	buffer2[2]=0x34;
 	memcpy(buffer2+4, header, 8);
-	print_load("unknown e0 cdb: ");
-	hex_print_load((char *)buffer2, 12);
+	print_debug("unknown e0 cdb: ");
+	if( DEBUG ) hex_print_load((char *)buffer2, 12);
 	if(g_file_log) {
 		fprintf(g_file_log, "    unknown e0 cdb: ");
 		hex_fprintf(g_file_log, buffer2, 12);
@@ -623,7 +632,7 @@ void load_keys(unsigned char* EID4, unsigned char* CMAC, unsigned char* KE, unsi
 	unsigned char buffer2[0x10];
 	unsigned char destination[0x40];
 
-	print_load("Load keys");
+	print_debug("Load keys");
 	if(g_file_log) fprintf(g_file_log, "Load keys\r\n");
 	AESEncrypt(KE, 256, IE, InitialSeed, 0, 0x40, destination, 0);
 	memcpy(destinationArray, destination+0x20, 0x20);

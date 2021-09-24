@@ -1,6 +1,11 @@
-#define print_debug(...) 		if( DEBUG ) print_load(__VA_ARGS__)
+#include <ppu-types.h>
+
 #define printf		 		 	print_load
 #define print_verbose 			print_debug
+
+// https://www.cs.technion.ac.il/users/yechiel/c++-faq/macros-with-if.html
+#define print_debug(...) 		if( DEBUG ) print_load(__VA_ARGS__); else (void)0
+								
 
 #define OK 			1
 #define NOK 		0
@@ -33,6 +38,14 @@
 #define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
 #define FCLOSE(x) 				if(x!=NULL) {fclose(x);x=NULL;}
 
+extern u64 HTAB_PATCH1;
+extern u64 HTAB_PATCH2;
+extern u64 HTAB_PATCH3;
+
+extern u64 lv2peek(u64 addr);
+extern void remove_lv2_protection();
+extern void write_htab(void);
+extern u64 lv2poke(u64 addr, u64 value);
 extern u8 dump_3Dump();
 extern u8 *Load_3Dump();
 extern void hex_print_load(char *data, size_t len);

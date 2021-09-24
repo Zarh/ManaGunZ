@@ -1,379 +1,398 @@
-STR_LANGUAGE				{Español}
-STR_LANGCODE				{\x02}
+STR_LANGUAGE                  {Español}
+STR_LANGCODE                  {\x02}
 
-STR_LANG					{Seleccionar idioma}
-STR_LANG_DESC				{Selecciona el idioma de ManaGunZ.}
-STR_GATHERING				{Recopilando datos...}
-STR_COPYING					{Copiando...}
-STR_FROM					{Origen}
-STR_TO						{Destino}
-STR_FILES					{Archivos}
-STR_DIRS					{Carpetas}
-STR_UNKNOWN					{Desconocido}
-STR_FILE					{Archivo}
-STR_CANCEL					{Cancelar}
-STR_TURNOFF					{Apagar PS3 al finalizar la transferencia de archivos}
-STR_CANCELLED				{Cancelado}
-STR_UNIT					{Bytes}
-STR_TOTALSIZE				{Tamaño total}
-STR_HIDELOGS				{Ocultar información}
-STR_SHOWLOGS				{Mostrar información}
-STR_BOOST					{Acelerar animación}
-STR_GAMEMENU				{Menú juego}
-STR_SETTINGS				{MGZ Config.}
-STR_MOUNTGAME				{Montar juego}
-STR_FILTER					{Filtros}
-STR_FAVORITE				{Favoritos}
-STR_FILEMANAGER				{Gestor de archivos}
-STR_HOLD					{Mantener}
-STR_EXIT					{Salir}
-STR_GAME_PROP				{Propiedades del Juego}
-STR_GAME_TITLE				{Título}
-STR_GAME_PATH				{Ruta}
-STR_GAME_FORMAT				{Formato}
-STR_GAME_SIZE				{Tamaño}
-STR_GAME_PLATFORM			{Plataforma}
-STR_SYSVERS					{Firmware}
-STR_GAMEID					{Identificador}
-STR_ELFCRC					{ELF CRC}
-STR_ELFCRCO					{ELF CRC (Original)}
-STR_BACK					{Atrás}
-STR_ENTER					{Aceptar}
-STR_UPDATE_FOUND			{Actualizaciones encontradas}
-STR_UPDATE					{Actualización}
-STR_SIZE					{Tamaño}
-STR_SYSTEM					{Sistema}
-STR_DL						{Descargar}
-STR_DL_ALL					{Descargar todo}
-STR_UNPLUG					{Desconectar dispositivos}
-STR_PATH					{Ruta}
-STR_TYPE					{Tipo}
-STR_FOLDER					{Carpeta}
-STR_DIR						{Carpeta}
-STR_MULT					{Múltiple}
-STR_THM_SETTINGS			{Configuración del Tema}
-STR_THM						{Seleccionar tema}
-STR_THM_DESC				{Selecciona un tema para el interface de ManaGunZ. Y permite instalar más temas desde la ruta: /dev_usb***/Themes/[Tipo]/[Nombre].}
-STR_CREATE					{Crear}
-STR_ZOOM_OUT				{Zoom -}
-STR_ZOOM_IN					{Zoom +}
-STR_MOVE_FRAME				{Mover el marco}
-STR_CHECK					{Activar}
-STR_UNCHECK					{Desactivar}
-STR_GAME_OPTION				{Opciones del Juego}
-STR_ADD_FAV					{Añadir a favoritos}
-STR_REM_FAV					{Eliminar de favoritos}
-STR_FAV_DESC				{Añade o elimina el juego de tu lista de favoritos.}
-STR_RENAME					{Renombrar}
-STR_RENAME_DESC				{Cambia el título del juego dentro del PARAM.SFO (PS3/PSP), o en el nombre del archivo BIN/ISO (PS1/PS2).}
-STR_DELETE					{Eliminar}
-STR_DELETE_DESC				{Elimina el juego del dispositivo de almacenamiento.}
-STR_COPY					{Copiar}
-STR_COPY_DESC				{Copia el juego a otro dispositivo de almacenamiento.}
-STR_CREATE_ICON0			{Crear icono}
-STR_CREATE_ICON0_DESC		{Crea un icono del juego (ICON0.PNG) recortando una sección de la carátula del juego.}
-STR_REST_PNACH				{Eliminar parche PNACH}
-STR_REST_PNACH_DESC			{Elimina los parches PNACH aplicados al juego.}
-STR_APPLY_PNACH				{Aplicar parche PNACH}
-STR_APPLY_PNACH_DESC		{Aplica parches pnach al juego.}
-STR_DISABLE_WS				{Eliminar parche WideScreen}
-STR_ENABLE_WS				{Aplicar parche WideScreen}
-STR_WS_DESC					{Muestra el juego en formato panorámico 16:9 en vez de 4:3.}
-STR_DISABLE_480P			{Eliminar parche 480p}
-STR_ENABLE_480P				{Aplicar parche 480p}
-STR_480P_DESC				{Muestra el juego en formato de escaneo progresivo 480p.}
-STR_DISABLE_YFIX			{Eliminar parche YFIX}
-STR_ENABLE_YFIX				{Aplicar parche YFIX}
-STR_YFIX_DESC				{Corrige la posicion vertical de la pantalla eliminando las bandas horizontales negras.}
-STR_DISABLE_FMVSKIP			{Eliminar parche FMVskip}
-STR_ENABLE_FMVSKIP			{Aplicar parche FMVskip}
-STR_FMVSKIP_DESC			{Desactiva las secuencias de video MPEG.}
-STR_DISABLE_NETEMU			{Desactivar netemu}
-STR_ENABLE_NETEMU			{Activar netemu}
-STR_NETEMU_DESC				{Fuerza el uso del emulador ps2_netemu.self.}
-STR_SAVE_CONFIG				{Guardar archivo CONFIG}
-STR_CONFIG					{Editor de archivos CONFIG}
-STR_CONFIG_DESC				{Carga, edita, y crea archivos de configuración para el emulador de PS2.}
-STR_NONE					{Ninguna}
-STR_CHECK_MD5				{Comprobar MD5}
-STR_PROPS					{Propiedades}
-STR_PROPS_DESC				{Muestra las propiedades del juego.}
-STR_ASK_DEL					{Realmente quieres eliminar:}
-STR_GAME_SETTINGS			{Configuración del Juego}
-STR_DIRECT_BOOT				{Arranque directo}
-STR_DIRECT_BOOT_DESC		{Arranca el juego directamente sin pasar por el XMB.}
-STR_YES						{Sí}
-STR_NO						{No}
-STR_CLEAN_SYSCALL			{Desactivar syscalls}
-STR_CLEAN_SYSCALL_DESC		{Desactiva las syscalls: peek y poke.}
-STR_CHANGE_IDPS				{Modificar IDPS}
-STR_CHANGE_IDPS_DESC		{Modifica el IDPS/ConsoleID de forma temporal en la memoria RAM.}
-STR_EXT_GAME_DATA			{Instalar datos en USB}
-STR_EXT_GAME_DATA_DESC		{Instala los datos del juego en el dispositivo USB en vez de instalarlos en el HDD interno.}
-STR_PAYLOAD					{Payload}
-STR_PAYLOAD_DESC			{Selecciona el payload utilizado para montar este juego.}
-STR_PRIM_USB				{Asignar USB como principal}
-STR_PRIM_USB_DESC			{Asigna el dispositivo USB donde esta almacenado el juego como si fuera el dispositivo USB principal.}
-STR_BDEMU					{Emulación de Blu-Ray}
-STR_BDEMU_DESC				{Selecciona el tipo de emulación del lector Blu-Ray.}
-STR_PATCH_LIBFS				{Parche libfs.sprx}
-STR_PATCH_LIBFS_DESC		{Selecciona el tipo de parche para libfs.sprx.}
-STR_MOUNT_APPHOME			{Montar en app_home}
-STR_MOUNT_APPHOME_DESC		{Monta el juego en el icono [XMB] → [Juego] → [★/app_home/PS3_GAME/].}
-STR_PATCH_EXP				{Parche explore_plugin.sprx}
-STR_PATCH_EXP_DESC			{Cambia la ruta: /app_home por la ruta: /dev_bdvd en explore_plugin.sprx.}
-STR_MAKE_SHTCUT_PKG			{Crear PKG de acceso rápido}
-STR_MAKE_SHTCUT_PKG_DESC	{Crea un PKG en: /dev_hdd0/packages/ que funciona como un acceso rápido al juego desde el XMB.}
-STR_PATCH_EBOOT				{Parchear EBOOT.BIN}
-STR_PATCH_EBOOT_DESC		{Cambia la versión de firmware en el EBOOT.BIN a 4.21 para prevenir el error 0x80010009.}
-STR_RESIGN					{Refirmar}
-STR_RESIGN_DESC				{Reconstruye los archivos ejecutables (EBOOT.BIN, SELF, SPRX, DAT, EDAT) con las keys del firmware 4.21.}
-STR_RESTORE					{Restaurar}
-STR_RESTORE_DESC			{Restaura los archivos ejecutables del juego (EBOOT.BIN, SELF, SPRX, DAT, EDAT).}
-STR_EXTRACT_ISO				{Extraer ISO}
-STR_EXTRACT_ISO_DESC		{Convierte el juego del formato ISO al formato JB.}
-STR_CONVERT_ISO				{Crear ISO}
-STR_CONVERT_ISO_DESC		{Convierte el juego del formato JB al formato ISO.}
-STR_FIX_PERMS				{Corregir permisos}
-STR_FIX_PERMS_DESC			{Cambia los permisos de todas las carpetas y archivos al valor 0777.}
-STR_CHECK_IRD				{Verificación de archivos IRD}
-STR_CHECK_DESC				{Verifica si el juego coincide con el disco original.}
-STR_DL_UPDATE				{Descargar actualizaciones}
-STR_DL_UPDATE_DESC			{Descarga las actualizaciones del juego a la ruta: /dev_hdd0/packages/.}
-STR_OPEN_WINDOW				{Abrir nueva ventana}
-STR_DUMP_LV1				{Dump LV1}
-STR_DUMP_LV2				{Dump LV2}
-STR_DUMP_FLASH				{Dump FLASH}
-STR_REFRESH					{Refrescar}
-STR_NEWFOLDER				{Nueva carpeta}
-STR_NEWFILE					{Nuevo archivo}
-STR_PASTE					{Pegar}
-STR_CUT						{Cortar}
-STR_UNSELECT_ALL			{Deseleccionar todo}
-STR_SELECT_ALL				{Seleccionar todo}
-STR_MAKE_PKG				{Crear PKG}
-STR_GETMD5					{Calcular MD5}
-STR_GETSHA1					{Calcular SHA1}
-STR_VIEW					{Ver}
-STR_VIEW_TXT				{Ver TXT}
-STR_VIEW_SFO				{Ver SFO}
-STR_READ_XREG				{Leer SYS}
-STR_EXTRACT_ELF				{Desencriptar a ELF}
-STR_RESIGN_SELF				{Re-encriptar SELF}
-STR_LAUNCH_SELF				{Lanzar SELF}
-STR_EXTRACT_EBOOT			{Desencriptar EBOOT}
-STR_RESIGN_EBOOT			{Re-encriptar EBOOT}
-STR_LAUNCH_EBOOT			{Ejecutar EBOOT}
-STR_SIGN_ELF				{Encriptar ELF}
-STR_SIGN_EBOOT				{Encriptar EBOOT}
-STR_SIGN_PRX				{Encriptar PRX}
-STR_EXTRACT_PRX				{Desencriptar a PRX}
-STR_RESIGN_SPRX				{Re-encriptar SPRX}
-STR_REMOVE_PRXLOADER		{Eliminar de PRX Loader}
-STR_ADD_PRXLOADER			{Añadir a PRX Loader}
-STR_REMOVE_PRXLOADER2		{Eliminar de PRXLoader}
-STR_ADD_PRXLOADER2			{Añadir a PRXLoader}
-STR_REMOVE_MAMBA			{Eliminar de Mamba}
-STR_ADD_MAMBA				{Añadir a Mamba}
-STR_REMOVE_COBRA			{Eliminar de Cobra}
-STR_ADD_COBRA				{Añadir a Cobra}
-STR_EXTRACT_RCO				{Extraer RCO}
-STR_EXTRACT_PKG				{Extraer PKG}
-STR_PKG_INFO				{Información del PKG}
-STR_EXTRACT_TRP				{Extraer TRP}
-STR_COMPRESS_ISO			{Comprimir ISO}
-STR_CHECK_CRC32				{Comprobar CRC32}
-STR_DECOMPRESS_CSO			{Descomprimir CSO}
-STR_EXTRACT_THM				{Extraer THM}
-STR_EXTRACT_P3T				{Extraer P3T}
-STR_EXTRACT_RAF				{Extraer RAF}
-STR_EXTRACT_QRC				{Extraer QRC}
-STR_EXTRACT_HERE			{Extraer aqui}
-STR_CONVERT_JSX_JS			{Convertir JSX a JS}
-STR_CONVERT_VAG_WAV			{Convertir VAG a WAV}
-STR_CONVERT_GTF_DDS			{Convertir GTF a DDS}
-STR_CONVERT_DDS_PNG			{Convertir DDS a PNG}
-STR_MAKE_APNG				{Crear APNG}
-STR_SET_PERMS				{Corregir permisos}
-STR_NOGAME					{No hay juegos}
-STR_GLOB_SETTINGS			{Configuración Global}
-STR_ADJUST					{Ajustar pantalla}
-STR_ADJUST_DESC				{Permite ajustar el tamaño de la pantalla de ManaGunZ.}
-STR_DL_COVER				{Descargar carátulas de juegos}
-STR_DL_COVER_DESC			{Descarga las carátulas de tus juegos a la ruta: /dev_hdd0/game/MANAGUNZ0/USRDIR/covers/.}
-STR_PLUGIN_MANAGER			{Administrador de plugins}
-STR_PLUGIN_MANAGER_DESC		{Administra tus plugins de la ruta: /dev_hdd0/plugins/.}
-STR_UPD_MGZ					{Actualizar ManaGunZ}
-STR_UPD_MGZ_DESC			{Descarga la última versión de ManaGunZ a la ruta: /dev_hdd0/packages/.}
-STR_GAME_PATHS				{Configurar rutas de juegos}
-STR_GAME_PATHS_DESC			{Configura los nombres de las carpetas donde ManaGunZ busca tus juegos.}
-STR_XMB_PRIO				{Activar prioridad en el XMB}
-STR_XMB_PRIO_DESC			{Desplaza el icono de ManaGunZ a la primera posición de los PKG instalados en la categoria [XMB] → [Juego].}
-STR_HELP					{Mostrar ayudas}
-STR_HELP_DESC				{Muestra los mensajes de ayuda, como este que estás leyendo.}
-STR_COLOR_1					{Color. Normal}
-STR_COLOR_2					{Color. Selección}
-STR_COLOR_3					{Color. Menús}
-STR_COLOR_4					{Color. Avisos}
-STR_COLOR_DESC				{Modifica los colores principales de ManaGunZ.}
-STR_UI_SETTINGS				{Configuración del Interface}
-STR_UI						{Tipo de interface}
-STR_UI_DESC					{Selecciona el interface de la pantalla de selección de juegos.}
-STR_SIDE_MENU				{Menú lateral}
-STR_SIDE_MENU_DESC			{Muestra el menú de opciones de los juegos en la parte derecha de la pantalla en vez de mostrarlo a pantalla completa.}
-STR_SHOW_PIC1				{Mostrar PIC1.PNG}
-STR_SHOW_PIC1_DESC			{Muestra la imagen de fondo de los juegos. Usa el botón R1 en los modos LIST y GRID para mostrarla.}
-STR_SHOW_COVER				{Mostrar carátulas}
-STR_SHOW_COVER_DESC			{Muestra las carátulas de los juegos de la ruta: /dev_hdd0/game/MANAGUNZ0/USRDIR/covers/.}
-STR_SHOW_GAMECASE			{Mostrar carátulas y cajas en 2D}
-STR_SHOW_GAMECASE_DESC		{Muestra las carátulas y las cajas de plástico de los juegos en 2D.}
-STR_SHOW_ICON0				{Mostrar ICON0.PNG}
-STR_SHOW_ICON0_DESC			{Muestra el icono principal de los juegos.}
-STR_GRID_TYPE				{Desplazamiento. Tipo}
-STR_GRID_TYPE_DESC			{Selecciona el tipo de desplazamiento de la rejilla.}
-STR_SCROLL					{Desplazar}
-STR_PAGE					{Paginado}
-STR_DIRECTION				{Desplazamiento. Dirección}
-STR_DIRECTION_DESC			{Selecciona la dirección de desplazamiento de la rejilla.}
-STR_VERTICAL				{Vertical}
-STR_HORIZONTAL				{Horizontal}
-STR_ANIMATED				{Desplazamiento. Animación}
-STR_ANIMATED_DESC			{Suaviza el desplazamiento de la rejilla con una animación.}
-STR_KEEP_PROP				{Mantener proporciones ICON0.PNG}
-STR_KEEP_PROP_DESC			{Mantiene las proporciones originales de los iconos ICON0.PNG.}
-STR_NB_COL					{Número de columnas}
-STR_NB_COL_DESC				{Selecciona el número de columnas de la rejilla.}
-STR_NB_LINE					{Número de lineas}
-STR_NB_LINE_DESC			{Selecciona el número de lineas de la rejilla.}
-STR_INVERSE					{Invertir direciones}
-STR_INVERSE_DESC			{Invierte las direcciones izquierda y derecha en la pantalla de selección de juegos.}
-STR_3D						{Mostrar carátulas y cajas en 3D}
-STR_3D_DESC					{Muestra las carátulas y las cajas de plástico de los juegos en 3D.}
-STR_ADD						{Añadir}
-STR_LOAD					{Cargar}
-STR_CHANGE					{Cambiar}
-STR_COLOR					{Color}
-STR_RESET					{Restaurar}
-STR_FAILED					{Fallido}
-STR_DONE					{Hecho}
-STR_OPEN					{Mi PS3}
-STR_CLOSE					{Cerrar}
-STR_OPTION					{Opciones}
-STR_SELECT					{Marcar}
-STR_WINDOW					{Mover ventana}
-STR_CLICK					{Click}
-STR_CURSOR					{Puntero}
-STR_NEXT					{Siguiente}
-STR_PREVIOUS				{Anterior}
-STR_SET_COLOR				{Seleccionar color}
-STR_HIDETV					{Ocultar pantalla de calibración de TV}
-STR_SHOWTV					{Mostrar pantalla de calibración de TV}
-STR_MOVE_TO_PLUGINS			{Mover a la ruta: /dev_hdd0/plugins/}
-STR_ASK_PLUGINS				{Esta función permite administrar los plugins de la ruta: /dev_hdd0/plugins/\nAceptas usar esta ruta ?}
-STR_CHANGE_VALUE			{Cambiar valor}
-STR_LOAD_IDPS_LV2			{Cargar IDPS desde LV2}
-STR_LOAD_IDPS_EID5			{Cargar IDPS desde EID5}
-STR_NAME					{Nombre}
-STR_DOCK_RIGHT				{Acoplar a la derecha}
-STR_DOCK_LEFT				{Acoplar a la izquierda}
-STR_DOCK_FULL				{Pantalla completa}
-STR_PLUGIN_MONITOR			{Monitor de plugins}
-STR_UNUSED					{No usado}
-STR_UNLOAD					{Descargar}
-STR_BOOT_FILE				{Archivo de inicio}
-STR_CURRENT					{Actual}
-STR_NET						{ps2_netemu.self (oficiales)}
-STR_SOFT					{ps2_softemu.self (oficiales)}
-STR_GX						{ps2_gxemu.self (oficiales)}
-STR_CUSTOM					{Custom (no oficiales)}
-STR_NEW_CMD					{Añadir nuevo commando}
-STR_PNACH					{Parche PNACH}
-STR_WIDESCREEN				{Parche WideScreen}
-STR_480P					{Parche 480P}
-STR_YFIX					{Parche YFIX}
-STR_FMV						{Parche FMVskip}
-STR_SIMPLE					{Comandos Simples}
-STR_ADVANCED				{Comandos Avanzados}
-STR_INSTALL_MGZ				{Quieres instalar ManaGunZ ?} 
-STR_UP2DATE					{ManaGunZ ya está actualizado}
-STR_SHOW_WAVES				{Mostrar olas}
-STR_SHOW_WAVES_DESC			{Muestra una animación de olas en el fondo de la pantalla de selección de juegos.}
-STR_WAVES_COLOR				{Color. Olas}
-STR_WAVES_COLOR_DESC		{Modifica el color de las olas.}
-STR_USE_CONFIG				{No estás usando ningun archivo de configuración}
-STR_COLORSET				{Combinación de colores}
-STR_COLORSET_DESC 			{Selecciona una combinación de colores predefinida.}
-STR_GRID_SCROLL				{Lineal}
-STR_ADD_LIMG				{Aplicar parche LIMG}
-STR_REMOVE_LIMG				{Eliminar parche LIMG}
-STR_LIMG_DESC				{Añade un sector al final de la ISO con información sobre el modo, número, y tamaño de los sectores.}
-STR_FONT					{Fuente}
-STR_FONT_DESC				{Selecciona el tipo de letra.}
-STR_MOVE					{Mover}
-STR_JOIN					{Unir}
-STR_JOIN_DESC				{Une los archivos .666XX.}
-STR_COLOR_FILTER			{Filtros de color}
-STR_COLOR_NOTIF				{Filtro. Ventana de notificación}
-STR_COLOR_BOXHEAD			{Filtro. Ventana flotante (cabecera)}
-STR_COLOR_BOXBODY			{Filtro. Ventana flotante (cuerpo)}
-STR_COLOR_SIDEBAR			{Filtro. Menú lateral}
-STR_COLOR_BGS				{Filtro. Fondo de pantalla (config)}
-STR_COLOR_BG				{Filtro. Fondo de pantalla (juegos)}
-STR_ROOT_DISPLAY			{Gestor de archivos}
-STR_ROOT_DISPLAY_DESC		{Cambia el aspecto de la ventana principal del gestor de archivos.}
-STR_STYLE					{Estilo}
-STR_STYLE_CUSTOM			{Personalizado}
-STR_STYLE1					{Predefinido 1}
-STR_STYLE2					{Predefinido 2}
-STR_STYLE3					{Predefinido 3}
-STR_STYLE4					{Predefinido 4}
-STR_STYLE5					{Predefinido 5}
-STR_STYLE6					{Predefinido 6}
-STR_FREEOF					{disponibles de}
-STR_ROOTLABEL				{Mi PlayStation 3}
-STR_FM_ICONSIZE				{Iconos de dispositivo, tamaño}
-STR_FM_BIG					{Grandes}
-STR_FM_SMALL				{Pequeños}
-STR_FM_ROWNUMBER			{Número de lineas}
-STR_FM_ROWSIZE				{Altura de linea}
-STR_FM_LEFT_CONTENT			{Contenido de linea (izquierda)}
-STR_FM_RIGHT_CONTENT		{Contenido de linea (derecha)}
-STR_FM_EMPTY				{Nada}
-STR_FM_MOUNTPOINT			{Punto de montaje}
-STR_FM_DEVICE				{Dispositivo}
-STR_FM_LABEL				{Etiqueta}
-STR_FM_CAPACITY				{Barra de capacidad}
-STR_FM_MEMINSIDE			{Tamaño disponible/total (dentro)}
-STR_FM_MEMOUTSIDE			{Tamaño disponible/total (fuera)}
-STR_FM_FILESYSTEM			{Sistema de archivos}
-STR_FM_CB_WIDTH				{Barra de capacidad, ancho}
-STR_FM_MEMORY				{Tamaño disponible/total}
-STR_FM_ICON					{Iconos de dispositivo, tipo}
-STR_FM_FILEFOLDER			{Carpeta y archivo}
-STR_FM_CUSTOM				{Dispositivos}
-STR_FM_CB_FILL				{Todo el ancho}
-STR_EDIT_IDPS				{Editar IDPS}
-STR_FILTER_NOGAME			{No se han encontrado juegos. Comprueba tus filtros y las rutas de juegos.}
-STR_SYMLINK_SRC				{SymLink (Origen)}
-STR_SYMLINK_TARGET			{SymLink (Destino)}
-STR_LOAD_MAMBA				{Cargar Mamba}
-STR_CONVERT_TO_PNG			{Convertir a PNG}
-STR_MOUNT_DEVBLIND			{Permitir escritura en dev_flash}
-STR_UNMOUNT_DEVBLIND		{Denegar escritura en dev_flash}
-STR_BT_AUDIO				{Parche libaudio.sprx}
-STR_BT_AUDIO_DESC			{Redirige el audio del juego a un DualShock4.}
-STR_GAME_UPDATE_TITLE		{Descargar actualizaciones del juego}
-STR_CURRENT_VERS			{Versión actual}
-STR_CANT_MOUNT_PEEKPOKE		{Incompatible : PEEK y POKE no están disponibles, no se puede instalar mamba}
-STR_CANT_MOUNT_UNKFW		{Incompatible : Firmware desconocido, no se puede instalar mamba.}
-STR_CANT_MOUNT				{Incompatible}
-STR_ONLY_FAV				{Solo favoritos}
-STR_ALL_GAMES				{Todos}
-STR_DISPLAY					{Mostrar}
-STR_DUMP_DEC				{Copiar Blu-Ray (desencriptado)}
-STR_DUMP_DEC_DESC			{Crea una ISO del disco Blu-Ray original. Y un archivo IRD que es enviado a la base de datos online de ManaGunZ.}
-STR_DUMP_ENC				{Copiar Blu-Ray (encriptado)}
-STR_DUMP_DISC_KEY			{Copiar Blu-Ray (key)}
-STR_DUMP_ERK				{Dump ERK}
-STR_DUMP_3DUMP				{Dump ERK + EID4 (3Dump.bin)}
-STR_SYSTEM_TOOLS			{Herramientas del sistema}
+STR_LANG                      {Seleccionar idioma}
+STR_LANG_DESC                 {Selecciona el idioma de ManaGunZ.}
+STR_GATHERING                 {Recopilando datos...}
+STR_COPYING                   {Copiando...}
+STR_FROM                      {Origen}
+STR_TO                        {Destino}
+STR_FILES                     {Archivos}
+STR_DIRS                      {Carpetas}
+STR_UNKNOWN                   {Desconocido}
+STR_FILE                      {Archivo}
+STR_CANCEL                    {Cancelar}
+STR_TURNOFF                   {Apagar PS3 al finalizar la transferencia de archivos}
+STR_CANCELLED                 {Cancelado}
+STR_UNIT                      {Bytes}
+STR_TOTALSIZE                 {Tamaño total}
+STR_HIDELOGS                  {Ocultar información}
+STR_SHOWLOGS                  {Mostrar información}
+STR_BOOST                     {Acelerar animación}
+STR_GAMEMENU                  {Menú juego}
+STR_SETTINGS                  {MGZ Config.}
+STR_MOUNTGAME                 {Montar juego}
+STR_FILTER                    {Filtros}
+STR_FAVORITE                  {Favoritos}
+STR_FILEMANAGER               {Gestor de archivos}
+STR_HOLD                      {Mantener}
+STR_EXIT                      {Salir}
+STR_GAME_PROP                 {Propiedades del Juego}
+STR_GAME_TITLE                {Título}
+STR_GAME_PATH                 {Ruta}
+STR_GAME_FORMAT               {Formato}
+STR_GAME_SIZE                 {Tamaño}
+STR_GAME_PLATFORM             {Plataforma}
+STR_SYSVERS                   {Firmware}
+STR_GAMEID                    {Identificador}
+STR_ELFCRC                    {ELF CRC}
+STR_ELFCRCO                   {ELF CRC (Original)}
+STR_BACK                      {Atrás}
+STR_ENTER                     {Aceptar}
+STR_UPDATE_FOUND              {Actualizaciones encontradas}
+STR_UPDATE                    {Actualización}
+STR_SIZE                      {Tamaño}
+STR_SYSTEM                    {Sistema}
+STR_DL                        {Descargar}
+STR_DL_ALL                    {Descargar todo}
+STR_UNPLUG                    {Desconectar dispositivos}
+STR_PATH                      {Ruta}
+STR_TYPE                      {Tipo}
+STR_FOLDER                    {Carpeta}
+STR_DIR                       {Carpeta}
+STR_MULT                      {Múltiple}
+STR_THM_SETTINGS              {Configuración del Tema}
+STR_THM                       {Seleccionar tema}
+STR_THM_DESC                  {Selecciona un tema para el interface de ManaGunZ. Y permite instalar más temas desde la ruta: /dev_usb***/Themes/[Tipo]/[Nombre].}
+STR_CREATE                    {Crear}
+STR_ZOOM_OUT                  {Zoom -}
+STR_ZOOM_IN                   {Zoom +}
+STR_MOVE_FRAME                {Mover el marco}
+STR_CHECK                     {Activar}
+STR_UNCHECK                   {Desactivar}
+STR_GAME_OPTION               {Opciones del Juego}
+STR_ADD_FAV                   {Añadir a favoritos}
+STR_REM_FAV                   {Eliminar de favoritos}
+STR_FAV_DESC                  {Añade o elimina el juego de tu lista de favoritos.}
+STR_RENAME                    {Renombrar}
+STR_RENAME_DESC               {Cambia el título del juego dentro del PARAM.SFO (PS3/PSP), o en el nombre del archivo BIN/ISO (PS1/PS2).}
+STR_DELETE                    {Eliminar}
+STR_DELETE_DESC               {Elimina el juego del dispositivo de almacenamiento.}
+STR_COPY                      {Copiar}
+STR_COPY_DESC                 {Copia el juego a otro dispositivo de almacenamiento.}
+STR_CREATE_ICON0              {Crear icono}
+STR_CREATE_ICON0_DESC         {Crea un icono del juego (ICON0.PNG) recortando una sección de la carátula del juego.}
+STR_REST_PNACH                {Eliminar parche PNACH}
+STR_REST_PNACH_DESC           {Elimina los parches PNACH aplicados al juego.}
+STR_APPLY_PNACH               {Aplicar parche PNACH}
+STR_APPLY_PNACH_DESC          {Aplica parches pnach al juego.}
+STR_DISABLE_WS                {Eliminar parche WideScreen}
+STR_ENABLE_WS                 {Aplicar parche WideScreen}
+STR_WS_DESC                   {Muestra el juego en formato panorámico 16:9 en vez de 4:3.}
+STR_DISABLE_480P              {Eliminar parche 480p}
+STR_ENABLE_480P               {Aplicar parche 480p}
+STR_480P_DESC                 {Muestra el juego en formato de escaneo progresivo 480p.}
+STR_DISABLE_YFIX              {Eliminar parche YFIX}
+STR_ENABLE_YFIX               {Aplicar parche YFIX}
+STR_YFIX_DESC                 {Corrige la posicion vertical de la pantalla eliminando las bandas horizontales negras.}
+STR_DISABLE_FMVSKIP           {Eliminar parche FMVskip}
+STR_ENABLE_FMVSKIP            {Aplicar parche FMVskip}
+STR_FMVSKIP_DESC              {Desactiva las secuencias de video MPEG.}
+STR_DISABLE_NETEMU            {Desactivar netemu}
+STR_ENABLE_NETEMU             {Activar netemu}
+STR_NETEMU_DESC               {Fuerza el uso del emulador ps2_netemu.self.}
+STR_SAVE_CONFIG               {Guardar archivo CONFIG}
+STR_CONFIG                    {Editor de archivos CONFIG}
+STR_CONFIG_DESC               {Carga, edita, y crea archivos de configuración para el emulador de PS2.}
+STR_NONE                      {Ninguna}
+STR_CHECK_MD5                 {Comprobar MD5}
+STR_PROPS                     {Propiedades}
+STR_PROPS_DESC                {Muestra las propiedades del juego.}
+STR_ASK_DEL                   {Realmente quieres eliminar:}
+STR_GAME_SETTINGS             {Configuración del Juego}
+STR_DIRECT_BOOT               {Arranque directo}
+STR_DIRECT_BOOT_DESC          {Arranca el juego directamente sin pasar por el XMB.}
+STR_YES                       {Sí}
+STR_NO                        {No}
+STR_CLEAN_SYSCALL             {Desactivar syscalls}
+STR_CLEAN_SYSCALL_DESC        {Desactiva las syscalls: peek y poke.}
+STR_CHANGE_IDPS               {Modificar IDPS}
+STR_CHANGE_IDPS_DESC          {Modifica el IDPS/ConsoleID de forma temporal en la memoria RAM.}
+STR_EXT_GAME_DATA             {Instalar datos en USB}
+STR_EXT_GAME_DATA_DESC        {Instala los datos del juego en el dispositivo USB en vez de instalarlos en el HDD interno.}
+STR_PAYLOAD                   {Payload}
+STR_PAYLOAD_DESC              {Selecciona el payload utilizado para montar este juego.}
+STR_PRIM_USB                  {Asignar USB como principal}
+STR_PRIM_USB_DESC             {Asigna el dispositivo USB donde esta almacenado el juego como si fuera el dispositivo USB principal.}
+STR_BDEMU                     {Emulación de Blu-Ray}
+STR_BDEMU_DESC                {Selecciona el tipo de emulación del lector Blu-Ray.}
+STR_PATCH_LIBFS               {Parche libfs.sprx}
+STR_PATCH_LIBFS_DESC          {Selecciona el tipo de parche para libfs.sprx.}
+STR_MOUNT_APPHOME             {Montar en app_home}
+STR_MOUNT_APPHOME_DESC        {Monta el juego en el icono [XMB] → [Juego] → [★/app_home/PS3_GAME/].}
+STR_PATCH_EXP                 {Parche explore_plugin.sprx}
+STR_PATCH_EXP_DESC            {Cambia la ruta: /app_home por la ruta: /dev_bdvd en explore_plugin.sprx.}
+STR_MAKE_SHTCUT_PKG           {Crear PKG de acceso rápido}
+STR_MAKE_SHTCUT_PKG_DESC      {Crea un PKG en: /dev_hdd0/packages/ que funciona como un acceso rápido al juego desde el XMB.}
+STR_PATCH_EBOOT               {Parchear EBOOT.BIN}
+STR_PATCH_EBOOT_DESC          {Cambia la versión de firmware en el EBOOT.BIN a 4.21 para prevenir el error 0x80010009.}
+STR_RESIGN                    {Refirmar}
+STR_RESIGN_DESC               {Reconstruye los archivos ejecutables (EBOOT.BIN, SELF, SPRX, DAT, EDAT) con las keys del firmware 4.21.}
+STR_RESTORE                   {Restaurar}
+STR_RESTORE_DESC              {Restaura los archivos ejecutables del juego (EBOOT.BIN, SELF, SPRX, DAT, EDAT).}
+STR_EXTRACT_ISO               {Extraer ISO}
+STR_EXTRACT_ISO_DESC          {Convierte el juego del formato ISO al formato JB.}
+STR_CONVERT_ISO               {Crear ISO}
+STR_CONVERT_ISO_DESC          {Convierte el juego del formato JB al formato ISO.}
+STR_FIX_PERMS                 {Corregir permisos}
+STR_FIX_PERMS_DESC            {Cambia los permisos de todas las carpetas y archivos al valor 0777.}
+STR_CHECK_IRD                 {Verificación de archivos IRD}
+STR_CHECK_DESC                {Verifica si el juego coincide con el disco original.}
+STR_DL_UPDATE                 {Descargar actualizaciones}
+STR_DL_UPDATE_DESC            {Descarga las actualizaciones del juego a la ruta: /dev_hdd0/packages/.}
+STR_OPEN_WINDOW               {Abrir nueva ventana}
+STR_DUMP_LV1                  {Dump LV1}
+STR_DUMP_LV2                  {Dump LV2}
+STR_DUMP_FLASH                {Dump FLASH}
+STR_REFRESH                   {Refrescar}
+STR_NEWFOLDER                 {Nueva carpeta}
+STR_NEWFILE                   {Nuevo archivo}
+STR_PASTE                     {Pegar}
+STR_CUT                       {Cortar}
+STR_UNSELECT_ALL              {Deseleccionar todo}
+STR_SELECT_ALL                {Seleccionar todo}
+STR_MAKE_PKG                  {Crear PKG}
+STR_GETMD5                    {Calcular MD5}
+STR_GETSHA1                   {Calcular SHA1}
+STR_VIEW                      {Ver}
+STR_VIEW_TXT                  {Ver TXT}
+STR_VIEW_SFO                  {Ver SFO}
+STR_READ_XREG                 {Leer SYS}
+STR_EXTRACT_ELF               {Desencriptar a ELF}
+STR_RESIGN_SELF               {Re-encriptar SELF}
+STR_LAUNCH_SELF               {Lanzar SELF}
+STR_EXTRACT_EBOOT             {Desencriptar EBOOT}
+STR_RESIGN_EBOOT              {Re-encriptar EBOOT}
+STR_LAUNCH_EBOOT              {Ejecutar EBOOT}
+STR_SIGN_ELF                  {Encriptar ELF}
+STR_SIGN_EBOOT                {Encriptar EBOOT}
+STR_SIGN_PRX                  {Encriptar PRX}
+STR_EXTRACT_PRX               {Desencriptar a PRX}
+STR_RESIGN_SPRX               {Re-encriptar SPRX}
+STR_REMOVE_PRXLOADER          {Eliminar de PRX Loader}
+STR_ADD_PRXLOADER             {Añadir a PRX Loader}
+STR_REMOVE_PRXLOADER2         {Eliminar de PRXLoader}
+STR_ADD_PRXLOADER2            {Añadir a PRXLoader}
+STR_REMOVE_MAMBA              {Eliminar de Mamba}
+STR_ADD_MAMBA                 {Añadir a Mamba}
+STR_REMOVE_COBRA              {Eliminar de Cobra}
+STR_ADD_COBRA                 {Añadir a Cobra}
+STR_EXTRACT_RCO               {Extraer RCO}
+STR_EXTRACT_PKG               {Extraer PKG}
+STR_PKG_INFO                  {Información del PKG}
+STR_EXTRACT_TRP               {Extraer TRP}
+STR_COMPRESS_ISO              {Comprimir ISO}
+STR_CHECK_CRC32               {Comprobar CRC32}
+STR_DECOMPRESS_CSO            {Descomprimir CSO}
+STR_EXTRACT_THM               {Extraer THM}
+STR_EXTRACT_P3T               {Extraer P3T}
+STR_EXTRACT_RAF               {Extraer RAF}
+STR_EXTRACT_QRC               {Extraer QRC}
+STR_EXTRACT_HERE              {Extraer aqui}
+STR_CONVERT_JSX_JS            {Convertir JSX a JS}
+STR_CONVERT_VAG_WAV           {Convertir VAG a WAV}
+STR_CONVERT_GTF_DDS           {Convertir GTF a DDS}
+STR_CONVERT_DDS_PNG           {Convertir DDS a PNG}
+STR_MAKE_APNG                 {Crear APNG}
+STR_SET_PERMS                 {Corregir permisos}
+STR_NOGAME                    {No hay juegos}
+STR_GLOB_SETTINGS             {Configuración Global}
+STR_ADJUST                    {Ajustar pantalla}
+STR_ADJUST_DESC               {Permite ajustar el tamaño de la pantalla de ManaGunZ.}
+STR_DL_COVER                  {Descargar carátulas de juegos}
+STR_DL_COVER_DESC             {Descarga las carátulas de tus juegos a la ruta: /dev_hdd0/game/MANAGUNZ0/USRDIR/covers/.}
+STR_PLUGIN_MANAGER            {Administrador de plugins}
+STR_PLUGIN_MANAGER_DESC       {Administra tus plugins de la ruta: /dev_hdd0/plugins/.}
+STR_UPD_MGZ                   {Actualizar ManaGunZ}
+STR_UPD_MGZ_DESC              {Descarga la última versión de ManaGunZ a la ruta: /dev_hdd0/packages/.}
+STR_GAME_PATHS                {Configurar rutas de juegos}
+STR_GAME_PATHS_DESC           {Configura los nombres de las carpetas donde ManaGunZ busca tus juegos.}
+STR_XMB_PRIO                  {Activar prioridad en el XMB}
+STR_XMB_PRIO_DESC             {Desplaza el icono de ManaGunZ a la primera posición de los PKG instalados en la categoria [XMB] → [Juego].}
+STR_HELP                      {Mostrar ayudas}
+STR_HELP_DESC                 {Muestra los mensajes de ayuda, como este que estás leyendo.}
+STR_COLOR_1                   {Color. Normal}
+STR_COLOR_2                   {Color. Selección}
+STR_COLOR_3                   {Color. Menús}
+STR_COLOR_4                   {Color. Avisos}
+STR_COLOR_DESC                {Modifica los colores principales de ManaGunZ.}
+STR_UI_SETTINGS               {Configuración del Interface}
+STR_UI                        {Tipo de interface}
+STR_UI_DESC                   {Selecciona el interface de la pantalla de selección de juegos.}
+STR_SIDE_MENU                 {Menú lateral}
+STR_SIDE_MENU_DESC            {Muestra el menú de opciones de los juegos en la parte derecha de la pantalla en vez de mostrarlo a pantalla completa.}
+STR_SHOW_PIC1                 {Mostrar PIC1.PNG}
+STR_SHOW_PIC1_DESC            {Muestra la imagen de fondo de los juegos. Usa el botón R1 en los modos LIST y GRID para mostrarla.}
+STR_SHOW_COVER                {Mostrar carátulas}
+STR_SHOW_COVER_DESC           {Muestra las carátulas de los juegos de la ruta: /dev_hdd0/game/MANAGUNZ0/USRDIR/covers/.}
+STR_SHOW_GAMECASE             {Mostrar carátulas y cajas en 2D}
+STR_SHOW_GAMECASE_DESC        {Muestra las carátulas y las cajas de plástico de los juegos en 2D.}
+STR_SHOW_ICON0                {Mostrar ICON0.PNG}
+STR_SHOW_ICON0_DESC           {Muestra el icono principal de los juegos.}
+STR_GRID_TYPE                 {Desplazamiento. Tipo}
+STR_GRID_TYPE_DESC            {Selecciona el tipo de desplazamiento de la rejilla.}
+STR_SCROLL                    {Desplazar}
+STR_PAGE                      {Paginado}
+STR_DIRECTION                 {Desplazamiento. Dirección}
+STR_DIRECTION_DESC            {Selecciona la dirección de desplazamiento de la rejilla.}
+STR_VERTICAL                  {Vertical}
+STR_HORIZONTAL                {Horizontal}
+STR_ANIMATED                  {Desplazamiento. Animación}
+STR_ANIMATED_DESC             {Suaviza el desplazamiento de la rejilla con una animación.}
+STR_KEEP_PROP                 {Mantener proporciones ICON0.PNG}
+STR_KEEP_PROP_DESC            {Mantiene las proporciones originales de los iconos ICON0.PNG.}
+STR_NB_COL                    {Número de columnas}
+STR_NB_COL_DESC               {Selecciona el número de columnas de la rejilla.}
+STR_NB_LINE                   {Número de lineas}
+STR_NB_LINE_DESC              {Selecciona el número de lineas de la rejilla.}
+STR_INVERSE                   {Invertir direciones}
+STR_INVERSE_DESC              {Invierte las direcciones izquierda y derecha en la pantalla de selección de juegos.}
+STR_3D                        {Mostrar carátulas y cajas en 3D}
+STR_3D_DESC                   {Muestra las carátulas y las cajas de plástico de los juegos en 3D.}
+STR_ADD                       {Añadir}
+STR_LOAD                      {Cargar}
+STR_CHANGE                    {Cambiar}
+STR_COLOR                     {Color}
+STR_RESET                     {Restaurar}
+STR_FAILED                    {Fallido}
+STR_DONE                      {Hecho}
+STR_OPEN                      {Mi PS3}
+STR_CLOSE                     {Cerrar}
+STR_OPTION                    {Opciones}
+STR_SELECT                    {Marcar}
+STR_WINDOW                    {Mover ventana}
+STR_CLICK                     {Click}
+STR_CURSOR                    {Puntero}
+STR_NEXT                      {Siguiente}
+STR_PREVIOUS                  {Anterior}
+STR_SET_COLOR                 {Seleccionar color}
+STR_HIDETV                    {Ocultar pantalla de calibración de TV}
+STR_SHOWTV                    {Mostrar pantalla de calibración de TV}
+STR_MOVE_TO_PLUGINS           {Mover a la ruta: /dev_hdd0/plugins/}
+STR_ASK_PLUGINS               {Esta función permite administrar los plugins de la ruta: /dev_hdd0/plugins/\nAceptas usar esta ruta ?}
+STR_CHANGE_VALUE              {Cambiar valor}
+STR_LOAD_IDPS_LV2             {Cargar IDPS desde LV2}
+STR_LOAD_IDPS_EID5            {Cargar IDPS desde EID5}
+STR_NAME                      {Nombre}
+STR_DOCK_RIGHT                {Acoplar a la derecha}
+STR_DOCK_LEFT                 {Acoplar a la izquierda}
+STR_DOCK_FULL                 {Pantalla completa}
+STR_PLUGIN_MONITOR            {Monitor de plugins}
+STR_UNUSED                    {No usado}
+STR_UNLOAD                    {Descargar}
+STR_BOOT_FILE                 {Archivo de inicio}
+STR_CURRENT                   {Actual}
+STR_NET                       {ps2_netemu.self (oficiales)}
+STR_SOFT                      {ps2_softemu.self (oficiales)}
+STR_GX                        {ps2_gxemu.self (oficiales)}
+STR_CUSTOM                    {Custom (no oficiales)}
+STR_NEW_CMD                   {Añadir nuevo commando}
+STR_PNACH                     {Parche PNACH}
+STR_WIDESCREEN                {Parche WideScreen}
+STR_480P                      {Parche 480P}
+STR_YFIX                      {Parche YFIX}
+STR_FMV                       {Parche FMVskip}
+STR_SIMPLE                    {Comandos Simples}
+STR_ADVANCED                  {Comandos Avanzados}
+STR_INSTALL_MGZ               {Quieres instalar ManaGunZ ?} 
+STR_UP2DATE                   {ManaGunZ ya está actualizado}
+STR_SHOW_WAVES                {Mostrar olas}
+STR_SHOW_WAVES_DESC           {Muestra una animación de olas en el fondo de la pantalla de selección de juegos.}
+STR_WAVES_COLOR               {Color. Olas}
+STR_WAVES_COLOR_DESC          {Modifica el color de las olas.}
+STR_USE_CONFIG                {No estás usando ningun archivo de configuración}
+STR_COLORSET                  {Combinación de colores}
+STR_COLORSET_DESC             {Selecciona una combinación de colores predefinida.}
+STR_GRID_SCROLL               {Lineal}
+STR_ADD_LIMG                  {Aplicar parche LIMG}
+STR_REMOVE_LIMG               {Eliminar parche LIMG}
+STR_LIMG_DESC                 {Añade un sector al final de la ISO con información sobre el modo, número, y tamaño de los sectores.}
+STR_FONT                      {Fuente}
+STR_FONT_DESC                 {Selecciona el tipo de letra.}
+STR_MOVE                      {Mover}
+STR_JOIN                      {Unir}
+STR_JOIN_DESC                 {Une los archivos .666XX.}
+STR_COLOR_FILTER              {Filtros de color}
+STR_COLOR_NOTIF               {Filtro. Ventana de notificación}
+STR_COLOR_BOXHEAD             {Filtro. Ventana flotante (cabecera)}
+STR_COLOR_BOXBODY             {Filtro. Ventana flotante (cuerpo)}
+STR_COLOR_SIDEBAR             {Filtro. Menú lateral}
+STR_COLOR_BGS                 {Filtro. Fondo de pantalla (config)}
+STR_COLOR_BG                  {Filtro. Fondo de pantalla (juegos)}
+STR_ROOT_DISPLAY              {Gestor de archivos}
+STR_ROOT_DISPLAY_DESC         {Cambia el aspecto de la ventana principal del gestor de archivos.}
+STR_STYLE                     {Estilo}
+STR_STYLE_CUSTOM              {Personalizado}
+STR_STYLE1                    {Predefinido 1}
+STR_STYLE2                    {Predefinido 2}
+STR_STYLE3                    {Predefinido 3}
+STR_STYLE4                    {Predefinido 4}
+STR_STYLE5                    {Predefinido 5}
+STR_STYLE6                    {Predefinido 6}
+STR_FREEOF                    {disponibles de}
+STR_ROOTLABEL                 {Mi PlayStation 3}
+STR_FM_ICONSIZE               {Iconos de dispositivo, tamaño}
+STR_FM_BIG                    {Grandes}
+STR_FM_SMALL                  {Pequeños}
+STR_FM_ROWNUMBER              {Número de lineas}
+STR_FM_ROWSIZE                {Altura de linea}
+STR_FM_LEFT_CONTENT           {Contenido de linea (izquierda)}
+STR_FM_RIGHT_CONTENT          {Contenido de linea (derecha)}
+STR_FM_EMPTY                  {Nada}
+STR_FM_MOUNTPOINT             {Punto de montaje}
+STR_FM_DEVICE                 {Dispositivo}
+STR_FM_LABEL                  {Etiqueta}
+STR_FM_CAPACITY               {Barra de capacidad}
+STR_FM_MEMINSIDE              {Tamaño disponible/total (dentro)}
+STR_FM_MEMOUTSIDE             {Tamaño disponible/total (fuera)}
+STR_FM_FILESYSTEM             {Sistema de archivos}
+STR_FM_CB_WIDTH               {Barra de capacidad, ancho}
+STR_FM_MEMORY                 {Tamaño disponible/total}
+STR_FM_ICON                   {Iconos de dispositivo, tipo}
+STR_FM_FILEFOLDER             {Carpeta y archivo}
+STR_FM_CUSTOM                 {Dispositivos}
+STR_FM_CB_FILL                {Todo el ancho}
+STR_EDIT_IDPS                 {Editar IDPS}
+STR_FILTER_NOGAME             {No se han encontrado juegos. Comprueba tus filtros y las rutas de juegos.}
+STR_SYMLINK_SRC               {SymLink (Origen)}
+STR_SYMLINK_TARGET            {SymLink (Destino)}
+STR_LOAD_MAMBA                {Cargar Mamba}
+STR_CONVERT_TO_PNG            {Convertir a PNG}
+STR_MOUNT_DEVBLIND            {Permitir escritura en dev_flash}
+STR_UNMOUNT_DEVBLIND          {Denegar escritura en dev_flash}
+STR_BT_AUDIO                  {Parche libaudio.sprx}
+STR_BT_AUDIO_DESC             {Redirige el audio del juego a un DualShock4.}
+STR_GAME_UPDATE_TITLE         {Descargar actualizaciones del juego}
+STR_CURRENT_VERS              {Versión actual}
+STR_CANT_MOUNT_PEEKPOKE       {Incompatible : PEEK y POKE no están disponibles, no se puede instalar mamba}
+STR_CANT_MOUNT_UNKFW          {Incompatible : Firmware desconocido, no se puede instalar mamba.}
+STR_CANT_MOUNT                {Incompatible}
+STR_ONLY_FAV                  {Solo favoritos}
+STR_ALL_GAMES                 {Todos}
+STR_DISPLAY                   {Mostrar}
+STR_DUMP_DEC                  {Copiar Blu-Ray (desencriptado)}
+STR_DUMP_DEC_DESC             {Crea una ISO del disco Blu-Ray original. Y un archivo IRD que es enviado a la base de datos online de ManaGunZ.}
+STR_DUMP_ENC                  {Copiar Blu-Ray (encriptado)}
+STR_DUMP_DISC_KEY             {Copiar Blu-Ray (key)}
+STR_DUMP_ERK                  {Dump ERK}
+STR_DUMP_3DUMP                {Dump ERK + EID4 (3Dump.bin)}
+STR_SYSTEM_TOOLS              {Herramientas del sistema}
+STR_DUMP_ENC_DESC             {Obtenga un iso crudo de su disco Blu-Ray.}
+STR_DUMP_ERK_DESC             {Esta es la clave principal para descifrar su sistema. Se usa en todas partes. Path: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {Es el archivo necesario para tirar un Blu-Ray con 3k3y IsoTools. Camino: dev_hdd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {Decrypt edat/sdat}
+STR_REDUMP_LOG                {Generar el vertedero de GetKey}
+STR_REDUMP_LOG_DESC           {Genera archivos necesarios para las presentaciones redump.org.}
+STR_DUMP_OPTION               {Blu-Ray dumper}
+STR_IGNORE_ERR                {Ignorar errores}
+STR_IGNORE_ERR_DESC           {ignora errores de lectura durante el proceso de dumping Blu-Ray.}
+STR_3K3Y_HEADER               {Incluido el encabezado 3k3y}
+STR_3K3Y_HEADER_DESC          {Se tira el Blu-ray a un iso con cabecera 3k3y incrustada. 3k3y IsoTools será capaz de reconocerlo.}
+STR_ELAPSED                   {Elapsed}
+STR_REMAINING                 {Permaneciendo}
+STR_DYNAREC                   {Dynarec}
+STR_DYNAREC_DESC              {Permite a los emuladores utilizar la recompilación dinámica.}
+STR_BUILD_ISO                 {Build iso}
+STR_BUILD_ISO_DESC            {Constru iso de copia de seguridad de los archivos de Blu-Ray.}
+STR_UPLOADER                  {Nombre de descarga}
+STR_UPLOADER_DESC             {Introduzca su nombre si desea créditos para sus subidas de ird, déjelo vacío para permanecer anónimo.}

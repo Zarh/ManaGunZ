@@ -1122,7 +1122,7 @@ void IRD_check_md5(char *GAME_PATH, char **IRD_PATH, u32 IRD_nPATH)
 		
 		print_load("Calculating MD5...");
 		task_Init(tSize);
-		int ret = IRD_FilesHashes(GAME_PATH, game_ird, NULL, NULL);
+		int ret = IRD_FilesHashes(GAME_PATH, game_ird, NULL, NULL, YES);
 		task_End();
 		
 		if(ret == FAILED) {
@@ -1342,7 +1342,7 @@ error:
 	print_debug("end of IRD_check_md5");
 }
 
-u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_filetable)
+u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_filetable, u8 calculate_md5)
 {
 	FileHash_t *TempFH=NULL;
 	u32 nFileHashes = 0;
@@ -1703,45 +1703,49 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
 						TempFH[nFileHashes-1].Sector = file_lba;
 						memset(TempFH[nFileHashes-1].FileHash, 0, 0x10);
 						
-						md5_context ctx;
-						md5_starts( &ctx );
-											
-						strcpy(copy_file, string2);
-						copy_file_prog_bar=0;
+						TempFH[nFileHashes-1].FileSize = file_size;
 						
-						u32 fsize;
-						u64 to_read = file_size;
-											
-						u64 read_position = (u64) file_lba * 0x800ULL;
-						
-						task_Init(to_read);
-						while(to_read > 0) {
-							if(to_read > IRD_FILE_BUFFSIZE) fsize = IRD_FILE_BUFFSIZE;
-							else fsize = (u32) to_read;
+						if( calculate_md5 ) {
+							md5_context ctx;
+							md5_starts( &ctx );
+												
+							strcpy(copy_file, string2);
+							copy_file_prog_bar=0;
 							
-							memset(sectors3, 0, IRD_FILE_BUFFSIZE);
+							u32 fsize;
+							u64 to_read = file_size;
+												
+							u64 read_position = (u64) file_lba * 0x800ULL;
 							
-							int read_ret = read_split(read_position, sectors3, (int) fsize);
-							if(read_ret < 0) {
-								printf("Error!: reading ISO file: fzise %lX, file_offset %llX : return %d", fsize, read_position, read_ret);
-								goto err;
-							}
-							
-							md5_update(&ctx, sectors3, fsize);
+							task_Init(to_read);
+							while(to_read > 0) {
+								if(to_read > IRD_FILE_BUFFSIZE) fsize = IRD_FILE_BUFFSIZE;
+								else fsize = (u32) to_read;
+								
+								memset(sectors3, 0, IRD_FILE_BUFFSIZE);
+								
+								int read_ret = read_split(read_position, sectors3, (int) fsize);
+								if(read_ret < 0) {
+									printf("Error!: reading ISO file: fzise %lX, file_offset %llX : return %d", fsize, read_position, read_ret);
+									goto err;
+								}
+								
+								md5_update(&ctx, sectors3, fsize);
 
-							to_read-= (u64) fsize;
+								to_read-= (u64) fsize;
+								
+								read_position += fsize;
+								
+								if( copy_cancel || cancel) goto err;
+								copy_current_size+=fsize;
+								task_Update(fsize);
+								
+								copy_file_prog_bar=((file_size - to_read) * 100)/ file_size;
+							}
+							task_End();
 							
-							read_position += fsize;
-							
-							if( copy_cancel || cancel) goto err;
-							copy_current_size+=fsize;
-							task_Update(fsize);
-							
-							copy_file_prog_bar=((file_size - to_read) * 100)/ file_size;
+							md5_finish(&ctx, TempFH[nFileHashes-1].FileHash);
 						}
-						task_End();
-						
-						md5_finish(&ctx, TempFH[nFileHashes-1].FileHash);
 					}
 					
                     string2[len] = 0;                   
@@ -1793,6 +1797,7 @@ u8 IRD_FilesHashes(char *ISO_PATH, ird_t *ird, u64 *start_filetable, u64 *end_fi
 			memcpy(ird->FileHashes[n].FileHash, TempFH[smallest_sector].FileHash, 0x10);
 			ird->FileHashes[n].Sector = TempFH[smallest_sector].Sector;
 			ird->FileHashes[n].FilePath = strcpy_malloc(TempFH[smallest_sector].FilePath);
+			ird->FileHashes[n].FileSize = TempFH[nFileHashes-1].FileSize;
 			
 			TempFH[smallest_sector].Sector = -1; // MAX !
 		}
@@ -1821,4 +1826,48 @@ err:
     if(directory_iso2) free(directory_iso2);
 
     return FAILED;
+}
+
+u8 IRD_GetRegionBoundaries(char *ISO_PATH, ird_t *ird)
+{
+    FILE *f = fopen(ISO_PATH, "rb");
+    if(f==NULL) {
+        print_load("Error: IRD_GetRegionBoundaries fopen failed");
+        return FAILED;
+    }
+
+    u32 RegionNumber;
+   
+    fread(&RegionNumber, sizeof(u32), 1, f);
+    RegionNumber = SWAP_BE(RegionNumber);
+    
+    if( RegionNumber*2-1 != ird->RegionHashesNumber ) {
+        printf("Error : Region numbers are different, (header) %X != %X (IRD)\n", RegionNumber, ird->RegionHashesNumber);
+        FCLOSE(f);
+        return FAILED;
+    }
+    
+    fseek(f, 8, SEEK_SET);
+    
+    int i;
+    for(i=0; i<ird->RegionHashesNumber; i+=2){
+        
+        fread(&ird->RegionHashes[i].Start, sizeof(u32), 1, f);
+        ird->RegionHashes[i].Start = SWAP_BE(ird->RegionHashes[i].Start);
+        if( i!= 0 ){
+            ird->RegionHashes[i-1].End = ird->RegionHashes[i].Start - 1;
+        }
+        
+        fread(&ird->RegionHashes[i].End, sizeof(u32), 1, f);
+        ird->RegionHashes[i].End = SWAP_BE(ird->RegionHashes[i].End);
+        
+        if( i + 1 < ird->RegionHashesNumber) {
+            ird->RegionHashes[i+1].Start = ird->RegionHashes[i].End + 1;
+        }
+    }
+    
+    
+    FCLOSE(f);
+    
+    return SUCCESS;
 }

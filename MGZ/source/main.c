@@ -116,6 +116,11 @@
 
 #include "npdata_make.h"
 
+#include "dynarec.h"
+
+// might be used later in write_htab instead of sc10
+#include "erk/hvcall.h" 
+
 #define NO_UID		-1
 #define SYSTEM_UID	0
 #define NO_GID		-1
@@ -167,6 +172,8 @@
 #define	ISO_PS1			7
 #define	ISO_PSP			8
 #define BDVD			9
+#define ISO_BD_VIDEO	10
+#define ISO_DVD_VIDEO	11
 
 #define _SDIR			".mgz_sdir"	 // simple directory
 #define _SFILE			".mgz_sfile" // simple file (without extension)
@@ -179,6 +186,8 @@
 #define	_ISO_PS2		".mgz_isops2"
 #define	_ISO_PS1		".mgz_isops1"
 #define	_ISO_PSP		".mgz_isopsp"
+#define _ISO_BD_VIDEO	".mgz_bd_video"
+#define _ISO_DVD_VIDEO	".mgz_dvd_video"
 #define _BDVD			".mgz_bdvd"
 
 #define	_EBOOT_BIN		"eboot.bin"
@@ -188,7 +197,12 @@
 #define IRD_SERVER "http://ps3ird.free.fr"
 #define IRD_SCRIPT IRD_SERVER "/script.php"
 
-char *TXTViewerSupport[] = {".txt", ".xml", ".js", ".md5", ".sha1", ".log", ".ini", ".nfo"};
+#define IRD_WEB				"https://irdinfostorage.azurewebsites.net"
+#define IRD_WEB_API			IRD_WEB "/api/irdinfo/"
+#define IRD_WEB_API_TRUST	IRD_WEB_API "incrementTrustLevel"
+#define IRD_WEB_API_NEW		IRD_WEB_API "saveird"
+
+char *TXTViewerSupport[] = {".txt", ".xml", ".js", ".md5", ".sha1", ".log", ".ini", ".nfo", ".json"};
 
 char *PictureViewerSupport[] = {
 								".jpg", ".jpeg", ".jpe", ".jif", ".jfif", ".jfi",
@@ -305,6 +319,19 @@ char *PictureViewerSupport[] = {
 #define	HDD_PARTITION(n)	(ATA_HDD | ((uint64_t)n<<32))
 #define FLASH_PARTITION(n)	(BUILTIN_FLASH | ((uint64_t)n<<32))
 
+#define DEVICE_TYPE_PS3_DVD	0xFF70
+#define DEVICE_TYPE_PS3_BD	0xFF71
+#define DEVICE_TYPE_PS2_CD	0xFF60
+#define DEVICE_TYPE_PS2_DVD	0xFF61
+#define DEVICE_TYPE_PSX_CD	0xFF50
+#define DEVICE_TYPE_BDROM	0x40
+#define DEVICE_TYPE_BDMR_SR	0x41 /* Sequential record */
+#define DEVICE_TYPE_BDMR_RR 0x42 /* Random record */
+#define DEVICE_TYPE_BDMRE	0x43
+#define DEVICE_TYPE_DVD		0x10 /* DVD-ROM, DVD+-R, DVD+-RW etc, they are differenced by booktype field in some scsi command */
+#define DEVICE_TYPE_CD		0x08 /* CD-ROM, CD-DA, CD-R, CD-RW, etc, they are differenced somehow with scsi commands */
+#define DEVICE_TYPE_USB		0x00
+
 u8 scene=SCENE_MAIN;
 typedef struct
 {
@@ -358,6 +385,9 @@ int firmware = 0;
 u64 SYSCALL_TABLE;
 u64 HV_START_OFFSET;
 u64 HTAB_OFFSET;
+u64 HTAB_PATCH1;
+u64 HTAB_PATCH2;
+u64 HTAB_PATCH3;
 u64 MMAP_OFFSET1;
 u64 MMAP_OFFSET2;
 u64 SPE_OFFSET;
@@ -536,7 +566,6 @@ static char *UI[4] = {"0", "0", "Win", "0"};
 static char *UI[4] = {"List", "Grid", "XMB", "Flow"};
 #endif //FILEMANAGER
 
-
 static u8 UI_position = XMB;
 static u8 XMB_priority = NO;
 static u8 Show_Help = YES;
@@ -561,6 +590,9 @@ static u8 LOG = NO;
 u8 DEBUG = NO;
 u8 IGNORE_ERR = NO;
 u8 with_3k3y_header = NO;
+char UPLOADER[0x40]={0};
+u8 BOX3D_ALIGN = YES;
+u8 BOX3D_GAP = 1;
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -1046,7 +1078,7 @@ static float *window_w_col_size=NULL;
 static int *window_content_N=NULL;
 static u8 *window_open=NULL;
 
-static s8 window_activ;
+static s8 window_activ=-1;
 
 static s8 *window_item_N=NULL; // nb of item displayed
 
@@ -1348,785 +1380,13 @@ static char *STR_LANGUAGE[MAX_LANG]; // "English"
 static u8 LANGCODE[MAX_LANG];
 static char *lang_path[MAX_LANG];
 
-static char *STR_LANG=NULL;
-#define STR_LANG_DEFAULT					"Language"
-static char *STR_LANG_DESC=NULL;
-#define STR_LANG_DESC_DEFAULT				"Choose your language."
-static char *STR_GATHERING=NULL;
-#define STR_GATHERING_DEFAULT				"Gathering data..."
-static char *STR_COPYING=NULL;
-#define STR_COPYING_DEFAULT					"Copying..."
-static char *STR_FROM=NULL;
-#define STR_FROM_DEFAULT					"from"
-static char *STR_TO=NULL;
-#define STR_TO_DEFAULT						"to"
-static char *STR_FILES=NULL;
-#define STR_FILES_DEFAULT					"Files"
-static char *STR_DIRS=NULL;
-#define STR_DIRS_DEFAULT					"Directories"
-static char *STR_UNKNOWN=NULL;
-#define STR_UNKNOWN_DEFAULT					"Unknown"
-static char *STR_FILE=NULL;
-#define STR_FILE_DEFAULT					"File"
-static char *STR_CANCEL=NULL;
-#define STR_CANCEL_DEFAULT					"Cancel"
-static char *STR_TURNOFF=NULL;
-#define STR_TURNOFF_DEFAULT					"Turn OFF"
-static char *STR_CANCELLED=NULL;
-#define STR_CANCELLED_DEFAULT				"Cancelled"
-static char *STR_UNIT=NULL;
-#define STR_UNIT_DEFAULT					"Bytes"
-static char *STR_TOTALSIZE=NULL;
-#define STR_TOTALSIZE_DEFAULT				"Total size"
-static char *STR_HIDELOGS=NULL;
-#define STR_HIDELOGS_DEFAULT				"Hide logs"
-static char *STR_SHOWLOGS=NULL;
-#define STR_SHOWLOGS_DEFAULT				"Show logs"
-static char *STR_BOOST=NULL;
-#define STR_BOOST_DEFAULT					"Boost!"
-static char *STR_GAMEMENU=NULL;
-#define STR_GAMEMENU_DEFAULT				"Game Menu"
-static char *STR_SETTINGS=NULL;
-#define STR_SETTINGS_DEFAULT				"Settings"
-static char *STR_MOUNTGAME=NULL;
-#define STR_MOUNTGAME_DEFAULT				"Mount Game"
-static char *STR_FILTER=NULL;
-#define	STR_FILTER_DEFAULT					"Filters"
-static char *STR_FAVORITE=NULL;
-#define STR_FAVORITE_DEFAULT				"Favorite"
-static char *STR_FILEMANAGER=NULL;
-#define STR_FILEMANAGER_DEFAULT				"File Manager"
-static char *STR_HOLD=NULL;
-#define STR_HOLD_DEFAULT					"Hold"
-static char *STR_EXIT=NULL;
-#define STR_EXIT_DEFAULT					"Exit"
-static char *STR_GAME_PROP=NULL;
-#define STR_GAME_PROP_DEFAULT				"Game Properties"
-static char *STR_GAME_TITLE=NULL;
-#define STR_GAME_TITLE_DEFAULT				"Title"
-static char *STR_GAME_PATH=NULL;
-#define STR_GAME_PATH_DEFAULT				"Path"
-static char *STR_GAME_FORMAT=NULL;
-#define STR_GAME_FORMAT_DEFAULT				"Format"
-static char *STR_GAME_SIZE=NULL;
-#define STR_GAME_SIZE_DEFAULT				"Size"
-static char *STR_GAME_PLATFORM=NULL;
-#define STR_GAME_PLATFORM_DEFAULT			"Platform"
-static char *STR_SYSVERS=NULL;
-#define STR_SYSVERS_DEFAULT					"Firmware"
-static char *STR_GAMEID=NULL;
-#define STR_GAMEID_DEFAULT					"Game ID"
-static char *STR_ELFCRC=NULL;
-#define STR_ELFCRC_DEFAULT					"ELF CRC"
-static char *STR_ELFCRCO=NULL;
-#define STR_ELFCRCO_DEFAULT					"ELF CRC (Original)"
-static char *STR_BACK=NULL;
-#define STR_BACK_DEFAULT					"Back"
-static char *STR_ENTER=NULL;
-#define STR_ENTER_DEFAULT					"Enter"
-static char *STR_UPDATE_FOUND=NULL;
-#define STR_UPDATE_FOUND_DEFAULT			"Update found"
-static char *STR_UPDATE=NULL;
-#define STR_UPDATE_DEFAULT					"Update"
-static char *STR_SIZE=NULL;
-#define STR_SIZE_DEFAULT					"Size"
-static char *STR_SYSTEM=NULL;
-#define STR_SYSTEM_DEFAULT					"System"
-static char *STR_DL=NULL;
-#define STR_DL_DEFAULT						"Download"
-static char *STR_DL_ALL=NULL;
-#define STR_DL_ALL_DEFAULT					"Download ALL"
-static char *STR_UNPLUG=NULL;
-#define STR_UNPLUG_DEFAULT					"Unplug the following device(s)"
-static char *STR_PATH=NULL;
-#define STR_PATH_DEFAULT					"Path"
-static char *STR_TYPE=NULL;
-#define STR_TYPE_DEFAULT					"Type"
-static char *STR_FOLDER=NULL;
-#define STR_FOLDER_DEFAULT					"Folder"
-static char *STR_DIR=NULL;
-#define STR_DIR_DEFAULT						"Directory"
-static char *STR_MULT=NULL;
-#define STR_MULT_DEFAULT					"Multiple"
-static char *STR_THM_SETTINGS=NULL;
-#define STR_THM_SETTINGS_DEFAULT			"Theme settings"
-static char *STR_THM=NULL;
-#define STR_THM_DEFAULT						"Theme"
-static char *STR_THM_DESC=NULL;
-#define STR_THM_DESC_DEFAULT				"Load the theme you want. You can install them from /dev_usbXXX/Themes."
-static char *STR_CREATE=NULL;
-#define STR_CREATE_DEFAULT					"Create"
-static char *STR_ZOOM_OUT=NULL;
-#define STR_ZOOM_OUT_DEFAULT				"Zoom OUT"
-static char *STR_ZOOM_IN=NULL;
-#define STR_ZOOM_IN_DEFAULT					"Zoom IN"
-static char *STR_MOVE_FRAME=NULL;
-#define STR_MOVE_FRAME_DEFAULT				"Move Frame"
-static char *STR_CHECK=NULL;
-#define STR_CHECK_DEFAULT					"Check"
-static char *STR_UNCHECK=NULL;
-#define STR_UNCHECK_DEFAULT					"Uncheck"
-static char *STR_GAME_OPTION=NULL;
-#define STR_GAME_OPTION_DEFAULT				"Game Options"
-static char *STR_ADD_FAV=NULL;
-#define STR_ADD_FAV_DEFAULT					"Add to favorites"
-static char *STR_REM_FAV=NULL;
-#define STR_REM_FAV_DEFAULT					"Remove from favorites"
-static char *STR_FAV_DESC=NULL;
-#define STR_FAV_DESC_DEFAULT				"Manage a list your favorite games."
-static char *STR_RENAME=NULL;
-#define STR_RENAME_DEFAULT					"Rename"
-static char *STR_RENAME_DESC=NULL;
-#define STR_RENAME_DESC_DEFAULT				"Rename the title of your backup."
-static char *STR_DELETE=NULL;
-#define STR_DELETE_DEFAULT					"Delete"
-static char *STR_DELETE_DESC=NULL;
-#define STR_DELETE_DESC_DEFAULT				"Delete your backup."
-static char *STR_COPY=NULL;
-#define STR_COPY_DEFAULT					"Copy"
-static char *STR_COPY_DESC=NULL;
-#define STR_COPY_DESC_DEFAULT				"Copy your backup to another path."
-static char *STR_CREATE_ICON0=NULL;
-#define STR_CREATE_ICON0_DEFAULT			"Create ICON0"
-static char *STR_CREATE_ICON0_DESC=NULL;
-#define STR_CREATE_ICON0_DESC_DEFAULT		"Create an 'fake' ICON0 from the cover."
-static char *STR_REST_PNACH=NULL;
-#define STR_REST_PNACH_DEFAULT				"Restore PNACH"
-static char *STR_REST_PNACH_DESC=NULL;
-#define STR_REST_PNACH_DESC_DEFAULT			"Remove the patches applied by the pnach file to the backup."
-static char *STR_APPLY_PNACH=NULL;
-#define STR_APPLY_PNACH_DEFAULT				"Apply PNACH"
-static char *STR_APPLY_PNACH_DESC=NULL;
-#define STR_APPLY_PNACH_DESC_DEFAULT		"Apply the patches from pnach file to the backup."
-static char *STR_DISABLE_WS=NULL;
-#define STR_DISABLE_WS_DEFAULT				"Disable WideScreen"
-static char *STR_ENABLE_WS=NULL;
-#define STR_ENABLE_WS_DEFAULT				"Enable WideScreen"
-static char *STR_WS_DESC=NULL;
-#define STR_WS_DESC_DEFAULT					"Display the game in 16:9 instead of 4:3."
-static char *STR_DISABLE_480P=NULL;
-#define STR_DISABLE_480P_DEFAULT			"Disable 480P"
-static char *STR_ENABLE_480P=NULL;
-#define STR_ENABLE_480P_DEFAULT				"Enable 480P"
-static char *STR_480P_DESC=NULL;
-#define STR_480P_DESC_DEFAULT				"Progressive scan mode in 480P."
-static char *STR_DISABLE_YFIX=NULL;
-#define STR_DISABLE_YFIX_DEFAULT			"Disable YFIX"
-static char *STR_ENABLE_YFIX=NULL;
-#define STR_ENABLE_YFIX_DEFAULT				"Enable YFIX"
-static char *STR_YFIX_DESC=NULL;
-#define STR_YFIX_DESC_DEFAULT				"Fix the vertical position."
-static char *STR_DISABLE_FMVSKIP=NULL;
-#define STR_DISABLE_FMVSKIP_DEFAULT			"Disable FMV skip"
-static char *STR_ENABLE_FMVSKIP=NULL;
-#define STR_ENABLE_FMVSKIP_DEFAULT			"Enable FMV skip"
-static char *STR_FMVSKIP_DESC=NULL;
-#define STR_FMVSKIP_DESC_DEFAULT			"Allow you to skip the full motion videos."
-static char *STR_DISABLE_NETEMU=NULL;
-#define STR_DISABLE_NETEMU_DEFAULT			"Disable NetEMU"
-static char *STR_ENABLE_NETEMU=NULL;
-#define STR_ENABLE_NETEMU_DEFAULT			"Enable NetEMU"
-static char *STR_NETEMU_DESC=NULL;
-#define STR_NETEMU_DESC_DEFAULT				"Force the use of ps2 netemu."
-static char *STR_SAVE_CONFIG=NULL;
-#define STR_SAVE_CONFIG_DEFAULT				"Save CONFIG"
-static char *STR_CONFIG=NULL;
-#define STR_CONFIG_DEFAULT					"Configuration"
-static char *STR_CONFIG_DESC=NULL;
-#define STR_CONFIG_DESC_DEFAULT				"[Experimental] Create your own CONFIG file to 'fix' your ps2 backup."
-static char *STR_NONE=NULL;
-#define STR_NONE_DEFAULT					"None"
-static char *STR_CHECK_MD5=NULL;
-#define STR_CHECK_MD5_DEFAULT				"Check MD5"
-static char *STR_PROPS=NULL;
-#define STR_PROPS_DEFAULT					"Properties"
-static char *STR_PROPS_DESC=NULL;
-#define STR_PROPS_DESC_DEFAULT				"Show the properties of your backup."
-static char *STR_ASK_DEL=NULL;
-#define STR_ASK_DEL_DEFAULT					"Do you realy want to delete"
-static char *STR_GAME_SETTINGS=NULL;
-#define STR_GAME_SETTINGS_DEFAULT			"Game Settings"
-static char *STR_DIRECT_BOOT=NULL;
-#define STR_DIRECT_BOOT_DEFAULT				"Direct boot"
-static char *STR_DIRECT_BOOT_DESC=NULL;
-#define STR_DIRECT_BOOT_DESC_DEFAULT		"Launch the game directly without going back to XMB."
-static char *STR_YES=NULL;
-#define STR_YES_DEFAULT						"Yes"
-static char *STR_NO=NULL;
-#define STR_NO_DEFAULT						"No"
-static char *STR_CLEAN_SYSCALL=NULL;
-#define STR_CLEAN_SYSCALL_DEFAULT			"Clean syscall"
-static char *STR_CLEAN_SYSCALL_DESC=NULL;
-#define STR_CLEAN_SYSCALL_DESC_DEFAULT		"Disable peek & poke syscalls."
-static char *STR_CHANGE_IDPS=NULL;
-#define STR_CHANGE_IDPS_DEFAULT				"Change IDPS"
-static char *STR_CHANGE_IDPS_DESC=NULL;
-#define STR_CHANGE_IDPS_DESC_DEFAULT		"Change your IDPS in the lv2."
-static char *STR_EXT_GAME_DATA=NULL;
-#define STR_EXT_GAME_DATA_DEFAULT			"Ext. Game Data"
-static char *STR_EXT_GAME_DATA_DESC=NULL;
-#define STR_EXT_GAME_DATA_DESC_DEFAULT		"Install gamedata in your usb device instead of your system."
-static char *STR_PAYLOAD=NULL;
-#define STR_PAYLOAD_DEFAULT					"Payload"
-static char *STR_PAYLOAD_DESC=NULL;
-#define STR_PAYLOAD_DESC_DEFAULT			"Choose the payload to mount your backup."
-static char *STR_PRIM_USB=NULL;
-#define STR_PRIM_USB_DEFAULT				"Set Primary USB"
-static char *STR_PRIM_USB_DESC=NULL;
-#define STR_PRIM_USB_DESC_DEFAULT			"Set the USB device where the game is stored as the main USB device."
-static char *STR_BDEMU=NULL;
-#define STR_BDEMU_DEFAULT					"BD emulation"
-static char *STR_BDEMU_DESC=NULL;
-#define STR_BDEMU_DESC_DEFAULT				"Choose the type of emulation to mount you backup."
-static char *STR_PATCH_LIBFS=NULL;
-#define STR_PATCH_LIBFS_DEFAULT				"Patch libfs"
-static char *STR_PATCH_LIBFS_DESC=NULL;
-#define STR_PATCH_LIBFS_DESC_DEFAULT		"Choose which patched libfs you want to use."
-static char *STR_MOUNT_APPHOME=NULL;
-#define STR_MOUNT_APPHOME_DEFAULT			"Mount /app_home"
-static char *STR_MOUNT_APPHOME_DESC=NULL;
-#define STR_MOUNT_APPHOME_DESC_DEFAULT		"Redirect the path /app_home to /dev_bdvd."
-static char *STR_PATCH_EXP=NULL;
-#define STR_PATCH_EXP_DEFAULT				"Patch explore_plugin"
-static char *STR_PATCH_EXP_DESC=NULL;
-#define STR_PATCH_EXP_DESC_DEFAULT			"The path /app_home is remplaced by /dev_bdvd inside the plugin explore_plugin."
-static char *STR_MAKE_SHTCUT_PKG=NULL;
-#define STR_MAKE_SHTCUT_PKG_DEFAULT			"Make Shortcut PKG"
-static char *STR_MAKE_SHTCUT_PKG_DESC=NULL;
-#define STR_MAKE_SHTCUT_PKG_DESC_DEFAULT	"Create a package file stored to /dev_hdd0/packages. Once installed, it will be a 'shortcut' to mount your backup from the XMB."
-static char *STR_PATCH_EBOOT=NULL;
-#define STR_PATCH_EBOOT_DEFAULT				"Patch EBOOT"
-static char *STR_PATCH_EBOOT_DESC=NULL;
-#define STR_PATCH_EBOOT_DESC_DEFAULT		"Change the firmware version to 4.21 of the EBOOT file to prevent error 0x80010009."
-static char *STR_RESIGN=NULL;
-#define STR_RESIGN_DEFAULT					"Re-sign"
-static char *STR_RESIGN_DESC=NULL;
-#define STR_RESIGN_DESC_DEFAULT				"Re-sign every executables of your backup with the 4.21 keys."
-static char *STR_RESTORE=NULL;
-#define STR_RESTORE_DEFAULT					"Restore"
-static char *STR_RESTORE_DESC=NULL;
-#define STR_RESTORE_DESC_DEFAULT			"Restore the originals executables of your backup."
-static char *STR_EXTRACT_ISO=NULL;
-#define STR_EXTRACT_ISO_DEFAULT				"Extract ISO"
-static char *STR_EXTRACT_ISO_DESC=NULL;
-#define STR_EXTRACT_ISO_DESC_DEFAULT		"Extract files from your ISO to a folder."
-static char *STR_CONVERT_ISO=NULL;
-#define STR_CONVERT_ISO_DEFAULT				"Convert to ISO"
-static char *STR_CONVERT_ISO_DESC=NULL;
-#define STR_CONVERT_ISO_DESC_DEFAULT		"Convert your JB backup to an ISO."
-static char *STR_FIX_PERMS=NULL;
-#define STR_FIX_PERMS_DEFAULT				"Fix permissions"
-static char *STR_FIX_PERMS_DESC=NULL;
-#define STR_FIX_PERMS_DESC_DEFAULT			"Set permission value to 0777 of each folders and files of your backup."
-static char *STR_CHECK_IRD=NULL;
-#define STR_CHECK_IRD_DEFAULT				"Check files (IRD)"
-static char *STR_CHECK_DESC=NULL;
-#define STR_CHECK_DESC_DEFAULT				"Check if the files of your backups aren't modified."
-static char *STR_DL_UPDATE=NULL;
-#define STR_DL_UPDATE_DEFAULT				"Download Update"
-static char *STR_DL_UPDATE_DESC=NULL;
-#define STR_DL_UPDATE_DESC_DEFAULT			"Download your backup's updates to /dev_hdd0/packages."
-static char *STR_OPEN_WINDOW=NULL;
-#define STR_OPEN_WINDOW_DEFAULT				"Open New Window"
-static char *STR_DUMP_LV1=NULL;
-#define STR_DUMP_LV1_DEFAULT				"Dump lv1"
-static char *STR_DUMP_LV2=NULL;
-#define STR_DUMP_LV2_DEFAULT				"Dump lv2"
-static char *STR_DUMP_FLASH=NULL;
-#define STR_DUMP_FLASH_DEFAULT				"Dump flash"
-static char *STR_REFRESH=NULL;
-#define STR_REFRESH_DEFAULT					"Refresh"
-static char *STR_NEWFOLDER=NULL;
-#define STR_NEWFOLDER_DEFAULT				"New Folder"
-static char *STR_NEWFILE=NULL;
-#define STR_NEWFILE_DEFAULT					"New File"
-static char *STR_PASTE=NULL;
-#define STR_PASTE_DEFAULT					"Paste"
-static char *STR_CUT=NULL;
-#define STR_CUT_DEFAULT						"Cut"
-static char *STR_UNSELECT_ALL=NULL;
-#define STR_UNSELECT_ALL_DEFAULT			"Unselect all"
-static char *STR_SELECT_ALL=NULL;
-#define STR_SELECT_ALL_DEFAULT				"Select all"
-static char *STR_MAKE_PKG=NULL;
-#define STR_MAKE_PKG_DEFAULT				"Make PKG"
-static char *STR_GETMD5=NULL;
-#define STR_GETMD5_DEFAULT					"Get MD5"
-static char *STR_GETSHA1=NULL;
-#define STR_GETSHA1_DEFAULT					"Get SHA1"
-static char *STR_VIEW=NULL;
-#define STR_VIEW_DEFAULT					"View"
-static char *STR_VIEW_TXT=NULL;
-#define STR_VIEW_TXT_DEFAULT				"View TXT"
-static char *STR_VIEW_SFO=NULL;
-#define STR_VIEW_SFO_DEFAULT				"View SFO"
-static char *STR_READ_XREG=NULL;
-#define STR_READ_XREG_DEFAULT				"Read xReg"
-static char *STR_EXTRACT_ELF=NULL;
-#define STR_EXTRACT_ELF_DEFAULT				"Extract ELF"
-static char *STR_RESIGN_SELF=NULL;
-#define STR_RESIGN_SELF_DEFAULT				"Resign SELF"
-static char *STR_LAUNCH_SELF=NULL;
-#define STR_LAUNCH_SELF_DEFAULT				"Launch SELF"
-static char *STR_EXTRACT_EBOOT=NULL;
-#define STR_EXTRACT_EBOOT_DEFAULT			"Extract EBOOT"
-static char *STR_RESIGN_EBOOT=NULL;
-#define STR_RESIGN_EBOOT_DEFAULT			"Resign EBOOT"
-static char *STR_LAUNCH_EBOOT=NULL;
-#define STR_LAUNCH_EBOOT_DEFAULT			"Launch EBOOT"
-static char *STR_SIGN_ELF=NULL;
-#define STR_SIGN_ELF_DEFAULT				"Sign ELF"
-static char *STR_SIGN_EBOOT=NULL;
-#define STR_SIGN_EBOOT_DEFAULT				"Sign EBOOT"
-static char *STR_SIGN_PRX=NULL;
-#define STR_SIGN_PRX_DEFAULT				"Sign PRX"
-static char *STR_EXTRACT_PRX=NULL;
-#define STR_EXTRACT_PRX_DEFAULT				"Extract PRX"
-static char *STR_RESIGN_SPRX=NULL;
-#define STR_RESIGN_SPRX_DEFAULT				"Resign SPRX"
-static char *STR_REMOVE_PRXLOADER=NULL;
-#define STR_REMOVE_PRXLOADER_DEFAULT		"Remove from PRX Loader"
-static char *STR_ADD_PRXLOADER=NULL;
-#define STR_ADD_PRXLOADER_DEFAULT			"Add to PRX Loader"
-static char *STR_REMOVE_PRXLOADER2=NULL;
-#define STR_REMOVE_PRXLOADER2_DEFAULT		"Remove from PRXLoader"
-static char *STR_ADD_PRXLOADER2=NULL;
-#define STR_ADD_PRXLOADER2_DEFAULT			"Add to PRXLoader"
-static char *STR_REMOVE_MAMBA=NULL;
-#define STR_REMOVE_MAMBA_DEFAULT			"Remove from Mamba list"
-static char *STR_ADD_MAMBA=NULL;
-#define STR_ADD_MAMBA_DEFAULT				"Add to Mamba list"
-static char *STR_REMOVE_COBRA=NULL;
-#define STR_REMOVE_COBRA_DEFAULT			"Remove from Cobra list"
-static char *STR_ADD_COBRA=NULL;
-#define STR_ADD_COBRA_DEFAULT				"Add to Cobra list"
-static char *STR_EXTRACT_RCO=NULL;
-#define STR_EXTRACT_RCO_DEFAULT				"Extract RCO"
-static char *STR_EXTRACT_PKG=NULL;
-#define STR_EXTRACT_PKG_DEFAULT				"Extract PKG"
-static char *STR_PKG_INFO=NULL;
-#define STR_PKG_INFO_DEFAULT				"PKG info"
-static char *STR_EXTRACT_TRP=NULL;
-#define STR_EXTRACT_TRP_DEFAULT				"Extract TRP"
-static char *STR_COMPRESS_ISO=NULL;
-#define STR_COMPRESS_ISO_DEFAULT			"Compress ISO"
-static char *STR_CHECK_CRC32=NULL;
-#define STR_CHECK_CRC32_DEFAULT				"Check CRC32"
-static char *STR_DECOMPRESS_CSO=NULL;
-#define STR_DECOMPRESS_CSO_DEFAULT			"Decompress CSO"
-static char *STR_EXTRACT_THM=NULL;
-#define STR_EXTRACT_THM_DEFAULT				"Extract THM"
-static char *STR_EXTRACT_P3T=NULL;
-#define STR_EXTRACT_P3T_DEFAULT				"Extract P3T"
-static char *STR_EXTRACT_RAF=NULL;
-#define STR_EXTRACT_RAF_DEFAULT				"Extract RAF"
-static char *STR_EXTRACT_QRC=NULL;
-#define STR_EXTRACT_QRC_DEFAULT				"Extract QRC"
-static char *STR_EXTRACT_HERE=NULL;
-#define STR_EXTRACT_HERE_DEFAULT			"Extract here"
-static char *STR_CONVERT_JSX_JS=NULL;
-#define STR_CONVERT_JSX_JS_DEFAULT			"Convert JSX to JS"
-static char *STR_CONVERT_VAG_WAV=NULL;
-#define STR_CONVERT_VAG_WAV_DEFAULT			"Convert VAG to WAV"
-static char *STR_CONVERT_GTF_DDS=NULL;
-#define STR_CONVERT_GTF_DDS_DEFAULT			"Convert GTF to DDS"
-static char *STR_CONVERT_DDS_PNG=NULL;
-#define STR_CONVERT_DDS_PNG_DEFAULT			"Convert DDS to PNG"
-static char *STR_MAKE_APNG=NULL;
-#define STR_MAKE_APNG_DEFAULT				"Make APNG"
-static char *STR_SET_PERMS=NULL;
-#define STR_SET_PERMS_DEFAULT				"Set permission"
-static char *STR_NOGAME=NULL;
-#define STR_NOGAME_DEFAULT					"No Game Found"
-static char *STR_GLOB_SETTINGS=NULL;
-#define STR_GLOB_SETTINGS_DEFAULT			"Global settings"
-static char *STR_ADJUST=NULL;
-#define STR_ADJUST_DEFAULT					"Adjust screen"
-static char *STR_ADJUST_DESC=NULL;
-#define STR_ADJUST_DESC_DEFAULT				"Calibrate your display."
-static char *STR_DL_COVER=NULL;
-#define STR_DL_COVER_DEFAULT				"Download covers"
-static char *STR_DL_COVER_DESC=NULL;
-#define STR_DL_COVER_DESC_DEFAULT			"Download every missing game covers to USRDIR/covers/[gameID].jpg"
-static char *STR_PLUGIN_MANAGER=NULL;
-#define STR_PLUGIN_MANAGER_DEFAULT			"Plugin Manager"
-static char *STR_PLUGIN_MANAGER_DESC=NULL;
-#define STR_PLUGIN_MANAGER_DESC_DEFAULT		"Manage your plugins stored in /dev_hdd0/plugins."
-static char *STR_UPD_MGZ=NULL;
-#define STR_UPD_MGZ_DEFAULT					"Update ManaGunZ"
-static char *STR_UPD_MGZ_DESC=NULL;
-#define STR_UPD_MGZ_DESC_DEFAULT			"Download and install the latest version of ManaGunZ."
-static char *STR_GAME_PATHS=NULL;
-#define STR_GAME_PATHS_DEFAULT				"Game backup paths"
-static char *STR_GAME_PATHS_DESC=NULL;
-#define STR_GAME_PATHS_DESC_DEFAULT			"Configure the name of directories where ManaGunZ will find your backups."
-static char *STR_XMB_PRIO=NULL;
-#define STR_XMB_PRIO_DEFAULT				"XMB Priority"
-static char *STR_XMB_PRIO_DESC=NULL;
-#define STR_XMB_PRIO_DESC_DEFAULT			"The icon of ManaGunZ in XMB will be displayed at the top. It will be effective after the next system boot."
-static char *STR_HELP=NULL;
-#define STR_HELP_DEFAULT					"Show help"
-static char *STR_HELP_DESC=NULL;
-#define STR_HELP_DESC_DEFAULT				"Display the sentences you are reading here."
-static char *STR_COLOR_1=NULL;
-#define STR_COLOR_1_DEFAULT					"Color 1"
-static char *STR_COLOR_2=NULL;
-#define STR_COLOR_2_DEFAULT					"Color 2"
-static char *STR_COLOR_3=NULL;
-#define STR_COLOR_3_DEFAULT					"Color 3"
-static char *STR_COLOR_4=NULL;
-#define STR_COLOR_4_DEFAULT					"Color 4"
-static char *STR_COLOR_DESC=NULL;
-#define STR_COLOR_DESC_DEFAULT				"Change the colors used by ManaGunZ."
-static char *STR_UI_SETTINGS=NULL;
-#define STR_UI_SETTINGS_DEFAULT				"User interface settings"
-static char *STR_UI=NULL;
-#define STR_UI_DEFAULT						"User interface"
-static char *STR_UI_DESC=NULL;
-#define STR_UI_DESC_DEFAULT					"Change the interface."
-static char *STR_SIDE_MENU=NULL;
-#define STR_SIDE_MENU_DEFAULT				"Game SideMenu"
-static char *STR_SIDE_MENU_DESC=NULL;
-#define STR_SIDE_MENU_DESC_DEFAULT			"Display the game menu in the right side of the screen."
-static char *STR_SHOW_PIC1=NULL;
-#define STR_SHOW_PIC1_DEFAULT				"Show PIC1"
-static char *STR_SHOW_PIC1_DESC=NULL;
-#define STR_SHOW_PIC1_DESC_DEFAULT			"Display the background picture of the current selected games 'PIC1'. Use R1 with the UI LIST and GRID to display it."
-static char *STR_SHOW_COVER=NULL;
-#define STR_SHOW_COVER_DEFAULT				"Show Cover"
-static char *STR_SHOW_COVER_DESC=NULL;
-#define STR_SHOW_COVER_DESC_DEFAULT			"Display the game cover."
-static char *STR_SHOW_GAMECASE=NULL;
-#define STR_SHOW_GAMECASE_DEFAULT			"Show Game Case"
-static char *STR_SHOW_GAMECASE_DESC=NULL;
-#define STR_SHOW_GAMECASE_DESC_DEFAULT		"Display the game cover with the game case."
-static char *STR_SHOW_ICON0=NULL;
-#define STR_SHOW_ICON0_DEFAULT				"Show ICON0"
-static char *STR_SHOW_ICON0_DESC=NULL;
-#define STR_SHOW_ICON0_DESC_DEFAULT			"Display the main picture of the game 'ICON0'."
-static char *STR_GRID_TYPE=NULL;
-#define STR_GRID_TYPE_DEFAULT				"Grid type"
-static char *STR_GRID_TYPE_DESC=NULL;
-#define STR_GRID_TYPE_DESC_DEFAULT			"Choose how to make the grid move."
-static char *STR_SCROLL=NULL;
-#define STR_SCROLL_DEFAULT					"Scroll"
-static char *STR_PAGE=NULL;	
-#define STR_PAGE_DEFAULT					"Page"
-static char *STR_DIRECTION=NULL;
-#define STR_DIRECTION_DEFAULT				"Direction"
-static char *STR_DIRECTION_DESC=NULL;
-#define STR_DIRECTION_DESC_DEFAULT			"Choose in which direction the grid will move."
-static char *STR_VERTICAL=NULL;
-#define STR_VERTICAL_DEFAULT				"Vertical"
-static char *STR_HORIZONTAL=NULL;
-#define STR_HORIZONTAL_DEFAULT				"Horizontal"
-static char *STR_ANIMATED=NULL;
-#define STR_ANIMATED_DEFAULT				"Animated"
-static char *STR_ANIMATED_DESC=NULL;
-#define STR_ANIMATED_DESC_DEFAULT			"Make the grid's moves sliding."
-static char *STR_KEEP_PROP=NULL;
-#define STR_KEEP_PROP_DEFAULT				"Keep proportion"
-static char *STR_KEEP_PROP_DESC=NULL;
-#define STR_KEEP_PROP_DESC_DEFAULT			"Keep the original aspect ratio of the ICON0."
-static char *STR_NB_COL=NULL;	
-#define STR_NB_COL_DEFAULT					"Number of columns"
-static char *STR_NB_COL_DESC=NULL;	
-#define STR_NB_COL_DESC_DEFAULT				"Choose the number of columns of the grid."
-static char *STR_NB_LINE=NULL;	
-#define STR_NB_LINE_DEFAULT					"Number of lines"
-static char *STR_NB_LINE_DESC=NULL;	
-#define STR_NB_LINE_DESC_DEFAULT			"Choose the number of lines of the grid."
-static char *STR_INVERSE=NULL;	
-#define STR_INVERSE_DEFAULT					"Inverse button"
-static char *STR_INVERSE_DESC=NULL;	
-#define STR_INVERSE_DESC_DEFAULT			"Inverse the buttons right and left.​"
-static char *STR_3D=NULL;	
-#define STR_3D_DEFAULT						"3D"
-static char *STR_3D_DESC=NULL;	
-#define STR_3D_DESC_DEFAULT					"Display the menu with 3D models of gamecases."
-static char *STR_ADD=NULL;	
-#define STR_ADD_DEFAULT						"Add"
-static char *STR_LOAD=NULL;	
-#define STR_LOAD_DEFAULT					"Load"
-static char *STR_CHANGE=NULL;	
-#define STR_CHANGE_DEFAULT					"Change"
-static char *STR_COLOR=NULL;	
-#define STR_COLOR_DEFAULT					"Color"
-static char *STR_RESET=NULL;	
-#define STR_RESET_DEFAULT					"Reset"
-static char *STR_FAILED=NULL;
-#define STR_FAILED_DEFAULT					"Failed"
-static char *STR_DONE=NULL;
-#define STR_DONE_DEFAULT					"Done"
-static char *STR_OPEN=NULL;
-#define STR_OPEN_DEFAULT					"Open"
-static char *STR_CLOSE=NULL;
-#define STR_CLOSE_DEFAULT					"Close"
-static char *STR_OPTION=NULL;
-#define STR_OPTION_DEFAULT					"Option"
-static char *STR_SELECT=NULL;
-#define STR_SELECT_DEFAULT					"Select"
-static char *STR_WINDOW=NULL;
-#define STR_WINDOW_DEFAULT					"Window"
-static char *STR_CLICK=NULL;
-#define STR_CLICK_DEFAULT					"Click"
-static char *STR_CURSOR=NULL;
-#define STR_CURSOR_DEFAULT					"Cursor"
-static char *STR_NEXT=NULL;
-#define STR_NEXT_DEFAULT					"Next"
-static char *STR_PREVIOUS=NULL;
-#define STR_PREVIOUS_DEFAULT				"Previous"
-static char *STR_SET_COLOR=NULL;
-#define STR_SET_COLOR_DEFAULT				"Set color"
-static char *STR_HIDETV=NULL;
-#define STR_HIDETV_DEFAULT					"Hide TV screen test"
-static char *STR_SHOWTV=NULL;
-#define STR_SHOWTV_DEFAULT					"Show TV screen test"
-static char *STR_MOVE_TO_PLUGINS=NULL;
-#define STR_MOVE_TO_PLUGINS_DEFAULT			"Move to /dev_hdd0/plugins"
-static char *STR_ASK_PLUGINS=NULL;
-#define STR_ASK_PLUGINS_DEFAULT				"To use the plugin manager, the plugins must be in '/dev_hdd0/plugins'. Do you accept to use this folder ?"
-static char *STR_CHANGE_VALUE=NULL;
-#define STR_CHANGE_VALUE_DEFAULT			"Change value"
-static char *STR_LOAD_IDPS_LV2=NULL;
-#define STR_LOAD_IDPS_LV2_DEFAULT			"Load IDPS from lv2"
-static char *STR_LOAD_IDPS_EID5=NULL;
-#define STR_LOAD_IDPS_EID5_DEFAULT			"Load IDPS from EID5"
-static char *STR_NAME=NULL;
-#define STR_NAME_DEFAULT					"Name"
-static char *STR_DOCK_RIGHT=NULL;
-#define STR_DOCK_RIGHT_DEFAULT				"Dock to right"
-static char *STR_DOCK_LEFT=NULL;
-#define STR_DOCK_LEFT_DEFAULT				"Dock to left"
-static char *STR_DOCK_FULL=NULL;
-#define STR_DOCK_FULL_DEFAULT				"Dock to full"
-static char *STR_PLUGIN_MONITOR=NULL;
-#define STR_PLUGIN_MONITOR_DEFAULT			"Plugin Monitor"
-static char *STR_UNUSED=NULL;
-#define STR_UNUSED_DEFAULT					"Unused"
-static char *STR_UNLOAD=NULL;
-#define STR_UNLOAD_DEFAULT					"Unload"
-static char *STR_BOOT_FILE=NULL;
-#define STR_BOOT_FILE_DEFAULT				"Boot file"
-static char *STR_CURRENT=NULL;
-#define STR_CURRENT_DEFAULT					"Current"
-static char *STR_NET=NULL;
-#define STR_NET_DEFAULT						"Net"
-static char *STR_SOFT=NULL;
-#define STR_SOFT_DEFAULT					"Soft"
-static char *STR_GX=NULL;
-#define STR_GX_DEFAULT						"GX"
-static char *STR_CUSTOM=NULL;
-#define STR_CUSTOM_DEFAULT					"Custom"
-static char *STR_NEW_CMD=NULL;
-#define STR_NEW_CMD_DEFAULT					"New command"
-static char *STR_PNACH=NULL;
-#define STR_PNACH_DEFAULT					"Pnach"
-static char *STR_WIDESCREEN=NULL;
-#define STR_WIDESCREEN_DEFAULT				"WideScreen"
-static char *STR_480P=NULL;
-#define STR_480P_DEFAULT					"480P"
-static char *STR_YFIX=NULL;
-#define STR_YFIX_DEFAULT					"YFIX"
-static char *STR_FMV=NULL;
-#define STR_FMV_DEFAULT						"FMV skip"
-static char *STR_SIMPLE=NULL;
-#define STR_SIMPLE_DEFAULT					"Simple"
-static char *STR_ADVANCED=NULL;
-#define STR_ADVANCED_DEFAULT				"Advanced"
-static char *STR_INSTALL_MGZ=NULL;
-#define STR_INSTALL_MGZ_DEFAULT				"Do you want to install ManaGunZ" 
-static char *STR_UP2DATE=NULL;
-#define STR_UP2DATE_DEFAULT					"It's up to date"
-static char *STR_SHOW_WAVES=NULL;
-#define STR_SHOW_WAVES_DEFAULT				"Show waves"
-static char *STR_SHOW_WAVES_DESC=NULL;
-#define STR_SHOW_WAVES_DESC_DEFAULT			"Display waves in background."
-static char *STR_WAVES_COLOR=NULL;
-#define STR_WAVES_COLOR_DEFAULT				"Waves color"
-static char *STR_WAVES_COLOR_DESC=NULL;
-#define STR_WAVES_COLOR_DESC_DEFAULT		"Change the color of the waves."
-static char *STR_USE_CONFIG=NULL;
-#define STR_USE_CONFIG_DEFAULT				"You are not using a PS2 configuration file '*.CONFIG'."
-static char *STR_COLORSET=NULL;
-#define STR_COLORSET_DEFAULT				"ColorSet"
-static char *STR_COLORSET_DESC=NULL;
-#define STR_COLORSET_DESC_DEFAULT			"Choose a predefined set of colors to use in ManaGunZ."
-static char *STR_GRID_SCROLL=NULL;
-#define STR_GRID_SCROLL_DEFAULT				"Scroll"
-static char *STR_ADD_LIMG=NULL;
-#define STR_ADD_LIMG_DEFAULT				"Add LIMG"
-static char *STR_REMOVE_LIMG=NULL;
-#define STR_REMOVE_LIMG_DEFAULT				"Remove LIMG"
-static char *STR_LIMG_DESC=NULL;
-#define STR_LIMG_DESC_DEFAULT				"It may fix few games."
-static char *STR_FONT=NULL;
-#define STR_FONT_DEFAULT					"Font"
-static char *STR_FONT_DESC=NULL;
-#define STR_FONT_DESC_DEFAULT				"Change the font."
-static char *STR_MOVE=NULL;
-#define STR_MOVE_DEFAULT					"Move"
-static char *STR_JOIN=NULL;
-#define STR_JOIN_DEFAULT					"Join"
-static char *STR_JOIN_DESC=NULL;
-#define STR_JOIN_DESC_DEFAULT				"Merge .666XX files."
-static char *STR_COLOR_FILTER=NULL;
-#define STR_COLOR_FILTER_DEFAULT			"Color Filters"
-static char *STR_COLOR_NOTIF=NULL;
-#define STR_COLOR_NOTIF_DEFAULT				"Notification"
-static char *STR_COLOR_BOXHEAD=NULL;
-#define STR_COLOR_BOXHEAD_DEFAULT			"Filter box header"
-static char *STR_COLOR_BOXBODY=NULL;
-#define STR_COLOR_BOXBODY_DEFAULT			"Filter box body"
-static char *STR_COLOR_SIDEBAR=NULL;
-#define STR_COLOR_SIDEBAR_DEFAULT			"Sidebar"
-static char *STR_COLOR_BGS=NULL;
-#define STR_COLOR_BGS_DEFAULT				"Setting background"
-static char *STR_COLOR_BG=NULL;
-#define STR_COLOR_BG_DEFAULT				"Background"
-static char *STR_ROOT_DISPLAY=NULL;
-#define STR_ROOT_DISPLAY_DEFAULT			"Root display"
-static char *STR_ROOT_DISPLAY_DESC=NULL;
-#define STR_ROOT_DISPLAY_DESC_DEFAULT		"Change the display of the root in FileManager."
-static char *STR_STYLE=NULL;
-#define STR_STYLE_DEFAULT					"Style"
-static char *STR_STYLE_CUSTOM=NULL;
-#define STR_STYLE_CUSTOM_DEFAULT			"Custom style"
-static char *STR_STYLE1=NULL;
-#define STR_STYLE1_DEFAULT					"Style 1"
-static char *STR_STYLE2=NULL;
-#define STR_STYLE2_DEFAULT					"Style 2"
-static char *STR_STYLE3=NULL;
-#define STR_STYLE3_DEFAULT					"Style 3"
-static char *STR_STYLE4=NULL;
-#define STR_STYLE4_DEFAULT					"Style 4"
-static char *STR_STYLE5=NULL;
-#define STR_STYLE5_DEFAULT					"Style 5"
-static char *STR_STYLE6=NULL;
-#define STR_STYLE6_DEFAULT					"Style 6"
-static char *STR_FREEOF=NULL;
-#define STR_FREEOF_DEFAULT					"free of"
-static char *STR_ROOTLABEL=NULL;
-#define STR_ROOTLABEL_DEFAULT				"Root"
-static char *STR_FM_ICONSIZE=NULL;
-#define STR_FM_ICONSIZE_DEFAULT				"Icon size"
-static char *STR_FM_BIG=NULL;
-#define STR_FM_BIG_DEFAULT					"Big"
-static char *STR_FM_SMALL=NULL;
-#define STR_FM_SMALL_DEFAULT				"Small"
-static char *STR_FM_ROWNUMBER=NULL;
-#define STR_FM_ROWNUMBER_DEFAULT			"Text row number"
-static char *STR_FM_ROWSIZE=NULL;
-#define STR_FM_ROWSIZE_DEFAULT				"Row size"
-static char *STR_FM_LEFT_CONTENT=NULL;
-#define STR_FM_LEFT_CONTENT_DEFAULT			"Row content [LEFT]"
-static char *STR_FM_RIGHT_CONTENT=NULL;
-#define STR_FM_RIGHT_CONTENT_DEFAULT		"Row content [RIGHT]"
-static char *STR_FM_EMPTY=NULL;
-#define STR_FM_EMPTY_DEFAULT				"Empty"
-static char *STR_FM_MOUNTPOINT=NULL;
-#define STR_FM_MOUNTPOINT_DEFAULT			"Mount point"
-static char *STR_FM_DEVICE=NULL;
-#define STR_FM_DEVICE_DEFAULT				"Device"
-static char *STR_FM_LABEL=NULL;
-#define STR_FM_LABEL_DEFAULT				"Label"
-static char *STR_FM_CAPACITY=NULL;
-#define STR_FM_CAPACITY_DEFAULT				"Capacity bar"
-static char *STR_FM_MEMINSIDE=NULL;
-#define STR_FM_MEMINSIDE_DEFAULT			"Inside memory"
-static char *STR_FM_MEMOUTSIDE=NULL;
-#define STR_FM_MEMOUTSIDE_DEFAULT			"Outside memory"
-static char *STR_FM_FILESYSTEM=NULL;
-#define STR_FM_FILESYSTEM_DEFAULT			"Files system"
-static char *STR_FM_CB_WIDTH=NULL;
-#define STR_FM_CB_WIDTH_DEFAULT				"Capacity bar width"
-static char *STR_FM_MEMORY=NULL;
-#define STR_FM_MEMORY_DEFAULT				"Memory"
-static char *STR_FM_ICON=NULL;
-#define STR_FM_ICON_DEFAULT					"Icons"
-static char *STR_FM_FILEFOLDER=NULL;
-#define STR_FM_FILEFOLDER_DEFAULT			"File and Folder"
-static char *STR_FM_CUSTOM=NULL;
-#define STR_FM_CUSTOM_DEFAULT				"Custom icons"
-static char *STR_FM_CB_FILL=NULL;
-#define STR_FM_CB_FILL_DEFAULT				"Fill"
-static char *STR_EDIT_IDPS=NULL;
-#define STR_EDIT_IDPS_DEFAULT				"Edit IDPS"
-static char *STR_FILTER_NOGAME=NULL;
-#define STR_FILTER_NOGAME_DEFAULT			"No games found. Adjust your filter."
-static char *STR_SYMLINK_SRC=NULL;
-#define STR_SYMLINK_SRC_DEFAULT				"SymLink source"
-static char *STR_SYMLINK_TARGET=NULL;
-#define STR_SYMLINK_TARGET_DEFAULT			"SymLink target"
-static char *STR_LOAD_MAMBA=NULL;
-#define STR_LOAD_MAMBA_DEFAULT				"Load mamba"
-static char *STR_CONVERT_TO_PNG=NULL;
-#define STR_CONVERT_TO_PNG_DEFAULT			"Convert to PNG"
-static char *STR_MOUNT_DEVBLIND=NULL;
-#define STR_MOUNT_DEVBLIND_DEFAULT			"Unprotect dev_flash"
-static char *STR_UNMOUNT_DEVBLIND=NULL;
-#define STR_UNMOUNT_DEVBLIND_DEFAULT		"Protect dev_flash"
-static char *STR_BT_AUDIO=NULL;
-#define STR_BT_AUDIO_DEFAULT				"Gamepad audio out"
-static char *STR_BT_AUDIO_DESC=NULL;
-#define STR_BT_AUDIO_DESC_DEFAULT			"Play sound through the gamepad while playing. Tested with a DS4."
-static char *STR_GAME_UPDATE_TITLE=NULL;
-#define STR_GAME_UPDATE_TITLE_DEFAULT		"PS3 game updates downloader"
-static char *STR_CURRENT_VERS=NULL;
-#define STR_CURRENT_VERS_DEFAULT			"Current version"
-static char *STR_CANT_MOUNT_PEEKPOKE=NULL;
-#define STR_CANT_MOUNT_PEEKPOKE_DEFAULT		"Unmountable : PEEK and POKE unavailable, mamba can't be installed"
-static char *STR_CANT_MOUNT_UNKFW=NULL;
-#define STR_CANT_MOUNT_UNKFW_DEFAULT		"Unmountable : unknown firmware, mamba can't be installed."
-static char *STR_CANT_MOUNT=NULL;
-#define STR_CANT_MOUNT_DEFAULT				"Unmountable"
-static char *STR_ONLY_FAV=NULL;
-#define STR_ONLY_FAV_DEFAULT				"Only favorites"
-static char *STR_ALL_GAMES=NULL;
-#define STR_ALL_GAMES_DEFAULT				"All games"
-static char *STR_DISPLAY=NULL;
-#define STR_DISPLAY_DEFAULT					"Display"
-static char *STR_DUMP_DEC=NULL;
-#define STR_DUMP_DEC_DEFAULT				"Dump decrypted Blu-Ray disc"
-static char *STR_DUMP_DEC_DESC=NULL;
-#define STR_DUMP_DEC_DESC_DEFAULT			"Get a 'proper' iso of your disc with the IRD. It will upload the IRD to the database once it's finished."
-static char *STR_DUMP_ENC=NULL;
-#define STR_DUMP_ENC_DEFAULT				"Dump encrypted Blu-Ray disc"
-static char *STR_DUMP_ENC_DESC=NULL;
-#define STR_DUMP_ENC_DESC_DEFAULT			"Get a raw iso of your Blu-Ray disc."
-static char *STR_DUMP_ERK=NULL;
-#define STR_DUMP_ERK_DEFAULT				"Dump eid root key"
-static char *STR_DUMP_ERK_DESC=NULL;
-#define STR_DUMP_ERK_DESC_DEFAULT			"This is the 'main' key to decrypt your system. It's used everywhere. Path: /dev_hdd0/tmp/eid_root_key"
-static char *STR_DUMP_3DUMP=NULL;
-#define STR_DUMP_3DUMP_DEFAULT				"Dump 3Dump.bin"
-static char *STR_DUMP_3DUMP_DESC=NULL;
-#define STR_DUMP_3DUMP_DESC_DEFAULT			"It's the needed file to dump a Blu-Ray with 3k3y IsoTools. Path: /dev_hdd0/tmp/3Dump.bin"
-static char *STR_SYSTEM_TOOLS=NULL;
-#define STR_SYSTEM_TOOLS_DEFAULT			"System tools"
-static char *STR_DECRYPT_NPDATA=NULL;
-#define STR_DECRYPT_NPDATA_DEFAULT			"Decrypt edat/sdat"
-static char *STR_REDUMP_LOG=NULL;
-#define STR_REDUMP_LOG_DEFAULT				"Get files for redump.org"
-static char *STR_REDUMP_LOG_DESC=NULL;
-#define STR_REDUMP_LOG_DESC_DEFAULT			"It generates files needed to submit a dump to redump.org."
-static char *STR_DUMP_OPTION=NULL;
-#define STR_DUMP_OPTION_DEFAULT				"Blu-Ray dumper"
-static char *STR_IGNORE_ERR=NULL;
-#define STR_IGNORE_ERR_DEFAULT				"Ignore errors"
-static char *STR_IGNORE_ERR_DESC=NULL;
-#define STR_IGNORE_ERR_DESC_DEFAULT			"It ignores reading errors during the Blu-Ray dumping process."
-static char *STR_3K3Y_HEADER=NULL;
-#define STR_3K3Y_HEADER_DEFAULT				"Include 3k3y header"
-static char *STR_3K3Y_HEADER_DESC=NULL;
-#define STR_3K3Y_HEADER_DESC_DEFAULT		"It dumps the Blu-ray to an iso with embedded 3k3y header. 3k3y IsoTools will be able to recognize it."
-
-
 #define DB_PREFIX			"[DB] "
 static char *STR_DB_NET    = NULL;
 static char *STR_DB_SOFT   = NULL;
 static char *STR_DB_GX     = NULL;
 static char *STR_DB_CUSTOM = NULL;
+
+#include "str.h"
 
 //***********************************************************
 // Functions
@@ -2220,13 +1480,16 @@ char *GetTimeStr(u64 secTime);
 char *sprintf_malloc(char *format, ...);
 u8 SetPerms(char* path);
 u32 crc_file2(char *path, u32 current_crc);
-int upload(char *url, char *src);
+u32 crc_file(char *path);
+int upload(char *url, char *src, const char *method);
 int http_response(char *url);
 void add_GAMELIST(char *path);
 void sort_GAMELIST();
 void update_RootDisplay();
 float DrawTXTinLineBox(float x, float y, float z, float w, char *string, u32 bg_color, u32 font_color);
 int Extract_SELF(char *in, char *out, u8 *rif);
+void MGZ_exit();
+s32 sys_map_path(char *oldpath, char *newpath);
 
 void Draw_MENU();
 
@@ -2985,24 +2248,32 @@ char *GetExtension(char *path)
     int n = strlen(path);
     int m = n;
 
-    while(m > 1 && path[m] != '.' && path[m] != '/') m--;
+    while(m > 0 && path[m] != '.' && path[m] != '/') m--;
     
+	if(path[m] != '.') return &path[n];
+	
     if(strcmp(&path[m], ".0")==0 || strcmp(&path[m], ".66600")==0) { // splitted
-       m--;
-       while(m > 1 && path[m] != '.' && path[m] != '/') m--; 
+       int o = m-1;
+       while(o > 0 && path[o] != '.' && path[o] != '/') o--;
+       if(path[o]=='.') m=o;
     }
 	
-	if(strcmp(&path[m], ".gz")==0) {
-		if(strcmp(&path[m-4], ".tar.gz")==0) {
-			m-=4;	
+	if(strcasecmp(&path[m], ".gz")==0) {
+		if(strcasecmp(&path[m-4], ".tar.gz")==0) {
+			m-=4;
 		}
 	}
-	if(strcmp(&path[m], ".bz2")==0) {
+	if(strcasecmp(&path[m], ".bz2")==0) {
 		if(strcmp(&path[m-4], ".tar.bz2")==0) {
-			m-=4;	
+			m-=4;
 		}
 	}
-    
+	if(strcasecmp(&path[m], ".iso")==0) {
+		if(strcasecmp(&path[m-4], ".enc.iso")==0) {
+			m-=4;
+		}
+	}
+	
     if(path[m] == '.') return &path[m];
 
     return &path[n];
@@ -3946,6 +3217,43 @@ decrypt:
 // TEST ZONE
 //*******************************************************
 
+void test_permit()
+{
+	int ret = sysModuleLoad(0x003E); // SYSMODULE_SYSUTIL_GAME
+	if( ret < 0) {
+		print_load("Error : failed to load SYSMODULE_SYSUTIL_GAME");
+	} else {
+		print_load("Succeeded to load SYSMODULE_SYSUTIL_GAME");
+	}
+	char contentInfoPath[256];
+	char usrdirPath[256];
+	unsigned int type = 0;
+	unsigned int attributes = 0;
+	
+	ret = sysGameBootCheck(&type, &attributes, NULL, NULL);
+	print_load("sysGameBootCheck %X", ret);
+	
+	ret = sysGameContentPermit(contentInfoPath, usrdirPath);
+	print_load("sysGameBootCheck %X", ret);
+	print_load("ContentInfo %s", contentInfoPath);
+	print_load("usrdirPath %s", usrdirPath);
+	
+	char test_title_id[SYS_GAME_SYSP_TITLEID_SIZE];
+	ret = sysGameGetParamString(SYS_GAME_PARAMID_TITLE_ID, test_title_id, SYS_GAME_SYSP_TITLEID_SIZE);
+	if( ret < 0) {
+		print_load("Error : failed to sysGameGetParamString");
+	} else {
+		print_load("success %s", test_title_id);;
+	}
+	
+	ret = sysModuleUnload(0x003E);
+	if( ret < 0) {
+		print_load("Error : failed to unload SYSMODULE_SYSUTIL_GAME");
+	} else {
+		print_load("Succeeded to unload SYSMODULE_SYSUTIL_GAME");
+	}	
+}
+
 char *FRESULT_STR[20] = {
 	"Succeeded",
 	"A hard error occurred in the low level disk I/O layer",
@@ -4437,7 +3745,7 @@ u8 Get_PICType(u32 w, u32 h)
 	float ratio_ICON0 = 320.0/176.0;
 	float e = fabs(ratio_ICON0 - ratio);
 	if( e < 0.02 ) return GAMEPIC_ICON0;
-
+	
 	return GAMEPIC_COVER3D;
 }
 
@@ -4483,12 +3791,24 @@ char *GetPath_GAMEPIC_COVER2D(int game_pos, int n)
 	if(n==10) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.png", list_game_ID[game_pos]);
 	if(n==11) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers/%s.PNG", list_game_ID[game_pos]);
 	
+	if( 12 <= n && n <=15) {
+	
+		char temp[512];
+		strcpy(temp, list_game_path[game_pos]);
+		RemoveExtension(temp);
+		
+		if(n==12) return sprintf_malloc( "%s.COVER.jpg", temp);
+		if(n==13) return sprintf_malloc( "%s.COVER.JPG", temp);
+		if(n==14) return sprintf_malloc( "%s.COVER.png", temp);
+		if(n==15) return sprintf_malloc( "%s.COVER.PNG", temp);
+	}
+	
 	if( list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD) return NULL;
 	
-	if(n==12) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
-	if(n==13) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
-	if(n==14) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
-	if(n==15) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
+	if(n==16) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.jpg", list_game_ID[game_pos]);
+	if(n==17) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.JPG", list_game_ID[game_pos]);
+	if(n==18) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.png", list_game_ID[game_pos]);
+	if(n==19) return sprintf_malloc("/dev_hdd0/game/BLES80608/USRDIR/covers_retro/psx/%s_COV.PNG", list_game_ID[game_pos]);
 	
 	return NULL;
 	
@@ -4498,7 +3818,7 @@ char *GetPath_GAMEPIC_UNK(int game_pos, int n)
 {
 	char temp[512];
 	strcpy(temp, list_game_path[game_pos]);
-	temp[strlen(temp)-4]=0;
+	RemoveExtension(temp);
 	
 	if(n==0) return sprintf_malloc( "%s.jpg", temp);
 	if(n==1) return sprintf_malloc( "%s.JPG", temp);
@@ -4506,24 +3826,54 @@ char *GetPath_GAMEPIC_UNK(int game_pos, int n)
 	if(n==3) return sprintf_malloc( "%s.PNG", temp);
 	
 	return NULL;
+}
+
+char *GetPath_GAMEPIC_ICON0(int game_pos, int n)
+{
+	char temp[512];
+	strcpy(temp, list_game_path[game_pos]);
+	RemoveExtension(temp);
 	
+	if(n==0) return sprintf_malloc( "%s.ICON0.jpg", temp);
+	if(n==1) return sprintf_malloc( "%s.ICON0.JPG", temp);
+	if(n==2) return sprintf_malloc( "%s.ICON0.png", temp);
+	if(n==3) return sprintf_malloc( "%s.ICON0.PNG", temp);
+	
+	return NULL;
 }
 
 u8 Have_GAMEPIC(int game_pos)
 {
 	u8 ret = GAMEPIC_NONE;
+	int n = 0;
 	
 	if(list_game_platform[game_pos] == ISO_PS3 || list_game_platform[game_pos] == JB_PS3 || list_game_platform[game_pos] == BDVD
-	|| list_game_platform[game_pos] == ISO_PSP || list_game_platform[game_pos] == JB_PSP) ret += GAMEPIC_ICON0;
+	|| list_game_platform[game_pos] == ISO_PSP || list_game_platform[game_pos] == JB_PSP) {
+		ret |= GAMEPIC_ICON0;
+	} else {
+		// Create ICON0
+		n=0;
+		while(1)
+		{
+			char *GAMEPIC_path = GetPath_GAMEPIC_ICON0(game_pos, n);
+			if( GAMEPIC_path == NULL) break;
+			
+			if(path_info(GAMEPIC_path) == _FILE) { ret |= GAMEPIC_ICON0; break; }
+			FREE(GAMEPIC_path);
+			
+			n++;
+		}
+	}
+	
 	
 // 3D
-	int n = 0;
+	n=0;
 	while(1)
 	{
 		char *GAMEPIC_path = GetPath_GAMEPIC_COVER3D(game_pos, n);
 		if( GAMEPIC_path == NULL) break;
 		
-		if(path_info(GAMEPIC_path) == _FILE) { ret += GAMEPIC_COVER3D; break; }
+		if(path_info(GAMEPIC_path) == _FILE) { ret |= GAMEPIC_COVER3D; break; }
 		FREE(GAMEPIC_path);
 		
 		n++;
@@ -4535,7 +3885,7 @@ u8 Have_GAMEPIC(int game_pos)
 		char *GAMEPIC_path = GetPath_GAMEPIC_COVER2D(game_pos, n);
 		if( GAMEPIC_path == NULL) break;
 		
-		if(path_info(GAMEPIC_path) == _FILE) { ret += GAMEPIC_COVER2D; break; }
+		if(path_info(GAMEPIC_path) == _FILE) { ret |= GAMEPIC_COVER2D; break; }
 		FREE(GAMEPIC_path);
 		
 		n++;
@@ -4547,7 +3897,7 @@ u8 Have_GAMEPIC(int game_pos)
 		char *GAMEPIC_path = GetPath_GAMEPIC_UNK(game_pos, n);
 		if( GAMEPIC_path == NULL) break;
 		
-		if(path_info(GAMEPIC_path) == _FILE) { ret += Get_PIC(GAMEPIC_path); break; }
+		if(path_info(GAMEPIC_path) == _FILE) { ret |= Get_PIC(GAMEPIC_path); break; }
 		FREE(GAMEPIC_path);
 		
 		n++;
@@ -4682,9 +4032,21 @@ u8 Read_GAMEPIC_ICON0(int game_pos, imgData *DataPic)
 		sprintf(temp, "%s/PSP_GAME/ICON0.PNG", list_game_path[game_pos]);
 		if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 	} else
-	if(list_game_platform[game_pos] == ISO_PS2 || list_game_platform[game_pos] == ISO_PS1) {
-		
+	{
 		int n = 0;
+		while(1)
+		{
+			char *GAMEPIC_path = GetPath_GAMEPIC_ICON0(game_pos, n);
+			if( GAMEPIC_path == NULL) break;
+			
+			int ret = imgLoadFromFile(GAMEPIC_path, DataPic, NO);
+			FREE(GAMEPIC_path);
+			
+			if(ret == SUCCESS) return SUCCESS;
+			
+			n++;
+		}
+		n=0;
 		while(1)
 		{
 			char *GAMEPIC_path = GetPath_GAMEPIC_UNK(game_pos, n);
@@ -4941,7 +4303,7 @@ void Load_GAMEPIC_thread(void *unused)
 		}
 		usleep(100);
 	}
-	
+	Load_GAMEPIC_flag=-1;
 	sysThreadExit(0);
 }
 
@@ -4950,8 +4312,10 @@ void end_Load_GAMEPIC()
 {
 	u64 ret;
 	if(Load_GAMEPIC_flag==YES) {
-		Load_GAMEPIC_flag = NO;
+		Load_GAMEPIC_flag=NO;
+		while(Load_GAMEPIC_flag==NO) usleep(1000);
 		sysThreadJoin(Load_GAMEPIC_id, &ret);
+		Load_GAMEPIC_flag=NO;
 	}
 }
 
@@ -5095,9 +4459,21 @@ void Draw_COVER(int pos, float x, float y, float z, float w, float h, u32 CoverO
 		hl = 340;
 	} else return;
 	
+	// SQUARE used sman, xmb, webmanMOD. It won't be displayed with game boxes.
+	u8 square = NO;
+	if( CoverIMG.width == CoverIMG.height ) {
+		if( CoverIMG.width == 320 || list_game_platform[pos] != ISO_PS1 ) {
+			xl=0;
+			yl=0;
+			hl=320;
+			wl=320;
+			square=YES;
+		}
+	}
+	
 	float ph = hl;
 	float pw = wl;
-	if(PICTURE_offset[plat] && Show_GameCase) {
+	if(PICTURE_offset[plat] && Show_GameCase && !square) {
 		ph=PICTURE[plat].height;
 		pw=PICTURE[plat].width;
 	}
@@ -5136,7 +4512,7 @@ void Draw_COVER(int pos, float x, float y, float z, float w, float h, u32 CoverO
 	wj = wl * wi / pw;
 	hj = hl * hi / ph;
 		
-	if(PICTURE_offset[plat] && Show_GameCase) {
+	if(PICTURE_offset[plat] && Show_GameCase && !square) {
 		xj+= xl * wi / pw;
 		yj+= yl * hi / ph;
 	}
@@ -5144,11 +4520,11 @@ void Draw_COVER(int pos, float x, float y, float z, float w, float h, u32 CoverO
 	tiny3d_SetTexture(0, CoverOffset, CoverIMG.width, CoverIMG.height, CoverIMG.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 	Draw_Box(xj, yj, z, 0, wj, hj, color, YES);
 	
-	if(PICTURE_offset[plat] && Show_GameCase) {
+	//Game boxes pictures are transparents to have a reflect effect.
+	if(PICTURE_offset[plat] && Show_GameCase && !square) {
 		tiny3d_SetTexture(0, PICTURE_offset[plat], PICTURE[plat].width, PICTURE[plat].height, PICTURE[plat].pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 		Draw_Box(xi, yi, z, 0, wi, hi, color, YES);
 	}
-
 }
 
 u8 get_SectorSize(FILE*  fd, u32 *SectorSize, u32 *jmp)
@@ -6724,6 +6100,8 @@ u8 make_ABG(char *dir_path, char *file_out)
 
 #define LANG(x, y, z) FREE(x); x = language(flang, y, z);
 
+#define LOAD_STR(VALUE) LANG(STR_##VALUE, "STR_##VALUE", STR_##VALUE_DEFAULT);
+
 char *strcpy_malloc(char *STR_DEFAULT)
 {
 	if(STR_DEFAULT==NULL) return NULL;
@@ -7205,7 +6583,7 @@ void update_lang()
 	LANG(STR_CANT_MOUNT_UNKFW, "STR_CANT_MOUNT_UNKFW", STR_CANT_MOUNT_UNKFW_DEFAULT);	
 	LANG(STR_CANT_MOUNT, "STR_CANT_MOUNT", STR_CANT_MOUNT_DEFAULT);
 	LANG(STR_ONLY_FAV, "STR_ONLY_FAV", STR_ONLY_FAV_DEFAULT);	
-	LANG(STR_ALL_GAMES, "STR_ALL_GAMES", STR_ALL_GAMES_DEFAULT);	
+	LANG(STR_ALL_GAMES, "STR_ALL_GAMES", STR_ALL_GAMES_DEFAULT);
 	LANG(STR_DISPLAY, "STR_DISPLAY", STR_DISPLAY_DEFAULT);
 	LANG(STR_DUMP_DEC, "STR_DUMP_DEC", STR_DUMP_DEC_DEFAULT);
 	LANG(STR_DUMP_DEC_DESC, "STR_DUMP_DEC_DESC", STR_DUMP_DEC_DESC_DEFAULT);
@@ -7224,7 +6602,24 @@ void update_lang()
 	LANG(STR_IGNORE_ERR_DESC, "STR_IGNORE_ERR_DESC", STR_IGNORE_ERR_DESC_DEFAULT);
 	LANG(STR_3K3Y_HEADER, "STR_3K3Y_HEADER", STR_3K3Y_HEADER_DEFAULT);
 	LANG(STR_3K3Y_HEADER_DESC, "STR_3K3Y_HEADER_DESC", STR_3K3Y_HEADER_DESC_DEFAULT);
-
+	LANG(STR_ELAPSED, "STR_ELAPSED", STR_ELAPSED_DEFAULT);
+	LANG(STR_REMAINING, "STR_REMAINING", STR_REMAINING_DEFAULT);
+	LANG(STR_DYNAREC, "STR_DYNAREC", STR_DYNAREC_DEFAULT);
+	LANG(STR_DYNAREC_DESC, "STR_DYNAREC_DESC", STR_DYNAREC_DESC_DEFAULT);
+	LANG(STR_BUILD_ISO, "STR_BUILD_ISO", STR_BUILD_ISO_DEFAULT);
+	LANG(STR_BUILD_ISO_DESC, "STR_BUILD_ISO_DESC", STR_BUILD_ISO_DESC_DEFAULT);
+	LANG(STR_UPLOADER, "STR_UPLOADER", STR_UPLOADER_DEFAULT);
+	LANG(STR_UPLOADER_DESC, "STR_UPLOADER_DESC", STR_UPLOADER_DESC_DEFAULT);
+	LANG(STR_BOX3D_ALIGN, "STR_BOX3D_ALIGN", STR_BOX3D_ALIGN_DEFAULT);
+	LANG(STR_BOX3D_ALIGN_DESC, "STR_BOX3D_ALIGN_DESC", STR_BOX3D_ALIGN_DESC_DEFAULT);
+	LANG(STR_BOX3D_GAP, "STR_BOX3D_GAP", STR_BOX3D_GAP_DEFAULT);
+	LANG(STR_BOX3D_GAP_DESC, "STR_BOX3D_GAP_DESC", STR_BOX3D_GAP_DESC_DEFAULT);
+	LANG(STR_SHORT, "STR_SHORT", STR_SHORT_DEFAULT);
+	LANG(STR_MEDIUM, "STR_MEDIUM", STR_MEDIUM_DEFAULT);
+	LANG(STR_LONG, "STR_LONG", STR_LONG_DEFAULT);
+	LANG(STR_MOUNT_DVD, "STR_MOUNT_DVD", STR_MOUNT_DVD_DEFAULT);
+	LANG(STR_MOUNT_BD, "STR_MOUNT_BD", STR_MOUNT_BD_DEFAULT);
+	
 	FREE(STR_DB_NET);
 	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
 	FREE(STR_DB_SOFT);
@@ -7909,10 +7304,10 @@ void GetThemes()
 				
 				continue;
 			}
-			else if(strcmp(dir->d_name, UI[0]) == 0) k=LIST;
-			else if(strcmp(dir->d_name, UI[1]) == 0) k=GRID;					
-			else if(strcmp(dir->d_name, UI[2]) == 0) k=XMB;
-			else if(strcmp(dir->d_name, UI[3]) == 0) k=FLOW;
+			else if(strcmp(dir->d_name, UI[LIST]) == 0) k=LIST;
+			else if(strcmp(dir->d_name, UI[GRID]) == 0) k=GRID;					
+			else if(strcmp(dir->d_name, UI[XMB] ) == 0) k=XMB;
+			else if(strcmp(dir->d_name, UI[FLOW]) == 0) k=FLOW;
 			
 			if(k==-1) continue;
 			
@@ -8698,6 +8093,21 @@ void Load_Theme()
 	}
 }
 
+u8 ExistInISO(char *path, char *filename)
+{
+	FILE* f = fopen(path, "rb");	
+	if(f==NULL) return NO;
+	
+	u64 file_offset=0;
+	int file_size=0;
+
+	u8 ret = get_FileOffset(f, filename, &file_offset, (u32 *) &file_size);
+	//print_load("Error : %s %llX", path, file_offset);
+	fclose(f);
+	
+	return ret;
+}
+
 char *LoadFileFromISO(u8 prog, char *path, char *filename, int *size)
 {
 	FILE* f;
@@ -8799,8 +8209,8 @@ void LOAD_PIC1()
 		char temp[255];
 		sprintf(temp, "%s/PS3_GAME/PIC1.PNG", list_game_path[position_CURPIC]);
 		mem = LoadFileProg(temp, &size);
-		if(mem==NULL) return;
 	}
+	if(mem==NULL) return;
 	
 	if(pngLoadFromBuffer(mem, size, (pngData *) &TMP_PIC) != 0) {free(mem); return;}
 	
@@ -8813,10 +8223,8 @@ void LOAD_PIC1()
 		free(TMP_PIC.bmp_out);
 		TMP_PIC_offset = tiny3d_TextureOffset(texture_pointer);
 		texture_pointer += ((TMP_PIC.pitch * TMP_PIC.height + 15) & ~15) / 4;
-		
 	}
 }
-
 
 void LOAD_COVER() 
 {	
@@ -8846,21 +8254,19 @@ void Draw_CURPIC()
 	
 	if(MENU==YES && MENU_SIDE==NO) {return;}
 	
-	
-	
 	if(TMP_PIC_offset != 0 ) {
 		if( UI_position==XMB || UI_position==FLOW)
 		{
 			tiny3d_SetTexture(0, TMP_PIC_offset, TMP_PIC.width, TMP_PIC.height, TMP_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 			if(UI_position==FLOW)
-				Draw_Box(0, 0, ITEM_moveZ[position]+1, 0, 848, 512, WHITE, YES);
+				Draw_Box(0, 0, ITEM_moveZ[position]+1, 0, X_MAX, Y_MAX, WHITE, YES);
 			else 
-				Draw_Box(0, 0, 11, 0, 848, 512, WHITE, YES);
+				Draw_Box(0, 0, 11, 0, X_MAX, Y_MAX, WHITE, YES);
 		} else
 		if((UI_position==LIST || UI_position==GRID) && Display_PIC1 == YES)
 		{
 			tiny3d_SetTexture(0, TMP_PIC_offset, TMP_PIC.width, TMP_PIC.height, TMP_PIC.pitch, TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
-			Draw_Box(50, 50, 0, 0, 848-100, 512-100, WHITE, YES);
+			Draw_Box(50, 50, 0, 0, X_MAX-100, Y_MAX-100, WHITE, YES);
 		}
 	}
 	
@@ -8891,7 +8297,7 @@ void load_CURPIC_thread(void *unused)
 			TMP_PIC_offset=0;
 		}
 	}
-
+	Load_CURPIC_flag=-1;
 	sysThreadExit(0);
 }
 
@@ -8908,7 +8314,9 @@ void end_load_CURPIC()
 	if(Load_CURPIC_flag==YES) {
 		u64 ret;
 		Load_CURPIC_flag = NO;
+		while(Load_CURPIC_flag==NO) usleep(1000);
 		sysThreadJoin(load_CURPIC_id, &ret);
+		Load_CURPIC_flag=NO;
 	}
 }
 
@@ -10464,11 +9872,11 @@ void Draw_Loading(void *unused)
 					u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
 						
 					char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
-					if(ElapsedTime_STR) sprintf(elapsed_STR,  "Elapsed time : %s", ElapsedTime_STR);
+					if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
 					FREE(ElapsedTime_STR);	
 					
 					char *RemainingTime_STR = GetTimeStr(RemainingTime);
-					if(RemainingTime_STR) sprintf(remaining_STR,  "Remaining time : %s", RemainingTime_STR);
+					if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
 					FREE(RemainingTime_STR);
 				}
 				
@@ -10654,7 +10062,6 @@ void Draw_Loading(void *unused)
 	}
 	
 	loading=-1;
-	
 	sysThreadExit(0);
 }
 
@@ -10854,9 +10261,7 @@ void Draw_Gathering(void *unused)
 	
 	for(i=0; i<=20; i++) strcpy(loading_log[i], "\0");
 	
-	
 	gathering=-1;
-	
 	sysThreadExit(0);
 }
 
@@ -11120,14 +10525,21 @@ typedef struct
 
 u64 lv2peek(u64 addr)
 { 
-	if(addr < 0x8000000000000000ULL) addr += 0x8000000000000000ULL;
-	lv2syscall1(6, (u64) addr >> 0ULL) ;
+	u64 l_addr = (u64) addr >> 0ULL; 
+	if(l_addr  < 0x8000000000000000ULL) {
+		l_addr += 0x8000000000000000ULL;
+	}
+	lv2syscall1(6, l_addr) ;
 	return_to_user_prog(u64);
 }
 
 u64 lv2poke(u64 addr, u64 value) 
 { 
-	lv2syscall2(7, (u64) addr, (u64) value); 
+	u64 l_addr = (u64) addr >> 0ULL; 
+	if(l_addr  < 0x8000000000000000ULL) {
+		l_addr += 0x8000000000000000ULL;
+	}
+	lv2syscall2(7, l_addr, (u64) value);
 	return_to_user_prog(u64);
 }
 
@@ -11209,6 +10621,12 @@ s32 sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 	return_to_user_prog(s32);
 }
 
+s32 sys_storage_ext_fake_storage_event(uint64_t event, uint64_t param, uint64_t device)
+{
+	lv2syscall4(8, SYSCALL8_OPCODE_FAKE_STORAGE_EVENT, event, param, device);
+	return_to_user_prog(s32);
+}
+
 s32 sys_storage_open(u64 device_ID, int* fd)
 {
 	lv2syscall4( 600, device_ID, 0, (u64)fd, 0 );
@@ -11249,6 +10667,17 @@ s32 sys_storage_get_device_info(u64 device_id, device_info_t *device_info)
 {
 	lv2syscall2( 609, device_id, (u64)device_info );
 	return_to_user_prog(s32);
+}
+
+s32 sys_storage_execute_device_command(u32 dev_handle, u64 cmd, const void *cmdbuf, u64 cmdbuf_size, void *databuf, u64 databuf_size, u64 *unknown)
+{
+	lv2syscall7(616, (u64) dev_handle, (u64) cmd, (u64) cmdbuf, (u64) cmdbuf_size, (u64) databuf, (u64) databuf_size,(u64) unknown);
+	return_to_user_prog(s32);
+}
+
+s32 device_command(u32 dev_handle, const void *atapi_cmnd, u64 cmdbuf_size)
+{
+	return sys_storage_execute_device_command(dev_handle, 1, atapi_cmnd, cmdbuf_size, NULL, 0, NULL);
 }
 
 s32 sys_fs_get_mount_info(sys_fs_mount_info *info, uint64_t size, uint64_t *rsize)
@@ -11756,6 +11185,79 @@ void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
 	}
 }
 
+u8 fake_insert_event(u64 deviceId, u64 deviceType)
+{
+	u64 param = (u64)(deviceType) << 32ULL;
+	sys_storage_ext_fake_storage_event(7, 0, deviceId);
+	int ret = sys_storage_ext_fake_storage_event(3, param, deviceId);
+	
+	if(ret == 0) return SUCCESS;
+	return FAILED;
+}
+
+u8 fake_eject_event(u64 deviceId)
+{
+	sys_storage_ext_fake_storage_event(4, 0, deviceId);
+	int ret = sys_storage_ext_fake_storage_event(8, 0, deviceId);
+	
+	if(ret == 0) return SUCCESS;
+	return FAILED;
+}
+
+int eject_insert(u8 eject, u8 insert)
+{
+	u8 atapi_cmnd2[56];
+	u8 *atapi_cmnd = atapi_cmnd2;
+	int dev_id;
+
+	if( sys_storage_open(BDVD_DRIVE, &dev_id) != 0) {
+		print_load("Blu-Ray drive not detected...");
+		return FAILED;
+	}
+	
+	if(eject)
+	{
+		memset(atapi_cmnd, 0, sizeof(atapi_cmnd2));
+		atapi_cmnd[0x00] = 0x1b; // OPERATION CODE (1Bh)
+		atapi_cmnd[0x01] = 0x01; // IMMED (Immediate) bit
+		atapi_cmnd[0x04] = 0x02; // LOEJ (2) + START (0) = Eject Disc
+		atapi_cmnd[0x23] = 0x0c;
+
+		//Eject disc
+		device_command(dev_id, atapi_cmnd, 56);
+		
+		if(insert) sleep(2);
+	}
+
+	if(insert)
+	{
+		memset(atapi_cmnd, 0, sizeof(atapi_cmnd2));
+		atapi_cmnd[0x00] = 0x1b; // OPERATION CODE (1Bh)
+		atapi_cmnd[0x01] = 0x01; // IMMED (Immediate) bit
+		atapi_cmnd[0x04] = 0x03; // LOEJ (2) + START (1) = Load Disc
+		atapi_cmnd[0x23] = 0x0c;
+
+		//Eject disc
+		device_command(dev_id, atapi_cmnd, 56);
+	}
+	
+	sys_storage_close(dev_id);
+	
+	return SUCCESS;
+}
+
+u8 bdvd_eject(u8 fake)
+{
+	if( fake ) return fake_eject_event(BDVD_DRIVE);
+	return eject_insert(1, 0);
+}
+
+u8 bdvd_insert(u8 fake)
+{
+	if( fake ) return fake_insert_event(BDVD_DRIVE, DEVICE_TYPE_PS3_BD);
+	return eject_insert(0, 1);
+}
+
 //*************
 // device TEST
 //*************
@@ -12037,6 +11539,10 @@ u8 Get_PUPVersion(char *source, char *UpdateVersion)
 	strcpy(UpdateVersion, "0000");
 	u64 pup_offset=0;
 	u16 offset;
+	if( strncmp(source, "/dev_bdvd", 9) == 0) {
+		// remove remap of webMAN MOD
+		sys_map_path("/dev_bdvd/PS3_UPDATE", NULL);
+	}
 	FILE *f = openPUP(source, &pup_offset, "rb");
 	if(f==NULL) return FAILED;
 	fseek(f, pup_offset+0x3E, SEEK_SET);
@@ -12050,7 +11556,6 @@ u8 Get_PUPVersion(char *source, char *UpdateVersion)
 ird_t *IRD_new(char *source)
 {
 	int ret=FAILED;
-	print_load("IRD_new");
 	
 	print_debug("IRD_new init");
 	ird_t *ird=MALLOC_IRD();
@@ -12317,7 +11822,7 @@ char *IRD_sig(char *ird_path)
 	return sig;
 }
 
-#define MAX_UPLOAD_TRY 5
+#define MAX_UPLOAD_TRY 10
 u8 IRD_DB_upload(char *IRD_PATH, char *IRD_SIG)
 {
 	char URL[128]={0};
@@ -12328,14 +11833,14 @@ u8 IRD_DB_upload(char *IRD_PATH, char *IRD_SIG)
 retry:
 	try++;
 	
-	int ret = upload(URL, IRD_PATH);
+	int ret = upload(URL, IRD_PATH, HTTP_METHOD_POST);
 	if( ret == 200) {
 		print_load("Success");
 		return SUCCESS;
 	}
 	
 	if(ret == 409 && try <= MAX_UPLOAD_TRY) {
-		print_load("Failed to upload, retry...");
+		print_load("Failed to upload, retry... %d/%d", try, MAX_UPLOAD_TRY);
 		goto retry;
 	}
 	
@@ -12409,6 +11914,49 @@ error:
 	return ret;
 }
 
+u8 IRD_WS_upload(char *JSON_PATH)
+{
+	int ret = upload(IRD_WEB_API_NEW, JSON_PATH, HTTP_METHOD_POST);
+	if( ret != 200) {
+		print_load("Error : IRD_WS_upload %d", ret);
+		return FAILED;
+	}
+	
+	return SUCCESS;
+}
+
+u32 Get_Unique_PS3ID()
+{
+	if( dump_3Dump() == FAILED ) return 0;
+	
+	return crc_file("/dev_hdd0/tmp/3Dump.bin");
+}
+
+u8 IRD_WS_trust(char *MGZ_SIG)
+{
+	u32 Unique_PS3ID = Get_Unique_PS3ID();
+	if( Unique_PS3ID == 0) return FAILED;
+	
+	char JSON_DATA[512];
+	char JSON_PATH[512];
+	sprintf(JSON_DATA, "{\"MgzSignature\":\"%s\",\"Contributor\":\"%s\",\"UniquePS3Id\":\"%08X\"}", MGZ_SIG, UPLOADER, Unique_PS3ID);
+	
+	sprintf(JSON_PATH, "/dev_hdd0/tmp/%s.json", MGZ_SIG);
+	
+	FILE *f = fopen(JSON_PATH, "wb");
+	if(f==NULL) return FAILED;
+	fputs(JSON_DATA, f);
+	FCLOSE(f);
+	
+	int ret = upload(IRD_WEB_API_TRUST, JSON_PATH, HTTP_METHOD_PUT);
+	if( ret != 200) {
+		print_load("Error : IRD_WS_trust %d", ret);
+		return FAILED;
+	}
+	
+	return SUCCESS;
+}
+
 // Zefie header https://github.com/zefie/getkey_gameos_zefie
 #define EncryptedZefieISO			"Encrypted 3K RIP"
 
@@ -12443,6 +11991,50 @@ error:
 #define MAX_TRY					30
 #define MAX_SPLIT_SECTOR		0x1FFFFF // 4GB MAX (0xFFFFFFFF / 0x800)
 
+// it's sys_storage_read with several attempt if it fail
+u8 DUMPER_read(int source, u64 current_sector, u64 sector_nb, const void* buff, u32 *read, u8 *corrupt)
+{
+	int try;
+	u8 old_corrupt = *corrupt;
+	
+	for(try=0; try<MAX_TRY; try++) {
+		memset((char *) buff, 0, BDVD_BUFFSIZE);
+		if( sys_storage_read(source, current_sector, sector_nb, buff, read, 0) == 0) return SUCCESS;
+		
+		if(copy_cancel || cancel) return FAILED;
+		
+		print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
+		
+		if(try+1==MAX_TRY) {
+			*corrupt=YES;
+			if( !IGNORE_ERR ) return FAILED;
+		}
+	}
+	
+	*corrupt = old_corrupt;
+	print_load("Warning : Now, it's trying to read sector per sector inside the corrupted area...");
+	int n;
+	for(n=0; n<sector_nb; n++) {
+		for(try=0; try<MAX_TRY; try++) {
+			memset((char *) buff, 0, BDVD_BUFFSIZE);
+			if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, read, 0) == 0) {
+				print_load("Succeeded to read sector %X", current_sector+n);
+				break;
+			}
+			
+			if(copy_cancel || cancel) return FAILED;
+			print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, MAX_TRY); 
+			
+			if(try+1==MAX_TRY) {
+				*corrupt=YES;
+				if( !IGNORE_ERR ) return FAILED;
+			}
+		}
+	}
+	
+	return SUCCESS;
+}
+
 u8 dump_enc_bdvd(char *outdir, char *result_log)
 {
 	char ISO_PATH[512];
@@ -12453,8 +12045,6 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 	char *DATE = NULL;
 	int ret = FAILED;
 	u8 *buff=NULL;
-	u8 try;
-	u64 n;
 	u8 split = NO;
 	u32 N_SPLIT_ISO = 0; 
 	u8 corrupt=NO;
@@ -12495,7 +12085,7 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 	memset(&device_info, 0, sizeof(device_info));
 	ret = sys_storage_get_device_info(BDVD_DRIVE, &device_info);
 	if( ret != 0 ) {
-		print_load("Error : DumpDevicesData sys_storage_get_device_info FAILED ! %X", ret);
+		print_load("Error : dump_enc_bdvd sys_storage_get_device_info FAILED ! %X", ret);
 		ret = FAILED;
 		goto error;
 	}
@@ -12511,7 +12101,7 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 	print_debug("malloc");
 	buff = (u8 *) malloc(BDVD_BUFFSIZE);
 	if(buff==NULL) {
-		print_load("Error : DumpDevicesData malloc FAILED !");
+		print_load("Error : dump_enc_bdvd malloc FAILED !");
 		ret=FAILED;
 		goto error;
 	}
@@ -12524,9 +12114,9 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 	if( MAX_SPLIT_SECTOR < count )  split = is_FAT32(outdir);
 	
 	if(split) {
-		sprintf(ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
+		sprintf(ISO_PATH, "%s/%s_%s.enc.iso.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
 	} else {
-		sprintf(ISO_PATH, "%s/%s_%s.iso.enc%c", outdir, TITLE_ID, DATE, '\0');
+		sprintf(ISO_PATH, "%s/%s_%s.enc.iso%c", outdir, TITLE_ID, DATE, '\0');
 	}
 	
 	print_debug("mkdir");
@@ -12535,7 +12125,7 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 	print_debug("fopen %s", ISO_PATH);
 	f = fopen(ISO_PATH, "wb");
 	if(f==NULL) {
-		print_load("Error : DumpDevicesData fopen FAILED ! %s");
+		print_load("Error : dump_enc_bdvd fopen FAILED ! %s");
 		ret=FAILED;
 		goto error;
 	}
@@ -12559,46 +12149,10 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 		if(count < current_sector + BDVD_BUFF_SEC_NB) sector_nb = count - current_sector;
 		else sector_nb = BDVD_BUFF_SEC_NB;
 		
-		u8 old_corrupt = corrupt;
-		for(try=0; try<MAX_TRY; try++) {
-			memset(buff, 0, BDVD_BUFFSIZE);
-			if( sys_storage_read(source, current_sector, sector_nb, buff, &read, 0) == 0) goto next;
-			
-			if(copy_cancel || cancel) goto error;
-			print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
-			
-			if(try+1==MAX_TRY) {
-				corrupt=YES;
-				if( !IGNORE_ERR ) goto error;
-			}
+		if( DUMPER_read(source, current_sector, sector_nb, buff, &read, &corrupt) == FAILED) {
+			goto error;
 		}
-		
-		//2nd chance with sector per sector (only if IGNORE_ERR is enabled (to reduce the amount of corrupted sector);
-		corrupt = old_corrupt;
-		print_load("Warning : Now, it's reading sector per sector...");
-		for(n=0; n<sector_nb; n++) {
-			for(try=0; try<MAX_TRY; try++) {
-				memset(buff, 0, BDVD_BUFFSIZE);
-				if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, &read, 0) == 0) {
-					print_load("Succeeded to read sector %X", current_sector+n);
-					break;
-				}
-				
-				if(copy_cancel || cancel) goto error;
-				print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, MAX_TRY); 
-				
-				if(try+1==MAX_TRY) {
-					corrupt=YES;
-					if( !IGNORE_ERR ) goto error;
-					if( rlog ) {
-						fputs(loading_log[0], rlog);
-						fputs("\n", rlog);
-					}
-				}
-			}
-		}
-	
-next:
+
 		if(current_sector==0 && with_3k3y_header) {
 			u8 d1[0x10];
 			u8 d2[0x20];
@@ -12630,7 +12184,7 @@ next:
 				
 				N_SPLIT_ISO++;
 				
-				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.enc.iso.%d%c", outdir, TITLE_ID, DATE, N_SPLIT_ISO, '\0');	
 				
 				print_debug("fopen %s", SPLIT_ISO_PATH);
 				f = fopen(SPLIT_ISO_PATH, "wb");
@@ -12662,7 +12216,7 @@ error:
 		if( split ) {
 			int i;
 			for(i=0; i<N_SPLIT_ISO; i++) {
-				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.enc.%d%c", outdir, TITLE_ID, DATE, i, '\0');
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.enc.iso.%d%c", outdir, TITLE_ID, DATE, i, '\0');
 				Delete(SPLIT_ISO_PATH);
 			}
 		} else {
@@ -12703,6 +12257,179 @@ error:
 	return ret;
 }
 
+FILE *fopen_seek_split(char *ISO_PATH, u64 offset, int *N_SPLIT_ISO)
+{
+	FILE *f=NULL;
+	
+	u8 split = is_splitted_iso(ISO_PATH);
+	u64 size = get_size(ISO_PATH);
+	
+	if( !split || offset < size ) {
+		f = fopen(ISO_PATH, "rb");
+		if(f==NULL) {
+			print_load("Error: fseek_split failed to open %s", ISO_PATH);
+			return NULL;
+		}
+		fseek(f, offset, SEEK_SET);
+		*N_SPLIT_ISO=0;
+		return f;
+	} else {		
+		int i;
+		char SPLIT_ISO_PATH[512];
+		int len = strlen(ISO_PATH);
+		ISO_PATH[len-1]=0;
+		for(i=0; i<32; i++)
+		{
+			memset(SPLIT_ISO_PATH, 0, 512);
+			sprintf(SPLIT_ISO_PATH, "%s%d%c", ISO_PATH, i, '\0');
+			u64 fsize = get_size(SPLIT_ISO_PATH);
+			if( offset < size + fsize ) {
+				f = fopen(SPLIT_ISO_PATH, "rb");
+				if(f==NULL) {
+					print_load("Error: fseek_split failed to open %s", SPLIT_ISO_PATH);
+					return NULL;
+				}
+				fseek(f, offset-size, SEEK_SET);
+				ISO_PATH[len-1]='0';
+				*N_SPLIT_ISO = i;
+				return f;
+			}
+			size += fsize;
+		}
+		ISO_PATH[len-1]='0';
+	}
+	
+	return NULL;
+}
+
+u8 md5_from_offsets(char *ISO_PATH, u64 start_offset, u64 end_offset, u8 out[0x10])
+{
+	u8 ret = FAILED;
+	memset(out, 0, 0x10);
+	
+	int N_SPLIT_ISO=0;
+	FILE *f = fopen_seek_split(ISO_PATH, start_offset, &N_SPLIT_ISO);
+	if(f == NULL) return FAILED;
+	
+	u8 split = is_splitted_iso(ISO_PATH);
+	
+	print_debug("malloc BDVD_BUFFSIZE");
+	u8 *buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	if(buff==NULL) {
+		print_load("Error : malloc BDVD_BUFFSIZE");
+		goto error;
+	}
+	
+	char SPLIT_ISO_PATH[512]={0};
+	
+	md5_context ctx;
+	md5_starts( &ctx );
+	
+	u32 current_sector = start_offset/0x800;
+	u32 region_last_sector = end_offset/0x800;
+	while( current_sector < region_last_sector ) {
+		memset(buff, 0, BDVD_BUFFSIZE);
+		
+		u32 sector_nb=0;
+		if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
+		else sector_nb = BDVD_BUFF_SEC_NB;
+		
+		if(copy_cancel) goto error;
+			
+		if( split ) {
+			u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+				
+			if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+				fread(buff, sector_nb, 0x800, f);
+			} else {
+				u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+				fread(buff, last_sectors, 0x800, f);
+					
+				FCLOSE(f);
+				
+				memset(SPLIT_ISO_PATH, 0, 512);
+				
+				N_SPLIT_ISO++;
+				int len = strlen(ISO_PATH);
+				ISO_PATH[len-1]=0;
+				sprintf(SPLIT_ISO_PATH, "%s%d%c", ISO_PATH, N_SPLIT_ISO, '\0');	
+				ISO_PATH[len-1]='0';
+				
+				print_debug("fopen %s", SPLIT_ISO_PATH);
+				f = fopen(SPLIT_ISO_PATH, "rb");
+				if(f==NULL) {
+					print_load("Error : fopen %s", SPLIT_ISO_PATH);
+					goto error;
+				}
+				
+				u32 sectors_left = sector_nb - last_sectors;
+				fread(buff, sectors_left, 0x800, f);
+			}
+		} else {
+			fread(buff, sector_nb, 0x800, f);
+		}
+		
+		md5_update(&ctx, buff, 0x800*sector_nb);
+		
+		current_sector += sector_nb;
+		
+		if(copy_cancel) goto error;
+	}
+	md5_finish(&ctx, out);
+
+	ret=SUCCESS;
+error:
+	FREE(buff);
+	FCLOSE(f);
+	return ret;
+}
+
+u8 IRD_FixRegionMD5(char *ISO_PATH, ird_t *ird, u64 header_lenght, u64 footer_offset)
+{
+	if( IRD_GetRegionBoundaries(ISO_PATH, ird)== FAILED) {
+		print_load("Error: failed to IRD_GetRegionBoundaries");
+		return FAILED;
+	}
+	
+	if( md5_from_offsets(ISO_PATH, header_lenght, (u64) (ird->RegionHashes[0].End+1)*0x800ULL, ird->RegionHashes[0].RegionHash) == FAILED) {
+		print_load("Error: failed to md5_file_offsets (1st)");
+		return FAILED;
+	}
+	
+	if( md5_from_offsets(ISO_PATH, (u64) ird->RegionHashes[ird->RegionHashesNumber-1].Start * 0x800ULL, footer_offset, ird->RegionHashes[ird->RegionHashesNumber-1].RegionHash) == FAILED) {
+		print_load("Error: failed to md5_file_offsets (1st)");
+		return FAILED;
+	}
+	
+	return SUCCESS;
+}
+
+u8 Build_JSON(ird_t *ird, char *JSON_PATH, char *MGZ_SIG)
+{
+	char msg[512];
+	
+	FILE *json=fopen(JSON_PATH, "wb");
+	if(json==NULL) {
+		printf("Error : failed to open %s", JSON_PATH);
+		return FAILED;
+	}
+	
+	fputs("{\n", json);
+	sprintf(msg, "\t\"MgzSignature\" : \"%s\",\n", MGZ_SIG);fputs(msg, json);
+	sprintf(msg, "\t\"TitleID\" : \"%s\",\n", ird->GameId);fputs(msg, json);
+	sprintf(msg, "\t\"GameName\" : \"%s\",\n", ird->GameName);fputs(msg, json);
+	sprintf(msg, "\t\"GameVersion\" : \"%s\",\n", ird->GameVersion);fputs(msg, json);
+	sprintf(msg, "\t\"AppVersion\" : \"%s\",\n", ird->AppVersion);fputs(msg, json);
+	sprintf(msg, "\t\"UpdateVersion\" : \"%s\",\n", ird->UpdateVersion);fputs(msg, json);
+	sprintf(msg, "\t\"Contributor\" : \"%s\",\n", UPLOADER);fputs(msg, json);
+	sprintf(msg, "\t\"UniquePS3Id\" : \"%08X\"\n", Get_Unique_PS3ID()); fputs(msg, json);
+	fputs("}\n", json);
+	
+	FCLOSE(json);
+	
+	return SUCCESS;
+}
+
 u8 dump_dec_bdvd(char *outdir, char *result_log)
 {
 	print_head("Initialization...");
@@ -12721,7 +12448,6 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	u8 *sec0sec1=NULL;
 	u8 corrupt=NO;
 	u8 try;
-	u64 n;
 	u32 i;
 	u8 iso_done = NO;
 	u8 split = NO;
@@ -12858,18 +12584,10 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	print_debug("gathering_total_size :  0x%llX\n", gathering_total_size);
 	
 	ird->RegionHashesNumber=regions;
-	ird->RegionHashes = (u8 **) malloc(ird->RegionHashesNumber * sizeof(u8*));
+	ird->RegionHashes = (RegionHash_t *) malloc(ird->RegionHashesNumber * sizeof(RegionHash_t));
 	if(ird->RegionHashes == NULL)  {
 		print_load("Error : dump_dec Failed to malloc region hashes");
 		goto error;
-	}
-	
-	for(i=0; i<ird->RegionHashesNumber; i++) {
-		ird->RegionHashes[i] = (u8 *) malloc( 0x10 * sizeof(u8));
-		if(ird->RegionHashes[i] == NULL)  {
-			print_load("Error : dump_dec Failed to malloc regionhashes[%d]", i);
-			goto error;
-		}
 	}
 	
 	if(rlog) {
@@ -12881,7 +12599,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	i=0;
 	while(i<regions)
 	{	
-		u32 region_last_sector=u8_to_u32(sec0sec1+12+(i*4)) + 1;
+		u32 region_last_sector=u8_to_u32(sec0sec1+12+(i*4)) + 1;	
 		
 		print_debug("Region #%02d", i);
 		
@@ -12904,40 +12622,14 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 			
 			if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
 			else sector_nb = BDVD_BUFF_SEC_NB;
-					 
-			for(try=0; try<MAX_TRY; try++) {
-				memset(buff, 0, BDVD_BUFFSIZE);
-				if( sys_storage_read(source, current_sector, sector_nb, buff, &read, 0) == 0) goto next;
-				
-				if(copy_cancel || cancel) goto error;
-				print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
-				
-				if(try+1==MAX_TRY) {
-					corrupt=YES;
-					if( !IGNORE_ERR ) goto error;
-				}
+			
+			if( DUMPER_read(source, current_sector, sector_nb, buff, &read, &corrupt) == FAILED) {
+				goto error;
 			}
-			print_load("Warning : Now, it's trying to read sector per sector inside the corrupted area...");
-			for(n=0; n<sector_nb; n++) {
-				for(try=0; try<MAX_TRY; try++) {
-					memset(buff, 0, BDVD_BUFFSIZE);
-					if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, &read, 0) == 0) {
-						print_load("Succeeded to read sector %X", current_sector+i);
-						break;
-					}
-					
-					if(copy_cancel || cancel) goto error;
-					print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, MAX_TRY); 
-					
-					
-					if(try+1==MAX_TRY) {
-						corrupt=YES;
-						if( !IGNORE_ERR ) goto error;
-					}
-				}
-			}
-next:
+			
 			if(copy_cancel) goto error;
+			
+			md5_update(&ctx, buff, 0x800*sector_nb);
 			
 			if( plain == NO ) {
 				u32 k;
@@ -12951,8 +12643,6 @@ next:
 			}
 			
 			if(copy_cancel) goto error;
-			
-			md5_update(&ctx, buff, 0x800*sector_nb);
 			
 			if( split ) {	
 				u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
@@ -12993,7 +12683,7 @@ next:
 			if(copy_cancel) goto error;
 		}
 		
-		md5_finish(&ctx, ird->RegionHashes[i]);
+		md5_finish(&ctx, ird->RegionHashes[i].RegionHash);
 		
 		plain = !plain;
 		++i;
@@ -13025,13 +12715,22 @@ next:
 	copy_current_size=0;
 	task_Init(gathering_total_size);
 	print_debug("Calculating files' MD5...");
-	if( IRD_FilesHashes(ISO_PATH, ird, &header_lenght, &footer_offset) == FAILED) {
+	if( IRD_FilesHashes(ISO_PATH, ird, &header_lenght, &footer_offset, YES) == FAILED) {
 		print_load("Error : failed to get file-hashes");
 		goto error;
 	}
 	task_End();
 	
 	if(header_lenght==0 || footer_offset==0 || ((u64) total_sectors * 0x800ULL) < footer_offset) goto error;
+	
+	/**
+	For every region the Ripp3r application processes, the md5 hash is calculated. The next part of the
+	file contains the md5 hash for every complete region in the file. There are two exceptions for this
+	calculation. The first region starts it’s calculation at the start sector of the first file. The last regions
+	ends with the end of the last file (PS3_UPDAT.PUP).
+	**/
+	// I forgot to remove header and footer from region MD5... ugly fix :s
+	IRD_FixRegionMD5(ISO_PATH, ird, header_lenght, footer_offset);
 	
 	if(copy_cancel) goto error;
 	
@@ -13058,7 +12757,17 @@ next:
 	}
 	
 	print_debug("Compressing footer...");
-	fseek(f, footer_offset, SEEK_SET);
+	if( split ) {
+		FCLOSE(f);
+		f = fopen(SPLIT_ISO_PATH, "rb");
+		if(f==NULL) {
+			print_load("Error : fopen %s", SPLIT_ISO_PATH);
+			goto error;
+		}
+		fseek(f, footer_offset - N_SPLIT_ISO * MAX_SPLIT_SECTOR, SEEK_SET);
+	} else {
+		fseek(f, footer_offset, SEEK_SET);
+	}
 	copy_current_size =0;
 	gathering_total_size = footer_lenght;
 	if( GZ_compress2(f, (int) footer_lenght, (char **) &ird->Footer, (int *) &ird->FooterLength) != Z_OK) {
@@ -13103,11 +12812,26 @@ next:
 	} else
 	if( ret == YES ) {
 		print_debug("The ird already exists in DB");
+		if( IRD_WS_trust(IRD_NAME) == FAILED ) {
+			print_load("Error : failed to increase trust level.");
+		}
 	} else 
 	if( ret == NO ) {	
 		print_debug("Uploading the ird");
 		if( IRD_DB_upload(IRD_PATH, IRD_NAME) == FAILED ) {
 			print_load("Error : failed to upload IRD");
+			ret = FAILED;
+			goto error;
+		}
+		char JSON_PATH[512];
+		sprintf(JSON_PATH, "/dev_hdd0/tmp/%s.json", IRD_NAME);
+		if( Build_JSON(ird, JSON_PATH, IRD_NAME) == FAILED ) {
+			print_load("Error : failed to build JSON");
+			ret = FAILED;
+			goto error;
+		}
+		if( IRD_WS_upload(JSON_PATH) == FAILED ) {
+			print_load("Error : failed to upload json to website");
 			ret = FAILED;
 			goto error;
 		}
@@ -13131,11 +12855,6 @@ error:
 			}
 			
 		}
-		
-		add_GAMELIST(ISO_PATH);
-		sort_GAMELIST();
-		init_Load_GAMEPIC();
-		read_fav();
 	} else {
 		if( split ) {
 			int i;
@@ -13183,6 +12902,13 @@ error:
 	}
 	FCLOSE(rlog);
 	
+	if( iso_done ) {
+		add_GAMELIST(ISO_PATH);
+		sort_GAMELIST();
+		init_Load_GAMEPIC();
+		read_fav();
+	}
+	
 	return ret;
 }
 
@@ -13206,6 +12932,345 @@ u8 dump_3k3y_header(char *outfile)
 	fclose(f);
 	
 	return SUCCESS;
+}
+
+u8 build_bdvd_iso(char *outdir, char *result_log)
+{
+	print_head("Initialization...");
+	u8 ret=FAILED;
+	char f1_path[512]={0};
+	FILE *f1=NULL;
+	FILE *f=NULL;
+	int source=0;
+	u32 read;
+	u8 *buff=NULL;
+	ird_t *ird=NULL;
+	char ISO_PATH[512];
+	char IRD_PATH[512];
+	char SPLIT_ISO_PATH[512]={0};
+	char *IRD_NAME = NULL;
+	char *DATE=NULL;	
+	u8 *sec0sec1=NULL;
+	u8 corrupt=NO;
+	u8 try;
+	u64 n;
+	u8 split = NO;
+	u32 N_SPLIT_ISO = 0;
+		
+	char result_str[512]={0};
+	FILE *rlog=NULL;
+	rlog =  fopen(result_log, "wb");
+	if(rlog) {
+		fputs("**** Result of the build ****\n\n", rlog);
+		fputs("Type : Build ISO from files with original header and footer", rlog);
+		fputs("\n", rlog);
+	}
+	
+	print_debug("Get current date");
+	DATE = get_date();
+	if( DATE == NULL) {
+		print_load("Error : dump_bdvd, failed to get_date");
+		goto error;
+	}
+	
+	print_debug("IRD_new");
+	ird = IRD_new("/dev_bdvd");
+	if(ird==NULL) {
+		print_load("Error : failed to IRD_new");
+		goto error;
+	}
+	
+	if(rlog) {
+		sprintf(result_str, "Started at %c%c:%c%c\n", DATE[9], DATE[10], DATE[11], DATE[12]); fputs(result_str, rlog);
+		sprintf(result_str, "Title ID : %s\n", ird->GameId); fputs(result_str, rlog);
+	}
+
+	print_debug("sys_storage_open BDVD_DRIVE");
+	if(sys_storage_open(BDVD_DRIVE, &source) != 0) {
+		print_load("Error : sys_storage_open");
+		goto error;
+	}
+
+	print_debug("malloc BDVD_BUFFSIZE");
+	buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	if(buff==NULL) {
+		print_load("Error : malloc BDVD_BUFFSIZE");
+		goto error;
+	}
+
+	print_debug("malloc sec0sec1");
+	sec0sec1 = (u8 *) malloc( 0x800 * 2 );
+	if( sec0sec1 == NULL ) {
+		print_load(" Error : malloc sec0sec1 ");
+		goto error;
+	}
+	
+	print_debug("sys_storage_read sec0sec1");
+	for(try=0; try<MAX_TRY; try++) {
+		memset(sec0sec1, 0, 0x800*2);
+		if( sys_storage_read(source, 0, 2, sec0sec1, &read, 0) == 0) break;
+		
+		if(copy_cancel || cancel) goto error;
+		print_load("Failed to read sector 0 size 2, try %d/%d", try+1, MAX_TRY); 
+		
+		if(try+1==MAX_TRY) {
+			corrupt=YES;
+			if( !IGNORE_ERR ) goto error;
+		}
+	}
+	
+	u32 regions=(u8_to_u32(sec0sec1)*2)-1;
+	u32 total_sectors=1+u8_to_u32(sec0sec1+12+((regions-1)*4));
+	
+	print_debug("Gathering data");	
+	gathering_nb_file = -1;
+	gathering_nb_directory = -1;
+	gathering_total_size = (u64) total_sectors * 0x800ULL;
+	
+	if( MAX_SPLIT_SECTOR < total_sectors )  split = is_FAT32(outdir);
+	
+	sprintf(IRD_PATH, "%s/%s_%s.ird%c", outdir, ird->GameId, DATE, '\0');
+	if(split) {
+		sprintf(ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+	} else {
+		sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
+	}
+	
+	MGZ_mkdir_recursive(outdir);
+	
+	print_debug("fopen %s", ISO_PATH);
+	f = fopen(ISO_PATH, "wb");
+	if(f==NULL) {
+		print_load("Error : fopen");
+		goto error;
+	}
+	
+	strcpy( copy_src, "/dev_bdvd");
+	strcpy( copy_dst, ISO_PATH);
+	
+	u64 current_sector=0;
+	u64 sector_nb;
+	
+	print_debug("regions :  0x%X\n", regions);
+	print_debug("total_sectors :  0x%X\n", total_sectors);
+	print_debug("gathering_total_size :  0x%llX\n", gathering_total_size);
+	
+	if(rlog) {
+		sprintf(result_str, "Path : %s\n\n", ISO_PATH); fputs(result_str, rlog);
+	}
+	
+	ret=FAILED;
+	print_head("Building the ISO...");
+	
+	print_debug("Writing first region (plain) with header");
+	u32 region_last_sector=u8_to_u32(sec0sec1+12) + 1;
+	
+	while( current_sector < region_last_sector ) {
+			
+		memset(buff, 0, BDVD_BUFFSIZE);
+		if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
+		else sector_nb = BDVD_BUFF_SEC_NB;
+		
+		if( DUMPER_read(source, current_sector, sector_nb, buff, &read, &corrupt) == FAILED) {
+			goto error;
+		}
+		
+		if(copy_cancel) goto error;
+		
+		// It's probably useless here the 1st region is probably always too small to be splitted.
+		if( split ) {	
+			u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+			
+			if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+				fwrite(buff, sector_nb, 0x800, f);
+			} else {
+				u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+				fwrite(buff, last_sectors, 0x800, f);
+				
+				FCLOSE(f);
+				
+				if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
+				memset(SPLIT_ISO_PATH, 0, 512);
+				
+				N_SPLIT_ISO++;
+				
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+									
+				print_debug("fopen %s", SPLIT_ISO_PATH);
+				f = fopen(SPLIT_ISO_PATH, "wb");
+				if(f==NULL) {
+					print_load("Error : fopen");
+					goto error;
+				}
+				
+				u32 sectors_left = sector_nb - last_sectors;
+				fwrite(buff, sectors_left, 0x800, f);
+			}
+		} else {
+			fwrite(buff, sector_nb, 0x800, f);
+		}
+		
+		if(copy_cancel) goto error;
+		
+		current_sector += sector_nb;
+	}
+	
+	FCLOSE(f);
+	
+	print_debug("Get files path and sectors from header");
+	IRD_FilesHashes(ISO_PATH, ird, NULL, NULL, NO);
+	
+	print_debug("Loop: write files in iso");
+	if(0 < N_SPLIT_ISO) {
+		f = fopen(SPLIT_ISO_PATH, "ab");
+	} else {
+		f = fopen(ISO_PATH, "ab");
+	}
+	
+	for(n=0; n<ird->FileHashesNumber-1; n++) {
+		if( ird->FileHashes[n].Sector < current_sector ) continue;
+		
+		
+		if( ird->FileHashes[n].Sector == current_sector ) {
+						
+			print_debug("Current file: %s", ird->FileHashes[n].FilePath);
+			
+			sprintf(f1_path, "/dev_bdvd%s%c", ird->FileHashes[n].FilePath, '\0');
+			f1 = fopen(ird->FileHashes[n].FilePath, "rb");
+			
+			while( current_sector < ird->FileHashes[n+1].Sector ) {	
+				memset(buff, 0, BDVD_BUFFSIZE);
+				if(ird->FileHashes[n+1].Sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = ird->FileHashes[n+1].Sector - current_sector;
+				else sector_nb = BDVD_BUFF_SEC_NB;
+				
+				fread(buff, sector_nb, 0x800, f1);
+				
+				fwrite(buff, sector_nb, 0x800, f);
+				
+				current_sector += sector_nb;
+			}
+		}
+	}
+	
+	print_debug("Writing last region (plain): PS3UPDAT.PUP + footer");
+	region_last_sector=total_sectors;
+	while( current_sector < region_last_sector ) {
+			
+		memset(buff, 0, BDVD_BUFFSIZE);
+		if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
+		else sector_nb = BDVD_BUFF_SEC_NB;
+					
+		if( DUMPER_read(source, current_sector, sector_nb, buff, &read, &corrupt) == FAILED) {
+			goto error;
+		}
+		
+		if(copy_cancel) goto error;
+		
+		if( split ) {	
+			u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+			
+			if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+				fwrite(buff, sector_nb, 0x800, f);
+			} else {
+				u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+				fwrite(buff, last_sectors, 0x800, f);
+				
+				FCLOSE(f);
+				
+				if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
+				memset(SPLIT_ISO_PATH, 0, 512);
+				
+				N_SPLIT_ISO++;
+				
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+									
+				print_debug("fopen %s", SPLIT_ISO_PATH);
+				f = fopen(SPLIT_ISO_PATH, "wb");
+				if(f==NULL) {
+					print_load("Error : fopen");
+					goto error;
+				}
+				
+				u32 sectors_left = sector_nb - last_sectors;
+				fwrite(buff, sectors_left, 0x800, f);
+			}
+		} else {
+			fwrite(buff, sector_nb, 0x800, f);
+		}
+		
+		if(copy_cancel) goto error;
+			
+		current_sector += sector_nb;
+	}
+	
+	ret = SUCCESS;
+error:
+	
+	if( copy_cancel || cancel ) ret=FAILED;
+	
+	if( ret == FAILED ) {
+		if( split ) {
+			int i;
+			for(i=0; i<N_SPLIT_ISO; i++) {
+				sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
+				Delete(SPLIT_ISO_PATH);
+			}
+		} else {
+			Delete(ISO_PATH);
+		}
+	}
+	
+	if( copy_cancel || cancel ) ret=FAILED;
+	
+	if(!source) sys_storage_close(source);
+	FCLOSE(f);
+	FCLOSE(f1);
+	FREE(DATE);
+	FREE(IRD_NAME);
+	FREE_IRD(ird);
+	FREE(buff);
+	FREE(sec0sec1);
+	
+	if(rlog) {
+		if(ret==FAILED) {
+			if( copy_cancel || cancel ) {
+				fputs("RESULT: The user canceled.\n", rlog);
+			} else {
+				fputs("RESULT: Something went wrong: '", rlog);
+				fputs(loading_log[0], rlog);
+				fputs("'\n", rlog);
+			}
+		} else
+		if(ret==SUCCESS) {
+			if( corrupt && IGNORE_ERR ) {
+				fputs("RESULT: The dump is probably corrupted.", rlog);
+			} else {
+				fputs("RESULT: Everything went well!", rlog);
+			}
+		}
+		
+		DATE = get_date();
+		sprintf(result_str, "\nFinished at %c%c:%c%c\n", DATE[9], DATE[10], DATE[11], DATE[12]); fputs(result_str, rlog);
+		FREE(DATE);
+		
+		FCLOSE(rlog);
+	}
+	
+	return ret;
+}
+
+u8 GetPVD(char *ISO, u8 *PVD)
+{
+    memset(PVD, 0, 0x60);
+    
+    FILE *f = fopen(ISO, "rb");
+    if(f==NULL) return FAILED;
+    
+    fseek(f, 0x8320, SEEK_SET);
+    fread(PVD, 0x60, 1, f);
+    fclose(f);
+    
+    return SUCCESS;
 }
 
 //*******************************************************
@@ -14177,13 +14242,13 @@ void Draw_Copy_screen(void *unused)
 			u64 RemainingTime = ElapsedTime * gathering_total_size / copy_current_size - ElapsedTime;
 				
 			char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
-			if(ElapsedTime_STR) sprintf(elapsed_STR,  "Elapsed : %s", ElapsedTime_STR);
+			if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
 			FREE(ElapsedTime_STR);	
 			
 			if( gathering_total_size != 0 && gathering_cancel == NO) {
 				
 				char *RemainingTime_STR = GetTimeStr(RemainingTime);
-				if(RemainingTime_STR) sprintf(remaining_STR,  "Remaining : %s", RemainingTime_STR);
+				if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
 				FREE(RemainingTime_STR);				
 			}
 		}
@@ -14292,9 +14357,8 @@ void Draw_Copy_screen(void *unused)
 		strcpy(loading_log[i], "\0");
 	}
 	
-	copy_flag = -1;
 	print_load("sysThreadExit");
-	
+	copy_flag = -1;
 	sysThreadExit(0);
 }
 
@@ -14303,7 +14367,7 @@ void start_copy_loading()
 	print_head(STR_COPYING);
 	if( copy_flag==NO) {
 		copy_flag=YES;
-		sysThreadCreate(&Copy_id, Draw_Copy_screen, NULL, 999, 0x2000, THREAD_JOINABLE, "copying");	
+		sysThreadCreate(&Copy_id, Draw_Copy_screen, NULL, 999, 0x2000, THREAD_JOINABLE, "Thread_CopyScreen");	
 	}
 }
 
@@ -14911,7 +14975,6 @@ u8 CopyFile_stdio(char* src, char* dst)
 	char source[1024];
 	char destination[1024];
 	
-
 	FILE* f1=NULL;
 	FILE* f2=NULL;
 	
@@ -15227,7 +15290,6 @@ u8 CopyJoin(char *src, char *dst)
 	
 		return CopyFile(src, dst);
 	}
-	
 
 	char temp_src[255];
 	char temp_dst[255];
@@ -15365,7 +15427,16 @@ void add_GAMELIST(char *path)
 {
 	u8 plat = get_platform(path);
 	
-	if(plat == UNK) return;
+	if( plat != BDVD    &&
+		plat != JB_PS3  &&
+		plat != JB_PS2  &&
+		plat != JB_PS1  &&
+		plat != JB_PSP  &&
+		plat != ISO_PS3 &&
+		plat != ISO_PS2 &&
+		plat != ISO_PS1 &&
+		plat != ISO_PSP 
+	  ) return;	
 	
 	game_number++;
 	list_game_path = (char **) realloc(list_game_path, (game_number+1) * sizeof(char *));
@@ -15553,13 +15624,52 @@ void Copy_Game(char *src, char *dst)
 	
 	mkdir(copy_dst, 0777);
 	
-	char *tmp = strrchr(copy_src, '/');
-	strcat(copy_dst, tmp);
+	if( strcmp(src, "/dev_bdvd") == 0) {
+		char DstDirName[255]={0};
+		
+		if( strcmp(src, list_game_path[position]) == 0) {
+			sprintf(DstDirName, "%s [%s]", list_game_title[position], list_game_ID[position]);
+		} else {
+			char title[512]={0};
+			if( GetParamSFO("TITLE", title, src) == FAILED) {
+				start_loading();
+				print_load("Error : failed to get TITLE from %s", src);	
+				end_loading();
+				return;
+			}
+			char ID[20]={0};
+			if( GetParamSFO("TITLE_ID", ID, src) == FAILED) {
+				start_loading();
+				print_load("Error : failed to get TITLE_ID from %s", src);	
+				end_loading();
+				return;
+			}
+			sprintf(DstDirName, "%s [%s]", title, ID);
+		}
+		
+		if(Get_OSK_String(STR_RENAME, DstDirName, 255) == SUCCESS) {
+			if(DstDirName[0] != 0) {
+				strcat(copy_dst, "/");
+				strcat(copy_dst, DstDirName);
+			} else {
+				start_loading();
+				print_load("Error : failed to get DstDirName");
+				end_loading();
+				return;
+			}
+		} else {
+			show_msg(STR_CANCELLED);
+			return;
+		}
+	} else {
+		char *tmp = strrchr(copy_src, '/');
+		strcat(copy_dst, tmp);
+	}
+	
 	
 	start_gathering();
 	Get_Game_Size(copy_src);
 	end_gathering();
-	
 	
 	start_copy_loading();
 	u8 ret = FAILED;
@@ -15637,7 +15747,6 @@ end:
 
 void Draw_GameProperties()
 {
-	
 	char *tot_size = get_unit(gathering_total_size);
 	char sys_vers[64];
 	memset(sys_vers, 0, 64);
@@ -15648,6 +15757,30 @@ void Draw_GameProperties()
 			sscanf(tmp, "%f", &f);
 			sprintf(sys_vers, "%.2f", f);
 		} else strcpy(sys_vers, STR_UNKNOWN);
+	}
+	
+	char *Ext = GetExtension(list_game_path[position]);
+	char format_type[32]={0};
+	
+	if( !strncasecmp(Ext, ".iso", 4) )	{
+		strcpy(format_type, "ISO");
+	} else	
+	if( !strncasecmp(Ext, ".bin", 4) )	{
+		strcpy(format_type, "BIN");
+	} else
+	if( !strncasecmp(Ext, ".mdf", 4) )	{
+		strcpy(format_type, "MDF");
+	} else
+	if( !strncasecmp(Ext, ".img", 4) )	{
+		strcpy(format_type, "IMG");
+	} else
+	if( !strncasecmp(Ext, ".cso", 4) )  {
+		strcpy(format_type, "CSO");
+	} else
+	if( list_game_platform[position]==BDVD) {
+		strcpy(format_type, "BLU-RAY");
+	} else {
+		strcpy(format_type, "JB");			
 	}
 	
 	u8 LoopBreak=1;
@@ -15706,9 +15839,7 @@ void Draw_GameProperties()
 		FontColor(COLOR_3);
 		xt=DrawFormatString(x1 , y, "%s :", STR_GAME_FORMAT);
 		FontColor(COLOR_1);
-		if(iso==YES) {
-			DrawString(xt+10 , y,  "ISO");
-		} else DrawString(xt+10 , y,  "JB");
+		DrawString(xt+10 , y, format_type);
 		
 		y+=new_line(1);
 		
@@ -16116,22 +16247,27 @@ u8 *get_eid4()
 	
 	
 }
+#define Path_3Dump	"/dev_hdd0/tmp/3Dump.bin"
+#define Path_ERK	"/dev_hdd0/tmp/eid_root_key"
 
 u8 dump_3Dump()
 {
-	if( path_info( "/dev_hdd0/tmp/3Dump.bin" ) == _FILE ) {
-		print_load( "* 3Dump.bin found" );
+	if( path_info( Path_3Dump ) == _FILE ) {
+		print_debug("* 3Dump.bin found");
 		return SUCCESS;
 	}
 	
-	if( path_info( "/dev_hdd0/tmp/eid_root_key" ) == _FILE ) {
+	if( path_info( Path_ERK ) == _FILE ) {
 		// todo : check it  !
 	} else {
-		if( dump_eid_root_key("/dev_hdd0/tmp/eid_root_key") == FAILED) return FAILED;
+		if( dump_eid_root_key(Path_ERK) == FAILED) {
+			print_load("Error : dump_eid_root_key failed");
+			return FAILED;
+		}
 	}
 	
 	int size;
-	char *erk = LoadFile("/dev_hdd0/tmp/eid_root_key", &size);
+	char *erk = LoadFile(Path_ERK, &size);
 	if( erk == NULL) {
 		print_load("Error : dump_3Dump, load eid_root_key");
 		return FAILED;
@@ -16139,13 +16275,16 @@ u8 dump_3Dump()
 	
 	u8 *eid4 = get_eid4();
 	if( eid4 == NULL) {
+		print_load("Error : get_eid4 failed");
 		FREE(erk);
 		return FAILED;
 	}
 	
+	mkdir("/dev_hdd0/tmp", 0777);
+	
 	FILE *f;
 	
-	f=fopen("/dev_hdd0/tmp/3Dump.bin", "wb");
+	f=fopen(Path_3Dump, "wb");
 	if(f==NULL) {
 		print_load("Error : dump_3Dump, fopen 3Dump.bin");
 		FREE(erk);
@@ -16157,18 +16296,21 @@ u8 dump_3Dump()
 	fwrite(erk, 0x30, 1, f);
 	fclose(f);
 	
-	SetFilePerms("/dev_hdd0/tmp/3Dump.bin");
+	SetFilePerms(Path_3Dump);
 	
 	return SUCCESS;
 }
 
 u8 *Load_3Dump()
 {
-	if( dump_3Dump() == FAILED )  return NULL;
+	if( dump_3Dump() == FAILED )  {
+		print_load("Error : dump_3Dump failed");
+		return NULL;
+	}
 	
 	int size;
 	
-	return (u8 *) LoadFile("/dev_hdd0/tmp/3Dump.bin", &size);
+	return (u8 *) LoadFile(Path_3Dump, &size);
 }
 
 u8 SetFilePerms(char *path)
@@ -17030,7 +17172,7 @@ end:
 	return ret;
 }
 
-int upload(char *url, char *src)
+int upload(char *url, char *src, const char *method)
 {
 	int ret = 0;
 	int httpCode = 0;
@@ -17198,7 +17340,7 @@ int upload(char *url, char *src)
 	//END of URI	
 
 	//SEND REQUEST
-	ret = httpCreateTransaction(&httpTrans, httpClient, HTTP_METHOD_POST, &uri);
+	ret = httpCreateTransaction(&httpTrans, httpClient, method, &uri);
 	if (ret < 0) {
 		print_load("Error : httpCreateTransaction() failed (%x)", ret);
 		ret=FAILED;
@@ -17216,13 +17358,18 @@ int upload(char *url, char *src)
 		goto end;
 	}
 	
+	char *ext = GetExtension(src);
+	if( strcasecmp(ext, ".json") == 0) {
+		httpHeader headerCookie = { (const char*) "Content-Type", (const char*) "application/json; charset=utf-8" };
+		httpRequestAddHeader(httpTrans, &headerCookie);
+	}
+	
 	fp=fopen(src, "rb");
 	if(fp==NULL) {
 		print_load("Error : fopen() failed : %s", src);
 		ret=FAILED;
 		goto end;
 	}
-	
 	task_Init(length);
 	
 	print_debug("Sending data...");
@@ -17485,14 +17632,14 @@ void MemMonitor_thread(void *unused)
 		sysMemoryGetUserMemorySize(&MemInfo);
 		sleep(1);
 	}
-
+	MemMonitor=-1;
 	sysThreadExit(0);
 }
 
 void start_MemMonitor()
 {
 	if(MemMonitor==NO) {
-		MemMonitor = YES;
+		MemMonitor=YES;
 		sysThreadCreate(&MemMonitor_id, MemMonitor_thread, NULL, 999, 0x2000, THREAD_JOINABLE, "MemMonitor");
 	}
 }
@@ -17502,7 +17649,9 @@ void end_MemMonitor()
 	if(MemMonitor==YES) {
 		u64 ret;
 		MemMonitor = NO;
+		while(MemMonitor==NO) usleep(1000);
 		sysThreadJoin(MemMonitor_id, &ret);
+		MemMonitor=NO;
 	}
 }
 
@@ -17711,7 +17860,7 @@ void PlugAndPlay_thread(void *unused)
 		
 		sleep(1);
 	}
-
+	PlugAndPlay=-1;
 	sysThreadExit(0);
 }
 
@@ -17725,10 +17874,12 @@ void start_PlugAndPlay()
 
 void end_PlugAndPlay()
 {
-	if(PlugAndPlay) {
+	if(PlugAndPlay==YES) {
 		u64 ret;
 		PlugAndPlay = NO;
+		while(PlugAndPlay==NO) usleep(1000);
 		sysThreadJoin(PlugAndPlay_id, &ret);
+		PlugAndPlay=NO;
 	}
 }
 
@@ -19812,12 +19963,6 @@ void unplug_device()
 	}
 }
 
-s32 sys_storage_ext_fake_storage_event(uint64_t event, uint64_t param, uint64_t device)
-{
-	lv2syscall4(8, SYSCALL8_OPCODE_FAKE_STORAGE_EVENT, event, param, device);
-	return_to_user_prog(s32);
-}
-
 void SetPrimaryUSB()
 {
 	if(strstr(GamPath, "/dev_usb") && path_info(GamPath) != _NOT_EXIST) {
@@ -19828,23 +19973,20 @@ void SetPrimaryUSB()
 		int indx=0;
 		
 		print_load("Disconnecting all USB device");
-		for(f0=0; f0<8; f0++) sys_storage_ext_fake_storage_event(4, 0, ((f0<6)?USB_MASS_STORAGE_1(f0):USB_MASS_STORAGE_2(f0)));
-		for(f0=0; f0<8; f0++) sys_storage_ext_fake_storage_event(8, 0, ((f0<6)?USB_MASS_STORAGE_1(f0):USB_MASS_STORAGE_2(f0)));
-
+		for(f0=0; f0<128; f0++) fake_eject_event(USB_MASS_STORAGE(f0));
+		
 		sleep(1);
 
 		if(strstr(GamPath, "/dev_usb00")) indx=GamPath[10]-0x30;
 		
 		print_load("Setting primary USB device: /dev_usb00%i", indx);
-		sys_storage_ext_fake_storage_event(7, 0, ((indx<6)?USB_MASS_STORAGE_1(indx):USB_MASS_STORAGE_2(indx)));
-		sys_storage_ext_fake_storage_event(3, 0, ((indx<6)?USB_MASS_STORAGE_1(indx):USB_MASS_STORAGE_2(indx)));
+		fake_insert_event(USB_MASS_STORAGE(indx), DEVICE_TYPE_USB);
 
 		sleep(3);
 		
 		for(f0=0; f0<8; f0++) {
 			if(f0!=indx) {
-				sys_storage_ext_fake_storage_event(7, 0, USB_MASS_STORAGE(f0));
-				sys_storage_ext_fake_storage_event(3, 0, USB_MASS_STORAGE(f0));
+				fake_insert_event(USB_MASS_STORAGE(f0), DEVICE_TYPE_USB);
 			}
 		}
 
@@ -21052,8 +21194,8 @@ char *ISOtype(char *isoPath)
 	FILE* f;
 	f = fopen(isoPath, "rb");			
 	if(f==NULL) {
-		//print_load("Error : failed to open %s", isoPath);
-		return NO;
+		print_debug("Error : ISOtype failed to open %s", isoPath);
+		return 	NO;
 	}
 	
 	u32 SectSize=0;
@@ -21067,7 +21209,7 @@ char *ISOtype(char *isoPath)
 	char *mem =  (char *) malloc(0x40);
 	if(mem==NULL) {
 		fclose(f);
-		//print_load("Error : malloc failed");
+		print_debug("Error : ISOtype malloc failed");
 		return NO;
 	}
 	memset(mem, 0, sizeof(mem));
@@ -21123,6 +21265,10 @@ char *ISOtype(char *isoPath)
 		free(mem);
 		return _ISO_PSP;
 	}
+
+	if( ExistInISO(isoPath, "AUDIO_TS") ) return _ISO_DVD_VIDEO;
+	if( ExistInISO(isoPath, "VIDEO_TS") ) return _ISO_DVD_VIDEO;
+	if( ExistInISO(isoPath, "BDMV")     ) return _ISO_BD_VIDEO;	
 	
 	return _ISO;
 	
@@ -21145,7 +21291,7 @@ u8 can_read(char *ext)
 {
 	int i;
 	for( i = 0; i < ArrayCount(TXTViewerSupport); i++) {
-		if(  !strcasecmp(ext, TXTViewerSupport[i]) )  return YES;
+		if( !strcasecmp(ext, TXTViewerSupport[i]) )  return YES;
 	}	
 	return NO;
 }
@@ -21171,6 +21317,9 @@ u8 get_platform_from_ext(char *ext)
 	if(!strcmp(ext, _ISO_PS2)) return ISO_PS2;
 	if(!strcmp(ext, _ISO_PS1)) return ISO_PS1;
 	if(!strcmp(ext, _ISO_PSP)) return ISO_PSP;
+	
+	if(!strcmp(ext, _ISO_BD_VIDEO)) return ISO_BD_VIDEO;
+	if(!strcmp(ext, _ISO_DVD_VIDEO)) return ISO_DVD_VIDEO;
 	
 	return UNK;
 }
@@ -22034,12 +22183,12 @@ u8 can_be_mounted(u8 platform)
 	return NO;
 }
 
-void cobra_MountISO(int EMU)
+void cobra_MountISO(char *path, int EMU)
 {
 	int i;
 
-	u8 ntfs = is_ntfs(GamPath);
-	u8 exfat = is_exFAT(GamPath);
+	u8 ntfs = is_ntfs(path);
+	u8 exfat = is_exFAT(path);
 
 	if(ntfs || exfat) {
 		uint8_t *plugin_args = malloc(0x20000);
@@ -22052,15 +22201,15 @@ void cobra_MountISO(int EMU)
 
 		int parts = 0;
 		
-		if(ntfs) parts = ps3ntfs_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		if(ntfs) parts = ps3ntfs_file_to_sectors(path, sections, sections_size, MAX_SECTIONS, 1);
 		else
-		if(exfat) parts = fflib_file_to_sectors(GamPath, sections, sections_size, MAX_SECTIONS, 1);
+		if(exfat) parts = fflib_file_to_sectors(path, sections, sections_size, MAX_SECTIONS, 1);
 		
-		if(is_splitted_iso(GamPath)==YES) {	   
+		if(is_splitted_iso(path)==YES) {	   
 			int o;
 			for (o = 1; o < 32; o++) {
 				struct stat s;
-				sprintf(temp_buffer + 3072, "%s", GamPath);
+				sprintf(temp_buffer + 3072, "%s", path);
 				temp_buffer[3072 + strlen(temp_buffer + 3072) - 1] = 0;
 				sprintf(temp_buffer + 2048, "%s%i", temp_buffer + 3072, o);
 				if(parts >= MAX_SECTIONS) break;
@@ -22074,9 +22223,9 @@ void cobra_MountISO(int EMU)
 
 		if (parts>0 && parts < MAX_SECTIONS) {
 			p_args = (rawseciso_args *)plugin_args;
-			if( ntfs ) p_args->device = USB_MASS_STORAGE(NTFS_Test_Device(&GamPath[1]));
+			if( ntfs ) p_args->device = USB_MASS_STORAGE(NTFS_Test_Device(&path[1]));
 			else
-			if( exfat ) p_args->device = USB_MASS_STORAGE(exFAT_get_idx(GamPath));
+			if( exfat ) p_args->device = USB_MASS_STORAGE(exFAT_get_idx(path));
 			p_args->emu_mode = EMU;
 			p_args->num_sections = parts;
 			p_args->num_tracks = 0;
@@ -22092,19 +22241,20 @@ void cobra_MountISO(int EMU)
 		int nb_iso=0;
 		unsigned int effective_disctype, iso_disctype;
 
-		if(is_splitted_iso(GamPath)==YES) {
-			GamPath[strlen(GamPath)-1]=0;
+		if(is_splitted_iso(path)==YES) {
+			int l= strlen(path);
+			path[l-1]=0;
 			for(i=0; i<32; i++) {
-				char temp[128];
-				sprintf(temp, "%s%d" , GamPath, i);		
+				char temp[255];
+				sprintf(temp, "%s%d" , path, i);		
 				if(path_info(temp) == _NOT_EXIST) break;
 				
-				iso_path[i] = malloc(255);
-				strcpy(iso_path[i], temp);
+				iso_path[i] = strcpy_malloc(temp);
 				nb_iso++;
 			}
+			path[l-1]='0';
 		} else {
-			iso_path[0] = GamPath;
+			iso_path[0] = strcpy_malloc(path);
 			nb_iso = 1;
 		}
 		
@@ -22135,6 +22285,12 @@ void cobra_MountISO(int EMU)
 		} else
 		if(EMU == EMU_PSP) {
 			cobra_set_psp_umd2(iso_path[0], NULL, (char*)"/dev_hdd0/tmp/psp_icon.png", 2);
+		} else 
+		if(EMU == EMU_DVD) {
+			cobra_mount_dvd_disc_image(iso_path, nb_iso);
+		} else
+		if(EMU == EMU_BD) {
+			cobra_mount_bd_disc_image(iso_path, nb_iso);
 		}
 		
 		usleep(25000);
@@ -22161,7 +22317,7 @@ void cobra_Mount()
 			}
 		}
 		
-		cobra_MountISO(EMU_PS3);
+		cobra_MountISO(GamPath, EMU_PS3);
 	}
 	else {
 		i=0;	
@@ -22250,18 +22406,28 @@ int is_mamba()
 	return 0;
 }
 
+extern int lv1_write_htab_entry(uint64_t vas_id, uint64_t hpte_index, uint64_t hpte_v, uint64_t hpte_r);
 void write_htab(void)
 {
+	if( !PEEKnPOKE ) return;
+
 	uint64_t cont = 0;
 	uint64_t reg5, reg6;
 	uint32_t val;
+	
+	// lv1_call -> todo check if syscall 10 exist
+	u8 use_syscall_10 = YES; 
 	while(cont < 0x80)
 	{
 		val = (cont << 7);
 		reg5 = lv2peek(0x800000000f000000ULL | ((uint64_t) val));
 		reg6 = lv2peek(0x800000000f000008ULL | ((uint64_t) val));
 		reg6 = (reg6  & 0xff0000ULL) | 0x190ULL;
-		lv2syscall8(10, 0, (cont << 3ULL), reg5, reg6, 0, 0, 0, 1);
+		if( use_syscall_10 ) {
+			lv2syscall8(10, 0, (cont << 3ULL), reg5, reg6, 0, 0, 0, 1);
+		} else {
+			lv1_write_htab_entry(0, (cont << 3ULL), reg5, reg6);
+		}
 		cont++;
 	}
 }
@@ -22588,6 +22754,22 @@ void mamba_Mount()
 	}
 }
 
+void MountISO(char *path, u8 EMU)
+{
+	if(PEEKnPOKE) {
+		if(!cobra && !mamba) {
+			mamba = install_mamba();
+			if(!mamba) {
+				print_load("Error : 0x8888888");
+				return;
+			}
+		}
+	}
+	
+	cobra_MountISO(path, EMU);
+	cobra_MountISO(path, EMU);
+}
+
 u8 MountGame(char *GamePath)
 {
 	u8 platform = get_platform(GamePath);
@@ -22599,14 +22781,19 @@ u8 MountGame(char *GamePath)
 	
 	memset(GamPath, 0, 512);
 	memset(GamID, 0, 20);
-		
-	strcpy(GamPath, GamePath);	
-	Get_ID(GamPath, platform, GamID);
-
+	
+	strcpy(GamPath, GamePath);
+	if( 0 <= position ) {
+		if(strcmp(list_game_path[position], GamePath) == 0 ) {
+			strcpy(GamID, list_game_ID[position]);
+		}
+	}
+	
 	iso = is_iso(GamePath);
 	
 	if(platform == ISO_PS3 || platform == JB_PS3) {
 		
+		if(GamID[0]==0) Get_ID(GamPath, platform, GamID);
 		if(GamID[0]==0) strcpy(GamID, "TEST01234\0");
 		
 		if(payload == NO_PAYLOAD) {
@@ -22627,10 +22814,7 @@ u8 MountGame(char *GamePath)
 		}
 		
 		if(direct_boot) {
-			end_loading();
-			sysModuleUnload(SYSMODULE_PNGDEC);
-			sysModuleUnload(SYSMODULE_JPGDEC);
-			ioPadEnd();
+			MGZ_exit();
 			if(mount_app_home == NO) {
 				sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
 			} else {
@@ -22645,23 +22829,12 @@ u8 MountGame(char *GamePath)
 		if(platform == ISO_PS1) emul = EMU_PSX;
 		if(platform == ISO_PSP) emul = EMU_PSP;
 		
-		if(PEEKnPOKE) {
-			if(!cobra && !mamba) {
-				mamba = install_mamba();
-				if(!mamba) {
-					print_load("Error : 0x01234567");
-					return FAILED;
-				}
-			}
-		}
-		
 		if(emul == EMU_PS2_DVD) {
 			patch_PS2();
 			CONFIG_check(GamePath);
 		}
 		
-		cobra_MountISO(emul);
-		cobra_MountISO(emul);
+		MountISO(GamePath, emul);
 	} else {
 		print_load("Error : 0x11223344");
 		return FAILED;
@@ -24117,12 +24290,7 @@ void update_MGZ()
 		
 		free(mem);
 		
-		end_Load_GAMEPIC();
-		end_load_CURPIC();
-		end_loading();
-		sysModuleUnload(SYSMODULE_PNGDEC);
-		sysModuleUnload(SYSMODULE_JPGDEC);
-		ioPadEnd();
+		MGZ_exit();
 		
 		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
 	}
@@ -24300,6 +24468,9 @@ void read_setting()
 		fread(&DEBUG, sizeof(u8), 1, fp);
 		fread(&IGNORE_ERR, sizeof(u8), 1, fp);
 		fread(&with_3k3y_header, sizeof(u8), 1, fp);
+		fread(&UPLOADER, sizeof(char), 0x40, fp);
+		fread(&BOX3D_GAP, sizeof(u8), 1, fp);
+		fread(&BOX3D_ALIGN, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 	} 
@@ -24373,6 +24544,9 @@ void write_setting()
 		fwrite(&DEBUG, sizeof(u8), 1, fp);
 		fwrite(&IGNORE_ERR, sizeof(u8), 1, fp);
 		fwrite(&with_3k3y_header, sizeof(u8), 1, fp);
+		fwrite(&UPLOADER, sizeof(char), 0x40, fp);
+		fwrite(&BOX3D_GAP, sizeof(u8), 1, fp);
+		fwrite(&BOX3D_ALIGN, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 		SetFilePerms(setPath);
@@ -25087,6 +25261,11 @@ float R2JoyStick_Y(int joystick)
 
 void init_FileExplorer()
 {
+	if( DEBUG ) {
+		start_loading();
+		print_debug("init_FileExplorer");
+	}
+	
 	int i;
 
 	window_x = (float *) malloc(WINDOW_MAX * sizeof(float));
@@ -25130,13 +25309,22 @@ void init_FileExplorer()
 	memset(DevicesInfo, 0, sizeof(DevicesInfo));
 	
 	DevicesInfo_N = -1;
+	
+	if( DEBUG ) {
+		print_debug("end of init_FileExplorer");
+		end_loading();
+	}
+	
 }
 
 void finalize_FileExplorer()
 {
-
+	if( DEBUG ) start_loading();
+	
 	u32 i,j;
-
+	
+	print_debug("finalize_FileExplorer");
+	
 	FREE(window_x);
 	FREE(window_y);
 	FREE(window_z);
@@ -25145,7 +25333,7 @@ void finalize_FileExplorer()
 
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_path[i]);
 	FREE(window_path);
-
+	
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_lastpath[i]);
 	FREE(window_lastpath);
 	
@@ -25157,7 +25345,6 @@ void finalize_FileExplorer()
 		FREE(window_content_Name[i]);
 	}
 	FREE(window_content_Name);
-	
 	
 	for(i=0; i<WINDOW_MAX; i++) {
 		if(window_content_Type[i] == NULL) continue;
@@ -25172,7 +25359,7 @@ void finalize_FileExplorer()
 	FREE(window_content_Size);
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_content_Selected[i]);
 	FREE(window_content_Selected);
-
+	
 	FREE(window_sort);
 	FREE(window_w_col_size);
 
@@ -25189,7 +25376,12 @@ void finalize_FileExplorer()
 	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(option_copy[i]);
 	FREE(option_copy);
 	
-	free(DevicesInfo);
+	FREE(DevicesInfo);
+	
+	window_activ=-1;
+	
+	print_debug("end of finalize_FileExplorer");
+	if( DEBUG ) end_loading();
 }
 
 // *** PRX list tools ***
@@ -25515,7 +25707,6 @@ u8 GetWindowLocation()
 		return WINDOW_LOC_MAX;
 	
 	return WINDOW_LOC_UNK;
-	
 }
 
 void Draw_OnlyCloseBox(float x, float y, float z, float w, float h) 
@@ -26223,6 +26414,7 @@ void Draw_cursor()
 {	
 	if(loading) return;
 	if(picture_viewer_activ) return;
+	if(txt_viewer_activ) return;
 	
 	// main colors, separated here because eventually can be passed as arguments of the function
 	u32 cci = 0xffffffff; // cursor color in
@@ -26927,8 +27119,10 @@ void RefreshDevices()
 
 }
 
-void RefreshWindow(window_id)
+void RefreshWindow(s8 window_id)
 {	
+	if(window_id < 0) return;
+	
 	char temp[512];
 	int n, i; 
 	if(window_open[window_id] == NO) return;
@@ -28094,24 +28288,42 @@ void Option(char *item)
 			sort(window_activ);
 		}
 	} else
-	if(strcmp(item, "Test") == 0) {
-
+	if(strcmp(item, STR_MOUNT_DVD) == 0) {
 		start_loading();
-		
-		strcpy(temp, "/dev_bdvd/PS3_GAME/USRDIR/Common/res/TitleUpdate/tutorialDiff");
-		print_load("Path : %s", temp);
-		u64 tsize = get_size(temp);
-		print_load("Size : %llX", tsize);
-		
-		strcpy(temp, "/dev_bdvd/PS3_GAME/USRDIR/Common/res/TitleUpdate/tutorialDiff.");
-		print_load("Path : %s", temp);
-		tsize = get_size(temp);
-		print_load("Size : %llX", tsize);
-		
+		MountISO(option_sel[0], EMU_DVD);
+		end_loading();
+	} else
+	if(strcmp(item, STR_MOUNT_BD) == 0) {
+		start_loading();
+		MountISO(option_sel[0], EMU_BD);
+		end_loading();
+	} else
+	if(strcmp(item, "Test") == 0) {
+		start_loading();
+		test_permit();
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
 		start_loading();
+		
+		end_loading();
+	} else
+	if(strcmp(item, "Test3") == 0) {
+		start_loading();
+	
+		end_loading();
+	} else
+	if(strcmp(item, "InsertEject") == 0) {
+		start_loading();
+		int maxTry = 10;
+		for(i=0; i<maxTry; i++) {
+			if( path_info("/dev_bdvd") != _NOT_EXIST) break;
+			print_head("Try %d/%d", i+1, maxTry); 
+			bdvd_eject(NO);
+			sleep(3);
+			bdvd_insert(NO);
+			sleep(40);
+		}
 		end_loading();
 	} else
 	if(strcmp(item, STR_SYMLINK_SRC) == 0) {
@@ -28129,8 +28341,6 @@ void Option(char *item)
 		if(mamba) show_msg(STR_DONE);
 	} else
 	if(strcmp(item, STR_PASTE) == 0) {
-		
-		
 		if(option_copy_N==0 && is_66600(option_copy[0])) {
 			start_gathering();
 			strcpy(copy_src, option_copy[0]);
@@ -28899,15 +29109,16 @@ void Open_option()
 			
 			add_option_item("Test");
 			add_option_item("Test2");
+			add_option_item("Test3");
+			
+			add_option_item("InsertEject");
+			
 			
 			if( !cobra && !mamba && PEEKnPOKE) {
 				add_option_item(STR_LOAD_MAMBA);
 			}
 			
 			if(option_sel_N==0 ) {
-				if(!strcmp(ext, _JB_PS3)){
-					add_option_item(STR_CONVERT_ISO);
-				}
 				if( cobra || mamba ) {
 					if( FM_OLD_PATH == NULL ) {
 						add_option_item(STR_SYMLINK_SRC);
@@ -29081,19 +29292,29 @@ void Open_option()
 					} else
 					if(is_archive(ext)) {
 						add_option_item(STR_EXTRACT_HERE);
-					} 
-					
-					
-					if(option_sel_N==0) {
-						if( is_66600(option_sel[0])) {
-							add_option_item(STR_JOIN);
-						}
-					}
-					
-					if(can_be_mounted(get_platform_from_ext(ext)) && option_sel_N==0) {
-						add_option_item(STR_MOUNTGAME);
 					}
 				}
+				
+				if(option_sel_N==0) {
+					if( is_66600(option_sel[0])) {
+						add_option_item(STR_JOIN);
+					}
+					
+					if( can_be_mounted(get_platform_from_ext(ext))) {
+						add_option_item(STR_MOUNTGAME);
+					} else
+					if( !strcmp(ext, _ISO_BD_VIDEO) ) {
+						add_option_item(STR_MOUNT_BD);
+					} else
+					if( !strcmp(ext, _ISO_DVD_VIDEO) ) {
+						add_option_item(STR_MOUNT_DVD);
+					} else
+					if( !strcasecmp(ext, _ISO)) {
+						add_option_item(STR_MOUNT_DVD);
+						add_option_item(STR_MOUNT_BD);
+					}
+				}
+				
 				add_option_item(STR_SET_PERMS);
 			}
 			add_option_item(STR_PROPS);
@@ -29346,6 +29567,7 @@ u8 window_input()
 						read_game_setting(-1);
 						if( MountGame(IsoPath) == SUCCESS) {
 							finalize_FileExplorer();
+							MGZ_exit();
 							exit(0);
 						}
 					}
@@ -29866,7 +30088,7 @@ void Draw_FileExplorer()
 		} else {
 			if(	option_input() == OFF)
 			if( window_input() == BREAK) {
-				LoopBreak =0;
+				LoopBreak=0;
 				break;
 			}
 			cursor_input();
@@ -29877,35 +30099,45 @@ void Draw_FileExplorer()
 		txt_viewer_input();
 		SFO_viewer_input();
 	}
-	
-	end_PlugAndPlay();
 }
 
 void preview_window(u8 show_window)
 {
-#ifdef FILEMANAGER
-	if(show_window==NO) return;
-	while(0<=window_activ) CloseWindow(window_activ);
-	Window(NULL);
-	window_x[window_activ]+=275;
-	window_y[window_activ]=250;
-	window_z[window_activ]=0;
-	
-#else
+
 	if(show_window==NO) {
+#ifndef FILEMANAGER
 		if(window_path!=NULL) finalize_FileExplorer();
+#else
+		if( window_x[window_activ]==275 && window_y[window_activ]==250 && window_z[window_activ]==0 ) {
+			SetWindowLocation(WINDOW_LOC_DEFAULT);
+		}
+#endif
 		return;
 	}
-	
 	if(window_path==NULL) {
 		update_RootDisplay();
 		init_FileExplorer();
 		Window(NULL);
-		window_x[window_activ]=275;
-		window_y[window_activ]=250;
-		window_z[window_activ]=0;
 	}
-#endif
+	
+	int n;
+	int wo=0;
+	for(n=0; n<WINDOW_MAX; n++) {
+		if(window_open[n]==NO) continue;
+		wo++;
+	}
+	
+	if( wo == 0 ) {
+		Window(NULL);
+	} else
+	if( 1 < wo ) {
+		while(0<=window_activ) CloseWindow(window_activ);
+		Window(NULL);
+	}
+	window_x[window_activ]=275;
+	window_y[window_activ]=250;
+	window_z[window_activ]=0;
+
 	Draw_window();
 }
 
@@ -30071,13 +30303,31 @@ u8 item_value_is(char *str)
 	return NO;
 }
 
+u8 item_title_is(char *str)
+{
+	if(MENU_LVL == LVL_TITLE) return NO;
+	
+	if( 0<=TITLE_MENU_FIRST_ITEM ){
+		if(strcmp(TITLES[TITLE_MENU_FIRST_ITEM], str) == 0 ) return YES;
+	}
+	
+	return NO;
+	
+}
+
 void Draw_HELP()
 {
 	float x=50;
 	float y=23;
 	FontColor(COLOR_1);
 	FontSize(13);
-
+	
+	if(item_is(STR_BOX3D_GAP)) {
+		DrawString(x, y, STR_BOX3D_GAP_DESC);
+	} else
+	if(item_is(STR_BOX3D_ALIGN)) {
+		DrawString(x, y, STR_BOX3D_ALIGN_DESC);
+	} else
 	if(item_is(STR_DUMP_DEC)) {
 		DrawString(x, y, STR_DUMP_DEC_DESC);
 	} else
@@ -30098,6 +30348,15 @@ void Draw_HELP()
 	} else
 	if(item_is(STR_3K3Y_HEADER)) {
 		DrawString(x, y, STR_3K3Y_HEADER_DESC);
+	} else
+	if(item_is(STR_DYNAREC)) {
+		DrawString(x, y, STR_DYNAREC_DESC);
+	} else
+	if(item_is(STR_BUILD_ISO)) {
+		DrawString(x, y, STR_BUILD_ISO_DESC);
+	} else
+	if(item_is(STR_UPLOADER)) {
+		DrawString(x, y, STR_UPLOADER_DESC);
 	} else
 	if(item_is(STR_BT_AUDIO)) {
 		DrawString(x, y, STR_BT_AUDIO_DESC);
@@ -30299,17 +30558,26 @@ void Draw_HELP()
 		DrawString(x, y, "Fixes Tri-Ace games boot crash. VU Add/Sub hack.");
 	} else
 */
+	if(item_is("0x0E")) {
+		DrawString(x, y, "FPU? ADD/SUB accurate opcode");
+	} else
 	if(item_is("0x0F")) {
-		DrawString(x, y, "FPU/VU Improved calculations result. ADD/SUB");
+		DrawString(x, y, "FPU MUL/DIV/SUB/ADD accurate range");
 	} else
 	if(item_is("0x10")) {
-		DrawString(x, y, "COP2? Improved calculations result. ADD?/SUB?/MUL?/DIV?");
+		DrawString(x, y, "COP2 MUL/DIV/SUB/ADD accurate range - MULDIV_Accurate_range");
+	} else
+	if(item_is("0x11")) {
+		DrawString(x, y, "VU ADD/SUB accurate opcode");
 	} else
 	if(item_is("0x26")) {
-		DrawString(x, y, "FPU/VU Improved calculations result. ADD?/SUB?/MUL?/DIV?");
+		DrawString(x, y, "FPU ADD/SUB accurate range - FPU_Accurate_range");
 	} else
 	if(item_is("0x27")) {
-		DrawString(x, y, "COP2 Improved calculations result. ADD?/SUB?/MUL?/DIV?");
+		DrawString(x, y, "COP2-VU0 MUL/DIV/SUB/ADD accurate range - VU0 macromode accurate range");
+	} else
+	if(item_is("0x2A")) {
+		DrawString(x, y, "Improves COP2 operations accuracy for selected memory range - VU0 macromode accurate range");
 	} else
 	if(item_is("0x2B")) {
 		DrawString(x, y, "Setting mecha HACK to show GODZCD as GODZCDDA. So, it fake cd to be cdda");
@@ -30333,7 +30601,7 @@ void Draw_HELP()
 		DrawString(x, y, "Enable XOR CSR - Fix fullscreen line corruption");
 	} else
 	if(item_is("0x50")) {
-		DrawString(x, y, "(?) Switch to default gamepad config (?)");
+		DrawString(x, y, "Enable button pressure sensitivity.");
 	}
 
 	FontSize(15);
@@ -30507,12 +30775,16 @@ void Draw_MENU()
 			if( strcmp(ITEMS[i], STR_PATCH_LIBFS) == 0 ) {
 				DrawChildArrow(x1+5, y, 9, 10, 7, color);
 				DrawFormatString(x1+20, y, ITEMS[i]);
+			} else 
+			if( strcmp(&ITEMS[i][4], STR_FM_LEFT_CONTENT) == 0 || strcmp(&ITEMS[i][4], STR_FM_RIGHT_CONTENT) == 0)
+			{
+				DrawChildArrow(x1+5, y, 9, 10, 7, color);
+				DrawFormatString(x1+20, y, &ITEMS[i][4]);
 			} else {
 				DrawFormatString(x1, y, ITEMS[i]);
 			}
 			
 			FontColor(COLOR_1);
-			
 			
 			if( ITEMS_VALUE_NUMBER[i] != -1 ) {
 				float x2_t = x2;
@@ -30641,7 +30913,7 @@ float X_ICON0_creator=0;
 float Y_ICON0_creator=0;
 float W_ICON0_creator=0;
 float H_ICON0_creator=0;
-char ICON0_creator_PATH[255];
+char ICON0_creator_CoverPath[512];
 u8 ICON0_creator=NO;
 
 void input_ICON0_creator()
@@ -30682,22 +30954,21 @@ void input_ICON0_creator()
 	
 	if(NewPad(BUTTON_SQUARE)) {
 		start_loading();
-		char out[255];
+		char out[512];
 		strcpy(out, list_game_path[position]);
-		out[strlen(out)-3]='j';
-		out[strlen(out)-2]='p';
-		out[strlen(out)-1]='g';
-		Crop_Image(ICON0_creator_PATH, out, X_ICON0_creator, Y_ICON0_creator, W_ICON0_creator, H_ICON0_creator);
+		RemoveExtension(out);
+		strcat(out, ".ICON0.jpg");
+		Crop_Image(ICON0_creator_CoverPath, out, X_ICON0_creator, Y_ICON0_creator, W_ICON0_creator, H_ICON0_creator);
 		ICON0_creator=NO;
-		memset(ICON0_creator_PATH, 0, sizeof(ICON0_creator_PATH));
+		memset(ICON0_creator_CoverPath, 0, sizeof(ICON0_creator_CoverPath));
 		end_loading();
-		if( !(list_game_havepic[position] & GAMEPIC_ICON0) ) list_game_havepic[position] += GAMEPIC_ICON0;
+		if( !(list_game_havepic[position] & GAMEPIC_ICON0) ) list_game_havepic[position] |= GAMEPIC_ICON0;
 	}
 	
 	if(NewPad(BUTTON_CIRCLE))
 	{
 		ICON0_creator=NO;
-		memset(ICON0_creator_PATH, 0, sizeof(ICON0_creator_PATH));
+		memset(ICON0_creator_CoverPath, 0, sizeof(ICON0_creator_CoverPath));
 	}
 }
 
@@ -30758,7 +31029,6 @@ void Draw_ICON0_creator_input()
 
 void open_ICON0_creator()
 {
-	
 	int n=0;
 	char *temp=NULL;
 	while(1)
@@ -30772,14 +31042,14 @@ void open_ICON0_creator()
 		n++;
 	}
 	
-	memset(ICON0_creator_PATH, 0, sizeof(ICON0_creator_PATH));
-	strcpy(ICON0_creator_PATH, temp);
+	memset(ICON0_creator_CoverPath, 0, sizeof(ICON0_creator_CoverPath));
+	strcpy(ICON0_creator_CoverPath, temp);
 	
 	FREE(temp);
 	
 	X_ICON0_creator=0;
 	Y_ICON0_creator=0;
-	W_ICON0_creator=COVER.width;
+	W_ICON0_creator= COVER.width;
 	H_ICON0_creator= 176 * W_ICON0_creator / 320;
 	
 	ICON0_creator = YES;
@@ -32741,10 +33011,13 @@ u32 Get_PS2CRC()
 	u32 CRC=0;
 	u32 i;
 	prog_bar1_value=0;
-	for(i=0; i<PS2ELF_mem_size; i+=4) {
-		CRC ^= *(u32 *) &PS2ELF_mem[i];
-		prog_bar1_value = (i*100)/PS2ELF_mem_size;
+	const u32* srcdata = (u32*) PS2ELF_mem;
+	u32 max = PS2ELF_mem_size/4;
+	for(i=max; i; --i, ++srcdata) {
+		CRC ^= *srcdata;
+		prog_bar1_value =  (max - i) * 100 / max;
 	}
+
 	prog_bar1_value=-1;
 	
 	return reverse32(CRC);
@@ -33426,7 +33699,7 @@ void init_PS2_GAME_MENU()
 		add_item_MENU(STR_ADD_LIMG, ITEM_TEXTBOX);
 	}
 	
-	if(COVER_offset != 0) {
+	if(list_game_havepic[position] & GAMEPIC_COVER2D) {
 		add_item_MENU(STR_CREATE_ICON0, ITEM_TEXTBOX);
 	}
 	
@@ -34067,7 +34340,7 @@ void init_PS1_GAME_MENU()
 		add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 	}
 	
-	if(COVER_offset != 0) {
+	if(list_game_havepic[position] & GAMEPIC_COVER2D) {
 		add_item_MENU(STR_CREATE_ICON0, ITEM_TEXTBOX);
 	}
 	
@@ -35843,12 +36116,21 @@ void init_BDVD_MENU()
 	} else {
 		add_item_MENU(STR_REM_FAV, ITEM_TEXTBOX);
 	}
-	
-	add_item_MENU(STR_DUMP_DEC, ITEM_TEXTBOX);
-	for(j=0; j<=scan_dir_number; j++) {
-		for(i=0; i<=device_number; i++) {
-			sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
-			add_item_value_MENU(tmp);
+	if( HEN ) {
+		add_item_MENU(STR_BUILD_ISO, ITEM_TEXTBOX);
+		for(j=0; j<=scan_dir_number; j++) {
+			for(i=0; i<=device_number; i++) {
+				sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+				add_item_value_MENU(tmp);
+			}
+		}
+	} else {
+		add_item_MENU(STR_DUMP_DEC, ITEM_TEXTBOX);
+		for(j=0; j<=scan_dir_number; j++) {
+			for(i=0; i<=device_number; i++) {
+				sprintf(tmp, "/%s/%s", list_device[i], scan_dir[j]);
+				add_item_value_MENU(tmp);
+			}
 		}
 	}
 	add_item_MENU(STR_DUMP_ENC, ITEM_TEXTBOX);
@@ -35914,6 +36196,16 @@ u8 BDVD_MENU_CROSS()
 	} else 
 	if(item_is(STR_COPY)) {
 		Copy_Game(list_game_path[position], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+	} else
+	if(item_is(STR_BUILD_ISO)) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "/dev_hdd0/game/%s/USRDIR/sys/result.log", ManaGunZ_id);
+		u8 ret = build_bdvd_iso(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
 	} else
 	if(item_is(STR_DUMP_DEC)) {
 		start_copy_loading();
@@ -37401,6 +37693,19 @@ void init_SETTINGS()
 		add_item_MENU(STR_SHOW_WAVES, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_Waves;
 	}
+	
+	if(UI_position==FLOW && FLOW_3D) {
+		add_item_MENU(STR_BOX3D_ALIGN, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = BOX3D_ALIGN;
+		
+		add_item_MENU(STR_BOX3D_GAP, ITEM_TEXTBOX);
+		add_item_value_MENU(STR_NONE);
+		add_item_value_MENU(STR_SHORT);
+		add_item_value_MENU(STR_MEDIUM);
+		add_item_value_MENU(STR_LONG);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = BOX3D_GAP;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	}
 #endif
 	
 // THEME SETTINGS	
@@ -37477,6 +37782,9 @@ void init_SETTINGS()
 		}
 	}
 	
+	if( FILTER_NOTIF || FILTER_BOXHEAD || FILTER_BOXBODY || FILTER_SIDEBAR || FILTER_BGS || FILTER_BG) {	
+		add_item_MENU(STR_COLOR_FILTER, ITEM_LOCKED);
+	}
 	if(FILTER_NOTIF) {
 		add_item_MENU(STR_COLOR_NOTIF, ITEM_COLORBOX);
 		FREE(ITEMS_VALUE[ITEMS_NUMBER][0]);
@@ -37525,7 +37833,7 @@ void init_SETTINGS()
 	
 	add_item_MENU(STR_COLOR_NOTIF, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_NOTIF;
-	
+#ifndef FILEMANAGER	
 	add_item_MENU(STR_COLOR_BOXHEAD, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_BOXHEAD;
 			
@@ -37534,7 +37842,7 @@ void init_SETTINGS()
 		
 	add_item_MENU(STR_COLOR_SIDEBAR, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_SIDEBAR;
-	
+#endif
 	add_item_MENU(STR_COLOR_BGS, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = FILTER_BGS;
 
@@ -37691,8 +37999,8 @@ void init_SETTINGS()
 		if(fm_CustomIcons==YES) add_item_value_MENU(STR_FM_CUSTOM);
 				
 		add_item_MENU(STR_FM_ICONSIZE, ITEM_LOCKED);
-		if(fm_LineSize==0) add_item_value_MENU(STR_FM_SMALL);
-		if(fm_LineSize==1) add_item_value_MENU(STR_FM_BIG);
+		if(fm_LineSize==SMALL) add_item_value_MENU(STR_FM_SMALL);
+		if(fm_LineSize==BIG) add_item_value_MENU(STR_FM_BIG);
 		
 		
 		if( fm_LineSize == BIG ) {
@@ -37752,12 +38060,20 @@ void init_SETTINGS()
 	
 	add_item_MENU(STR_IGNORE_ERR, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = IGNORE_ERR;
-	
-	add_item_MENU(STR_3K3Y_HEADER, ITEM_TOGGLE);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = with_3k3y_header;
+	if( !HEN ) {
+		add_item_MENU(STR_3K3Y_HEADER, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = with_3k3y_header;
+		add_item_MENU(STR_UPLOADER, ITEM_TEXTBOX);
+		if( UPLOADER[0] == 0 ) {
+			add_item_value_MENU(STR_NONE);
+		} else {
+			add_item_value_MENU(UPLOADER);	
+		}
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = 0;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	}
 	
 	add_title_MENU(STR_SYSTEM_TOOLS);
-	
 	if( PEEKnPOKE ) {
 		if( !HEN ) add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
 		add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
@@ -37765,11 +38081,15 @@ void init_SETTINGS()
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
 	
-	if( ERK_DUMPER_SIZE != 0 && PEEKnPOKE ) {
-		add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
-		add_item_MENU(STR_DUMP_3DUMP, ITEM_TEXTBOX);
-	}
-	
+	if( PEEKnPOKE ) {
+		if( ERK_DUMPER_SIZE != 0 ) {
+			add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
+			add_item_MENU(STR_DUMP_3DUMP, ITEM_TEXTBOX);
+		}
+		add_item_MENU(STR_DYNAREC, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = HaveDynarec();
+	}	
+		
 	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
 	
 	add_item_MENU("MGZ log", ITEM_TOGGLE);
@@ -37781,6 +38101,21 @@ void init_SETTINGS()
 
 void update_SETTINGS()
 {
+	if(item_is(STR_BOX3D_ALIGN)) {
+		BOX3D_ALIGN = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is(STR_BOX3D_GAP)) {
+		BOX3D_GAP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+	} else
+	if(item_is(STR_DYNAREC)) {
+		if( ITEMS_VALUE_POSITION[ITEMS_POSITION] != HaveDynarec() ) {
+			if( ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES ) {
+				InstallDynarec();
+			} else {
+				RemoveDynarec();
+			}
+		}
+	} else
 	if(item_is(STR_3K3Y_HEADER)) {
 		with_3k3y_header = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
@@ -37793,38 +38128,40 @@ void update_SETTINGS()
 	if(item_is("MGZ debug")) {
 		DEBUG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else
-	if(item_is(STR_FONT)) {
-		if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-			if(Load_GAMEPIC_busy) show_msg("Try Later");
-			else {
-				//start_loading();
-				strcpy(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);				
-				LoadFont();
-				//end_loading();
+	if( item_title_is(STR_SETTINGS)){
+		if(item_is(STR_FONT)) {
+			if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+				if(Load_GAMEPIC_busy) show_msg("Try Later");
+				else {
+					//start_loading();
+					strcpy(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);				
+					LoadFont();
+					//end_loading();
+				}
 			}
+		} else
+		if(item_is(STR_LANG)) {
+			lang = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+			lang_code = LANGCODE[lang];
+			if(lang_code != lang_code_loaded) {
+				start_loading();
+				print_load("Loading language : %s", STR_LANGUAGE[lang]);
+				update_lang();
+				update_RootDisplay();
+				init_SETTINGS();
+				end_loading();
+			}
+			
+		} else
+		if(item_is(STR_HELP)) {
+			Show_Help = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_XMB_PRIO)) {
+			XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_SIDE_MENU)) {
+			Use_SideMenu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		}
-	} else
-	if(item_is(STR_LANG)) {
-		lang = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-		lang_code = LANGCODE[lang];
-		if(lang_code != lang_code_loaded) {
-			start_loading();
-			print_load("Loading language : %s", STR_LANGUAGE[lang]);
-			update_lang();
-			update_RootDisplay();
-			init_SETTINGS();
-			end_loading();
-		}
-		
-	} else
-	if(item_is(STR_HELP)) {
-		Show_Help = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_XMB_PRIO)) {
-		XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_SIDE_MENU)) {
-		Use_SideMenu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 	} else 
 	if(item_is(STR_UI)) {
 		if( UI_position != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
@@ -37886,101 +38223,136 @@ void update_SETTINGS()
 			init_SETTINGS();
 		}
 	} else
+	if( item_title_is(STR_COLOR_FILTER) ) {
+		if(item_is(STR_COLOR_NOTIF) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+			if(FILTER_NOTIF != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FILTER_NOTIF = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				ReloadTheme(NOTIF);
+				// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+				if(FILTER_NOTIF) ITEMS_POSITION++;
+				else ITEMS_POSITION--;
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_COLOR_BOXHEAD) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+			if(FILTER_BOXHEAD != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FILTER_BOXHEAD = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				ReloadTheme(BOXHEAD);
+				// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+				if(FILTER_BOXHEAD) ITEMS_POSITION++;
+				else ITEMS_POSITION--;
+				init_SETTINGS();
+			}
+		} else 
+		if(item_is(STR_COLOR_BOXBODY) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+			if(FILTER_BOXBODY != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FILTER_BOXBODY = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				ReloadTheme(BOXBODY);
+				// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+				if(FILTER_BOXBODY) ITEMS_POSITION++;
+				else ITEMS_POSITION--;
+				init_SETTINGS();
+			}	
+		} else 
+		if(item_is(STR_COLOR_SIDEBAR) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+			if(FILTER_SIDEBAR != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FILTER_SIDEBAR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				ReloadTheme(SIDEBAR);
+				// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+				if(FILTER_SIDEBAR) ITEMS_POSITION++;
+				else ITEMS_POSITION--;
+				init_SETTINGS();
+			}
+		} else 
+		if(item_is(STR_COLOR_BGS) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+			if(FILTER_BGS != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FILTER_BGS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				ReloadTheme(BGS);
+				// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+				if(FILTER_BGS) ITEMS_POSITION++;
+				else ITEMS_POSITION--;
+				init_SETTINGS();
+			}
+		} else 
+		if(item_is(STR_COLOR_BG) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
+			if(FILTER_BG != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FILTER_BG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				ReloadTheme(_BG_);
+				// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
+				if(FILTER_BG) ITEMS_POSITION++;
+				else ITEMS_POSITION--;
+				init_SETTINGS();
+			}	
+		}
+	} else 
 	if(item_is(STR_STYLE)) {
 		if( root_display != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 			root_display = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 			update_RootDisplay();
+			Window(".");
 			init_SETTINGS();
 		}
-	} else
-	if(item_is(STR_COLOR_NOTIF) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
-		if(FILTER_NOTIF != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FILTER_NOTIF = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			ReloadTheme(NOTIF);
-			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
-			if(FILTER_NOTIF) ITEMS_POSITION++;
-			else ITEMS_POSITION--;
-			init_SETTINGS();
-		}
-	} else 
-	if(item_is(STR_COLOR_BOXHEAD) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
-		if(FILTER_BOXHEAD != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FILTER_BOXHEAD = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			ReloadTheme(BOXHEAD);
-			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
-			if(FILTER_BOXHEAD) ITEMS_POSITION++;
-			else ITEMS_POSITION--;
-			init_SETTINGS();
-		}
-	} else 
-	if(item_is(STR_COLOR_BOXBODY) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
-		if(FILTER_BOXBODY != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FILTER_BOXBODY = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			ReloadTheme(BOXBODY);
-			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
-			if(FILTER_BOXBODY) ITEMS_POSITION++;
-			else ITEMS_POSITION--;
-			init_SETTINGS();
-		}	
-	} else 
-	if(item_is(STR_COLOR_SIDEBAR) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
-		if(FILTER_SIDEBAR != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FILTER_SIDEBAR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			ReloadTheme(SIDEBAR);
-			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
-			if(FILTER_SIDEBAR) ITEMS_POSITION++;
-			else ITEMS_POSITION--;
-			init_SETTINGS();
-		}
-	} else 
-	if(item_is(STR_COLOR_BGS) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
-		if(FILTER_BGS != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FILTER_BGS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			ReloadTheme(BGS);
-			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
-			if(FILTER_BGS) ITEMS_POSITION++;
-			else ITEMS_POSITION--;
-			init_SETTINGS();
-		}	
-	} else 
-	if(item_is(STR_COLOR_BG) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
-		if(FILTER_BG != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FILTER_BG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			ReloadTheme(_BG_);
-			// J'ajoute ou je retire une option pour changer la couleur avant (theme) donc la position actuelle change aussi.
-			if(FILTER_BG) ITEMS_POSITION++;
-			else ITEMS_POSITION--;
-			init_SETTINGS();
-		}	
 	} else
 	if(root_display == STYLE_CUSTOM) {
 		if(item_is(STR_FM_ICONSIZE)) {
 			if( fm_LineSize != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 				fm_LineSize = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		} else
 		if(item_is(STR_FM_ROWNUMBER)) {
 			if( fm_RowNumber != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
 				fm_RowNumber = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		} else
 		if(item_is(STR_FM_ICON)) {
 			if( fm_CustomIcons != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
 				fm_CustomIcons = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		} else
 		if(item_is(STR_FM_CB_WIDTH)) {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] != 0) fm_CapacityBarWidth = 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10;
-			else fm_CapacityBarWidth=0;
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] != 0) {
+				if( fm_CapacityBarWidth != 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10 ) {
+					fm_CapacityBarWidth = 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10;
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			} else {
+				if( fm_CapacityBarWidth != 0 ) {
+					fm_CapacityBarWidth = 0;
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			}
 		} else
 		if( strcmp(STR_FM_ROWSIZE, &ITEMS[ITEMS_POSITION][4]) == 0) {
 			int row=0;
 			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) fm_FontRowSize[row] = 0;
-			else fm_FontRowSize[row] = ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6;
+			
+			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) {
+				if( fm_FontRowSize[row] != 0 ) {
+					fm_FontRowSize[row]=0;
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			} else 
+			if( fm_FontRowSize[row] != ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6) {
+				fm_FontRowSize[row] = ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6;
+				write_RootSetting();
+				init_SETTINGS();
+				Window(".");
+			}
 		} else 
 		if( strcmp(STR_FM_LEFT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
 			int row=0;
@@ -37988,14 +38360,18 @@ void update_SETTINGS()
 			if( strcmp(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
 				memset(fm_Format[row*2], 0, sizeof(fm_Format[row*2]));
 				strcpy(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		} else
 		if(item_is(STR_FM_LEFT_CONTENT)) {
 			if( strcmp(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
 				memset(fm_Format[0], 0, sizeof(fm_Format[0]));
 				strcpy(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		} else 
 		if( strcmp(STR_FM_RIGHT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
@@ -38004,14 +38380,18 @@ void update_SETTINGS()
 			if( strcmp(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
 				memset(fm_Format[row*2+1], 0, sizeof(fm_Format[row*2+1]));
 				strcpy(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		} else
 		if(item_is(STR_FM_RIGHT_CONTENT)) {
 			if( strcmp(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
 				memset(fm_Format[1], 0, sizeof(fm_Format[1]));
 				strcpy(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+				write_RootSetting();
 				init_SETTINGS();
+				Window(".");
 			}
 		}
 	}
@@ -38072,7 +38452,7 @@ u8 SETTINGS_CROSS()
 	if(item_is(STR_DUMP_ERK)) {
 		start_loading();
 		mkdir("/dev_hdd0/tmp", 0777);
-		u8 ret = dump_eid_root_key("/dev_hdd0/tmp/eid_root_key");
+		u8 ret = dump_eid_root_key(Path_ERK);
 		end_loading();
 		if( ret == SUCCESS ) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
@@ -38104,6 +38484,15 @@ u8 SETTINGS_CROSS()
 				add_SCANDIR(scan_dir[scan_dir_number]);
 				init_Load_GAMEPIC();
 				end_loading();
+			}
+		}
+	} else 
+	if(item_is(STR_UPLOADER)) {
+		char tmpName[0x40];
+		memset(tmpName, 0, 0x40);
+		if(Get_OSK_String(STR_UPLOADER, tmpName, 0x40) == SUCCESS) {
+			if(tmpName[0]!=0) {
+				strcpy(UPLOADER, tmpName);
 			}
 		}
 	} else 
@@ -38193,6 +38582,9 @@ u8 SETTINGS_SQUARE()
 	} else 
 	if(item_is(STR_WAVES_COLOR)) {
 		WAVES_COLOR = WHITE-0xFF+0x20;
+	} else
+	if(item_is(STR_UPLOADER)) {
+		memset(UPLOADER, 0, 0x40);
 	} else 
 	if(item_is(STR_THM)) {
 		u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
@@ -38447,8 +38839,6 @@ void input_SETTINGS()
 		} else {
 			SETTING_R1();
 		}
-		
-		
 	}
 	
 	if(new_pad != 0) update_SETTINGS();
@@ -38483,6 +38873,10 @@ void Draw_SETTINGS_input()
 			if(ITEMS_VALUE_NUMBER[ITEMS_POSITION]>0) {
 				x=DrawButton(x, y, STR_DELETE, BUTTON_TRIANGLE);
 			}
+		} else
+		if(item_is(STR_UPLOADER)){
+			x=DrawButton(x, y, STR_RENAME, BUTTON_CROSS);
+			x=DrawButton(x, y, STR_RESET, BUTTON_SQUARE);
 		}
 		x=DrawButton(x, y, STR_BACK, BUTTON_CIRCLE);
 	} else if(MENU_LVL == LVL_ITEMS) {
@@ -38527,7 +38921,6 @@ void open_SETTINGS()
 	update_RootDisplay();
 	read_setting();
 	
-	
 	REC_UI_position=UI_position;
 	REC_Show_COVER=Show_COVER;
 	REC_Show_ICON0=Show_ICON0;
@@ -38547,14 +38940,14 @@ void open_SETTINGS()
 
 u8 is_AutoMount()
 {
-
-	FILE* fp;
 	
+	
+	FILE* fp;
 	fp = fopen("/dev_hdd0/vsh/pushlist/game.dat", "rb");
 	if(fp==NULL) return FAILED;
 	fread(ManaGunZ_id, 9, 1, fp);
 	fclose(fp);
-	ManaGunZ_id[9]=0;
+	ManaGunZ_id[9]=0;	
 	
 	char M_path[128];
 	sprintf(M_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
@@ -39171,12 +39564,20 @@ void Draw_COVER3D(u8 type, float w, float h, float e, float r, float x1, float y
 //***********
 // PS3 BOX
 //***********
+#define BOX3D_PS3_e  14.0f
+#define BOX3D_PS3_hb 172.0f
+#define BOX3D_PS3_wb 135.0f
+#define BOX3D_PS3_wc 129.0f
+#define BOX3D_PS3_hc 149.0f
+#define BOX3D_PS3_l2 7.0f
+#define BOX3D_PS3_X0 ((float) (-BOX3D_PS3_wc / 2.0f))
+#define BOX3D_PS3_Y0 ((float) (-BOX3D_PS3_hc / 2.0f - BOX3D_PS3_l2))
 
 void Draw_PS3PIC_3D(u8 type)
 {
-	float w=129; // largeur de la jaquette de face
-	float h=149; // hauteur de la jaquettte de face
-	float e=14+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float w=BOX3D_PS3_wc; // largeur de la jaquette de face
+	float h=BOX3D_PS3_hc; // hauteur de la jaquettte de face
+	float e=BOX3D_PS3_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
 	Draw_COVER3D(type, w,h,e,r,-0.01,0);
@@ -39189,17 +39590,17 @@ void Draw_PS3GAMECASE_3D()
 	
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
 	
-	float w=129; // largeur de la jaquette de face
-	float h=149; // hauteur de la jaquettte de face
-	float e=14; // epaisseur de la boite 
+	float w=BOX3D_PS3_wc; // largeur de la jaquette de face
+	float h=BOX3D_PS3_hc; // hauteur de la jaquettte de face
+	float e=BOX3D_PS3_e; // epaisseur de la boite 
 	float r=3; // rayon des arrondies
 	
-	float wb = 135; // largeur de la boite
-	float hb = 172; // hauteur de la boite
+	float wb = BOX3D_PS3_wb; // largeur de la boite
+	float hb = BOX3D_PS3_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
-	float r1 = 7.5; // rayon du haut
-	float l2 = 7; // distance entre le bas de la boite et la jaquette
-	float r2 = 5; // rayon du bas
+	float r1 = 7.5f; // rayon du haut
+	float l2 = BOX3D_PS3_l2; // distance entre le bas de la boite et la jaquette
+	float r2 = 5.0f; // rayon du bas
 	
 	float l3 = 36; // distance entre le bas et l'ouverture lateral
 	
@@ -39648,12 +40049,20 @@ void Draw_PS3GAMECASE_3D()
 //***********
 // PS2 BOX
 //***********
+#define BOX3D_PS2_e	 14.0f
+#define BOX3D_PS2_hb 190.0f
+#define BOX3D_PS2_wb 135.0f
+#define BOX3D_PS2_hc 180.0f
+#define BOX3D_PS2_wc 130.0f
+#define BOX3D_PS2_l2 5.0f
+#define BOX3D_PS2_X0 ((float) (-BOX3D_PS2_wc / 2.0f))
+#define BOX3D_PS2_Y0 ((float) (-BOX3D_PS2_hc / 2.0f - BOX3D_PS2_l2))
 
 void Draw_PS2PIC_3D(u8 type)
 {
-	float w=130; // largeur de la jaquette de face
-	float h=180; // hauteur de la jaquettte de face
-	float e=14+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float w=BOX3D_PS2_wc; // largeur de la jaquette de face
+	float h=BOX3D_PS2_hc; // hauteur de la jaquettte de face
+	float e=BOX3D_PS2_e+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 	
 	Draw_COVER3D(type, w, h, e, r, -0.01, 0);
@@ -39666,16 +40075,16 @@ void Draw_PS2GAMECASE_3D()
 	
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
 	
-	float w=129; // largeur de la jaquette de face
-	float h=180; // hauteur de la jaquettte de face
-	float e=14; // epaisseur de la boite 
+	float w=BOX3D_PS2_wc; // largeur de la jaquette de face
+	float h=BOX3D_PS2_hc; // hauteur de la jaquettte de face
+	float e=BOX3D_PS2_e; // epaisseur de la boite 
 	float r=3; // rayon des arrondies
 	
-	float wb = 135; // largeur de la boite
-	float hb = 190; // hauteur de la boite
+	float wb = BOX3D_PS2_wb; // largeur de la boite
+	float hb = BOX3D_PS2_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
 	float r1 = 5; // rayon du haut
-	float l2 = 5; // distance entre le coté de la boite et la jaquette = distance entre le bas de la boite et la jaquette
+	float l2 = BOX3D_PS2_l2; // distance entre le coté de la boite et la jaquette = distance entre le bas de la boite et la jaquette
 	float r2 = 5; // rayon du bas
 	
 	float l3 = 50; // distance entre le bas et l'ouverture lateral
@@ -40054,12 +40463,20 @@ void Draw_PS2GAMECASE_3D()
 //***********
 // PSP BOX
 //***********
+#define BOX3D_PSP_e  14.0f
+#define BOX3D_PSP_hb 168.0f
+#define BOX3D_PSP_wb 99.0f
+#define BOX3D_PSP_hc 158.0f
+#define BOX3D_PSP_wc 92.0f
+#define BOX3D_PSP_l2 5.0f
+#define BOX3D_PSP_X0 ((float) (-BOX3D_PSP_wc / 2.0f))
+#define BOX3D_PSP_Y0 ((float) (-BOX3D_PSP_hc / 2.0f - BOX3D_PSP_l2))
 
 void Draw_PSPPIC_3D(u8 type)
 {
-	float w=92; // largeur de la jaquette de face
-	float h=158; // hauteur de la jaquettte de face
-	float e=14+0.05; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float w=BOX3D_PSP_wc; // largeur de la jaquette de face
+	float h=BOX3D_PSP_hc; // hauteur de la jaquettte de face
+	float e=BOX3D_PSP_e+0.05; // épaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=3; // rayon des arrondies
 
 	Draw_COVER3D(type,w,h,e,r,-0.01,0);
@@ -40073,16 +40490,16 @@ void Draw_PSPGAMECASE_3D()
 	
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume de la jaquette
 	
-	float w=92; // largeur de la jaquette de face
-	float h=158; // hauteur de la jaquettte de face
-	float e=14; // epaisseur de la boite 
+	float w=BOX3D_PSP_wc; // largeur de la jaquette de face
+	float h=BOX3D_PSP_hc; // hauteur de la jaquettte de face
+	float e=BOX3D_PSP_e; // epaisseur de la boite 
 	float r=3; // rayon des arrondies
 	
-	float wb = 99; // largeur de la boite
-	float hb = 168; // hauteur de la boite
+	float wb = BOX3D_PSP_wb; // largeur de la boite
+	float hb = BOX3D_PSP_hb; // hauteur de la boite
 	//float l1 = 15; // hauteur de l'en-tete de la boite 
 	float r1 = 5; // rayon du haut
-	float l2 = 5; // distance entre le coté de la boite et la jaquette
+	float l2 = BOX3D_PSP_l2; // distance entre le coté de la boite et la jaquette
 	float r2 = 5; // rayon du bas
 	
 	float l3 = 36; // distance entre le bas et l'ouverture lateral
@@ -40454,13 +40871,19 @@ void Draw_PSPGAMECASE_3D()
 // PS1 BOX
 //***********
 
-#define PS1_e 15.0f
+#define BOX3D_PS1_e  15.0f
+#define BOX3D_PS1_hb 130.0f
+#define BOX3D_PS1_wb 140.0f
+#define BOX3D_PS1_hc BOX3D_PS1_hb
+#define BOX3D_PS1_wc 126.0f
+#define BOX3D_PS1_X0 ((float) (-BOX3D_PS1_wb / 2.0f))
+#define BOX3D_PS1_Y0 ((float) (-BOX3D_PS1_hb / 2.0f))
 
 void Draw_PS1ICON0()
 {	
-	float wb = 140; // largeur de la boite
-	float e=PS1_e+0.01; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
-	float w=126; // largeur de la jaquette de face
+	float wb = BOX3D_PS1_wb; // largeur de la boite
+	float e=BOX3D_PS1_e+0.01; // épaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float w=BOX3D_PS1_wc; // largeur de la jaquette de face
 	float l=wb-w; // largeur de la marge noire à gauche
 	
 	Draw_ONFRONT3D_ICON0(w, e, l);
@@ -40470,16 +40893,16 @@ void Draw_PS1COVER_FRONT()
 {
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume 
 		
-	float wb = 140; // largeur de la boite
-	float hb = 130; // hauteur de la boite
+	float wb = BOX3D_PS1_wb; // largeur de la boite
+	float hb = BOX3D_PS1_hb; // hauteur de la boite
 	
-	float w=126; // largeur de la jaquette de face
-	float e=PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float w=BOX3D_PS1_wc; // largeur de la jaquette de face
+	float e=BOX3D_PS1_e+0.2; // épaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
 	float l=wb-r-w; // largeur de la marge noire à gauche
 
-// x,y,z : superieur bas gauche
+// x,y,z : supérieur bas gauche
 	x = -wb/2;
 	y = -hb/2;
 	z = -e/2; 
@@ -40512,7 +40935,7 @@ void Draw_PS1COVER_BACK()
 	float wb = 140+0.2; // largeur de la boite
 	float hb = 130; // hauteur de la boite
 	
-	float e=PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
+	float e=BOX3D_PS1_e+0.2; // epaisseur de la boite + 0.1 pixel de chaque coté pour garder la jaquette autour de la boite.
 	float r=2; // rayon des arrondies
 
 // x,y,z : superieur bas gauche
@@ -40599,9 +41022,9 @@ void Draw_PS1GAMECASE_3D()
 	
 	float x=0,y=0,z=0; // 0,0,0 au centre du volume
 	
-	float e=PS1_e; // epaisseur de la boite 
-	float wb=140; // largeur de la boite
-	float hb=130; // hauteur de la boite
+	float e=BOX3D_PS1_e; // epaisseur de la boite 
+	float wb=BOX3D_PS1_wb; // largeur de la boite
+	float hb=BOX3D_PS1_hb; // hauteur de la boite
 	
 	float r=2; // rayon des bordures
 	float r1=r, r2=r;
@@ -40953,6 +41376,55 @@ void Draw_PS1GAMECASE_3D()
 	}
 }
 
+#define BOX3D_Y 	0.0f
+#define BOX3D_Z		700.0f
+float GetBox3D_Y(u32 pos)
+{
+	if( BOX3D_ALIGN == NO) return BOX3D_Y;
+	
+	float hb = 0.0f;
+	
+	if( list_game_platform[pos]== ISO_PS3 || list_game_platform[pos]== JB_PS3 || list_game_platform[pos]== BDVD) hb = BOX3D_PS3_Y0; else
+	if( list_game_platform[pos]== ISO_PS2 || list_game_platform[pos]== JB_PS2) hb = BOX3D_PS2_Y0; else
+	if(	list_game_platform[pos]== ISO_PS1 || list_game_platform[pos]== JB_PS1) hb = BOX3D_PS1_Y0; else
+	if(	list_game_platform[pos]== ISO_PSP || list_game_platform[pos]== JB_PSP) hb = BOX3D_PSP_Y0;
+	
+	return (float) (BOX3D_PS3_Y0 - hb + BOX3D_Y);
+}
+
+float GetBox3D_Z(u32 pos)
+{
+	if( BOX3D_ALIGN == NO) return BOX3D_Z;
+	
+	float wb = 0.0f;
+	
+	if( list_game_platform[pos]== ISO_PS3 || list_game_platform[pos]== JB_PS3 || list_game_platform[pos]== BDVD) wb = BOX3D_PS3_X0; else
+	if( list_game_platform[pos]== ISO_PS2 || list_game_platform[pos]== JB_PS2) wb = BOX3D_PS2_X0; else
+	if(	list_game_platform[pos]== ISO_PS1 || list_game_platform[pos]== JB_PS1) wb = BOX3D_PS1_X0; else
+	if(	list_game_platform[pos]== ISO_PSP || list_game_platform[pos]== JB_PSP) wb = BOX3D_PSP_X0;
+	
+	return (float) (BOX3D_PS3_X0 - wb + BOX3D_Z);
+}
+
+float GetBox3D_E(u32 pos)
+{
+	float e = 0.0f;
+	
+	if( list_game_platform[pos]== ISO_PS3 || list_game_platform[pos]== JB_PS3 || list_game_platform[pos]== BDVD) e = BOX3D_PS3_e; else
+	if( list_game_platform[pos]== ISO_PS2 || list_game_platform[pos]== JB_PS2) e = BOX3D_PS2_e; else
+	if(	list_game_platform[pos]== ISO_PS1 || list_game_platform[pos]== JB_PS1) e = BOX3D_PS1_e; else
+	if(	list_game_platform[pos]== ISO_PSP || list_game_platform[pos]== JB_PSP) e = BOX3D_PSP_e;
+	
+	return (float) e/2.0f;
+}
+
+float GetBox3D_Zoom(u32 pos)
+{
+	if( FLOW_Zoom == NO ) return (float) 500.0f;
+	
+	return 350.0f;
+}
+
 void update_3DFLOW()
 {
 
@@ -40969,13 +41441,14 @@ void update_3DFLOW()
 	e=170;
 	for(i=position+1; i<=game_number; i++) {
 		if(Show_it(i) == NO) continue;
+		e += GetBox3D_E(i);
 		TranslateTo(&ITEM_moveX[i], e);
-		TranslateTo(&ITEM_moveY[i], 0.0);
-		TranslateTo(&ITEM_moveZ[i], 700.0);
+		TranslateTo(&ITEM_moveY[i], GetBox3D_Y(i));
+		TranslateTo(&ITEM_moveZ[i], GetBox3D_Z(i));
 		RotateTo(&ITEM_angleX[i], 0.0);
 		RotateTo(&ITEM_angleY[i], -PI/2);
 		RotateTo(&ITEM_angleZ[i], 0.0);
-		e+=30;
+		e += (float)BOX3D_GAP*15.0f + GetBox3D_E(i);
 		
 		if(next==-1) next=i;
 	}
@@ -40983,21 +41456,21 @@ void update_3DFLOW()
 	e=-170;
 	for(i=position-1; i>=0; i--) {
 		if(Show_it(i) == NO) continue;
+		e -= GetBox3D_E(i);
 		TranslateTo(&ITEM_moveX[i], e);
-		TranslateTo(&ITEM_moveY[i], 0.0);
-		TranslateTo(&ITEM_moveZ[i], 700.0);
+		TranslateTo(&ITEM_moveY[i], GetBox3D_Y(i));
+		TranslateTo(&ITEM_moveZ[i], GetBox3D_Z(i));
 		RotateTo(&ITEM_angleX[i], 0.0);
 		RotateTo(&ITEM_angleY[i], -PI/2);
 		RotateTo(&ITEM_angleZ[i], 0.0);
-		e-=30;
+		e -= (float)BOX3D_GAP*15.0f + GetBox3D_E(i);
 		
 		if(previous==-1) previous=i;
 	}
 	
 	TranslateTo(&ITEM_moveX[position], 0.0);
 	TranslateTo(&ITEM_moveY[position], 0.0);
-	if(FLOW_Zoom) TranslateTo(&ITEM_moveZ[position], 400.0);
-	else TranslateTo(&ITEM_moveZ[position], 500.0);
+	TranslateTo(&ITEM_moveZ[position], GetBox3D_Zoom(position));
 	
 	RotateTo(&ITEM_angleX[position], 0.0);
 	// don't rotate if the boxes are too close
@@ -41010,7 +41483,7 @@ void update_3DFLOW()
 			RotateTo(&ITEM_angleY[position], PI);
 		else 
 			RotateTo(&ITEM_angleY[position], 0.0);
-	}	
+	}
 	RotateTo(&ITEM_angleZ[position], 0.0);
 	
 	MOVE_animated=YES;
@@ -41154,22 +41627,20 @@ void Draw_FLOW_3D()
 	int i=position;
 	int k=0;
 	int j=-1;
-	int Box_Displayed = 0;
 	
-	while(Box_Displayed != 16)
+	int always_true=1;
+	while(always_true)
 	{
-		if(Box_Displayed == 8 && j==-1) {j=1; k=0;}
-		
-		i=position+k*j;
-		
+		i=position+k*j;	
 		k++;
 		
-		if(i<0) {j=1; k=0; continue; }
-		if(i>game_number) break;
+		if(i<0) {j=1; k=0; continue;}
+		if(game_number<i) break;
 		
 		if(Show_it(i)==NO) continue;
 		
-		Box_Displayed++;
+		if(ITEM_moveX[i] < -410) {j=1; k=0; continue;}
+		if(410 < ITEM_moveX[i] ) break;
 		
 		// *** MOVEMENT ***
 		MATRIX m_axis;
@@ -41778,13 +42249,7 @@ void input_MAIN()
 	R2_SyncLeftJoystick();
 		
 	if(HoldCircleDelay()) {
-		//end_PlugAndPlay();
-		//end_MemMonitor();
-		end_Load_GAMEPIC();
-		end_load_CURPIC();
-		sysModuleUnload(SYSMODULE_PNGDEC);
-		sysModuleUnload(SYSMODULE_JPGDEC);
-		ioPadEnd();
+		MGZ_exit();
 		exit(0);
 	}
 	
@@ -41823,11 +42288,7 @@ void input_MAIN()
 			else show_msg("FAILED : EXIT !");
 #else
 			if(mounted) {
-				end_Load_GAMEPIC();
-				end_load_CURPIC();
-				sysModuleUnload(SYSMODULE_PNGDEC);
-				sysModuleUnload(SYSMODULE_JPGDEC);
-				ioPadEnd();
+				MGZ_exit();
 				exit(0);
 			}
 #endif
@@ -42009,8 +42470,7 @@ void input_MAIN()
 			else FLOW_ShowBack=YES;
 		}
 		if( NewPad(BUTTON_L3) && FLOW_3D) {
-			if(FLOW_Zoom==YES) FLOW_Zoom=NO;
-			else FLOW_Zoom=YES;
+			FLOW_Zoom = !FLOW_Zoom;
 		}
 		
 	}
@@ -42212,7 +42672,8 @@ void Draw_MAIN()
 	if(UI_position==FLOW) {
 		if(FLOW_3D) {
 			FontSize(20);
-			DrawTXTInBoxFromCenter(0, 50, 10, X_MAX, 60, list_game_title[position], 0, WHITE);
+			
+			DrawTXTInBoxFromCenter(0, FLOW_Zoom ? 10 : 50, 10, X_MAX, 60, list_game_title[position], 0, WHITE);
 			
 			update_3DFLOW();
 		
@@ -42254,6 +42715,34 @@ u8 Show_it(int pos)
 	return YES;
 }
 
+void MGZ_exit()
+{
+	if( DEBUG ) start_loading();
+	print_debug("end_PlugAndPlay");
+	end_PlugAndPlay();
+	print_debug("end_MemMonitor");
+	end_MemMonitor();
+	print_debug("end_Load_GAMEPIC");
+	end_Load_GAMEPIC();
+	print_debug("end_load_CURPIC");
+	end_load_CURPIC();
+	print_debug("end_gathering");
+	end_gathering();
+	print_debug("end_copy_loading");
+	end_copy_loading();
+	print_debug("exFAT_deinit");
+	exFAT_deinit();
+	print_debug("sysModuleUnload(SYSMODULE_PNGDEC)");
+	sysModuleUnload(SYSMODULE_PNGDEC);
+	print_debug("sysModuleUnload(SYSMODULE_JPGDEC)");
+	sysModuleUnload(SYSMODULE_JPGDEC);
+	print_debug("ioPadEnd()");
+	ioPadEnd();
+	print_debug("FCLOSE(mgz_log) && end_loading()");
+	FCLOSE(mgz_log);
+	end_loading();
+}
+
 int main(void)
 {
 	u8 LoopBreak=1;
@@ -42266,7 +42755,6 @@ int main(void)
 	sysModuleLoad(SYSMODULE_JPGDEC);
 	
 	Init_Graph();
-	initAIO();
 	ioPadInit(7);
 	ioPadSetPressMode(0,1);
 	SetCurrentFont(-1);
@@ -42334,13 +42822,9 @@ int main(void)
 	print_load("Load Theme");
 	Load_Theme();
 	
-	end_loading();
-	
 	Draw_FileExplorer();
 	
-	ioPadEnd();
-	sysModuleUnload(SYSMODULE_PNGDEC);
-	sysModuleUnload(SYSMODULE_JPGDEC);
+	MGZ_exit();
 	
 	return 0;
 #endif // FILEMANAGER
@@ -42368,9 +42852,7 @@ int main(void)
 			ps3pad_read();
 			
 			if(NewPad(BUTTON_CIRCLE)) {
-				ioPadEnd();
-				sysModuleUnload(SYSMODULE_PNGDEC);
-				sysModuleUnload(SYSMODULE_JPGDEC);
+				MGZ_exit();
 				LoopBreak=0;
 				return 0;
 			}
@@ -42380,7 +42862,6 @@ int main(void)
 	
 	if(AutoM) AutoMount();	
 
-	
 	print_load(STR_ADJUST);
 	adjust_screen();
 
@@ -42414,9 +42895,7 @@ int main(void)
 			ps3pad_read();
 			
 			if(NewPad(BUTTON_CIRCLE)) {
-				sysModuleUnload(SYSMODULE_PNGDEC);
-				sysModuleUnload(SYSMODULE_JPGDEC);
-				ioPadEnd();
+				MGZ_exit();
 				LoopBreak=0;
 				return 0;
 			}

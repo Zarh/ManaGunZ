@@ -1,0 +1,398 @@
+STR_LANGUAGE                  {한국인}
+STR_LANGCODE                  {\x09}
+
+STR_LANG                      {의 의}
+STR_LANG_DESC                 {당신의 언어 선택.}
+STR_GATHERING                 {데이터 수집}
+STR_COPYING                   {관련 기사}
+STR_FROM                      {으로}
+STR_TO                        {으로}
+STR_FILES                     {의 의}
+STR_DIRS                      {주요연혁}
+STR_UNKNOWN                   {이름 *}
+STR_FILE                      {...}
+STR_CANCEL                    {의 의}
+STR_TURNOFF                   {기타 제품}
+STR_CANCELLED                 {뚱 베어}
+STR_UNIT                      {팟캐스트}
+STR_TOTALSIZE                 {총 크기}
+STR_HIDELOGS                  {로그인}
+STR_SHOWLOGS                  {로그보기}
+STR_BOOST                     {더 보기}
+STR_GAMEMENU                  {게임 메뉴}
+STR_SETTINGS                  {의 특징}
+STR_MOUNTGAME                 {산 Game}
+STR_FILTER                    {제품정보}
+STR_FAVORITE                  {이름 *}
+STR_FILEMANAGER               {파일 관리자}
+STR_HOLD                      {...}
+STR_EXIT                      {오시는길}
+STR_GAME_PROP                 {게임 속성}
+STR_GAME_TITLE                {1명}
+STR_GAME_PATH                 {- 연혁}
+STR_GAME_FORMAT               {(주)}
+STR_GAME_SIZE                 {크기 (mm)}
+STR_GAME_PLATFORM             {회사연혁}
+STR_SYSVERS                   {회사 소개}
+STR_GAMEID                    {인증현황}
+STR_ELFCRC                    {엘프 CRC}
+STR_ELFCRCO                   {ELF CRC (원래)}
+STR_BACK                      {기타}
+STR_ENTER                     {은}
+STR_UPDATE_FOUND              {업데이트}
+STR_UPDATE                    {...}
+STR_SIZE                      {크기 (mm)}
+STR_SYSTEM                    {시스템}
+STR_DL                        {다운로드}
+STR_DL_ALL                    {다운로드}
+STR_UNPLUG                    {뒤에 오는 장치를 폐쇄하십시오 (s)}
+STR_PATH                      {- 연혁}
+STR_TYPE                      {제품정보}
+STR_FOLDER                    {뚱 베어}
+STR_DIR                       {의논하기}
+STR_MULT                      {은}
+STR_THM_SETTINGS              {테마 설정}
+STR_THM                       {(주)}
+STR_THM_DESC                  {당신이 원하는 테마를로드. dev_usbXXX/Themes에서 설치할 수 있습니다.}
+STR_CREATE                    {을 읽다}
+STR_ZOOM_OUT                  {줌 아웃}
+STR_ZOOM_IN                   {줌 IN}
+STR_MOVE_FRAME                {이동 구조}
+STR_CHECK                     {. ..}
+STR_UNCHECK                   {기타 제품}
+STR_GAME_OPTION               {게임 옵션}
+STR_ADD_FAV                   {자주 묻는 질문}
+STR_REM_FAV                   {자주 묻는 질문}
+STR_FAV_DESC                  {좋아하는 게임을 관리하세요.}
+STR_RENAME                    {이름 *}
+STR_RENAME_DESC               {백업의 제목을 이름을 변경합니다.}
+STR_DELETE                    {기타}
+STR_DELETE_DESC               {백업 삭제}
+STR_COPY                      {. ..}
+STR_COPY_DESC                 {다른 경로로 백업을 복사합니다.}
+STR_CREATE_ICON0              {ICON0 만들기}
+STR_CREATE_ICON0_DESC         {덮개에서 가짜 ICON0 만들기.}
+STR_REST_PNACH                {PNACH를 복원}
+STR_REST_PNACH_DESC           {pnach 파일에 의해 백업에 적용된 패치를 제거하십시오.}
+STR_APPLY_PNACH               {PNACH 신청}
+STR_APPLY_PNACH_DESC          {pnach 파일에서 백업에 패치를 적용합니다.}
+STR_DISABLE_WS                {WideScreen 사용}
+STR_ENABLE_WS                 {WideScreen 사용}
+STR_WS_DESC                   {4:3 대신 16:9에서 게임을 표시합니다.}
+STR_DISABLE_480P              {480P 사용}
+STR_ENABLE_480P               {480P 사용 가능}
+STR_480P_DESC                 {480P의 진보적인 검사 형태.}
+STR_DISABLE_YFIX              {YFIX 사용}
+STR_ENABLE_YFIX               {YFIX 사용}
+STR_YFIX_DESC                 {수직 위치를 수정합니다.}
+STR_DISABLE_FMVSKIP           {FMV 사용 퀵메뉴}
+STR_ENABLE_FMVSKIP            {FMV 사용 퀵메뉴}
+STR_FMVSKIP_DESC              {전체 모션 비디오를 건너 뛸 수 있습니다.}
+STR_DISABLE_NETEMU            {NetEMU 사용}
+STR_ENABLE_NETEMU             {NetEMU 사용}
+STR_NETEMU_DESC               {ps2 netemu의 사용을 강제하십시오.}
+STR_SAVE_CONFIG               {CONFIG 할인}
+STR_CONFIG                    {제품 설명}
+STR_CONFIG_DESC               {[체험] Ps2 백업을 수정하려면 자체 CONFIG 파일을 만듭니다.}
+STR_NONE                      {ᄋᄋ}
+STR_CHECK_MD5                 {MD5 확인}
+STR_PROPS                     {의 특징}
+STR_PROPS_DESC                {백업의 속성을 표시합니다.}
+STR_ASK_DEL                   {삭제하고 싶은데}
+STR_GAME_SETTINGS             {게임 설정}
+STR_DIRECT_BOOT               {직접 부팅}
+STR_DIRECT_BOOT_DESC          {XMB로 돌아가지 않고 직접 게임을 시작합니다.}
+STR_YES                       {이름 *}
+STR_NO                        {은}
+STR_CLEAN_SYSCALL             {깨끗한 syscall}
+STR_CLEAN_SYSCALL_DESC        {syscalls를 읽을 수 있습니다.}
+STR_CHANGE_IDPS               {IDPS 변경}
+STR_CHANGE_IDPS_DESC          {lv2에 IDPS를 변경하십시오.}
+STR_EXT_GAME_DATA             {Ext. 게임 데이터}
+STR_EXT_GAME_DATA_DESC        {시스템 대신 USB 장치에서 gamedata를 설치하십시오.}
+STR_PAYLOAD                   {결제하기}
+STR_PAYLOAD_DESC              {백업을 마운트하기 위해 payload를 선택하십시오.}
+STR_PRIM_USB                  {기본 USB 설정}
+STR_PRIM_USB_DESC             {USB 장치를 메인 USB 장치로 저장합니다.}
+STR_BDEMU                     {BD 에뮬레이션}
+STR_BDEMU_DESC                {emulation의 유형을 사용하여 백업을 마운트하십시오.}
+STR_PATCH_LIBFS               {패치 libfs}
+STR_PATCH_LIBFS_DESC          {사용하려는 libfs를 패치한 것을 선택하십시오.}
+STR_MOUNT_APPHOME             {마운트 /app_home}
+STR_MOUNT_APPHOME_DESC        {경로 /app_home 으로 /dev_bdvd 를 리디렉션합니다.}
+STR_PATCH_EXP                 {패치 탐색_plugin}
+STR_PATCH_EXP_DESC            {path /app_home는 플러그인 탐험_plugin 내부 /dev_bdvd에 의해 대체됩니다.}
+STR_MAKE_SHTCUT_PKG           {바로가기 PKG의}
+STR_MAKE_SHTCUT_PKG_DESC      {dev_hdd0/packages에 저장된 패키지 파일을 만듭니다. 설치되면 XMB에서 백업을 마운트하는 단축키가 될 것입니다.}
+STR_PATCH_EBOOT               {패치 EBOOT}
+STR_PATCH_EBOOT_DESC          {오류 0x80010009을 방지하기 위해 EBOOT 파일의 4.21에 펌웨어 버전을 변경합니다.}
+STR_RESIGN                    {재 위탁}
+STR_RESIGN_DESC               {4.21 키로 백업의 모든 실행을 재 서명합니다.}
+STR_RESTORE                   {관련 상품}
+STR_RESTORE_DESC              {백업의 원본 실행을 복원합니다.}
+STR_EXTRACT_ISO               {추출 ISO}
+STR_EXTRACT_ISO_DESC          {ISO에서 폴더에 파일을 추출합니다.}
+STR_CONVERT_ISO               {ISO로 변환}
+STR_CONVERT_ISO_DESC          {JB 백업을 ISO로 변환합니다.}
+STR_FIX_PERMS                 {수정 권한}
+STR_FIX_PERMS_DESC            {각 폴더의 0777에 권한 값을 설정하고 백업의 파일.}
+STR_CHECK_IRD                 {파일 확인 (IRD)}
+STR_CHECK_DESC                {백업의 파일이 수정되지 않은 경우 확인.}
+STR_DL_UPDATE                 {다운로드 Update}
+STR_DL_UPDATE_DESC            {dev_hdd0/packages에 백업의 업데이트를 다운로드하십시오.}
+STR_OPEN_WINDOW               {새 창 열기}
+STR_DUMP_LV1                  {덤프 lv1}
+STR_DUMP_LV2                  {덤프 lv2}
+STR_DUMP_FLASH                {회사 소개}
+STR_REFRESH                   {지원하다}
+STR_NEWFOLDER                 {새로운 폴더}
+STR_NEWFILE                   {새 파일}
+STR_PASTE                     {뚱 베어}
+STR_CUT                       {뚱 베어}
+STR_UNSELECT_ALL              {모두 선택}
+STR_SELECT_ALL                {모든 제품}
+STR_MAKE_PKG                  {PKG를 만드십시오}
+STR_GETMD5                    {MD5 받기}
+STR_GETSHA1                   {SHA1 받기}
+STR_VIEW                      {...}
+STR_VIEW_TXT                  {TXT 보기}
+STR_VIEW_SFO                  {SFO 보기}
+STR_READ_XREG                 {읽기 xReg}
+STR_EXTRACT_ELF               {ELF를 추출}
+STR_RESIGN_SELF               {위탁 SELF}
+STR_LAUNCH_SELF               {SELF 출시}
+STR_EXTRACT_EBOOT             {추출 EBOOT}
+STR_RESIGN_EBOOT              {EBOOT를 할당}
+STR_LAUNCH_EBOOT              {EBOOT 출시}
+STR_SIGN_ELF                  {로그인 ELF}
+STR_SIGN_EBOOT                {EBOOT 소개}
+STR_SIGN_PRX                  {PRX 소개}
+STR_EXTRACT_PRX               {추출물 PRX}
+STR_RESIGN_SPRX               {SPRX 할당}
+STR_REMOVE_PRXLOADER          {PRX 로더에서 제거}
+STR_ADD_PRXLOADER             {PRX 로더에 추가}
+STR_REMOVE_PRXLOADER2         {PRXLoader에서 제거}
+STR_ADD_PRXLOADER2            {PRXLoader에 추가}
+STR_REMOVE_MAMBA              {Mamba 목록에서 제거}
+STR_ADD_MAMBA                 {Mamba에 추가하기}
+STR_REMOVE_COBRA              {Cobra 목록에서 제거}
+STR_ADD_COBRA                 {Cobra에 추가하기}
+STR_EXTRACT_RCO               {추출 RCO}
+STR_EXTRACT_PKG               {추출물 PKG}
+STR_PKG_INFO                  {PKG 정보}
+STR_EXTRACT_TRP               {추출물 TRP}
+STR_COMPRESS_ISO              {압축 ISO}
+STR_CHECK_CRC32               {CRC32 확인}
+STR_DECOMPRESS_CSO            {압축 CSO}
+STR_EXTRACT_THM               {THM 추출}
+STR_EXTRACT_P3T               {추출물 P3T}
+STR_EXTRACT_RAF               {추출 RAF}
+STR_EXTRACT_QRC               {QRC를 추출}
+STR_EXTRACT_HERE              {여기에 추출}
+STR_CONVERT_JSX_JS            {JSX를 JS로 변환}
+STR_CONVERT_VAG_WAV           {VAG를 WAV로 변환}
+STR_CONVERT_GTF_DDS           {GTF를 DDS로 변환}
+STR_CONVERT_DDS_PNG           {DDS를 PNG로 변환}
+STR_MAKE_APNG                 {APNG 만들기}
+STR_SET_PERMS                 {설정 권한}
+STR_NOGAME                    {게임 없음}
+STR_GLOB_SETTINGS             {글로벌 설정}
+STR_ADJUST                    {스크린을 조정하십시오}
+STR_ADJUST_DESC               {당신의 전시를 측정하십시오.}
+STR_DL_COVER                  {다운로드}
+STR_DL_COVER_DESC             {다운로드 모든 누락된 게임은 USRDIR/covers/[gameID].jpg}
+STR_PLUGIN_MANAGER            {플러그인 관리자}
+STR_PLUGIN_MANAGER_DESC       {dev_hdd0/plugins에 저장된 플러그인 관리.}
+STR_UPD_MGZ                   {ManaGunZ 업데이트}
+STR_UPD_MGZ_DESC              {ManaGunZ의 최신 버전을 다운로드하고 설치하십시오.}
+STR_GAME_PATHS                {게임 백업 경로}
+STR_GAME_PATHS_DESC           {ManaGunZ가 백업을 찾을 디렉토리의 이름을 구성합니다.}
+STR_XMB_PRIO                  {사이트맵 주요연혁}
+STR_XMB_PRIO_DESC             {XMB의 ManaGunZ 아이콘은 상단에 표시됩니다. 그것은 다음 시스템 부팅 후 효과적 일 것입니다.}
+STR_HELP                      {공지사항}
+STR_HELP_DESC                 {여기에서 읽는 문장을 표시합니다.}
+STR_COLOR_1                   {색깔 1}
+STR_COLOR_2                   {색깔 2}
+STR_COLOR_3                   {색깔 3}
+STR_COLOR_4                   {색깔 4}
+STR_COLOR_DESC                {ManaGunZ에 의해 사용되는 색상 변경.}
+STR_UI_SETTINGS               {사용자 인터페이스 설정}
+STR_UI                        {사용자 인터페이스}
+STR_UI_DESC                   {인터페이스를 변경합니다.}
+STR_SIDE_MENU                 {게임 SideMenu}
+STR_SIDE_MENU_DESC            {화면 오른쪽에있는 게임 메뉴를 표시합니다.}
+STR_SHOW_PIC1                 {PIC1 보기}
+STR_SHOW_PIC1_DESC            {현재 선택된 게임 PIC1의 배경 사진을 표시합니다. UI LIST와 GRID를 사용하여 R1을 사용하여 표시합니다.}
+STR_SHOW_COVER                {쇼 커버}
+STR_SHOW_COVER_DESC           {게임 커버를 표시합니다.}
+STR_SHOW_GAMECASE             {게임 케이스}
+STR_SHOW_GAMECASE_DESC        {게임 케이스와 게임 커버를 표시합니다.}
+STR_SHOW_ICON0                {ICON0 보기}
+STR_SHOW_ICON0_DESC           {게임 ICON0의 주요 그림을 표시합니다.}
+STR_GRID_TYPE                 {격자 유형}
+STR_GRID_TYPE_DESC            {그리드 이동을 만드는 방법을 선택하십시오.}
+STR_SCROLL                    {퀵메뉴}
+STR_PAGE                      {의 의}
+STR_DIRECTION                 {(주)디지}
+STR_DIRECTION_DESC            {그리드가 움직이는 방향으로 선택합니다.}
+STR_VERTICAL                  {은밀한}
+STR_HORIZONTAL                {(주)}
+STR_ANIMATED                  {인기 있는}
+STR_ANIMATED_DESC             {그리드의 움직임을 슬라이딩합니다.}
+STR_KEEP_PROP                 {유지 비율}
+STR_KEEP_PROP_DESC            {ICON0의 원래 측면 비율을 유지하십시오.}
+STR_NB_COL                    {열의 수}
+STR_NB_COL_DESC               {그리드의 열 수를 선택합니다.}
+STR_NB_LINE                   {선의 수}
+STR_NB_LINE_DESC              {그리드의 줄을 선택합니다.}
+STR_INVERSE                   {반전 단추}
+STR_INVERSE_DESC              {오른쪽 버튼과 왼쪽을 반전합니다.}
+STR_3D                        {3D 비디오}
+STR_3D_DESC                   {게임 케이스의 3D 모델로 메뉴를 표시합니다.}
+STR_ADD                       {제품정보}
+STR_LOAD                      {로드 중 ...}
+STR_CHANGE                    {의 의}
+STR_COLOR                     {색깔: 회색}
+STR_RESET                     {을 읽다}
+STR_FAILED                    {뚱 베어}
+STR_DONE                      {디아지오}
+STR_OPEN                      { Open}
+STR_CLOSE                     {뚱 베어}
+STR_OPTION                    {* *}
+STR_SELECT                    {. . . . . . . . . . . . . . . . . .}
+STR_WINDOW                    {창의력}
+STR_CLICK                     {을 선택}
+STR_CURSOR                    {회사 소개}
+STR_NEXT                      {으로}
+STR_PREVIOUS                  {...}
+STR_SET_COLOR                 {색깔 설정}
+STR_HIDETV                    {TV 화면 테스트 숨기기}
+STR_SHOWTV                    {TV 화면 테스트}
+STR_MOVE_TO_PLUGINS           {dev_hdd0/plugins로 이동}
+STR_ASK_PLUGINS               {플러그인 관리자를 사용하려면 플러그인은 dev_hdd0/plugins'.\n에 있어야 합니다. 이 폴더를 사용할 수 있습니까?}
+STR_CHANGE_VALUE              {변경 값}
+STR_LOAD_IDPS_LV2             {lv2에서 짐 IDPS}
+STR_LOAD_IDPS_EID5            {EID5에서 IDPS를 로드}
+STR_NAME                      {이름 *}
+STR_DOCK_RIGHT                {오른쪽으로}
+STR_DOCK_LEFT                 {왼쪽으로}
+STR_DOCK_FULL                 {전체로 돌아가기}
+STR_PLUGIN_MONITOR            {플러그인 모니터}
+STR_UNUSED                    {뚱 베어}
+STR_UNLOAD                    {제품 정보}
+STR_BOOT_FILE                 {부팅 파일}
+STR_CURRENT                   {현재 위치}
+STR_NET                       {이름 *}
+STR_SOFT                      {은}
+STR_GX                        {사이트맵}
+STR_CUSTOM                    {제품 정보}
+STR_NEW_CMD                   {새로운 명령}
+STR_PNACH                     {팟캐스트}
+STR_WIDESCREEN                {채용 정보}
+STR_480P                      {480P의}
+STR_YFIX                      {YFIX의 특징}
+STR_FMV                       {FMV 건너뛰기}
+STR_SIMPLE                    {의 장점}
+STR_ADVANCED                  {의 의}
+STR_INSTALL_MGZ               {ManaGunZ 를 설치 하시겠습니까?}
+STR_UP2DATE                   {날짜까지}
+STR_SHOW_WAVES                {파기방법}
+STR_SHOW_WAVES_DESC           {배경에 있는 전시 파.}
+STR_WAVES_COLOR               {파 색상}
+STR_WAVES_COLOR_DESC          {파도의 색상을 변경합니다.}
+STR_USE_CONFIG                {PS2 구성 파일 *CONFIG를 사용하지 않습니다.}
+STR_COLORSET                  {색상 설정}
+STR_COLORSET_DESC             {ManaGunZ에서 사용할 수있는 색상의 사전 정의 세트를 선택하십시오.}
+STR_GRID_SCROLL               {퀵메뉴}
+STR_ADD_LIMG                  {LIMG 소개}
+STR_REMOVE_LIMG               {LIMG 제거}
+STR_LIMG_DESC                 {몇 가지 게임을 수정할 수 있습니다.}
+STR_FONT                      {(주)}
+STR_FONT_DESC                 {글꼴 변경.}
+STR_MOVE                      {뚱 베어}
+STR_JOIN                      {으로}
+STR_JOIN_DESC                 {.666XX 파일.}
+STR_COLOR_FILTER              {색상 필터}
+STR_COLOR_NOTIF               {* 이름}
+STR_COLOR_BOXHEAD             {박스 헤더}
+STR_COLOR_BOXBODY             {상자 몸}
+STR_COLOR_SIDEBAR             {사이드바}
+STR_COLOR_BGS                 {배경 설정}
+STR_COLOR_BG                  {의 의}
+STR_ROOT_DISPLAY              {뿌리 전시}
+STR_ROOT_DISPLAY_DESC         {FileManager의 루트의 표시를 변경합니다.}
+STR_STYLE                     {(주)}
+STR_STYLE_CUSTOM              {주문 작풍}
+STR_STYLE1                    {스타일 1}
+STR_STYLE2                    {스타일 2}
+STR_STYLE3                    {스타일 3}
+STR_STYLE4                    {스타일 4}
+STR_STYLE5                    {스타일 5}
+STR_STYLE6                    {스타일 6}
+STR_FREEOF                    {무료 다운로드}
+STR_ROOTLABEL                 {(주)}
+STR_FM_ICONSIZE               {Icon 크기}
+STR_FM_BIG                    {큰 가슴}
+STR_FM_SMALL                  {제품정보}
+STR_FM_ROWNUMBER              {텍스트 행 번호}
+STR_FM_ROWSIZE                {행 크기}
+STR_FM_LEFT_CONTENT           {행 내용 [LEFT]}
+STR_FM_RIGHT_CONTENT          {행 내용 [RIGHT]}
+STR_FM_EMPTY                  {뚱 베어}
+STR_FM_MOUNTPOINT             {산 점}
+STR_FM_DEVICE                 {제품정보}
+STR_FM_LABEL                  {제품정보}
+STR_FM_CAPACITY               {수용량 막대기}
+STR_FM_MEMINSIDE              {안쪽 기억}
+STR_FM_MEMOUTSIDE             {외부 기억}
+STR_FM_FILESYSTEM             {파일 시스템}
+STR_FM_CB_WIDTH               {수용량 막대기 폭}
+STR_FM_MEMORY                 {(주)}
+STR_FM_ICON                   {아이콘}
+STR_FM_FILEFOLDER             {파일 및 폴더}
+STR_FM_CUSTOM                 {주문 아이콘}
+STR_FM_CB_FILL                {제품정보}
+STR_EDIT_IDPS                 {IDPS 편집}
+STR_FILTER_NOGAME             {게임이 없습니다. 필터를 조정합니다.}
+STR_SYMLINK_SRC               {SymLink 소스}
+STR_SYMLINK_TARGET            {SymLink 대상}
+STR_LOAD_MAMBA                {짐 mamba}
+STR_CONVERT_TO_PNG            {PNG로 변환}
+STR_MOUNT_DEVBLIND            {unprotect의 dev_flash}
+STR_UNMOUNT_DEVBLIND          {dev_flash를 보호하십시오}
+STR_BT_AUDIO                  {Game-pad 오디오 아웃}
+STR_BT_AUDIO_DESC             {게임 패드를 통해 사운드를 재생합니다. DS4 테스트.}
+STR_GAME_UPDATE_TITLE         {PS3 게임 업데이트 다운로더}
+STR_CURRENT_VERS              {현재 버전}
+STR_CANT_MOUNT_PEEKPOKE       {사용되지 않음 : PEEK 및 POKE 사용 가능, mamba 설치 가능}
+STR_CANT_MOUNT_UNKFW          {unmountable: 알 수 없는 굳힌모, mamba는 설치될 수 없습니다.}
+STR_CANT_MOUNT                {기타 제품}
+STR_ONLY_FAV                  {인기 있는}
+STR_ALL_GAMES                 {모든 게임}
+STR_DISPLAY                   {제품정보}
+STR_DUMP_DEC                  {덤프는 Blu-Ray 디스크를 해독}
+STR_DUMP_DEC_DESC             {IRD를 가진 당신의 원판의 적당한 iso를 얻으십시오. IRD를 데이터베이스에 업로드하면 완료됩니다.}
+STR_DUMP_ENC                  {덤프 암호화 된 Blu-Ray 디스크}
+STR_DUMP_DISC_KEY             {덤프 블루 레이 디스크 키}
+STR_DUMP_ERK                  {덤프 eid 뿌리 열쇠}
+STR_DUMP_3DUMP                {덤프 3Dump.bin}
+STR_SYSTEM_TOOLS              {시스템 도구}
+STR_DUMP_ENC_DESC             {Blu-Ray 디스크의 원시 iso를 가져옵니다.}
+STR_DUMP_ERK_DESC             {이것은 시스템을 해독하는 주요 열쇠입니다. 그것은 어디에나 사용됩니다. 경로: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {3k3y IsoTools로 Blu-Ray를 덤프하는 데 필요한 파일입니다. 경로: dev_hdd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {해독 edat/sdat}
+STR_REDUMP_LOG                {GetKey 덤프 생성}
+STR_REDUMP_LOG_DESC           {redump.org 제출에 필요한 파일 생성.}
+STR_DUMP_OPTION               {블루 레이 덤프}
+STR_IGNORE_ERR                {Ignore 오류}
+STR_IGNORE_ERR_DESC           {Blu-Ray Dumping 공정에서 읽기 오류를 무시합니다.}
+STR_3K3Y_HEADER               {3k3y 헤더 포함}
+STR_3K3Y_HEADER_DESC          {임베디드 3k3y 헤더를 가진 iso에 Blu-ray를 덤프합니다. 3k3y IsoTools는 그것을 인식 할 수 있습니다.}
+STR_ELAPSED                   {뚱 베어}
+STR_REMAINING                 {이름 *}
+STR_DYNAREC                   {연락처}
+STR_DYNAREC_DESC              {그것은 역동적인 recompilation를 이용하는 에뮬레이터를 허용합니다.}
+STR_BUILD_ISO                 {빌드 Iso}
+STR_BUILD_ISO_DESC            {Blu-Ray의 파일에서 백업 iso를 만듭니다.}
+STR_UPLOADER                  {비밀번호}
+STR_UPLOADER_DESC             {ird uploads에 대한 크레딧을 원하면 이름을 입력하고 익명으로 유지하십시오.}

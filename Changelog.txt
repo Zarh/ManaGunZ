@@ -1,6 +1,6 @@
 TO DO :
 Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA/INSDIR
-add new STR in loc/*.txt
+Add new STR in loc/*.txt
 
 v1.41
 Add : On dump BR functions, it checks if sys_storage_read succeeded. See notes (1).
@@ -13,6 +13,13 @@ Add : Decrypt EDAT/SDAT.
 Fix : JB md5 check, it removes the ultimate dot from filename. See: https://www.psx-place.com/threads/34448
 Add : Dump files for redump.org. It generates the same files as GetKey-r2-GameOS.
 Fix : Freeze when creating directory inside ntfs/exFAT devices. (bug introduced in v1.39)
+Add : DynaRec by IngPereira and DeanK. Tested with ps3sx https://github.com/Zarh/ps3sx
+Fix : Issue with IRD build on region hashes and Data2.
+Add : TranslateMGZ, it's a tools to translate ManaGunZ with LibreTranslate API.
+Add : Flow3D setting to align game boxes.
+Add : Flow3D setting to adjust gap between game boxes.
+Change : Flow3D, I increased the zoom of the selected game case (press L3).
+Fix : Square picture 320x320 used by webMAN MOD and sman in XMB won't be stretched anymore.
 
 Notes:
 (1) This is mostly for damaged disc, some sectors might be unreadable because of scratches.

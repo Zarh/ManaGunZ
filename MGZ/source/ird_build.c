@@ -32,7 +32,7 @@ u32 IRD_crc(ird_t *ird)
 	
 	crc = crc32(crc,  (const unsigned char*) &ird->RegionHashesNumber         , 1);
 	for(i=0; i<ird->RegionHashesNumber; i++) {
-		crc = crc32(crc,  (const unsigned char*) ird->RegionHashes[i]         ,  0x10);
+		crc = crc32(crc,  (const unsigned char*) ird->RegionHashes[i].RegionHash,  0x10);
 	}
 	
 	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
@@ -183,14 +183,12 @@ ird_t *IRD_load(char *IRD_PATH)
 	print_verbose("%d",  ird->RegionHashesNumber);
 	
 	print_verbose("IRD_Load malloc regionhashes");
-	ird->RegionHashes = (u8 **) malloc(ird->RegionHashesNumber * sizeof(u8*));
+	ird->RegionHashes = (RegionHash_t *) malloc(ird->RegionHashesNumber * sizeof(RegionHash_t));
 	if(ird->RegionHashes == NULL)  {printf("Error : IRD_Load Failed to malloc region hashes"); goto error;}
 	
 	print_verbose("IRD_Load RegionHashes");
 	for(i=0; i<ird->RegionHashesNumber; i++) {
-		ird->RegionHashes[i] = (u8 *) malloc( 0x10 * sizeof(u8));
-		if(ird->RegionHashes[i] == NULL)  {printf("Error : IRD_Load Failed to malloc RegionHashes"); goto error;}
-		fread(ird->RegionHashes[i], sizeof(u8), 0x10, irdu);
+		fread(ird->RegionHashes[i].RegionHash, sizeof(u8), 0x10, irdu);
 	}
 	
 	print_verbose("IRD_Load fread filehashesnumber");
@@ -323,7 +321,7 @@ u8 IRD_save(char *IRD_PATH, ird_t *ird)
 	
 	print_verbose("IRD_Save fwrite RegionHashes");
 	for(i=0; i<ird->RegionHashesNumber; i++) {
-		fwrite(ird->RegionHashes[i], sizeof(u8), 0x10, irdu);
+		fwrite(ird->RegionHashes[i].RegionHash, sizeof(u8), 0x10, irdu);
 	}
 	
 	print_verbose("IRD_Save fwrite filehashesnumber");

@@ -155,6 +155,7 @@ ifeq ($(FILEMANAGER), 1)
 	@cp -fr $(PKGFILES1)/USRDIR/sys/Check.zip $(PKGFILES2)/USRDIR/sys
 	@cp -fr $(PKGFILES1)/USRDIR/sys/sprx_iso $(PKGFILES2)/USRDIR/sys
 	@cp -fr $(PKGFILES1)/USRDIR/sys/PSP_CRC.txt $(PKGFILES2)/USRDIR/sys
+	@cp -fr $(PKGFILES1)/USRDIR/sys/dev_klics.txt $(PKGFILES2)/USRDIR/sys
 endif
 	
 #---------------------------------------------------------------------------------
@@ -163,7 +164,7 @@ endif
 #---------------------------------------------------------------------------------
 
 small_clean:
-	@rm -fr $(BUILD) *.elf *.self *.pkg
+	@rm -fr $(BUILD) *.elf *.self $(TARGET)_v*.pkg
 	@rm -fr MGZ/build/main.o
 
 #---------------------------------------------------------------------------------
@@ -202,6 +203,9 @@ update:
 	@$(MAKE) -C payloads/erk_dumper/spu --no-print-directory
 	@$(MAKE) -C payloads/erk_dumper/source --no-print-directory
 	@mv -f payloads/erk_dumper/bin/*.bin  MGZ/data
+#---------------------------------------------------------------------------------
+translate:
+	cd TranslateMGZ; ./TranslateMGZ.exe ../MGZ/source/str.h ../pkgfiles/USRDIR/sys/loc/
 	
 #---------------------------------------------------------------------------------
 lib:

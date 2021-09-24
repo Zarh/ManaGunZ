@@ -11,6 +11,9 @@
 #define SYSCALL_TABLE_421C         0x800000000035BCA8ULL
 #define HV_START_OFFSET_421C       0x370A28
 #define HTAB_OFFSET_421C           0x2DD244
+#define HTAB_PATCH1_421C           0x05CCA4
+#define HTAB_PATCH2_421C           0x05D6DC
+#define HTAB_PATCH3_421C           0x05DBA4
 #define MMAP_OFFSET1_421C          0x2DCA8C
 #define MMAP_OFFSET2_421C          0x2DCDBC
 #define SPE_OFFSET_421C            0x2F99F0
@@ -34,6 +37,9 @@
 #define SYSCALL_TABLE_421D         0x800000000037A1B0ULL
 #define HV_START_OFFSET_421D       0x370A28
 #define HTAB_OFFSET_421D           0x2DD244
+#define HTAB_PATCH1_421D           0x0605BC
+#define HTAB_PATCH2_421D           0x060FF4
+#define HTAB_PATCH3_421D           0x0614BC
 #define MMAP_OFFSET1_421D          0x2DCA8C
 #define MMAP_OFFSET2_421D          0x2DCDBC
 #define SPE_OFFSET_421D            0x2F99F0
@@ -57,6 +63,9 @@
 #define SYSCALL_TABLE_430C         0x800000000035DBE0ULL
 #define HV_START_OFFSET_430C       0x370AA8
 #define HTAB_OFFSET_430C           0x2DD284
+#define HTAB_PATCH1_430C           0x05CDF4
+#define HTAB_PATCH2_430C           0x05D82C
+#define HTAB_PATCH3_430C           0x05DCF4
 #define MMAP_OFFSET1_430C          0x2DCACC
 #define MMAP_OFFSET2_430C          0x2DCDFC
 #define SPE_OFFSET_430C            0x2F9A30
@@ -80,6 +89,9 @@
 #define SYSCALL_TABLE_430D         0x800000000037C068ULL
 #define HV_START_OFFSET_430D       0x370AA8
 #define HTAB_OFFSET_430D           0x2DD284
+#define HTAB_PATCH1_430D           0x06070C
+#define HTAB_PATCH2_430D           0x061144
+#define HTAB_PATCH3_430D           0x06160C
 #define MMAP_OFFSET1_430D          0x2DCACC
 #define MMAP_OFFSET2_430D          0x2DCDFC
 #define SPE_OFFSET_430D            0x2F9A30
@@ -103,6 +115,9 @@
 #define SYSCALL_TABLE_431C         0x800000000035DBE0ULL
 #define HV_START_OFFSET_431C       0x370AA8
 #define HTAB_OFFSET_431C           0x2DD284
+#define HTAB_PATCH1_431C           0x05CDF8
+#define HTAB_PATCH2_431C           0x05D830
+#define HTAB_PATCH3_431C           0x05DCF8
 #define MMAP_OFFSET1_431C          0x2DCACC
 #define MMAP_OFFSET2_431C          0x2DCDFC
 #define SPE_OFFSET_431C            0x2F9A30
@@ -126,6 +141,9 @@
 #define SYSCALL_TABLE_440C         0x800000000035E260ULL
 #define HV_START_OFFSET_440C       0x370AA8
 #define HTAB_OFFSET_440C           0x2DD284
+#define HTAB_PATCH1_440C           0x05BD40
+#define HTAB_PATCH2_440C           0x05C778
+#define HTAB_PATCH3_440C           0x05CC40
 #define MMAP_OFFSET1_440C          0x2DCACC
 #define MMAP_OFFSET2_440C          0x2DCDFC
 #define SPE_OFFSET_440C            0x2F9A30
@@ -149,6 +167,9 @@
 #define SYSCALL_TABLE_441C         0x800000000035E260ULL
 #define HV_START_OFFSET_441C       0x370AA8
 #define HTAB_OFFSET_441C           0x2DD284
+#define HTAB_PATCH1_441C           0x05BD44
+#define HTAB_PATCH2_441C           0x05C77C
+#define HTAB_PATCH3_441C           0x05CC44
 #define MMAP_OFFSET1_441C          0x2DCACC
 #define MMAP_OFFSET2_441C          0x2DCDFC
 #define SPE_OFFSET_441C            0x2F9A30
@@ -172,6 +193,9 @@
 #define SYSCALL_TABLE_441D         0x800000000037C9E8ULL
 #define HV_START_OFFSET_441D       0x370AA8
 #define HTAB_OFFSET_441D           0x2DD284
+#define HTAB_PATCH1_441D           0x05F65C
+#define HTAB_PATCH2_441D           0x060094
+#define HTAB_PATCH3_441D           0x06055C
 #define MMAP_OFFSET1_441D          0x2DCACC
 #define MMAP_OFFSET2_441D          0x2DCDFC
 #define SPE_OFFSET_441D            0x2F9A30
@@ -195,6 +219,9 @@
 #define SYSCALL_TABLE_446C         0x800000000035E860ULL
 #define HV_START_OFFSET_446C       0x370AA8
 #define HTAB_OFFSET_446C           0x2DD284
+#define HTAB_PATCH1_446C           0x05BD44
+#define HTAB_PATCH2_446C           0x05C77C
+#define HTAB_PATCH3_446C           0x05CC44
 #define MMAP_OFFSET1_446C          0x2DCACC
 #define MMAP_OFFSET2_446C          0x2DCDFC
 #define SPE_OFFSET_446C            0x2F9A30
@@ -218,6 +245,9 @@
 #define SYSCALL_TABLE_446D         0x800000000037CFE8ULL
 #define HV_START_OFFSET_446D       0x370AA8
 #define HTAB_OFFSET_446D           0x2DD284
+#define HTAB_PATCH1_446D           0x05F65C
+#define HTAB_PATCH2_446D           0x060094
+#define HTAB_PATCH3_446D           0x06055C
 #define MMAP_OFFSET1_446D          0x2DCACC
 #define MMAP_OFFSET2_446D          0x2DCDFC
 #define SPE_OFFSET_446D            0x2F9A30
@@ -241,6 +271,9 @@
 #define SYSCALL_TABLE_450C         0x800000000035F0D0ULL
 #define HV_START_OFFSET_450C       0x370AA8
 #define HTAB_OFFSET_450C           0x2DD284
+#define HTAB_PATCH1_450C           0x05BD40
+#define HTAB_PATCH2_450C           0x05C778
+#define HTAB_PATCH3_450C           0x05CC40
 #define MMAP_OFFSET1_450C          0x2DCACC
 #define MMAP_OFFSET2_450C          0x2DCDFC
 #define SPE_OFFSET_450C            0x2F9A30
@@ -264,6 +297,9 @@
 #define SYSCALL_TABLE_450D         0x8000000000383658ULL
 #define HV_START_OFFSET_450D       0x370AA8
 #define HTAB_OFFSET_450D           0x2DD284
+#define HTAB_PATCH1_450D           0x05F710
+#define HTAB_PATCH2_450D           0x060148
+#define HTAB_PATCH3_450D           0x060610
 #define MMAP_OFFSET1_450D          0x2DCACC
 #define MMAP_OFFSET2_450D          0x2DCDFC
 #define SPE_OFFSET_450D            0x2F9A30
@@ -287,6 +323,9 @@
 #define SYSCALL_TABLE_453C         0x800000000035F300ULL
 #define HV_START_OFFSET_453C       0x370AA8
 #define HTAB_OFFSET_453C           0x2DD284
+#define HTAB_PATCH1_453C           0x05BD44
+#define HTAB_PATCH2_453C           0x05C77C
+#define HTAB_PATCH3_453C           0x05CC44
 #define MMAP_OFFSET1_453C          0x2DCACC
 #define MMAP_OFFSET2_453C          0x2DCDFC
 #define SPE_OFFSET_453C            0x2F9A30
@@ -310,6 +349,9 @@
 #define SYSCALL_TABLE_453D         0x8000000000385108ULL
 #define HV_START_OFFSET_453D       0x370AA8
 #define HTAB_OFFSET_453D           0x2DD284
+#define HTAB_PATCH1_453D           0x05F714
+#define HTAB_PATCH2_453D           0x06014C
+#define HTAB_PATCH3_453D           0x060614
 #define MMAP_OFFSET1_453D          0x2DCACC
 #define MMAP_OFFSET2_453D          0x2DCDFC
 #define SPE_OFFSET_453D            0x2F9A30
@@ -333,6 +375,9 @@
 #define SYSCALL_TABLE_455C         0x8000000000362680ULL
 #define HV_START_OFFSET_455C       0x370F28
 #define HTAB_OFFSET_455C           0x2DD70C
+#define HTAB_PATCH1_455C           0x05D180
+#define HTAB_PATCH2_455C           0x05DBB8
+#define HTAB_PATCH3_455C           0x05E080
 #define MMAP_OFFSET1_455C          0x2DCF54
 #define MMAP_OFFSET2_455C          0x2DD284
 #define SPE_OFFSET_455C            0x2F9EB8
@@ -356,6 +401,9 @@
 #define SYSCALL_TABLE_455D         0x8000000000388488ULL
 #define HV_START_OFFSET_455D       0x370F28
 #define HTAB_OFFSET_455D           0x2DD70C
+#define HTAB_PATCH1_455D           0x060B50
+#define HTAB_PATCH2_455D           0x061588
+#define HTAB_PATCH3_455D           0x061A50
 #define MMAP_OFFSET1_455D          0x2DCF54
 #define MMAP_OFFSET2_455D          0x2DD284
 #define SPE_OFFSET_455D            0x2F9EB8
@@ -379,6 +427,9 @@
 #define SYSCALL_TABLE_460C         0x8000000000363A18ULL
 #define HV_START_OFFSET_460C       0x370F28
 #define HTAB_OFFSET_460C           0x2DD70C
+#define HTAB_PATCH1_460C           0x05D564
+#define HTAB_PATCH2_460C           0x05DF9C
+#define HTAB_PATCH3_460C           0x05E464
 #define MMAP_OFFSET1_460C          0x2DCF54
 #define MMAP_OFFSET2_460C          0x2DD284
 #define SPE_OFFSET_460C            0x2F9EB8
@@ -402,6 +453,9 @@
 #define SYSCALL_TABLE_465C         0x8000000000363A18ULL
 #define HV_START_OFFSET_465C       0x370F28
 #define HTAB_OFFSET_465C           0x2DD70C
+#define HTAB_PATCH1_465C           0x05D568
+#define HTAB_PATCH2_465C           0x05DFA0
+#define HTAB_PATCH3_465C           0x05E468
 #define MMAP_OFFSET1_465C          0x2DCF54
 #define MMAP_OFFSET2_465C          0x2DD284
 #define SPE_OFFSET_465C            0x2F9EB8
@@ -425,6 +479,9 @@
 #define SYSCALL_TABLE_465D         0x800000000038A120ULL
 #define HV_START_OFFSET_465D       0x370F28
 #define HTAB_OFFSET_465D           0x2DD70C
+#define HTAB_PATCH1_465D           0x060F38
+#define HTAB_PATCH2_465D           0x061970
+#define HTAB_PATCH3_465D           0x061E38
 #define MMAP_OFFSET1_465D          0x2DCF54
 #define MMAP_OFFSET2_465D          0x2DD284
 #define SPE_OFFSET_465D            0x2F9EB8
@@ -448,6 +505,9 @@
 #define SYSCALL_TABLE_470C         0x8000000000363B60ULL
 #define HV_START_OFFSET_470C       0x370F28
 #define HTAB_OFFSET_470C           0x2DD70C
+#define HTAB_PATCH1_470C           0x05D5EC
+#define HTAB_PATCH2_470C           0x05E024
+#define HTAB_PATCH3_470C           0x05E4EC
 #define MMAP_OFFSET1_470C          0x2DCF54
 #define MMAP_OFFSET2_470C          0x2DD284
 #define SPE_OFFSET_470C            0x2F9EB8
@@ -471,6 +531,9 @@
 #define SYSCALL_TABLE_470D         0x800000000038A368ULL
 #define HV_START_OFFSET_470D       0x370F28
 #define HTAB_OFFSET_470D           0x2DD70C
+#define HTAB_PATCH1_470D           0x060FBC
+#define HTAB_PATCH2_470D           0x0619F4
+#define HTAB_PATCH3_470D           0x061EBC
 #define MMAP_OFFSET1_470D          0x2DCF54
 #define MMAP_OFFSET2_470D          0x2DD284
 #define SPE_OFFSET_470D            0x2F9EB8
@@ -494,6 +557,9 @@
 #define SYSCALL_TABLE_475C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_475C       0x370F28
 #define HTAB_OFFSET_475C           0x2DD70C
+#define HTAB_PATCH1_475C           0x05D5F0
+#define HTAB_PATCH2_475C           0x05E028
+#define HTAB_PATCH3_475C           0x05E4F0
 #define MMAP_OFFSET1_475C          0x2DCF54
 #define MMAP_OFFSET2_475C          0x2DD284
 #define SPE_OFFSET_475C            0x2F9EB8
@@ -517,6 +583,9 @@
 #define SYSCALL_TABLE_475D         0x800000000038A3E8ULL
 #define HV_START_OFFSET_475D       0x370F28
 #define HTAB_OFFSET_475D           0x2DD70C
+#define HTAB_PATCH1_475D           0x060FC0
+#define HTAB_PATCH2_475D           0x0619F8
+#define HTAB_PATCH3_475D           0x061EC0
 #define MMAP_OFFSET1_475D          0x2DCF54
 #define MMAP_OFFSET2_475D          0x2DD284
 #define SPE_OFFSET_475D            0x2F9EB8
@@ -540,6 +609,9 @@
 #define SYSCALL_TABLE_476C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_476C       0x370F28
 #define HTAB_OFFSET_476C           0x2DD70C
+#define HTAB_PATCH1_476C           0x05D5F0
+#define HTAB_PATCH2_476C           0x05E028
+#define HTAB_PATCH3_476C           0x05E4F0
 #define MMAP_OFFSET1_476C          0x2DCF54
 #define MMAP_OFFSET2_476C          0x2DD284
 #define SPE_OFFSET_476C            0x2F9EB8
@@ -563,6 +635,9 @@
 #define SYSCALL_TABLE_476D         0x800000000038A3E8ULL
 #define HV_START_OFFSET_476D       0x370F28
 #define HTAB_OFFSET_476D           0x2DD70C
+#define HTAB_PATCH1_476D           0x060FC0
+#define HTAB_PATCH2_476D           0x0619F8
+#define HTAB_PATCH3_476D           0x061EC0
 #define MMAP_OFFSET1_476D          0x2DCF54
 #define MMAP_OFFSET2_476D          0x2DD284
 #define SPE_OFFSET_476D            0x2F9EB8
@@ -586,6 +661,9 @@
 #define SYSCALL_TABLE_478C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_478C       0x370F28
 #define HTAB_OFFSET_478C           0x2DD70C
+#define HTAB_PATCH1_478C           0x05D5F0
+#define HTAB_PATCH2_478C           0x05E028
+#define HTAB_PATCH3_478C           0x05E4F0
 #define MMAP_OFFSET1_478C          0x2DCF54
 #define MMAP_OFFSET2_478C          0x2DD284
 #define SPE_OFFSET_478C            0x2F9EB8
@@ -609,6 +687,9 @@
 #define SYSCALL_TABLE_478D         0x80000000003D01B8ULL
 #define HV_START_OFFSET_478D       0x370F28
 #define HTAB_OFFSET_478D           0x2DD70C
+#define HTAB_PATCH1_478D           0x060FC0
+#define HTAB_PATCH2_478D           0x0619F8
+#define HTAB_PATCH3_478D           0x061EC0
 #define MMAP_OFFSET1_478D          0x2DCF54
 #define MMAP_OFFSET2_478D          0x2DD284
 #define SPE_OFFSET_478D            0x2F9EB8
@@ -632,6 +713,9 @@
 #define SYSCALL_TABLE_480C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_480C       0x370F28
 #define HTAB_OFFSET_480C           0x2DD70C
+#define HTAB_PATCH1_480C           0x05D5EC
+#define HTAB_PATCH2_480C           0x05E024
+#define HTAB_PATCH3_480C           0x05E4EC
 #define MMAP_OFFSET1_480C          0x2DCF54
 #define MMAP_OFFSET2_480C          0x2DD284
 #define SPE_OFFSET_480C            0x2F9EB8
@@ -655,6 +739,9 @@
 #define SYSCALL_TABLE_480D         0x800000000038A4E8ULL
 #define HV_START_OFFSET_480D       0x370F28
 #define HTAB_OFFSET_480D           0x2DD70C
+#define HTAB_PATCH1_480D           0x060FBC
+#define HTAB_PATCH2_480D           0x0619F4
+#define HTAB_PATCH3_480D           0x061EBC
 #define MMAP_OFFSET1_480D          0x2DCF54
 #define MMAP_OFFSET2_480D          0x2DD284
 #define SPE_OFFSET_480D            0x2F9EB8
@@ -678,6 +765,9 @@
 #define SYSCALL_TABLE_481C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_481C       0x370F28
 #define HTAB_OFFSET_481C           0x2DD70C
+#define HTAB_PATCH1_481C           0x05D5F0
+#define HTAB_PATCH2_481C           0x05E028
+#define HTAB_PATCH3_481C           0x05E4F0
 #define MMAP_OFFSET1_481C          0x2DCF54
 #define MMAP_OFFSET2_481C          0x2DD284
 #define SPE_OFFSET_481C            0x2F9EB8
@@ -701,6 +791,9 @@
 #define SYSCALL_TABLE_481D         0x800000000038A4E8ULL
 #define HV_START_OFFSET_481D       0x370F28
 #define HTAB_OFFSET_481D           0x2DD70C
+#define HTAB_PATCH1_481D           0x060FC0
+#define HTAB_PATCH2_481D           0x0619F8
+#define HTAB_PATCH3_481D           0x061EC0
 #define MMAP_OFFSET1_481D          0x2DCF54
 #define MMAP_OFFSET2_481D          0x2DD284
 #define SPE_OFFSET_481D            0x2F9EB8
@@ -724,6 +817,9 @@
 #define SYSCALL_TABLE_482C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_482C       0x370F28
 #define HTAB_OFFSET_482C           0x2DD70C
+#define HTAB_PATCH1_482C           0x05D5F0
+#define HTAB_PATCH2_482C           0x05E028
+#define HTAB_PATCH3_482C           0x05E4F0
 #define MMAP_OFFSET1_482C          0x2DCF54
 #define MMAP_OFFSET2_482C          0x2DD284
 #define SPE_OFFSET_482C            0x2F9EB8
@@ -747,6 +843,9 @@
 #define SYSCALL_TABLE_482D         0x800000000038A4E8ULL
 #define HV_START_OFFSET_482D       0x370F28
 #define HTAB_OFFSET_482D           0x2DD70C
+#define HTAB_PATCH1_482D           0x060FC0
+#define HTAB_PATCH2_482D           0x0619F8
+#define HTAB_PATCH3_482D           0x061EC0
 #define MMAP_OFFSET1_482D          0x2DCF54
 #define MMAP_OFFSET2_482D          0x2DD284
 #define SPE_OFFSET_482D            0x2F9EB8
@@ -770,6 +869,9 @@
 #define SYSCALL_TABLE_483C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_483C       0x370F28
 #define HTAB_OFFSET_483C           0x2DD70C
+#define HTAB_PATCH1_483C           0x05D5F0
+#define HTAB_PATCH2_483C           0x05E028
+#define HTAB_PATCH3_483C           0x05E4F0
 #define MMAP_OFFSET1_483C          0x2DCF54
 #define MMAP_OFFSET2_483C          0x2DD284
 #define SPE_OFFSET_483C            0x2F9EB8
@@ -793,6 +895,9 @@
 #define SYSCALL_TABLE_484C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_484C       0x370F28
 #define HTAB_OFFSET_484C           0x2DD70C
+#define HTAB_PATCH1_484C           0x05D5F0
+#define HTAB_PATCH2_484C           0x05E028
+#define HTAB_PATCH3_484C           0x05E4F0
 #define MMAP_OFFSET1_484C          0x2DCF54
 #define MMAP_OFFSET2_484C          0x2DD284
 #define SPE_OFFSET_484C            0x2F9EB8
@@ -816,6 +921,9 @@
 #define SYSCALL_TABLE_484D         0x800000000038A4E8ULL
 #define HV_START_OFFSET_484D       0x370F28
 #define HTAB_OFFSET_484D           0x2DD70C
+#define HTAB_PATCH1_484D           0x060FC0
+#define HTAB_PATCH2_484D           0x0619F8
+#define HTAB_PATCH3_484D           0x061EC0
 #define MMAP_OFFSET1_484D          0x2DCF54
 #define MMAP_OFFSET2_484D          0x2DD284
 #define SPE_OFFSET_484D            0x2F9EB8
@@ -839,6 +947,9 @@
 #define SYSCALL_TABLE_485C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_485C       0x370F28
 #define HTAB_OFFSET_485C           0x2DD70C
+#define HTAB_PATCH1_485C           0x05D5F0
+#define HTAB_PATCH2_485C           0x05E028
+#define HTAB_PATCH3_485C           0x05E4F0
 #define MMAP_OFFSET1_485C          0x2DCF54
 #define MMAP_OFFSET2_485C          0x2DD284
 #define SPE_OFFSET_485C            0x2F9EB8
@@ -862,6 +973,9 @@
 #define SYSCALL_TABLE_486C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_486C       0x370F28
 #define HTAB_OFFSET_486C           0x2DD70C
+#define HTAB_PATCH1_486C           0x05D5F0
+#define HTAB_PATCH2_486C           0x05E028
+#define HTAB_PATCH3_486C           0x05E4F0
 #define MMAP_OFFSET1_486C          0x2DCF54
 #define MMAP_OFFSET2_486C          0x2DD284
 #define SPE_OFFSET_486C            0x2F9EB8
@@ -885,6 +999,9 @@
 #define SYSCALL_TABLE_487C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_487C       0x370F28
 #define HTAB_OFFSET_487C           0x2DD70C
+#define HTAB_PATCH1_487C           0x05D5F0
+#define HTAB_PATCH2_487C           0x05E028
+#define HTAB_PATCH3_487C           0x05E4F0
 #define MMAP_OFFSET1_487C          0x2DCF54
 #define MMAP_OFFSET2_487C          0x2DD284
 #define SPE_OFFSET_487C            0x2F9EB8
@@ -908,6 +1025,9 @@
 #define SYSCALL_TABLE_488C         0x8000000000363BE0ULL
 #define HV_START_OFFSET_488C       0x370F28
 #define HTAB_OFFSET_488C           0x2DD70C
+#define HTAB_PATCH1_488C           0x05D5F0
+#define HTAB_PATCH2_488C           0x05E028
+#define HTAB_PATCH3_488C           0x05E4F0
 #define MMAP_OFFSET1_488C          0x2DCF54
 #define MMAP_OFFSET2_488C          0x2DD284
 #define SPE_OFFSET_488C            0x2F9EB8
