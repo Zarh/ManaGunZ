@@ -198,7 +198,7 @@
 #define IRD_SCRIPT IRD_SERVER "/script.php"
 
 #define IRD_WEB				"https://irdinfostorage.azurewebsites.net"
-#define IRD_WEB_API			IRD_WEB "/api/irdinfo/"
+#define IRD_WEB_API			IRD_WEB 	"/api/irdinfo/"
 #define IRD_WEB_API_TRUST	IRD_WEB_API "incrementTrustLevel"
 #define IRD_WEB_API_NEW		IRD_WEB_API "saveird"
 
@@ -504,6 +504,8 @@ static u8 mamba = NO;
 static u8 usb = NO;
 static int position=0;
 char ManaGunZ_id[10];
+
+static int position_CURPIC=-1;
 
 //********** Scan DIR ****************
 
@@ -1053,12 +1055,13 @@ float SCROLL_W=SCROLL_W1;
 #define SCROLL_H_MIN				10
 #define CONTROLBOX_W				20.0
 #define CONTROLBOX_H				TOP_H_FONT
-#define CONTROLBOX_GAP					BORDER
+#define CONTROLBOX_GAP				BORDER
 #define WINDOW_MIN					(COL_W_MIN*2+BORDER*2)
 #define WINDOW_MAX					4
 #define WINDOW_MAX_ITEMS			4096
 #define WINDOW_MAX_PATH_LENGTH		512
 #define WINDOW_MAX_NAME_LENGTH		128
+#define WINDOW_MAX_DEVICES			32
 
 #define OVERLAY_COLOR				0xC0E0F0FF
 
@@ -3625,7 +3628,8 @@ void Load_FM()
 	
 	memset(&TMP_PIC, 0, sizeof(TMP_PIC));
 	TMP_PIC_offset = 0;
-		
+	position_CURPIC=-1;
+	
 	if(is_apng(TMP_PIC_path) == YES) {
 		Load_APNG(TMP_PIC_path);
 		if(loaded == YES) end_loading();
@@ -8185,7 +8189,6 @@ char *LoadFileFromISO(u8 prog, char *path, char *filename, int *size)
 	return mem;
 }
 
-int position_CURPIC=-1;
 void LOAD_PIC1()
 {
 	if(Show_PIC1 == NO) return; 
@@ -8295,6 +8298,7 @@ void load_CURPIC_thread(void *unused)
 		if( Game_stuff == NO ) {
 			COVER_offset=0;
 			TMP_PIC_offset=0;
+			position_CURPIC=-1;
 		}
 	}
 	Load_CURPIC_flag=-1;
@@ -14242,13 +14246,13 @@ void Draw_Copy_screen(void *unused)
 			u64 RemainingTime = ElapsedTime * gathering_total_size / copy_current_size - ElapsedTime;
 				
 			char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
-			if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
+			if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s : %s", STR_ELAPSED, ElapsedTime_STR);
 			FREE(ElapsedTime_STR);	
 			
 			if( gathering_total_size != 0 && gathering_cancel == NO) {
 				
 				char *RemainingTime_STR = GetTimeStr(RemainingTime);
-				if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
+				if(RemainingTime_STR) sprintf(remaining_STR,  "%s : %s", STR_REMAINING, RemainingTime_STR);
 				FREE(RemainingTime_STR);				
 			}
 		}
@@ -14337,7 +14341,7 @@ void Draw_Copy_screen(void *unused)
 		}
 	}
 	
-	print_load("end_of 'Draw_Copy_screen'");
+	print_debug("end_of 'Draw_Copy_screen'");
 	
 	if(copy_cancel == YES) Delete_Game(copy_dst, -1);
 	else if(shutdown==YES) {
@@ -14357,7 +14361,8 @@ void Draw_Copy_screen(void *unused)
 		strcpy(loading_log[i], "\0");
 	}
 	
-	print_load("sysThreadExit");
+	print_debug("sysThreadExit");
+	
 	copy_flag = -1;
 	sysThreadExit(0);
 }
@@ -25273,7 +25278,7 @@ void init_FileExplorer()
 	window_z = (float *) malloc(WINDOW_MAX * sizeof(float));
 	window_h = (float *) malloc(WINDOW_MAX * sizeof(float));
 	window_w = (float *) malloc(WINDOW_MAX * sizeof(float));
-		
+	
 	window_path = (char **) malloc(WINDOW_MAX * sizeof(char *));
 	for(i=0; i<WINDOW_MAX; i++) window_path[i]=NULL;
 	window_lastpath = (char **) malloc(WINDOW_MAX * sizeof(char *));
@@ -25305,16 +25310,13 @@ void init_FileExplorer()
 	option_copy = (char **) malloc(WINDOW_MAX_ITEMS * sizeof(char *));
 	for(i=0; i<WINDOW_MAX_ITEMS; i++) option_copy[i]=NULL;
 	
-	DevicesInfo = (DeviceInfo_t *) malloc(WINDOW_MAX_ITEMS * sizeof(DeviceInfo_t));
-	memset(DevicesInfo, 0, sizeof(DevicesInfo));
+	DevicesInfo = (DeviceInfo_t *) malloc(WINDOW_MAX_DEVICES * sizeof(DeviceInfo_t));
+	memset(DevicesInfo, 0, WINDOW_MAX_DEVICES * sizeof(DeviceInfo_t));
 	
 	DevicesInfo_N = -1;
 	
-	if( DEBUG ) {
-		print_debug("end of init_FileExplorer");
-		end_loading();
-	}
-	
+	print_debug("end of init_FileExplorer");
+	end_loading();
 }
 
 void finalize_FileExplorer()
@@ -25325,17 +25327,28 @@ void finalize_FileExplorer()
 	
 	print_debug("finalize_FileExplorer");
 	
+	print_debug("window_x");
 	FREE(window_x);
+	print_debug("window_y");
 	FREE(window_y);
+	print_debug("window_z");
 	FREE(window_z);
+	print_debug("window_h");
 	FREE(window_h);
+	print_debug("window_w");
 	FREE(window_w);
-
+	
+	print_debug("window_path");
+	
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_path[i]);
 	FREE(window_path);
 	
+	print_debug("window_lastpath");
+	
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_lastpath[i]);
 	FREE(window_lastpath);
+	
+	print_debug("window_content_Name");
 	
 	for(i=0; i<WINDOW_MAX; i++) {
 		if(window_content_Name[i] == NULL) continue;
@@ -25346,6 +25359,8 @@ void finalize_FileExplorer()
 	}
 	FREE(window_content_Name);
 	
+	print_debug("window_content_Type");
+	
 	for(i=0; i<WINDOW_MAX; i++) {
 		if(window_content_Type[i] == NULL) continue;
 		for(j=0; j<WINDOW_MAX_ITEMS; j++) {
@@ -25354,34 +25369,48 @@ void finalize_FileExplorer()
 		FREE(window_content_Type[i]);
 	}
 	FREE(window_content_Type);
-
+	
+	print_debug("window_content_Name");
+	
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_content_Size[i]);
 	FREE(window_content_Size);
 	for(i=0; i<WINDOW_MAX; i++) FREE(window_content_Selected[i]);
 	FREE(window_content_Selected);
 	
+	print_debug("window_sort");
+	
 	FREE(window_sort);
 	FREE(window_w_col_size);
 
+	print_debug("window_content");
+	
 	FREE(window_content_N);
 	FREE(window_open);
 
+	print_debug("window_scroll");
+	
 	FREE(window_scroll_N);
 	FREE(window_scroll_P);
 	FREE(window_scroll_size);
 	FREE(window_scroll_y);
 
+	print_debug("window_item");
+	
 	FREE(window_item_N);
 
+	print_debug("option_copy");
+	
 	for(i=0; i<WINDOW_MAX_ITEMS; i++) FREE(option_copy[i]);
 	FREE(option_copy);
+	
+	print_debug("DevicesInfo");
 	
 	FREE(DevicesInfo);
 	
 	window_activ=-1;
 	
 	print_debug("end of finalize_FileExplorer");
-	if( DEBUG ) end_loading();
+	end_loading();
 }
 
 // *** PRX list tools ***
@@ -25634,7 +25663,7 @@ void DrawIcon(float x, float y, float z, u8 pic, u32 color, u8 lock)
 #define WINDOW_LOC_LEFT			3
 #define WINDOW_LOC_MAX			4
 
-#define WINDOW_LOC_W_DEFAULT	(500)
+#define WINDOW_LOC_W_DEFAULT	(500.0f)
 #define WINDOW_LOC_H_DEFAULT	(TOP_H + COL_H1 + LINE_H1 * 15 + BORDER)
 #define WINDOW_LOC_X_DEFAULT	(X_MAX/2 - WINDOW_LOC_W_DEFAULT/2)
 #define WINDOW_LOC_Y_DEFAULT	((Y_MAX-45)/2 - WINDOW_LOC_H_DEFAULT/2)
@@ -26994,6 +27023,7 @@ void CloseWindow(int window_id)
 	
 	if(window_id == window_activ) {
 		
+		window_z[window_id]=0.0;
 		window_activ=-1;
 		
 		for(i=0; i<WINDOW_MAX; i++) {
@@ -27001,15 +27031,20 @@ void CloseWindow(int window_id)
 			if(window_activ==-1) window_activ=i; else
 			if(window_z[window_activ] > window_z[i]) window_activ=i; 
 		}
+		
 		if(window_activ != -1) {
-			window_z[window_activ] = 1;
+			window_z[window_activ] = 1.0f;
 			for(i=0; i<WINDOW_MAX; i++) {
 				if(window_open[i] == NO) continue;
 				if(i==window_activ) continue;
-				window_z[i]++;
+				window_z[i]+=1.0f;
 			}
 		}
+		
+		
 	}
+	
+	
 }
 
 u8 OpenWindow()
@@ -27052,11 +27087,11 @@ u8 OpenWindow()
 	
 	for(n=0; n<WINDOW_MAX; n++) {
 		if(window_open[n] == YES && n != window_activ) {
-			window_z[n]++;
+			window_z[n]+=1.0f;
 		}
 	}
 	
-	window_z[window_activ]=1;
+	window_z[window_activ]=1.0f;
 	
 	print_debug("End of Open window");
 	
@@ -27121,7 +27156,7 @@ void RefreshDevices()
 
 void RefreshWindow(s8 window_id)
 {	
-	if(window_id < 0) return;
+	if(window_id < 0 || WINDOW_MAX < window_id) return;
 	
 	char temp[512];
 	int n, i; 
@@ -27550,6 +27585,7 @@ void picture_viewer_input()
 		picture_viewer_activ=NO;
 		memset(TMP_PIC_path, 0, sizeof(TMP_PIC_path));
 		TMP_PIC_offset = 0;
+		
 	}
 }
 
@@ -28300,7 +28336,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		test_permit();
+		finalize_FileExplorer();
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
@@ -28351,7 +28387,6 @@ void Option(char *item)
 			start_copy_loading();
 			CopyJoin(copy_src, copy_dst);
 			end_copy_loading();
-			
 		} else {
 			start_gathering();
 			for(i=0; i<=option_copy_N; i++){
@@ -29531,12 +29566,13 @@ u8 window_input()
 	if(window_y[window_activ] + window_h[window_activ] > 512 ) window_y[window_activ]=512-window_h[window_activ];
 	if(window_y[window_activ] < 0 ) window_y[window_activ]=0;
 
-	// 'MOUSE CLICK'
-	if(NewPad(BUTTON_CROSS)) {
-		//Cursor on activ window
-		if(	window_x[window_activ] < curs_x && curs_x < (window_x[window_activ] + window_w[window_activ])
-		&& 	window_y[window_activ] < curs_y && curs_y < (window_y[window_activ] + window_h[window_activ])   )
-		{
+	
+	//Cursor on activ window
+	if(	window_x[window_activ] < curs_x && curs_x < (window_x[window_activ] + window_w[window_activ])
+	&& 	window_y[window_activ] < curs_y && curs_y < (window_y[window_activ] + window_h[window_activ])   )
+	{
+		// 'MOUSE CLICK'
+		if(NewPad(BUTTON_CROSS)) {
 			// browse
 			for(i=0 ; i<=window_item_N[window_activ]; i++) {
 				if(window_content_N[window_activ] < i+window_scroll_P[window_activ]) break;
@@ -29639,10 +29675,12 @@ u8 window_input()
 				}
 			}
 		}
-		// cursor on passiv window
-		else {
+	}
+	// cursor on passiv window
+	else {
+		if(NewPad(BUTTON_CROSS) || NewPad(BUTTON_SQUARE) || NewPad(BUTTON_TRIANGLE)) {
 			k=-1;
-			for(i=0; i<10; i++) {
+			for(i=0; i<WINDOW_MAX; i++) {
 				if(i==window_activ) continue;
 				if(window_open[i]==NO) continue;
 				if(	window_x[i] < curs_x && curs_x < (window_x[i] + window_w[i])
@@ -29654,11 +29692,11 @@ u8 window_input()
 			}
 			if(k!=-1) {
 				window_activ = k;
-				window_z[window_activ] = 1;
-				for(i=0; i<10; i++) {
+				window_z[window_activ] = 1.0f;
+				for(i=0; i<WINDOW_MAX; i++) {
 					if(window_open[i] == NO) continue;
 					if(i==window_activ) continue;
-					window_z[i]++;
+					window_z[i]+=1.0f;
 				}
 			}
 		}
@@ -30041,6 +30079,7 @@ void AutoRefresh_Windows()
 void Draw_FileExplorer()
 {
 	start_loading();
+	end_load_CURPIC();
 	update_RootDisplay();
 	init_FileExplorer();
 	
@@ -30134,9 +30173,9 @@ void preview_window(u8 show_window)
 		while(0<=window_activ) CloseWindow(window_activ);
 		Window(NULL);
 	}
-	window_x[window_activ]=275;
-	window_y[window_activ]=250;
-	window_z[window_activ]=0;
+	window_x[window_activ]=275.0f;
+	window_y[window_activ]=250.0f;
+	window_z[window_activ]=0.0f;
 
 	Draw_window();
 }
@@ -37017,7 +37056,6 @@ void Draw_AdjustScreen()
 			videoscale_y = 0;
 		}
 		if(Show_TVTEST != -1 && Load_GAMEPIC_busy==NO) {
-		//if(Show_TVTEST != -1) {
 			if(NewPad(BUTTON_CROSS)) {
 				if(Show_TVTEST==NO) {
 					memset(TMP_PIC_path, 0, sizeof(TMP_PIC_path));
@@ -42349,16 +42387,31 @@ void input_MAIN()
 			if(XMB_V_position[XMB_H_position] == 0 && XMB_nb_line != 0) {
 				XMB_V_position[XMB_H_position] = XMB_nb_line;
 				MOVE_animated=NO;
+				COVER_offset=0;
+				TMP_PIC_offset=0;
+				position_CURPIC = -1;
 			} 
-			else if(XMB_V_position[XMB_H_position] > 0) XMB_V_position[XMB_H_position]--;
-			COVER_offset=0;
+			else if(XMB_V_position[XMB_H_position] > 0) {
+				XMB_V_position[XMB_H_position]--;
+				COVER_offset=0;
+				TMP_PIC_offset=0;
+				position_CURPIC = -1;
+			}
 		} else
 		if(R2pad(BUTTON_DOWN)) {
 			if(XMB_V_position[XMB_H_position] == XMB_nb_line && XMB_nb_line != 0) {
 				XMB_V_position[XMB_H_position] = 0;
 				MOVE_animated=NO;
-			} else if(XMB_V_position[XMB_H_position] < XMB_nb_line) XMB_V_position[XMB_H_position]++;
-			COVER_offset=0;
+				COVER_offset=0;
+				TMP_PIC_offset=0;
+				position_CURPIC = -1;
+			} else
+			if(XMB_V_position[XMB_H_position] < XMB_nb_line) {
+				XMB_V_position[XMB_H_position]++;
+				COVER_offset=0;
+				TMP_PIC_offset=0;
+				position_CURPIC = -1;
+			}
 		}
 	}
 	
