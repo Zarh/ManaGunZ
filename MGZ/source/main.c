@@ -38139,45 +38139,7 @@ void init_SETTINGS()
 
 void update_SETTINGS()
 {
-	if(item_is(STR_BOX3D_ALIGN)) {
-		BOX3D_ALIGN = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is(STR_BOX3D_GAP)) {
-		BOX3D_GAP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is(STR_DYNAREC)) {
-		if( ITEMS_VALUE_POSITION[ITEMS_POSITION] != HaveDynarec() ) {
-			if( ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES ) {
-				InstallDynarec();
-			} else {
-				RemoveDynarec();
-			}
-		}
-	} else
-	if(item_is(STR_3K3Y_HEADER)) {
-		with_3k3y_header = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is(STR_IGNORE_ERR)) {
-		IGNORE_ERR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is("MGZ log")) {
-		LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is("MGZ debug")) {
-		DEBUG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if( item_title_is(STR_SETTINGS)){
-		if(item_is(STR_FONT)) {
-			if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-				if(Load_GAMEPIC_busy) show_msg("Try Later");
-				else {
-					//start_loading();
-					strcpy(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);				
-					LoadFont();
-					//end_loading();
-				}
-			}
-		} else
+	if( item_title_is(STR_GLOB_SETTINGS)){
 		if(item_is(STR_LANG)) {
 			lang = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 			lang_code = LANGCODE[lang];
@@ -38189,79 +38151,100 @@ void update_SETTINGS()
 				init_SETTINGS();
 				end_loading();
 			}
-			
 		} else
 		if(item_is(STR_HELP)) {
 			Show_Help = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else 
 		if(item_is(STR_XMB_PRIO)) {
 			XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-		} else 
+		}
+	} else 
+	if( item_title_is(STR_UI_SETTINGS)){
+		if(item_is(STR_UI)) {
+			if( UI_position != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				UI_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else
 		if(item_is(STR_SIDE_MENU)) {
 			Use_SideMenu = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_SHOW_PIC1)) {
+			Show_PIC1 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_SHOW_COVER)) {
+			if( Show_COVER != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				Show_COVER = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else 
+		if(item_is(STR_SHOW_GAMECASE)) {
+			Show_GameCase = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_SHOW_WAVES)) {
+			if( Show_Waves != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				Show_Waves = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else 
+		if(item_is(STR_SHOW_ICON0)) {
+			Show_ICON0 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_GRID_TYPE)) {
+			GRID_TYPE = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_DIRECTION)) {
+			GRID_DIRECTION = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_ANIMATED)) {
+			GRID_ANIMATED = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_KEEP_PROP)) {
+			if( GRID_KEEP_PROP != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
+				GRID_KEEP_PROP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_NB_COL)) {
+			GRID_NB_COLUMNS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else 
+		if(item_is(STR_NB_LINE)) {
+			GRID_NB_LINES = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_INVERSE)) {
+			FLOW_inverse_button = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_3D)) {
+			if( FLOW_3D != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				FLOW_3D = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				init_SETTINGS();
+			}
+		} else
+		if(item_is(STR_BOX3D_ALIGN)) {
+			BOX3D_ALIGN = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_BOX3D_GAP)) {
+			BOX3D_GAP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} 
+	} else 
+	if( item_title_is(STR_THM_SETTINGS)){
+		if(item_is(STR_THM)) {
+			Themes_position[UI_position] = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_FONT)) {
+			if(strcmp(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+				if(Load_GAMEPIC_busy) show_msg("Try Later");
+				else {
+					//start_loading();
+					strcpy(Font, FontPath[ITEMS_VALUE_POSITION[ITEMS_POSITION]]);				
+					LoadFont();
+					//end_loading();
+				}
+			}
 		}
-	} else 
-	if(item_is(STR_UI)) {
-		if( UI_position != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			UI_position = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			init_SETTINGS();
-		}
-	} else 
-	if(item_is(STR_THM)) {
-		Themes_position[UI_position] = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		
 	} else
-	if(item_is(STR_SHOW_COVER)) {
-		if( Show_COVER != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			Show_COVER = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			init_SETTINGS();
-		}
-	} else 
-	if(item_is(STR_SHOW_GAMECASE)) {
-		Show_GameCase = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_SHOW_PIC1)) {
-		Show_PIC1 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_SHOW_WAVES)) {
-		if( Show_Waves != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			Show_Waves = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			init_SETTINGS();
-		}
-	} else
-	if(item_is(STR_SHOW_ICON0)) {
-		Show_ICON0 = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_GRID_TYPE)) {
-		GRID_TYPE = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_DIRECTION)) {
-		GRID_DIRECTION = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is(STR_ANIMATED)) {
-		GRID_ANIMATED = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_KEEP_PROP)) {
-		if( GRID_KEEP_PROP != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
-			GRID_KEEP_PROP = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			init_SETTINGS();
-		}
-	} else
-	if(item_is(STR_NB_COL)) {
-		GRID_NB_COLUMNS = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else 
-	if(item_is(STR_NB_LINE)) {
-		GRID_NB_LINES = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is(STR_INVERSE)) {
-		FLOW_inverse_button = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-	} else
-	if(item_is(STR_3D)) {
-		if( FLOW_3D != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			FLOW_3D = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			init_SETTINGS();
-		}
-	} else
-	if( item_title_is(STR_COLOR_FILTER) ) {
+	if( item_title_is(STR_COLOR_FILTER)){
 		if(item_is(STR_COLOR_NOTIF) && ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {
 			if(FILTER_NOTIF != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 				FILTER_NOTIF = ITEMS_VALUE_POSITION[ITEMS_POSITION];
@@ -38323,141 +38306,170 @@ void update_SETTINGS()
 			}	
 		}
 	} else 
-	if(item_is(STR_STYLE)) {
-		if( root_display != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-			root_display = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-			update_RootDisplay();
-			Window(".");
-			init_SETTINGS();
-		}
-	} else
-	if(root_display == STYLE_CUSTOM) {
-		if(item_is(STR_FM_ICONSIZE)) {
-			if( fm_LineSize != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
-				fm_LineSize = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-				write_RootSetting();
-				init_SETTINGS();
+	if( item_title_is(STR_ROOT_DISPLAY)){
+		if(item_is(STR_STYLE)) {
+			if( root_display != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+				root_display = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+				update_RootDisplay();
 				Window(".");
+				init_SETTINGS();
 			}
 		} else
-		if(item_is(STR_FM_ROWNUMBER)) {
-			if( fm_RowNumber != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
-				fm_RowNumber = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
-			}
-		} else
-		if(item_is(STR_FM_ICON)) {
-			if( fm_CustomIcons != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
-				fm_CustomIcons = ITEMS_VALUE_POSITION[ITEMS_POSITION];
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
-			}
-		} else
-		if(item_is(STR_FM_CB_WIDTH)) {
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] != 0) {
-				if( fm_CapacityBarWidth != 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10 ) {
-					fm_CapacityBarWidth = 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10;
+		if(root_display == STYLE_CUSTOM) {
+			if(item_is(STR_FM_ICONSIZE)) {
+				if( fm_LineSize != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
+					fm_LineSize = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 					write_RootSetting();
 					init_SETTINGS();
 					Window(".");
 				}
-			} else {
-				if( fm_CapacityBarWidth != 0 ) {
-					fm_CapacityBarWidth = 0;
+			} else
+			if(item_is(STR_FM_ROWNUMBER)) {
+				if( fm_RowNumber != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
+					fm_RowNumber = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 					write_RootSetting();
 					init_SETTINGS();
 					Window(".");
 				}
-			}
-		} else
-		if( strcmp(STR_FM_ROWSIZE, &ITEMS[ITEMS_POSITION][4]) == 0) {
-			int row=0;
-			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
-			
-			if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) {
-				if( fm_FontRowSize[row] != 0 ) {
-					fm_FontRowSize[row]=0;
+			} else
+			if(item_is(STR_FM_ICON)) {
+				if( fm_CustomIcons != ITEMS_VALUE_POSITION[ITEMS_POSITION] ) {
+					fm_CustomIcons = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			} else
+			if(item_is(STR_FM_CB_WIDTH)) {
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] != 0) {
+					if( fm_CapacityBarWidth != 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10 ) {
+						fm_CapacityBarWidth = 200 + (ITEMS_VALUE_POSITION[ITEMS_POSITION]-1)*10;
+						write_RootSetting();
+						init_SETTINGS();
+						Window(".");
+					}
+				} else {
+					if( fm_CapacityBarWidth != 0 ) {
+						fm_CapacityBarWidth = 0;
+						write_RootSetting();
+						init_SETTINGS();
+						Window(".");
+					}
+				}
+			} else
+			if( strcmp(STR_FM_ROWSIZE, &ITEMS[ITEMS_POSITION][4]) == 0) {
+				int row=0;
+				sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
+				
+				if(ITEMS_VALUE_POSITION[ITEMS_POSITION] == 0) {
+					if( fm_FontRowSize[row] != 0 ) {
+						fm_FontRowSize[row]=0;
+						write_RootSetting();
+						init_SETTINGS();
+						Window(".");
+					}
+				} else 
+				if( fm_FontRowSize[row] != ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6) {
+					fm_FontRowSize[row] = ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6;
 					write_RootSetting();
 					init_SETTINGS();
 					Window(".");
 				}
 			} else 
-			if( fm_FontRowSize[row] != ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6) {
-				fm_FontRowSize[row] = ITEMS_VALUE_POSITION[ITEMS_POSITION] + 6;
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
+			if( strcmp(STR_FM_LEFT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
+				int row=0;
+				sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
+				if( strcmp(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+					memset(fm_Format[row*2], 0, sizeof(fm_Format[row*2]));
+					strcpy(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			} else
+			if(item_is(STR_FM_LEFT_CONTENT)) {
+				if( strcmp(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+					memset(fm_Format[0], 0, sizeof(fm_Format[0]));
+					strcpy(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			} else 
+			if( strcmp(STR_FM_RIGHT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
+				int row=0;
+				sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
+				if( strcmp(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+					memset(fm_Format[row*2+1], 0, sizeof(fm_Format[row*2+1]));
+					strcpy(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
+			} else
+			if(item_is(STR_FM_RIGHT_CONTENT)) {
+				if( strcmp(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
+					memset(fm_Format[1], 0, sizeof(fm_Format[1]));
+					strcpy(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
+					write_RootSetting();
+					init_SETTINGS();
+					Window(".");
+				}
 			}
-		} else 
-		if( strcmp(STR_FM_LEFT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
-			int row=0;
-			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
-			if( strcmp(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-				memset(fm_Format[row*2], 0, sizeof(fm_Format[row*2]));
-				strcpy(fm_Format[row*2], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
+		}
+	} else
+	if( item_title_is(STR_DUMP_OPTION)){
+		if(item_is(STR_3K3Y_HEADER)) {
+			with_3k3y_header = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_IGNORE_ERR)) {
+			IGNORE_ERR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		}
+	} else
+	if( item_title_is(STR_SYSTEM_TOOLS)){
+		if(item_is(STR_DYNAREC)) {
+			if( ITEMS_VALUE_POSITION[ITEMS_POSITION] != HaveDynarec() ) {
+				if( ITEMS_VALUE_POSITION[ITEMS_POSITION] == YES ) {
+					InstallDynarec();
+				} else {
+					RemoveDynarec();
+				}
 			}
 		} else
-		if(item_is(STR_FM_LEFT_CONTENT)) {
-			if( strcmp(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-				memset(fm_Format[0], 0, sizeof(fm_Format[0]));
-				strcpy(fm_Format[0], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
-			}
-		} else 
-		if( strcmp(STR_FM_RIGHT_CONTENT, &ITEMS[ITEMS_POSITION][4]) == 0) {
-			int row=0;
-			sscanf(ITEMS[ITEMS_POSITION], "#%d", &row); row--;
-			if( strcmp(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-				memset(fm_Format[row*2+1], 0, sizeof(fm_Format[row*2+1]));
-				strcpy(fm_Format[row*2+1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
-			}
+		if(item_is("MGZ log")) {
+			LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else
-		if(item_is(STR_FM_RIGHT_CONTENT)) {
-			if( strcmp(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]) != 0) {
-				memset(fm_Format[1], 0, sizeof(fm_Format[1]));
-				strcpy(fm_Format[1], ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);
-				write_RootSetting();
-				init_SETTINGS();
-				Window(".");
-			}
+		if(item_is("MGZ debug")) {
+			DEBUG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		}
 	}
 }
 
 u8 SETTING_R1()
 {
-	if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {	
-		if(item_is(STR_SHOW_WAVES) && Show_Waves) {
-			Draw_ChooseColor(FLAG_WAVES_COLOR);
-		} else
-		if(item_is(STR_COLOR_NOTIF) && FILTER_NOTIF) {
-			Draw_ChooseColor(FLAG_COLOR_NOTIF);
-		} else
-		if(item_is(STR_COLOR_BOXHEAD) && FILTER_BOXHEAD) {
-			Draw_ChooseColor(FLAG_COLOR_BOXHEAD);
-		} else
-		if(item_is(STR_COLOR_BOXBODY) && FILTER_BOXBODY) {
-			Draw_ChooseColor(FLAG_COLOR_BOXBODY);
-		} else
-		if(item_is(STR_COLOR_SIDEBAR) && FILTER_SIDEBAR) {
-			Draw_ChooseColor(FLAG_COLOR_SIDEBAR);
-		} else
-		if(item_is(STR_COLOR_BGS) && FILTER_BGS) {
-			Draw_ChooseColor(FLAG_COLOR_BGS);
-		} else
-		if(item_is(STR_COLOR_BG) && FILTER_BG) {
-			Draw_ChooseColor(FLAG_COLOR_BG);
+	if( item_title_is(STR_COLOR_FILTER)){
+		if(ITEMS_TYPE[ITEMS_POSITION]==ITEM_TOGGLE) {	
+			if(item_is(STR_SHOW_WAVES) && Show_Waves) {
+				Draw_ChooseColor(FLAG_WAVES_COLOR);
+			} else
+			if(item_is(STR_COLOR_NOTIF) && FILTER_NOTIF) {
+				Draw_ChooseColor(FLAG_COLOR_NOTIF);
+			} else
+			if(item_is(STR_COLOR_BOXHEAD) && FILTER_BOXHEAD) {
+				Draw_ChooseColor(FLAG_COLOR_BOXHEAD);
+			} else
+			if(item_is(STR_COLOR_BOXBODY) && FILTER_BOXBODY) {
+				Draw_ChooseColor(FLAG_COLOR_BOXBODY);
+			} else
+			if(item_is(STR_COLOR_SIDEBAR) && FILTER_SIDEBAR) {
+				Draw_ChooseColor(FLAG_COLOR_SIDEBAR);
+			} else
+			if(item_is(STR_COLOR_BGS) && FILTER_BGS) {
+				Draw_ChooseColor(FLAG_COLOR_BGS);
+			} else
+			if(item_is(STR_COLOR_BG) && FILTER_BG) {
+				Draw_ChooseColor(FLAG_COLOR_BG);
+			}
 		}
 	}
 	
