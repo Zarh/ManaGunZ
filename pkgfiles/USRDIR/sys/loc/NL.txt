@@ -98,7 +98,6 @@ STR_NONE                      {Geen}
 STR_CHECK_MD5                 {Kijk MD5 na}
 STR_PROPS                     {Eigenschappen}
 STR_PROPS_DESC                {Geef eigenschappen van je back-up weer.}
-STR_ASK_DEL                   {Zeker dat je wilt verwijderen}
 STR_GAME_SETTINGS             {Game Instellingen}
 STR_DIRECT_BOOT               {Direct Starten}
 STR_DIRECT_BOOT_DESC          {Start de game meteen zonder naar de XMB terug te keren.}
@@ -376,9 +375,9 @@ STR_DUMP_DEC_DESC             {Neem een goede iso van je disc met de IRD. Het za
 STR_DUMP_ENC                  {Dump versleutelde Blu-Ray disc}
 STR_DUMP_ENC_DESC             {Haal een ruwe iso van je Blu-Ray disc.}
 STR_DUMP_ERK                  {Dump eid wortel}
-STR_DUMP_ERK_DESC             {Dit is de belangrijkste sleutel om je systeem te ontcijferen. Het wordt overal gebruikt. Path:}
-STR_DUMP_3DUMP                {Dump 3Dump.}
-STR_DUMP_3DUMP_DESC           {Het is het nodige dossier om een Blu-Ray te dumpen met 3k3y IsoTools. Path: Devhd0/3Dump.}
+STR_DUMP_ERK_DESC             {Dit is de belangrijkste sleutel om je systeem te ontcijferen. Het wordt overal gebruikt. Path: /dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP                {Dump 3Dump.bin}
+STR_DUMP_3DUMP_DESC           {Het is het nodige dossier om een Blu-Ray te dumpen met 3k3y IsoTools. Path: /dev_hdd0/tmp/3Dump.bin}
 STR_SYSTEM_TOOLS              {Systeem gereedschap}
 STR_DECRYPT_NPDATA            {Decrypt edat}
 STR_REDUMP_LOG                {Genereren GetKey dump}
@@ -396,3 +395,21 @@ STR_BUILD_ISO                 {Bouw Iso}
 STR_BUILD_ISO_DESC            {Bouw een back-up iso van Blu-Ray's dossiers.}
 STR_UPLOADER                  {Uploader naam}
 STR_UPLOADER_DESC             {Noem je naam als je krediet wilt voor je ird uploads, laat het leeg om anoniem te blijven.}
+STR_BOX3D_ALIGN               {Vakken uitlijnen}
+STR_BOX3D_ALIGN_DESC          {Lijn speldozen uit alsof het op een plank is opgeslagen.}
+STR_BOX3D_GAP                 {Boxen gap}
+STR_BOX3D_GAP_DESC            {Pas de opening tussen de speldozen aan.}
+STR_SHORT                     {Kort}
+STR_MEDIUM                    {Gemiddeld}
+STR_LONG                      {Lang}
+STR_MOUNT_BD                  {Monteren als BD}
+STR_MOUNT_DVD                 {Mount als DVD}
+STR_SHOWLOGS_DESC             {Geef berichten weer om te informeren over de huidige taak tijdens het laadscherm.}
+STR_OVERWRITE                 {Overschrijven}
+STR_OVERWRITE_DESC            {Beheer het overschrijven van bestaande bestanden.}
+STR_OVERWRITE_ALWAYS          {Altijd}
+STR_OVERWRITE_NEVER           {Nooit}
+STR_OVERWRITE_ASK             {Vragen}
+STR_OVERWRITE_DUPLICATE       {Duplicaat}
+STR_ASK_TO_OVERWRITE          {Bestand bestaat al. Wilt u het bestaande bestand overschrijven?}
+STR_ASK_TO_DELETE             {Wil je dit echt verwijderen ?}

@@ -595,6 +595,15 @@ u8 with_3k3y_header = NO;
 char UPLOADER[0x40]={0};
 u8 BOX3D_ALIGN = YES;
 u8 BOX3D_GAP = 1;
+u8 SHOW_LOG = NO;
+
+#define OVERWRITE_ALWAYS	0
+#define OVERWRITE_NEVER		1
+#define OVERWRITE_ASK		2
+#define OVERWRITE_DUPLICATE 3
+u8 OVERWRITE = OVERWRITE_NEVER;
+
+u64 CopyFile_FreeMem=0;
 
 #define STYLE_CUSTOM	0
 #define STYLE1			1
@@ -6145,11 +6154,11 @@ char *language(char *lang_mem, const char *strName, char *str_default)
 	if(lang_mem==NULL) return strcpy_malloc(str_default);
 	
 	char t[255];
-	sprintf(t, "%s\t", strName);
+	sprintf(t, "%s ", strName);
 	
 	char *res = strstr(lang_mem, t);
 	if(res == NULL) {
-		sprintf(t, "%s ", strName);
+		sprintf(t, "%s\t", strName);
 		res = strstr(lang_mem, t);
 		if(res == NULL) return strcpy_malloc(str_default);
 	}
@@ -6318,7 +6327,6 @@ void update_lang()
 	LANG(STR_CHECK_MD5, "STR_CHECK_MD5", STR_CHECK_MD5_DEFAULT);
 	LANG(STR_PROPS, "STR_PROPS", STR_PROPS_DEFAULT);
 	LANG(STR_PROPS_DESC, "STR_PROPS_DESC", STR_PROPS_DESC_DEFAULT);
-	LANG(STR_ASK_DEL, "STR_ASK_DEL", STR_ASK_DEL_DEFAULT);
 	LANG(STR_GAME_SETTINGS, "STR_GAME_SETTINGS", STR_GAME_SETTINGS_DEFAULT);
 	LANG(STR_DIRECT_BOOT, "STR_DIRECT_BOOT", STR_DIRECT_BOOT_DEFAULT);
 	LANG(STR_DIRECT_BOOT_DESC, "STR_DIRECT_BOOT_DESC", STR_DIRECT_BOOT_DESC_DEFAULT);
@@ -6623,6 +6631,15 @@ void update_lang()
 	LANG(STR_LONG, "STR_LONG", STR_LONG_DEFAULT);
 	LANG(STR_MOUNT_DVD, "STR_MOUNT_DVD", STR_MOUNT_DVD_DEFAULT);
 	LANG(STR_MOUNT_BD, "STR_MOUNT_BD", STR_MOUNT_BD_DEFAULT);
+	LANG(STR_SHOWLOGS_DESC, "STR_SHOWLOGS_DESC", STR_SHOWLOGS_DESC_DEFAULT);
+	LANG(STR_OVERWRITE, "STR_OVERWRITE", STR_OVERWRITE_DEFAULT);
+	LANG(STR_OVERWRITE_DESC, "STR_OVERWRITE_DESC", STR_OVERWRITE_DESC_DEFAULT);	
+	LANG(STR_OVERWRITE_ALWAYS, "STR_OVERWRITE_ALWAYS", STR_OVERWRITE_ALWAYS_DEFAULT);
+	LANG(STR_OVERWRITE_NEVER, "STR_OVERWRITE_NEVER", STR_OVERWRITE_NEVER_DEFAULT);
+	LANG(STR_OVERWRITE_ASK, "STR_OVERWRITE_ASK", STR_OVERWRITE_ASK_DEFAULT);
+	LANG(STR_OVERWRITE_DUPLICATE, "STR_OVERWRITE_DUPLICATE", STR_OVERWRITE_DUPLICATE_DEFAULT);
+	LANG(STR_ASK_TO_OVERWRITE, "STR_ASK_TO_OVERWRITE", STR_ASK_TO_OVERWRITE_DEFAULT);
+	LANG(STR_ASK_TO_DELETE, "STR_ASK_TO_DELETE", STR_ASK_TO_DELETE_DEFAULT);
 	
 	FREE(STR_DB_NET);
 	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
@@ -9665,7 +9682,7 @@ void Draw_Loading(void *unused)
 	u32 color=GREEN;
 	u8 have_log=NO;
 	int i=0;
-	int show_log=YES;
+	int show_log=SHOW_LOG;
 	u8 old_DEBUG = DEBUG;
 	u8 shutdown=NO;
 	
@@ -9692,7 +9709,7 @@ void Draw_Loading(void *unused)
 		
 		if(show_scene) {
 			Draw_scene();
-			if(show_log && have_log) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
+			if((SHOW_LOG || DEBUG) && show_log && have_log) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
 		} else Draw_BGS();
 		
 		FontSize(20);
@@ -9841,105 +9858,108 @@ void Draw_Loading(void *unused)
 			if(boost<100) {
 				color = GREEN;
 			}
-		}		
-		
-		if(show_log && have_log) {
-			
-			if(head_title[0] != 0) {
-				FontColor(COLOR_2);
-				DrawString(x, y, head_title);
-				FontColor(COLOR_1);
-				y+=20;
-			}
-			if( task_ProgressBar1_max != 0 && start == 0 && task_ProgressBar1_max != task_ProgressBar1_val) {
-				start = sTime();
-				init_timer(4);
-				start_timer(4);
-			}
-			if( start ) {
-				
-				u64 progress_bar_w = 600;
-				
-				char speed_STR[32];
-				char elapsed_STR[32];
-				char remaining_STR[32];
-				if( get_time(4) > 1000 ) {
-					
-					start_timer(4);
-					
-					char *copy_speed = get_unit(task_ProgressBar1_val - previous_val);
-					if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
-					FREE(copy_speed);
-					previous_val = task_ProgressBar1_val;
-					
-					u64 ElapsedTime = sTime() - start;
-					u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
-						
-					char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
-					if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
-					FREE(ElapsedTime_STR);	
-					
-					char *RemainingTime_STR = GetTimeStr(RemainingTime);
-					if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
-					FREE(RemainingTime_STR);
-				}
-				
-				DrawFormatString(x, y, elapsed_STR);
-				y+=new_line(1);
-				
-				DrawFormatString(x, y, remaining_STR);
-				y+=new_line(1);
-									
-				char *size_current = get_unit(task_ProgressBar1_val);
-				if(size_current) DrawString(x, y, size_current);
-				FREE(size_current);
-				
-				char *size_tot = get_unit(task_ProgressBar1_max);
-				if(size_tot) DrawString(x+progress_bar_w-WidthFromStr(size_tot), y, size_tot);
-				FREE(size_tot);
-				
-				DrawStringFromCenterX(x+progress_bar_w/2, y, speed_STR);
-				
-				y+=new_line(1);
-
-				Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar1_max, task_ProgressBar1_val);
-				
-				y+=new_line(1);
-				
-				if( task_ProgressBar2_max !=  task_ProgressBar1_max) {
-					Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar2_max, task_ProgressBar2_val);
-					y+=new_line(1);
-				}
-				
-				if( task_ProgressBar1_max == task_ProgressBar1_val ) {
-					 task_ProgressBar1_max=0;
-					 task_ProgressBar1_val=0;
-					 task_ProgressBar2_max=0;
-					 task_ProgressBar2_val=0;
-				}
-				if( task_ProgressBar1_max == 0) start = 0;
-			} else 
-			if(prog_bar1_value >= 0) {
-				Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
-				y+=15;
-				if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
-				y+=25;
-			}
-			
-			if(!loading) break;
-			
-			for(i=0; i<=20; i++){
-				
-				if(strstr(loading_log[i], "Error")) FontColor(RED);
-				else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
-				else FontColor(COLOR_1);
-				
-				DrawFormatString(x , y, loading_log[i]);
-				y+=20;
-				if(y>450) break;
-			}
 		}
 		
+		if( SHOW_LOG || DEBUG ) {
+			if(show_log && have_log) {
+				
+				if(head_title[0] != 0) {
+					FontColor(COLOR_2);
+					DrawString(x, y, head_title);
+					FontColor(COLOR_1);
+					y+=20;
+				}
+				if( task_ProgressBar1_max != 0 && start == 0 && task_ProgressBar1_max != task_ProgressBar1_val) {
+					start = sTime();
+					init_timer(4);
+					start_timer(4);
+				}
+				if( start ) {
+					
+					u64 progress_bar_w = 600;
+					
+					char speed_STR[32];
+					char elapsed_STR[32];
+					char remaining_STR[32];
+					if( get_time(4) > 1000 ) {
+						
+						start_timer(4);
+						s64 speed = task_ProgressBar1_val - previous_val;
+						if( speed < 0) speed=0;
+						char *copy_speed = get_unit((u64) speed);
+						if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
+						FREE(copy_speed);
+						
+						previous_val = task_ProgressBar1_val;
+						
+						u64 ElapsedTime = sTime() - start;
+						u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
+							
+						char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
+						if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
+						FREE(ElapsedTime_STR);	
+						
+						char *RemainingTime_STR = GetTimeStr(RemainingTime);
+						if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
+						FREE(RemainingTime_STR);
+					}
+					
+					DrawFormatString(x, y, elapsed_STR);
+					y+=new_line(1);
+					
+					DrawFormatString(x, y, remaining_STR);
+					y+=new_line(1);
+										
+					char *size_current = get_unit(task_ProgressBar1_val);
+					if(size_current) DrawString(x, y, size_current);
+					FREE(size_current);
+					
+					char *size_tot = get_unit(task_ProgressBar1_max);
+					if(size_tot) DrawString(x+progress_bar_w-WidthFromStr(size_tot), y, size_tot);
+					FREE(size_tot);
+					
+					DrawStringFromCenterX(x+progress_bar_w/2, y, speed_STR);
+					
+					y+=new_line(1);
+
+					Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar1_max, task_ProgressBar1_val);
+					
+					y+=new_line(1);
+					
+					if( task_ProgressBar2_max !=  task_ProgressBar1_max) {
+						Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar2_max, task_ProgressBar2_val);
+						y+=new_line(1);
+					}
+					
+					if( task_ProgressBar1_max == task_ProgressBar1_val ) {
+						 task_ProgressBar1_max=0;
+						 task_ProgressBar1_val=0;
+						 task_ProgressBar2_max=0;
+						 task_ProgressBar2_val=0;
+					}
+					if( task_ProgressBar1_max == 0) start = 0;
+				} else 
+				if(prog_bar1_value >= 0) {
+					Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
+					y+=15;
+					if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
+					y+=25;
+				}
+				
+				if(!loading) break;
+				
+				for(i=0; i<=20; i++){
+					
+					if(strstr(loading_log[i], "Error")) FontColor(RED);
+					else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+					else FontColor(COLOR_1);
+					
+					DrawFormatString(x , y, loading_log[i]);
+					y+=20;
+					if(y>450) break;
+				}
+			}
+		}
 		if(!loading) break;
 		
 		// *** DISPLAY BUTTONS ***
@@ -9956,7 +9976,7 @@ void Draw_Loading(void *unused)
 			}
 		}
 		
-		if(have_log) {
+		if(have_log && (SHOW_LOG || DEBUG)) {
 			if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
 			else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
 		}
@@ -10048,9 +10068,10 @@ void Draw_Loading(void *unused)
 	tiny3d_Flip();
 	
 	if(!cancel == NO && shutdown) {
+		MGZ_exit();
 		Delete("/dev_hdd0/tmp/turnoff");
 		lv2syscall4(379,0x1100,0,0,0);
-	}	
+	}
 	
 	DEBUG = old_DEBUG;
 	
@@ -10274,6 +10295,7 @@ void start_gathering()
 	if(gathering==NO) {
 		gathering=YES;
 		reset_gathering();
+		print_debug("start of gathering thread");
 		sysThreadCreate(&gathering_id, Draw_Gathering, NULL, 999, 0x2000, THREAD_JOINABLE, "gathering");
 	}
 }
@@ -10283,6 +10305,7 @@ void end_gathering()
 	if(gathering==YES) {
 		u64 ret;
 		gathering=NO;
+		print_debug("end of gathering thread");
 		while(gathering==NO) usleep(1000);
 		sysThreadJoin(gathering_id, &ret);
 		gathering=NO;
@@ -12400,7 +12423,7 @@ u8 IRD_FixRegionMD5(char *ISO_PATH, ird_t *ird, u64 header_lenght, u64 footer_of
 		return FAILED;
 	}
 	
-	if( md5_from_offsets(ISO_PATH, (u64) ird->RegionHashes[ird->RegionHashesNumber-1].Start * 0x800ULL, footer_offset, ird->RegionHashes[ird->RegionHashesNumber-1].RegionHash) == FAILED) {
+	if( md5_from_offsets(ISO_PATH, (u64) ird->RegionHashes[ird->RegionHashesNumber-1].Start*0x800ULL, footer_offset, ird->RegionHashes[ird->RegionHashesNumber-1].RegionHash) == FAILED) {
 		print_load("Error: failed to md5_file_offsets (1st)");
 		return FAILED;
 	}
@@ -13662,7 +13685,7 @@ void wait_dialog()
 	while(!dialog_action)
 	{
 		sysUtilCheckCallback();
-		tiny3d_Flip();
+		//tiny3d_Flip();
 	}
 
 	msgDialogAbort();
@@ -14235,7 +14258,9 @@ void Draw_Copy_screen(void *unused)
 		}
 		
 		if( get_time(4) > 1000 ) {
-			char *copy_speed = get_unit(copy_current_size-previous_size);
+			s64 speed = copy_current_size-previous_size;
+			if( speed < 0) speed = 0;
+			char *copy_speed = get_unit((u64) speed);
 			if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
 			FREE(copy_speed);
 			
@@ -14244,13 +14269,12 @@ void Draw_Copy_screen(void *unused)
 			
 			u64 ElapsedTime = sTime() - start_copy;
 			u64 RemainingTime = ElapsedTime * gathering_total_size / copy_current_size - ElapsedTime;
-				
+			
 			char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
 			if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s : %s", STR_ELAPSED, ElapsedTime_STR);
 			FREE(ElapsedTime_STR);	
 			
 			if( gathering_total_size != 0 && gathering_cancel == NO) {
-				
 				char *RemainingTime_STR = GetTimeStr(RemainingTime);
 				if(RemainingTime_STR) sprintf(remaining_STR,  "%s : %s", STR_REMAINING, RemainingTime_STR);
 				FREE(RemainingTime_STR);				
@@ -14294,16 +14318,18 @@ void Draw_Copy_screen(void *unused)
 		
 		FontSize(17);
 		
-		if( loading_log[0][0] ) {
-			if(show_log) {
-				for(i=0; i<=20; i++){
-					if(strstr(loading_log[i], "Error")) FontColor(RED);
-					else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
-					else FontColor(COLOR_1);
-					
-					DrawFormatString(x , y, loading_log[i]);
-					y+=20;
-					if(y>450) break;
+		if(SHOW_LOG || DEBUG ) {
+			if( loading_log[0][0] ) {
+				if(show_log) {
+					for(i=0; i<=20; i++){
+						if(strstr(loading_log[i], "Error")) FontColor(RED);
+						else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+						else FontColor(COLOR_1);
+						
+						DrawFormatString(x , y, loading_log[i]);
+						y+=20;
+						if(y>450) break;
+					}
 				}
 			}
 		}
@@ -14318,11 +14344,13 @@ void Draw_Copy_screen(void *unused)
 		x=DrawButton(x, y, STR_TURNOFF, BUTTON_L1);
 		x=Draw_checkbox(x-3, y, 0, "", shutdown, NO);
 		
-		if( loading_log[0][0] ) {	
-			if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
-					else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
+		if(SHOW_LOG || DEBUG) {
+			if(loading_log[0][0] ) {	
+				if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
+						else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
+			}
 		}
-		
+
 		tiny3d_Flip();
 		//ScreenShot();
 		ps3pad_read();
@@ -14372,6 +14400,7 @@ void start_copy_loading()
 	print_head(STR_COPYING);
 	if( copy_flag==NO) {
 		copy_flag=YES;
+		print_debug("start of copy_loading thread");
 		sysThreadCreate(&Copy_id, Draw_Copy_screen, NULL, 999, 0x2000, THREAD_JOINABLE, "Thread_CopyScreen");	
 	}
 }
@@ -14381,6 +14410,7 @@ void end_copy_loading()
 	if(copy_flag==YES) {
 		u64 ret;
 		copy_flag=NO;
+		print_debug("end of copy_loading thread");
 		while(copy_flag==NO) usleep(1000);
 		sysThreadJoin(Copy_id, &ret);
 		copy_flag=NO;
@@ -14985,9 +15015,11 @@ u8 CopyFile_stdio(char* src, char* dst)
 	
 	u64 SPLITSIZE = 0xFFFFFFFFULL;
 	
-	// create a duplicate instead of erase
+	print_debug("start of Copy_stdio");
+	
 	strcpy(source, src);
 	strcpy(destination, dst);
+	// create a duplicate instead of erase if it's the same path
 	if(strcmp(src, dst)==0) {
 		RemoveExtension(destination);
 		char *temp_str = strcpy_malloc(destination);
@@ -14997,8 +15029,29 @@ u8 CopyFile_stdio(char* src, char* dst)
 			if(path_info(destination) == _NOT_EXIST) break;
 		}
 		free(temp_str);
+	} else 
+	// OVERWRITE setting
+	if( path_info(destination) == _FILE) {
+		if( OVERWRITE == OVERWRITE_NEVER ) {
+			return SUCCESS;
+		} else 
+		if( OVERWRITE == OVERWRITE_DUPLICATE) {
+			char *temp_str = strcpy_malloc(destination);
+			int o;
+			for(o=0; o<1000; o++) {
+				sprintf(destination, "%s_%03d%s", temp_str, o, GetExtension(dst));
+				if(path_info(destination) == _NOT_EXIST) break;
+			}
+			free(temp_str);
+		} else
+		if( OVERWRITE == OVERWRITE_ASK ) {
+			char question[2048];
+			sprintf(question, "%s\n%s: %s", STR_ASK_TO_OVERWRITE, STR_PATH, destination);
+			if( DrawDialogYesNo(question) == NO) return SUCCESS;	
+		}
 	}
 	
+	print_debug("Copy_stdio STAT");
 	copy_file_prog_bar=0;
 	
 	struct stat s;
@@ -15245,11 +15298,12 @@ u8 Copy(char *src, char *dst)
 	char temp_src[255];
 	char temp_dst[255];
 	
+	print_debug("Copy MGZ_mkdir_recursive");
 	MGZ_mkdir_recursive(dst);
 	
 	DIR *d;
 	struct dirent *dir;
-			
+	
 	d = opendir(src);
 	if(d==NULL) return FAILED;
 			
@@ -15262,9 +15316,9 @@ u8 Copy(char *src, char *dst)
 		if(dir->d_type & DT_DIR) mkdir(temp_dst, 0777);
 		
 		if( Copy(temp_src, temp_dst) == FAILED) {closedir(d); return FAILED;}
-			
+		
 		if(copy_cancel==YES) break;
-			
+		
 	}
 	closedir(d);
 	
@@ -22821,9 +22875,9 @@ u8 MountGame(char *GamePath)
 		if(direct_boot) {
 			MGZ_exit();
 			if(mount_app_home == NO) {
-				sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+				sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 			} else {
-				sysProcessExitSpawn2("/app_home/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+				sysProcessExitSpawn2("/app_home/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 			}
 		}
 	} else 
@@ -24297,7 +24351,7 @@ void update_MGZ()
 		
 		MGZ_exit();
 		
-		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 	}
 	
 	free(mem);
@@ -24476,6 +24530,8 @@ void read_setting()
 		fread(&UPLOADER, sizeof(char), 0x40, fp);
 		fread(&BOX3D_GAP, sizeof(u8), 1, fp);
 		fread(&BOX3D_ALIGN, sizeof(u8), 1, fp);
+		fread(&SHOW_LOG, sizeof(u8), 1, fp);
+		fread(&OVERWRITE, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 	} 
@@ -24552,7 +24608,8 @@ void write_setting()
 		fwrite(&UPLOADER, sizeof(char), 0x40, fp);
 		fwrite(&BOX3D_GAP, sizeof(u8), 1, fp);
 		fwrite(&BOX3D_ALIGN, sizeof(u8), 1, fp);
-		
+		fwrite(&SHOW_LOG, sizeof(u8), 1, fp);
+		fwrite(&OVERWRITE, sizeof(u8), 1, fp);
 		fclose(fp);
 		SetFilePerms(setPath);
 	}
@@ -28398,7 +28455,6 @@ void Option(char *item)
 			for(i=0; i<=option_copy_N; i++) {
 				strcpy(copy_src, option_copy[i]);
 				sprintf(copy_dst, "%s%s", window_path[window_activ], strrchr(copy_src, '/'));
-				
 				if(option_cut == YES) 
 					Move(copy_src, copy_dst); 
 				else {
@@ -28445,12 +28501,28 @@ void Option(char *item)
 		option_cut = YES;
 	} else
 	if(strcmp(item, STR_DELETE) == 0) {
-		start_loading();
-		for(i=0; i<=option_sel_N; i++) {
-			Delete(option_sel[i]);
+		char diag_msg[4096];
+		if( option_sel_N == 0 ) {
+			sprintf(diag_msg, "%s\n%s: %s", STR_ASK_TO_DELETE, STR_PATH, option_sel[0]);
+		} else 
+		if( 0 < option_sel ) {
+			u32 fil_n=0;
+			u32 dir_n=0;
+			for(i=0; i<=option_sel_N; i++) {
+				u8 info = path_info(option_sel[i]);
+				if( info == _FILE) fil_n++; else
+				if( info == _DIRECTORY) dir_n++;
+			}
+			sprintf(diag_msg, "%s\n%s: %s\n%s: %d\n%s: %d\n", STR_ASK_TO_DELETE, STR_PATH, window_path[window_activ], STR_FILES, fil_n, STR_DIRS, dir_n);
 		}
-		end_loading();
-		Window(".");
+		if( DrawDialogYesNo(diag_msg) == YES) {
+			start_loading();
+			for(i=0; i<=option_sel_N; i++) {
+				Delete(option_sel[i]);
+			}
+			end_loading();
+			Window(".");
+		}
 	} else
 	if(strcmp(item, STR_UNSELECT_ALL) == 0) {
 		for(i=0; i<WINDOW_MAX_ITEMS; i++) window_content_Selected[window_activ][i]=NO;
@@ -28530,7 +28602,7 @@ void Option(char *item)
 		Window(".");
 	} else
 	if(strcmp(item, STR_LAUNCH_SELF) == 0) {
-		sysProcessExitSpawn2(option_sel[0], NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_64K);
+		sysProcessExitSpawn2(option_sel[0], NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 	} else
 	if(strcmp(item, STR_EXTRACT_EBOOT) == 0) {
 		start_loading();
@@ -28558,7 +28630,7 @@ void Option(char *item)
 		Window(".");
 	} else
 	if(strcmp(item, STR_LAUNCH_EBOOT) == 0) {
-		sysProcessExitSpawn2(option_sel[0], NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_64K);
+		sysProcessExitSpawn2(option_sel[0], NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 	} else
 	if(strcmp(item, STR_SIGN_EBOOT) == 0) {
 		start_loading();
@@ -30361,6 +30433,9 @@ void Draw_HELP()
 	FontColor(COLOR_1);
 	FontSize(13);
 	
+	if(item_is(STR_OVERWRITE)) {
+		DrawString(x, y, STR_OVERWRITE_DESC);
+	} else
 	if(item_is(STR_BOX3D_GAP)) {
 		DrawString(x, y, STR_BOX3D_GAP_DESC);
 	} else
@@ -30375,6 +30450,9 @@ void Draw_HELP()
 	} else
 	if(item_is(STR_DUMP_ERK)) {
 		DrawString(x, y, STR_DUMP_ERK_DESC);
+	} else
+	if(item_is(STR_SHOWLOGS)) {
+		DrawString(x, y, STR_SHOWLOGS_DESC);
 	} else
 	if(item_is(STR_DUMP_3DUMP)) {
 		DrawString(x, y, STR_DUMP_3DUMP_DESC);
@@ -30608,6 +30686,9 @@ void Draw_HELP()
 	} else
 	if(item_is("0x11")) {
 		DrawString(x, y, "VU ADD/SUB accurate opcode");
+	} else
+	if(item_is("0x13")) {
+		DrawString(x, y, "Memory card timing related");
 	} else
 	if(item_is("0x26")) {
 		DrawString(x, y, "FPU ADD/SUB accurate range - FPU_Accurate_range");
@@ -31100,6 +31181,8 @@ void open_PS2_GAME_MENU();
 #define BCNETEMU_OFF		0
 #define BCNETEMU_STATUS		2
 #define BCNETEMU_ISNOTBC	-1		
+#define SYSCALL8_OPCODE_ENABLE_PS2NETEMU	0x1EE9	/* Cobra 7.50 */
+#define PS2NETEMU_GET_STATUS				2
 
 // param=1		enable patch
 // param=0		disable patch
@@ -31118,7 +31201,7 @@ void open_PS2_GAME_MENU();
 #define DB_SOFTCONFIG	128
 #define DB_CUSTCONFIG	256
 	
-int ps2_netemu_cobra(int param)
+int ps2netemu_cobra(int param)
 {
 	lv2syscall2(8, (uint64_t) SYSCALL8_OPCODE_USE_PS2NETEMU, (uint64_t)(int)param);
 	return_to_user_prog(int);
@@ -33781,7 +33864,7 @@ void init_PS2_GAME_MENU()
 		}
 	}
 	
-	i = ps2_netemu_cobra(BCNETEMU_STATUS);
+	i = ps2netemu_cobra(BCNETEMU_STATUS);
 	if(i != BCNETEMU_ISNOTBC) {
 		if(i == BCNETEMU_OFF) {
 			add_item_MENU(STR_ENABLE_NETEMU, ITEM_TEXTBOX);
@@ -33906,11 +33989,11 @@ u8 PS2_GAME_MENU_CROSS()
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_ENABLE_NETEMU)) {
-		if( ps2_netemu_cobra(BCNETEMU_ON) == BCNETEMU_ON) show_msg(STR_DONE);
+		if( ps2netemu_cobra(BCNETEMU_ON) == BCNETEMU_ON) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_DISABLE_NETEMU)) {
-		if( ps2_netemu_cobra(BCNETEMU_OFF) == BCNETEMU_OFF) show_msg(STR_DONE);
+		if( ps2netemu_cobra(BCNETEMU_OFF) == BCNETEMU_OFF) show_msg(STR_DONE);
 		else show_msg(STR_FAILED);
 	} else 
 	if(item_is(STR_CONFIG)) {
@@ -33938,10 +34021,9 @@ u8 PS2_GAME_MENU_CROSS()
 		dest[strrchr(dest, '/') - dest] = 0;
 		Copy_Game(list_game_path[position], dest);
 	} else 
-	if(item_is(STR_DELETE)) 
-	{
-		char diag_msg[512];
-		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_ASK_DEL, list_game_title[position], STR_PATH, list_game_path[position]);
+	if(item_is(STR_DELETE)) {
+		char diag_msg[4096];
+		sprintf(diag_msg, "%s\n%s: %s\n%s: %s\n", STR_ASK_TO_DELETE, STR_GAME_TITLE, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
@@ -33967,7 +34049,7 @@ u8 PS2_GAME_MENU_CROSS()
 		if( ret == SUCCESS) {
 			PS2PATCH_480P = YES;
 			show_msg(STR_DONE);
-		} 
+		}
 		else show_msg(STR_FAILED);
 	} else
 	if(item_is(STR_DISABLE_480P)) {
@@ -34239,8 +34321,8 @@ u8 PSP_GAME_MENU_CROSS()
 		Copy_Game(list_game_path[position], dest);
 	} else 
 	if(item_is(STR_DELETE)) {
-		char diag_msg[512];
-		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_ASK_DEL, list_game_title[position], STR_DONE, list_game_path[position]);
+		char diag_msg[4096];
+		sprintf(diag_msg, "%s\n%s: %s\n%s: %s\n", STR_ASK_TO_DELETE, STR_GAME_TITLE, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
@@ -34469,8 +34551,8 @@ u8 PS1_GAME_MENU_CROSS()
 		Copy_Game(list_game_path[position], dest);
 	} else 
 	if(item_is(STR_DELETE)) {
-		char diag_msg[512];
-		sprintf(diag_msg, "%s '%s' ?\n%s : %s\n", STR_ASK_DEL, list_game_title[position], STR_PATH, list_game_path[position]);
+		char diag_msg[4096];
+		sprintf(diag_msg, "%s\n%s: %s\n%s: %s\n", STR_ASK_TO_DELETE, STR_GAME_TITLE, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
@@ -35729,11 +35811,10 @@ u8 PS3_GAME_MENU_CROSS()
 				else show_msg(STR_FAILED);
 			}
 		}
-	
 	} else 
 	if(item_is(STR_DELETE)) {
-		char diag_msg[512];
-		sprintf(diag_msg, "%s %s ?\n%s : %s", STR_ASK_DEL, list_game_title[position], STR_PATH, list_game_path[position]);
+		char diag_msg[4096];
+		sprintf(diag_msg, "%s\n%s: %s\n%s: %s\n", STR_ASK_TO_DELETE, STR_GAME_TITLE, list_game_title[position], STR_PATH, list_game_path[position]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			start_loading();
 			u8 ret = Delete_Game(NULL, position);
@@ -36766,8 +36847,8 @@ u8 PLUGINS_MANAGER_CROSS()
 u8 PLUGINS_MANAGER_SQUARE()
 {
 	if(ITEMS_POSITION > BOOTFILE_ITEM) {
-		char diag_msg[512];
-		sprintf(diag_msg, "%s '%s' ?", STR_ASK_DEL, ITEMS[ITEMS_POSITION]);
+		char diag_msg[2048];
+		sprintf(diag_msg, "%s\n%s: %s", STR_ASK_TO_DELETE, STR_FILE, ITEMS[ITEMS_POSITION]);
 		if( DrawDialogYesNo(diag_msg) == YES) {
 			char prx_path[128];
 			if(ITEMS_TYPE[ITEMS_POSITION] == ITEM_CHECKBOX) {
@@ -37626,7 +37707,6 @@ void init_SETTINGS()
 	
 #ifndef FILEMANAGER
 	//add_item_MENU(STR_UPD_MGZ, ITEM_TEXTBOX);
-	
 	add_item_MENU(STR_GAME_PATHS, ITEM_TEXTBOX);
 	for(i=0; i <= scan_dir_number; i++) {
 		add_item_value_MENU(scan_dir[i]);
@@ -37642,6 +37722,17 @@ void init_SETTINGS()
 	
 	add_item_MENU(STR_XMB_PRIO, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = XMB_priority;
+	
+	add_item_MENU(STR_OVERWRITE, ITEM_TEXTBOX);
+	add_item_value_MENU(STR_OVERWRITE_ALWAYS);
+	add_item_value_MENU(STR_OVERWRITE_NEVER);
+	add_item_value_MENU(STR_OVERWRITE_ASK);
+	add_item_value_MENU(STR_OVERWRITE_DUPLICATE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = OVERWRITE;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU(STR_SHOWLOGS, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = SHOW_LOG;
 	
 	add_item_MENU(STR_HELP, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = Show_Help;
@@ -37889,7 +37980,7 @@ void init_SETTINGS()
 	
 // ROOT DISPLAY
 
-	add_title_MENU(STR_ROOT_DISPLAY);
+	add_title_MENU(STR_FILEMANAGER);
 	
 	add_item_MENU(STR_STYLE, ITEM_TEXTBOX);
 	add_item_value_MENU(STR_STYLE_CUSTOM);
@@ -38112,6 +38203,7 @@ void init_SETTINGS()
 	}
 	
 	add_title_MENU(STR_SYSTEM_TOOLS);
+	
 	if( PEEKnPOKE ) {
 		if( !HEN ) add_item_MENU(STR_DUMP_LV1, ITEM_TEXTBOX);
 		add_item_MENU(STR_DUMP_LV2, ITEM_TEXTBOX);
@@ -38127,7 +38219,7 @@ void init_SETTINGS()
 		add_item_MENU(STR_DYNAREC, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = HaveDynarec();
 	}	
-		
+	
 	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
 	
 	add_item_MENU("MGZ log", ITEM_TOGGLE);
@@ -38157,6 +38249,12 @@ void update_SETTINGS()
 		} else 
 		if(item_is(STR_XMB_PRIO)) {
 			XMB_priority = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_OVERWRITE)) {
+			OVERWRITE = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_SHOWLOGS)) {
+			SHOW_LOG = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		}
 	} else 
 	if( item_title_is(STR_UI_SETTINGS)){
@@ -42304,7 +42402,7 @@ void input_MAIN()
 	}
 	
 	if(ComboNewPad(BUTTON_L3, BUTTON_R3)) {
-		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 64, SYS_PROCESS_SPAWN_STACK_SIZE_128K);
+		sysProcessExitSpawn2("/dev_hdd0/game/MANAGUNZ0/USRDIR/ManaGunZ.self", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 	}
 	
 	if(OldPad(BUTTON_R1)) Display_PIC1=YES;
@@ -42343,7 +42441,7 @@ void input_MAIN()
 			}
 #endif
 		} else {
-			show_msg("Unmountable");
+			show_msg(STR_CANT_MOUNT);
 		}
 	} else
 	if(NewPad(BUTTON_TRIANGLE) && Game_stuff) {

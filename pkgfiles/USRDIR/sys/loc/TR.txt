@@ -11,10 +11,10 @@ STR_FILES                     {Dosyalar}
 STR_DIRS                      {Yönetimler}
 STR_UNKNOWN                   {Bilinmeyen}
 STR_FILE                      {Dosyalar}
-STR_CANCEL                    {Menü}
+STR_CANCEL                    {Cancel}
 STR_TURNOFF                   {Kapat}
 STR_CANCELLED                 {İptal}
-STR_UNIT                      {Menü}
+STR_UNIT                      {Bytes}
 STR_TOTALSIZE                 {Toplam boyut}
 STR_HIDELOGS                  {Günlükleri gizle}
 STR_SHOWLOGS                  {Günlükleri göster}
@@ -25,14 +25,14 @@ STR_MOUNTGAME                 {Dağı Game}
 STR_FILTER                    {Filtre}
 STR_FAVORITE                  {Favori}
 STR_FILEMANAGER               {Dosya Yöneticisi}
-STR_HOLD                      {Menü}
-STR_EXIT                      {Menü}
+STR_HOLD                      {Hold}
+STR_EXIT                      {Exit}
 STR_GAME_PROP                 {Oyun Özellikleri}
-STR_GAME_TITLE                {Menü}
+STR_GAME_TITLE                {Title}
 STR_GAME_PATH                 {Yol}
-STR_GAME_FORMAT               {Menü}
-STR_GAME_SIZE                 {Menü}
-STR_GAME_PLATFORM             {Menü}
+STR_GAME_FORMAT               {Format}
+STR_GAME_SIZE                 {Size}
+STR_GAME_PLATFORM             {Platform}
 STR_SYSVERS                   {Yazılım}
 STR_GAMEID                    {Identifier}
 STR_ELFCRC                    {ELF CRC}
@@ -41,7 +41,7 @@ STR_BACK                      {Geri dön}
 STR_ENTER                     {Giriş}
 STR_UPDATE_FOUND              {Güncelle}
 STR_UPDATE                    {Güncelleştirme}
-STR_SIZE                      {Menü}
+STR_SIZE                      {Size}
 STR_SYSTEM                    {Sistemi}
 STR_DL                        {İndir}
 STR_DL_ALL                    {TÜMÜNÜ İndir}
@@ -49,7 +49,7 @@ STR_UNPLUG                    {Aşağıdaki cihazın (ler) yığılması}
 STR_PATH                      {Yol}
 STR_TYPE                      {Tür}
 STR_FOLDER                    {Klasör}
-STR_DIR                       {Menü}
+STR_DIR                       {Directory}
 STR_MULT                      {Çoklu}
 STR_THM_SETTINGS              {Tema ayarları}
 STR_THM                       {Tespit}
@@ -98,7 +98,6 @@ STR_NONE                      {Yok}
 STR_CHECK_MD5                 {MD5'i kontrol edin}
 STR_PROPS                     {Menü}
 STR_PROPS_DESC                {Yedeklemenizin özelliklerini gösterin.}
-STR_ASK_DEL                   {Silmek için gerçek istiyor musunuz}
 STR_GAME_SETTINGS             {Oyun Ayarları}
 STR_DIRECT_BOOT               {Doğrudan önyükleme}
 STR_DIRECT_BOOT_DESC          {Oyunu doğrudan XMB'ye geri dönmeden başlatın.}
@@ -147,14 +146,14 @@ STR_DUMP_FLASH                {Damperli flaş}
 STR_REFRESH                   {Yenile}
 STR_NEWFOLDER                 {Yeni Klasör}
 STR_NEWFILE                   {Yeni Dosya}
-STR_PASTE                     {Menü}
+STR_PASTE                     {Paste}
 STR_CUT                       {XHamster}
 STR_UNSELECT_ALL              {Tümünü Unselect}
 STR_SELECT_ALL                {Tümünü Seçin}
 STR_MAKE_PKG                  {PKG Yap}
 STR_GETMD5                    {MD5 al}
 STR_GETSHA1                   {PAYLAŞ}
-STR_VIEW                      {Menü}
+STR_VIEW                      {View}
 STR_VIEW_TXT                  {Görünüm TXT}
 STR_VIEW_SFO                  {Görünüm SFO}
 STR_READ_XREG                 {xReg Oku}
@@ -249,20 +248,20 @@ STR_INVERSE                   {Ters düğme}
 STR_INVERSE_DESC              {Sağ ve sol düğmeleri ters.}
 STR_3D                        {3D}
 STR_3D_DESC                   {Oyun vakalarının 3D modelleri ile menüyü görüntüleyin.}
-STR_ADD                       {Menü}
+STR_ADD                       {Add}
 STR_LOAD                      {Yükle}
 STR_CHANGE                    {Değişim}
 STR_COLOR                     {Renk}
 STR_RESET                     {E-Mail _ Sitemap}
 STR_FAILED                    {Failed}
-STR_DONE                      {Menü}
+STR_DONE                      {Done}
 STR_OPEN                      {Açık}
-STR_CLOSE                     {Menü}
-STR_OPTION                    {Menü}
-STR_SELECT                    {Menü}
+STR_CLOSE                     {Close}
+STR_OPTION                    {Option}
+STR_SELECT                    {Select}
 STR_WINDOW                    {Pencere}
-STR_CLICK                     {Menü}
-STR_CURSOR                    {Menü}
+STR_CLICK                     {Click}
+STR_CURSOR                    {Cursor}
 STR_NEXT                      {E-Mail senden}
 STR_PREVIOUS                  {Önceki}
 STR_SET_COLOR                 {Renk ayarla}
@@ -278,17 +277,17 @@ STR_DOCK_RIGHT                {Sağa giden nokta}
 STR_DOCK_LEFT                 {Solda dock}
 STR_DOCK_FULL                 {Dock tam}
 STR_PLUGIN_MONITOR            {Eklenti Monitörü}
-STR_UNUSED                    {Menü}
+STR_UNUSED                    {Unused}
 STR_UNLOAD                    {Boşaltma}
 STR_BOOT_FILE                 {Boot dosyası}
 STR_CURRENT                   {Güncel}
-STR_NET                       {Menü}
-STR_SOFT                      {Menü}
+STR_NET                       {NET}
+STR_SOFT                      {SOFT}
 STR_GX                        {GX}
 STR_CUSTOM                    {Özel}
 STR_NEW_CMD                   {Yeni komut}
-STR_PNACH                     {Menü}
-STR_WIDESCREEN                {Menü}
+STR_PNACH                     {PNACH}
+STR_WIDESCREEN                {Widescreen}
 STR_480P                      {480P}
 STR_YFIX                      {YFIX'nın sohbeti}
 STR_FMV                       {FMV atlama}
@@ -307,7 +306,7 @@ STR_GRID_SCROLL               {Kaydol}
 STR_ADD_LIMG                  {LIMG ekle}
 STR_REMOVE_LIMG               {LIMG kaldır}
 STR_LIMG_DESC                 {Birkaç oyunları düzeltebilir.}
-STR_FONT                      {Menü}
+STR_FONT                      {Font}
 STR_FONT_DESC                 {Yazı tipini değiştirin.}
 STR_MOVE                      {Akkus}
 STR_JOIN                      {Üye ol}
@@ -316,12 +315,12 @@ STR_COLOR_FILTER              {Renk Filtreleri}
 STR_COLOR_NOTIF               {Bildirim}
 STR_COLOR_BOXHEAD             {Kutu başlığı}
 STR_COLOR_BOXBODY             {Kutu gövdesi}
-STR_COLOR_SIDEBAR             {Menü}
+STR_COLOR_SIDEBAR             {Sidebar}
 STR_COLOR_BGS                 {Ayar arka plan}
 STR_COLOR_BG                  {Arka plan}
 STR_ROOT_DISPLAY              {Kök ekran}
 STR_ROOT_DISPLAY_DESC         {FileManager kök ekranını değiştirin.}
-STR_STYLE                     {Menü}
+STR_STYLE                     {Style}
 STR_STYLE_CUSTOM              {Özel stil}
 STR_STYLE1                    {Stil 1}
 STR_STYLE2                    {Stil 2}
@@ -332,7 +331,7 @@ STR_STYLE6                    {Stil 6}
 STR_FREEOF                    {ücretsiz}
 STR_ROOTLABEL                 {Kök}
 STR_FM_ICONSIZE               {Simge boyutu}
-STR_FM_BIG                    {Menü}
+STR_FM_BIG                    {Big}
 STR_FM_SMALL                  {Küçük}
 STR_FM_ROWNUMBER              {Metin satırı numarası}
 STR_FM_ROWSIZE                {Satır boyutu}
@@ -341,17 +340,17 @@ STR_FM_RIGHT_CONTENT          {Sıra içeriği [RIGHT]}
 STR_FM_EMPTY                  {Boş}
 STR_FM_MOUNTPOINT             {Montaj noktası}
 STR_FM_DEVICE                 {Cihazlar}
-STR_FM_LABEL                  {Menü}
+STR_FM_LABEL                  {Label}
 STR_FM_CAPACITY               {Kapasite çubuğu}
 STR_FM_MEMINSIDE              {hafızanın içinde}
 STR_FM_MEMOUTSIDE             {Dış bellek}
 STR_FM_FILESYSTEM             {Dosya sistemi}
 STR_FM_CB_WIDTH               {Kapasite bar genişliği}
-STR_FM_MEMORY                 {Menü}
-STR_FM_ICON                   {Menü}
+STR_FM_MEMORY                 {Memory}
+STR_FM_ICON                   {Icon}
 STR_FM_FILEFOLDER             {Dosya ve Klasör}
 STR_FM_CUSTOM                 {Özel simgeler}
-STR_FM_CB_FILL                {Menü}
+STR_FM_CB_FILL                {Fill}
 STR_EDIT_IDPS                 {IDPS Düzenle}
 STR_FILTER_NOGAME             {Oyun bulunamadı. Filtrelerinizi ayarlayın.}
 STR_SYMLINK_SRC               {SymLink kaynağı}
@@ -377,3 +376,40 @@ STR_DUMP_DISC_KEY             {Damper Blu-Ray disk anahtarı}
 STR_DUMP_ERK                  {Damper eid kök anahtarı}
 STR_DUMP_3DUMP                {Damat 3Dump.bin}
 STR_SYSTEM_TOOLS              {Sistem araçları}
+STR_DUMP_ENC_DESC             {Blu-Ray diskinizin ham bir izosunu alın.}
+STR_DUMP_ERK_DESC             {Bu sisteminizi şifrelemek için ana anahtardır. Her yerde kullanılır. Yol: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {3k3y IsoTools ile Blu-Ray'ı boşaltmak için gerekli dosyadır. Yol: dev_hdd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {Decrypt edat/sdat}
+STR_REDUMP_LOG                {GetKey dökümünü oluşturun}
+STR_REDUMP_LOG_DESC           {Redump.org gönderimleri için gerekli dosyaları oluşturun.}
+STR_DUMP_OPTION               {Blu-Ray Damper}
+STR_IGNORE_ERR                {Ignore hataları}
+STR_IGNORE_ERR_DESC           {Blu-Ray döküm işlemi sırasında okuma hatalarını görmezden gelir.}
+STR_3K3Y_HEADER               {3k3y başlığını içerir}
+STR_3K3Y_HEADER_DESC          {Blu-ray'ı gömülü 3k3y başlığına sahip bir iso'ya boşaltır. 3k3y IsoTools tanımak mümkün olacak.}
+STR_ELAPSED                   {Türkçe}
+STR_REMAINING                 {Remaining}
+STR_DYNAREC                   {Türkçe}
+STR_DYNAREC_DESC              {Düzenleyicilerin dinamik rekompilasyon kullanmasını sağlar.}
+STR_BUILD_ISO                 {Yapım iso}
+STR_BUILD_ISO_DESC            {Blu-Ray'ın dosyalarından bir yedekleme isosu oluşturun.}
+STR_UPLOADER                  {Uploader adı}
+STR_UPLOADER_DESC             {ird yükleriniz için krediler istiyorsanız adınızı girin, anonim kalmak için boş bırakın.}
+STR_BOX3D_ALIGN               {Align kutuları}
+STR_BOX3D_ALIGN_DESC          {Bir rafta depolandığı gibi oyun kutuları.}
+STR_BOX3D_GAP                 {Kutular boşluğu}
+STR_BOX3D_GAP_DESC            {Oyun kutuları arasındaki boşluğu ayarlayın.}
+STR_SHORT                     {Short}
+STR_MEDIUM                    {Orta}
+STR_LONG                      {Uzun}
+STR_MOUNT_BD                  {BD olarak monte}
+STR_MOUNT_DVD                 {DVD olarak monte}
+STR_SHOWLOGS_DESC             {Yükleme ekranında mevcut görev hakkında bilgilendirmek için mesajlar görüntüleyin.}
+STR_OVERWRITE                 {Overwrite}
+STR_OVERWRITE_DESC            {Mevcut dosyaların yazılmasını kontrol edin.}
+STR_OVERWRITE_ALWAYS          {Her zaman}
+STR_OVERWRITE_NEVER           {Asla}
+STR_OVERWRITE_ASK             {Ask}
+STR_OVERWRITE_DUPLICATE       {Duplicate}
+STR_ASK_TO_OVERWRITE          {Dosya zaten var. Mevcut dosyayı yazmak mı istiyorsunuz?}
+STR_ASK_TO_DELETE             {Gerçekten bu silmek istiyor musunuz?}

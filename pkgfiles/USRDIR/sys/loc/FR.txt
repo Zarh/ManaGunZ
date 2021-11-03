@@ -98,7 +98,6 @@ STR_NONE                      {Aucun}
 STR_CHECK_MD5                 {Vérifier le MD5}
 STR_PROPS                     {Propriétés}
 STR_PROPS_DESC                {Montrer les propriétés du jeu.}
-STR_ASK_DEL                   {Voulez-vous vraiment supprimer}
 STR_GAME_SETTINGS             {Paramètres du jeu}
 STR_DIRECT_BOOT               {Lancement direct}
 STR_DIRECT_BOOT_DESC          {Lancé votre jeu directement sans passer par le XMB.}
@@ -372,14 +371,14 @@ STR_ALL_GAMES                 {Tout les jeux}
 STR_DISPLAY                   {Affichage}
 STR_DUMP_DEC                  {Dumper le disque Blu-Ray décrypté}
 STR_DUMP_DEC_DESC             {Obtenir une sauvegarde propre de votre Blu-Ray sous la forme de fichier ISO avec son IRD. L'ird sera uploadé dans la base de donnée lorsque l'opération sera terminé.}
-STR_DUMP_ENC                  {Dumper le disque Blu-Ray crypté}
-STR_DUMP_DISC_KEY             {Dumper la clé du disque Blu-Ray}
+STR_DUMP_ENC                  {Dumper le Blu-Ray crypté}
+STR_DUMP_DISC_KEY             {Dumper la clé du Blu-Ray}
 STR_DUMP_ERK                  {Dumper l'eid root key}
 STR_DUMP_3DUMP                {Dumper le 3Dump.bin}
 STR_SYSTEM_TOOLS              {Outils système}
 STR_DUMP_ENC_DESC             {Obtenez un iso brut de votre disque Blu-Ray.}
-STR_DUMP_ERK_DESC             {C'est la clé principale pour décrypter votre système. Il est utilisé partout. Chemin: dev_hdd0/tmp/eid_root_key}
-STR_DUMP_3DUMP_DESC           {C'est le fichier nécessaire pour larguer un Blu-Ray avec 3k3y IsoTools. Chemin: dev_hdd0/tmp/3Dump.bin}
+STR_DUMP_ERK_DESC             {C'est la clé principale pour décrypter votre système. Elle est utilisé partout. Chemin: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {C'est le fichier nécessaire pour dumper un Blu-Ray avec 3k3y IsoTools. Chemin: dev_hdd0/tmp/3Dump.bin}
 STR_DECRYPT_NPDATA            {Décrypter edat/sdat}
 STR_REDUMP_LOG                {Generate GetKey dump}
 STR_REDUMP_LOG_DESC           {Générer les fichiers requis pour les présentations redump.org.}
@@ -388,11 +387,29 @@ STR_IGNORE_ERR                {Ignore les erreurs}
 STR_IGNORE_ERR_DESC           {Il ignore les erreurs de lecture pendant le processus de dumping Blu-Ray.}
 STR_3K3Y_HEADER               {Comprend 3k3y header}
 STR_3K3Y_HEADER_DESC          {Il jette le Blu-ray à un iso avec un en-tête 3k3y intégré. 3k3y IsoTools sera en mesure de le reconnaître.}
-STR_ELAPSED                   {Elapsed}
-STR_REMAINING                 {Remaining}
+STR_ELAPSED                   {Écoulé}
+STR_REMAINING                 {Restant}
 STR_DYNAREC                   {Dynarec}
 STR_DYNAREC_DESC              {Il permet aux émulateurs d'utiliser la recompilation dynamique.}
-STR_BUILD_ISO                 {Build iso}
-STR_BUILD_ISO_DESC            {Construisez un iso de sauvegarde à partir des fichiers de Blu-Ray.}
-STR_UPLOADER                  {Nom du chargeur}
-STR_UPLOADER_DESC             {Entrez votre nom si vous voulez des crédits pour vos téléchargements ird, laissez-le vide pour rester anonyme.}
+STR_BUILD_ISO                 {Construire un iso}
+STR_BUILD_ISO_DESC            {Construisez un iso à partir des fichiers du Blu-Ray.}
+STR_UPLOADER                  {Nom de l'uploader}
+STR_UPLOADER_DESC             {Entrez votre nom ou pseudo si vous souhaitez signer vos uploads d'ird, laissez-le vide pour rester anonyme.}
+STR_BOX3D_ALIGN               {Boîtiers alignés}
+STR_BOX3D_ALIGN_DESC          {Aligner les boîtes de jeu comme si elle était stockée sur une étagère.}
+STR_BOX3D_GAP                 {Encadré}
+STR_BOX3D_GAP_DESC            {Réglez l'écart entre les boîtes de jeu.}
+STR_SHORT                     {Court}
+STR_MEDIUM                    {Moyenne}
+STR_LONG                      {Long}
+STR_MOUNT_BD                  {Montage en BD}
+STR_MOUNT_DVD                 {Montage en DVD}
+STR_SHOWLOGS_DESC             {Affiche les messages pour en savoir plus sur la tâche actuelle pendant l'écran de chargement.}
+STR_OVERWRITE                 {Écrasement}
+STR_OVERWRITE_DESC            {Contrôler l'écrasement des fichiers existants.}
+STR_OVERWRITE_ALWAYS          {Toujours}
+STR_OVERWRITE_NEVER           {Jamais}
+STR_OVERWRITE_ASK             {Demander}
+STR_OVERWRITE_DUPLICATE       {Dupliquer}
+STR_ASK_TO_OVERWRITE          {Le fichier existe déjà. Voulez-vous écraser le fichier existant?}
+STR_ASK_TO_DELETE             {Voulez-vous vraiment supprimer cela?}

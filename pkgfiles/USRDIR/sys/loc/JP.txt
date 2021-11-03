@@ -98,7 +98,6 @@ STR_NONE                      {なし}
 STR_CHECK_MD5                 {MD5をチェック}
 STR_PROPS                     {プロパティ}
 STR_PROPS_DESC                {バックアップのプロパティを表示します。}
-STR_ASK_DEL                   {本当に削除したい}
 STR_GAME_SETTINGS             {ゲーム設定}
 STR_DIRECT_BOOT               {ダイレクトブーツ}
 STR_DIRECT_BOOT_DESC          {XMBに戻ってから直接ゲームを起動します。}
@@ -396,3 +395,21 @@ STR_BUILD_ISO                 {ビルドイソ}
 STR_BUILD_ISO_DESC            {Blu-Ray のファイルからバックアップ iso をビルドします。}
 STR_UPLOADER                  {アップロード者名}
 STR_UPLOADER_DESC             {id アップロードのクレジットが必要な場合は、名前を入力してください。}
+STR_BOX3D_ALIGN               {箱を並べて下さい}
+STR_BOX3D_ALIGN_DESC          {棚に保管されているかのようにゲームボックスを揃えます。}
+STR_BOX3D_GAP                 {箱のギャップ}
+STR_BOX3D_GAP_DESC            {ゲームボックス間のギャップを調整します。}
+STR_SHORT                     {ショートショート}
+STR_MEDIUM                    {メディア}
+STR_LONG                      {ロング}
+STR_MOUNT_BD                  {BDとしてマウント}
+STR_MOUNT_DVD                 {DVDとしてマウント}
+STR_SHOWLOGS_DESC             {ロード画面中に現在のタスクについて通知するメッセージを表示します。}
+STR_OVERWRITE                 {オーバーライト}
+STR_OVERWRITE_DESC            {既存のファイルの上書きを制御する。}
+STR_OVERWRITE_ALWAYS          {常に}
+STR_OVERWRITE_NEVER           {決して}
+STR_OVERWRITE_ASK             {お問い合わせ}
+STR_OVERWRITE_DUPLICATE       {重複する}
+STR_ASK_TO_OVERWRITE          {既に存在するファイル。 既存のファイルを上書きしたいですか?}
+STR_ASK_TO_DELETE             {これを削除したいですか?}

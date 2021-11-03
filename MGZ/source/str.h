@@ -195,8 +195,6 @@ char *STR_PROPS=NULL;
 #define STR_PROPS_DEFAULT					"Properties"
 char *STR_PROPS_DESC=NULL;
 #define STR_PROPS_DESC_DEFAULT				"Show the properties of your backup."
-char *STR_ASK_DEL=NULL;
-#define STR_ASK_DEL_DEFAULT					"Do you really want to delete"
 char *STR_GAME_SETTINGS=NULL;
 #define STR_GAME_SETTINGS_DEFAULT			"Game Settings"
 char *STR_DIRECT_BOOT=NULL;
@@ -807,8 +805,23 @@ char *STR_MOUNT_BD=NULL;
 #define STR_MOUNT_BD_DEFAULT				"Mount as BD"
 char *STR_MOUNT_DVD=NULL;
 #define STR_MOUNT_DVD_DEFAULT				"Mount as DVD"
-
-
-
+char *STR_SHOWLOGS_DESC=NULL;
+#define STR_SHOWLOGS_DESC_DEFAULT			"Display messages to inform about the current task during the loading screen."
+char *STR_OVERWRITE=NULL;
+#define STR_OVERWRITE_DEFAULT				"Overwrite"
+char *STR_OVERWRITE_DESC=NULL;
+#define STR_OVERWRITE_DESC_DEFAULT			"Control the overwriting of existing files."
+char *STR_OVERWRITE_ALWAYS=NULL;
+#define STR_OVERWRITE_ALWAYS_DEFAULT		"Always"
+char *STR_OVERWRITE_NEVER=NULL;
+#define STR_OVERWRITE_NEVER_DEFAULT			"Never"
+char *STR_OVERWRITE_ASK=NULL;
+#define STR_OVERWRITE_ASK_DEFAULT			"Ask"
+char *STR_OVERWRITE_DUPLICATE=NULL;
+#define STR_OVERWRITE_DUPLICATE_DEFAULT		"Duplicate"
+char *STR_ASK_TO_OVERWRITE=NULL;
+#define STR_ASK_TO_OVERWRITE_DEFAULT		"File already exists. Do you want to overwrite the existing file?"
+char *STR_ASK_TO_DELETE=NULL;
+#define STR_ASK_TO_DELETE_DEFAULT			"Do you really want to delete this ?"
 
 #endif

@@ -98,7 +98,6 @@ STR_NONE                      {Semmi}
 STR_CHECK_MD5                 {MD5 Ellenőrzés}
 STR_PROPS                     {Tulajdonságok}
 STR_PROPS_DESC                {A játék tulajdonságainak megjelenítése.}
-STR_ASK_DEL                   {Tényleg törölni szeretnéd}
 STR_GAME_SETTINGS             {Játék Beállítások}
 STR_DIRECT_BOOT               {Közvetlen indítás}
 STR_DIRECT_BOOT_DESC          {Indítsd el a játékot anélkül, hogy visszatérnél az XMB-hez.}
@@ -375,7 +374,7 @@ STR_DUMP_DEC_DESC             {Szerezd meg a lemezed megfelelő szigetét az IRD
 STR_DUMP_ENC                  {Dump titkosított Blu-Ray lemez}
 STR_DUMP_ENC_DESC             {Szerezzen egy nyers izomot a Blu-Ray lemezéről.}
 STR_DUMP_ERK                  {Dump eid gyökér kulcs}
-STR_DUMP_ERK_DESC             {Ez a fő kulcs a rendszer titkosításához. Mindenütt használják. dalszöveg: Dev_hdd0/tmp/eid_root_key}
+STR_DUMP_ERK_DESC             {Ez a fő kulcs a rendszer titkosításához. Mindenütt használják. dalszöveg: dev_hdd0/tmp/eid_root_key}
 STR_DUMP_3DUMP                {Dump 3Dump.bin}
 STR_DUMP_3DUMP_DESC           {Ez a szükséges fájl, hogy egy Blu-Ray 3k3y IsoTools. Path: dev_hdd0/tmp/3Dump.bin}
 STR_SYSTEM_TOOLS              {Rendszereszközök}
@@ -395,3 +394,21 @@ STR_BUILD_ISO                 {Build iso}
 STR_BUILD_ISO_DESC            {Építsen egy backup iso-t a Blu-Ray fájljaiból.}
 STR_UPLOADER                  {Uploader neve}
 STR_UPLOADER_DESC             {Írja be a nevét, ha hiteleketeket szeretne az ird feltöltéséhez, hagyja üres maradni anonim.}
+STR_BOX3D_ALIGN               {Align dobozok}
+STR_BOX3D_ALIGN_DESC          {Align játék dobozok, mintha tárolták egy polcon.}
+STR_BOX3D_GAP                 {Boxs gap}
+STR_BOX3D_GAP_DESC            {Adjust a szakadék a játék dobozok között.}
+STR_SHORT                     {Rövid}
+STR_MEDIUM                    {Közepes}
+STR_LONG                      {Hosszú}
+STR_MOUNT_BD                  {Mount as BD}
+STR_MOUNT_DVD                 {Mount mint DVD}
+STR_SHOWLOGS_DESC             {Mutasson üzeneteket, hogy tájékoztassa a jelenlegi feladatot a töltő képernyő alatt.}
+STR_OVERWRITE                 {Átírás}
+STR_OVERWRITE_DESC            {A meglévő fájlok túlírásának ellenőrzése.}
+STR_OVERWRITE_ALWAYS          {Mindig}
+STR_OVERWRITE_NEVER           {Soha}
+STR_OVERWRITE_ASK             {Kérdező}
+STR_OVERWRITE_DUPLICATE       {dalszöveg}
+STR_ASK_TO_OVERWRITE          {File már létezik. Szeretné felülírni a meglévő fájlt?}
+STR_ASK_TO_DELETE             {Tényleg szeretné törölni ezt?}

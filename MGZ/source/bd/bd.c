@@ -172,7 +172,7 @@ u8 get_redump_log(char *log_path, char *pic_path)
 	if(get_dec_key(d1, d2)==SUCCESS)
 	{
 		fprintf(g_file_log, "get_dec_key succeeded!\r\n");
-		dec_d1(d1);
+		enc_d1(d1);
 		dec_d2(d2);
 	}
 	else

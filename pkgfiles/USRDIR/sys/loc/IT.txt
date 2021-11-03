@@ -98,7 +98,6 @@ STR_NONE                      {Nessuno}
 STR_CHECK_MD5                 {Verifica MD5}
 STR_PROPS                     {Proprietà}
 STR_PROPS_DESC                {Visualizza le proprietà del backup.}
-STR_ASK_DEL                   {Vuoi davvero eliminare}
 STR_GAME_SETTINGS             {Impostazioni del gioco}
 STR_DIRECT_BOOT               {Avvio diretto}
 STR_DIRECT_BOOT_DESC          {Lancia il gioco direttamente senza dover tornare alla XMB.}
@@ -395,3 +394,21 @@ STR_BUILD_ISO                 {Costruisci iso}
 STR_BUILD_ISO_DESC            {Costruire un iso di backup dai file di Blu-Ray.}
 STR_UPLOADER                  {Nome di caricamento}
 STR_UPLOADER_DESC             {Inserisci il tuo nome se vuoi i crediti per i tuoi upload su ird, lascialo vuoto per rimanere anonimo.}
+STR_BOX3D_ALIGN               {Allineare le caselle}
+STR_BOX3D_ALIGN_DESC          {Allineare le caselle di gioco come se fosse memorizzato su uno scaffale.}
+STR_BOX3D_GAP                 {Scadenza delle scatole}
+STR_BOX3D_GAP_DESC            {Regolare il divario tra le caselle di gioco.}
+STR_SHORT                     {Breve}
+STR_MEDIUM                    {Media}
+STR_LONG                      {Lungo}
+STR_MOUNT_BD                  {Montaggio come BD}
+STR_MOUNT_DVD                 {Montaggio come DVD}
+STR_SHOWLOGS_DESC             {Mostra messaggi per informare l'attività corrente durante la schermata di caricamento.}
+STR_OVERWRITE                 {Sovrascrittura}
+STR_OVERWRITE_DESC            {Controllare la sovrascrittura dei file esistenti.}
+STR_OVERWRITE_ALWAYS          {Sempre}
+STR_OVERWRITE_NEVER           {Mai}
+STR_OVERWRITE_ASK             {Chiedi}
+STR_OVERWRITE_DUPLICATE       {Duplicare}
+STR_ASK_TO_OVERWRITE          {Il file esiste già. Vuoi sovrascrivere il file esistente?}
+STR_ASK_TO_DELETE             {Vuoi davvero eliminare questo?}

@@ -98,7 +98,6 @@ STR_NONE                      {Keine}
 STR_CHECK_MD5                 {MD5 Prüfsumme}
 STR_PROPS                     {Eigenschaften}
 STR_PROPS_DESC                {Zeigt die Eigenschaften des Backups.}
-STR_ASK_DEL                   {Möchten Sie das folgende Backup wirklich löschen:}
 STR_GAME_SETTINGS             {Spieleinstellungen}
 STR_DIRECT_BOOT               {Direkt starten}
 STR_DIRECT_BOOT_DESC          {Startet das Spiel direkt ohne zum XMB zurückzukehren.}
@@ -395,3 +394,21 @@ STR_BUILD_ISO                 {Build ISO}
 STR_BUILD_ISO_DESC            {Erstellt eine ISO-Datei aus Blu-Rays Dateien.}
 STR_UPLOADER                  {Name des Uploaders}
 STR_UPLOADER_DESC             {Wenn Sie Ihren Namen eingeben wird er bei den ird Uploads mit angegeben. Leer lassen um anonym zu bleiben.}
+STR_BOX3D_ALIGN               {Align Boxen}
+STR_BOX3D_ALIGN_DESC          {Spielboxen von Align einem Regal.}
+STR_BOX3D_GAP                 {Kastenlücken}
+STR_BOX3D_GAP_DESC            {Anpassung der Kluft zwischen Spielboxen.}
+STR_SHORT                     {Kurz}
+STR_MEDIUM                    {Mittel}
+STR_LONG                      {Long}
+STR_MOUNT_BD                  {BD}
+STR_MOUNT_DVD                 {Link zur DVD}
+STR_SHOWLOGS_DESC             {Anzeige von Nachrichten, um über die aktuelle Aufgabe während des Ladebildschirms zu informieren.}
+STR_OVERWRITE                 {Mehr}
+STR_OVERWRITE_DESC            {Kontrolle der Überbuchung bestehender Dateien.}
+STR_OVERWRITE_ALWAYS          {immer}
+STR_OVERWRITE_NEVER           {niemals}
+STR_OVERWRITE_ASK             {Fragen}
+STR_OVERWRITE_DUPLICATE       {Du kompliziert}
+STR_ASK_TO_OVERWRITE          {Daten sind bereits vorhanden. Lassen Sie sich die bestehende Datei überschreiben?}
+STR_ASK_TO_DELETE             {Lassen Sie mich dies wirklich löschen?}

@@ -98,7 +98,6 @@ STR_NONE                      {无}
 STR_CHECK_MD5                 {检查MD5}
 STR_PROPS                     {属性}
 STR_PROPS_DESC                {显示游戏的属性.}
-STR_ASK_DEL                   {你真的要删除吗}
 STR_GAME_SETTINGS             {游戏设置}
 STR_DIRECT_BOOT               {直接引导}
 STR_DIRECT_BOOT_DESC          {直接启动游戏而不返回XMB.}
@@ -378,8 +377,8 @@ STR_DUMP_ERK                  {提取eid根密钥}
 STR_DUMP_3DUMP                {提取3Dump.bin}
 STR_SYSTEM_TOOLS              {系统工具}
 STR_DUMP_ENC_DESC             {你们的Blu-Rayver是一个原料。}
-STR_DUMP_ERK_DESC             {这是取消你系统的关键。 它在世界各地使用。 Path: dev_hd0/tmp/eid_root}
-STR_DUMP_3DUMP_DESC           {它所需要的档案以3k3y IsoTools倾倒Blu-Ray。 Path: dev_hd0/tmp/3 Dump.bin}
+STR_DUMP_ERK_DESC             {这是取消你系统的关键。 它在世界各地使用。 Path: dev_hdd0/tmp/eid_root}
+STR_DUMP_3DUMP_DESC           {它所需要的档案以3k3y IsoTools倾倒Blu-Ray。 Path: dev_hdd0/tmp/3Dump.bin}
 STR_DECRYPT_NPDATA            {加密/夸特}
 STR_REDUMP_LOG                {D. 代 根}
 STR_REDUMP_LOG_DESC           {要求撤销档案。}
@@ -396,3 +395,21 @@ STR_BUILD_ISO                 {布莱多}
 STR_BUILD_ISO_DESC            {从Blu-Ray'档案中调回。}
 STR_UPLOADER                  {传真}
 STR_UPLOADER_DESC             {如果你希望为你的卸货提供信贷,你的名字就足以留下匿名。}
+STR_BOX3D_ALIGN               {Align箱}
+STR_BOX3D_ALIGN_DESC          {如果它储存在一块土地上,则具有尊严的游戏箱。}
+STR_BOX3D_GAP                 {框注}
+STR_BOX3D_GAP_DESC            {调整游戏箱之间的差距。}
+STR_SHORT                     {短期}
+STR_MEDIUM                    {中 国}
+STR_LONG                      {长期}
+STR_MOUNT_BD                  {BD山}
+STR_MOUNT_DVD                 {D. 山 体}
+STR_SHOWLOGS_DESC             {在装货筛查期间告知当前任务的互动信息。}
+STR_OVERWRITE                 {过度}
+STR_OVERWRITE_DESC            {控制现有档案过多。}
+STR_OVERWRITE_ALWAYS          {文 件}
+STR_OVERWRITE_NEVER           {儿童}
+STR_OVERWRITE_ASK             {办公室}
+STR_OVERWRITE_DUPLICATE       {重复}
+STR_ASK_TO_OVERWRITE          {已经存在缺陷。 你是否想推翻现有档案?}
+STR_ASK_TO_DELETE             {你是否真想删除这一点?}

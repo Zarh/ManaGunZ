@@ -98,7 +98,6 @@ STR_NONE                      {ᄋᄋ}
 STR_CHECK_MD5                 {MD5 확인}
 STR_PROPS                     {의 특징}
 STR_PROPS_DESC                {백업의 속성을 표시합니다.}
-STR_ASK_DEL                   {삭제하고 싶은데}
 STR_GAME_SETTINGS             {게임 설정}
 STR_DIRECT_BOOT               {직접 부팅}
 STR_DIRECT_BOOT_DESC          {XMB로 돌아가지 않고 직접 게임을 시작합니다.}
@@ -396,3 +395,21 @@ STR_BUILD_ISO                 {빌드 Iso}
 STR_BUILD_ISO_DESC            {Blu-Ray의 파일에서 백업 iso를 만듭니다.}
 STR_UPLOADER                  {비밀번호}
 STR_UPLOADER_DESC             {ird uploads에 대한 크레딧을 원하면 이름을 입력하고 익명으로 유지하십시오.}
+STR_BOX3D_ALIGN               {Align 상자}
+STR_BOX3D_ALIGN_DESC          {선반에 저장 된 것처럼 Align 게임 상자.}
+STR_BOX3D_GAP                 {박스 간격}
+STR_BOX3D_GAP_DESC            {게임 박스의 간격을 조정합니다.}
+STR_SHORT                     {뚱 베어}
+STR_MEDIUM                    {주요 특징}
+STR_LONG                      {긴 수명}
+STR_MOUNT_BD                  {BD로 산}
+STR_MOUNT_DVD                 {DVD로 산}
+STR_SHOWLOGS_DESC             {로딩 중에 현재 작업에 대한 정보를 표시합니다.}
+STR_OVERWRITE                 {파일 형식}
+STR_OVERWRITE_DESC            {기존 파일의 overwriting을 제어합니다.}
+STR_OVERWRITE_ALWAYS          {(주)}
+STR_OVERWRITE_NEVER           {이름 *}
+STR_OVERWRITE_ASK             {기타}
+STR_OVERWRITE_DUPLICATE       {기타 제품}
+STR_ASK_TO_OVERWRITE          {파일이 이미 존재합니다. 기존 파일을 덮고 싶습니까?}
+STR_ASK_TO_DELETE             {당신은 정말로 이것을 삭제하고 싶습니까?}

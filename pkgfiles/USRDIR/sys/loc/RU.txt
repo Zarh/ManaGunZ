@@ -98,7 +98,6 @@ STR_NONE                      {Нет}
 STR_CHECK_MD5                 {Проверить MD5}
 STR_PROPS                     {Свойства}
 STR_PROPS_DESC                {Показать свойства вашей копии игры.}
-STR_ASK_DEL                   {Вы действительно хотите удалить}
 STR_GAME_SETTINGS             {Настройки игры}
 STR_DIRECT_BOOT               {Прямой запуск}
 STR_DIRECT_BOOT_DESC          {Запустить игру напрямую, не возвращаясь в XMB.}
@@ -396,3 +395,21 @@ STR_BUILD_ISO                 {Построить iso}
 STR_BUILD_ISO_DESC            {Создайте резервное копирование из файлов Blu-Ray.}
 STR_UPLOADER                  {Имя загрузки}
 STR_UPLOADER_DESC             {Введите ваше имя, если вы хотите кредиты для ваших ird загрузок, оставьте его пустым, чтобы остаться анонимным.}
+STR_BOX3D_ALIGN               {Коробки Align}
+STR_BOX3D_ALIGN_DESC          {Игровые ящики Align, как если он хранится на полке.}
+STR_BOX3D_GAP                 {Boxes разрыв}
+STR_BOX3D_GAP_DESC            {Отрегулируйте разрыв между игровыми ящиками.}
+STR_SHORT                     {Короткие}
+STR_MEDIUM                    {Средний}
+STR_LONG                      {Длинные}
+STR_MOUNT_BD                  {Гора как BD}
+STR_MOUNT_DVD                 {Гора как DVD}
+STR_SHOWLOGS_DESC             {Отображение сообщений для информирования о текущей задаче во время загрузки экрана.}
+STR_OVERWRITE                 {Переписать}
+STR_OVERWRITE_DESC            {Контролируйте перезапись существующих файлов.}
+STR_OVERWRITE_ALWAYS          {Всегда}
+STR_OVERWRITE_NEVER           {Никогда}
+STR_OVERWRITE_ASK             {Задать вопрос}
+STR_OVERWRITE_DUPLICATE       {Дублировать}
+STR_ASK_TO_OVERWRITE          {Файл уже существует. Хотите переписать существующий файл?}
+STR_ASK_TO_DELETE             {Вы действительно хотите удалить это?}

@@ -97,7 +97,6 @@ STR_NONE                      {None}
 STR_CHECK_MD5                 {Check MD5}
 STR_PROPS                     {Properties}
 STR_PROPS_DESC                {Show the properties of your backup.}
-STR_ASK_DEL                   {Do you really want to delete}
 STR_GAME_SETTINGS             {Game Settings}
 STR_DIRECT_BOOT               {Direct boot}
 STR_DIRECT_BOOT_DESC          {Launch the game directly without going back to XMB.}
@@ -394,3 +393,22 @@ STR_BUILD_ISO                 {Build iso}
 STR_BUILD_ISO_DESC            {Build a backup iso from Blu-Ray's files.}
 STR_UPLOADER                  {Uploader name}
 STR_UPLOADER_DESC             {Enter your name if you want credits for your ird uploads, leave it empty to stay anonymous.}
+STR_FAVORITE                  {Favorite}
+STR_BOX3D_ALIGN               {Do you really want to delete this ?}
+STR_BOX3D_ALIGN_DESC          {Align game boxes as if it was stored on a shelf.}
+STR_BOX3D_GAP                 {Boxes gap}
+STR_BOX3D_GAP_DESC            {Adjust the gap between game boxes.}
+STR_SHORT                     {Short}
+STR_MEDIUM                    {Medium}
+STR_LONG                      {Long}
+STR_MOUNT_BD                  {Mount as BD}
+STR_MOUNT_DVD                 {Mount as DVD}
+STR_SHOWLOGS_DESC             {Display messages to inform about the current task during the loading screen.}
+STR_OVERWRITE                 {Overwrite}
+STR_OVERWRITE_DESC            {Control the overwriting of existing files.}
+STR_OVERWRITE_ALWAYS          {Always}
+STR_OVERWRITE_NEVER           {Never}
+STR_OVERWRITE_ASK             {Ask}
+STR_OVERWRITE_DUPLICATE       {Duplicate}
+STR_ASK_TO_OVERWRITE          {File already exists. Do you want to overwrite the existing file?}
+STR_ASK_TO_DELETE             {Do you really want to delete this ?}

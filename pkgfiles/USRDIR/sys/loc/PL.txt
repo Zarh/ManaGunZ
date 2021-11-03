@@ -98,7 +98,6 @@ STR_NONE                      {Nic}
 STR_CHECK_MD5                 {Sprawdź MD5}
 STR_PROPS                     {Właściwości}
 STR_PROPS_DESC                {Pokaż właściwości gry.}
-STR_ASK_DEL                   {Czy na pewno chcesz usunąć?}
 STR_GAME_SETTINGS             {Ustawienia gry}
 STR_DIRECT_BOOT               {Bezpośrednie uruchomienie}
 STR_DIRECT_BOOT_DESC          {Uruchom grę bezpośrednio, nie wracając do XMB.}
@@ -379,8 +378,9 @@ STR_DUMP_3DUMP                {Zrzuć 3Dump.bin}
 STR_SYSTEM_TOOLS              {Narzędzia systemowe}
 STR_EXIT                      {Wydawca}
 STR_DUMP_ENC_DESC             {Jest to surowa płyta twojego Blu-Ray.}
-STR_DUMP_ERK_DESC             {Jest to główny klucz do deszyfrowania systemu. Jest używany wszędzie. W: dev_hd2/tmp/eid_root_key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key-key}
-STR_DUMP_3DUMP_DESC           {Jest to potrzebny plik, aby zrzucić Blu-Ray z 3k3y IsoTools. Path: dev_hd0/tmp/3Dump.bin (ang.).}
+STR_DUMP_ERK_DESC             {Jest to główny klucz do deszyfrowania systemu. Jest używany wszędzie dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP                {Jest 3Dump.bin}
+STR_DUMP_3DUMP_DESC           {Jest to potrzebny plik, aby zrzucić Blu-Ray z 3k3y IsoTools. Path: dev_hdd0/tmp/3Dump.bin}
 STR_DECRYPT_NPDATA            {Decryptedat/sdat}
 STR_REDUMP_LOG                {Generacja GetKey}
 STR_REDUMP_LOG_DESC           {pliki generacyjne wymagane do składania redump.org.}
@@ -397,3 +397,21 @@ STR_BUILD_ISO                 {Build isoform}
 STR_BUILD_ISO_DESC            {Build a backup iso from Blu-Ray's files (ang.).}
 STR_UPLOADER                  {Nazwisko}
 STR_UPLOADER_DESC             {Wejście do twojej nazwy, jeśli chcesz kredytować twoje ściąganie, zostawia go pustym, by zostać anonimowym.}
+STR_BOX3D_ALIGN               {Align box}
+STR_BOX3D_ALIGN_DESC          {Align Game, tak jakby był przechowywany na szelfie.}
+STR_BOX3D_GAP                 {boks}
+STR_BOX3D_GAP_DESC            {Poniższa różnica między kartami gry.}
+STR_SHORT                     {Short}
+STR_MEDIUM                    {Medium}
+STR_LONG                      {Long}
+STR_MOUNT_BD                  {Mount jako BD}
+STR_MOUNT_DVD                 {Góra na DVD}
+STR_SHOWLOGS_DESC             {Dysplay informuje o aktualnym założeniu podczas ekranu ładowania.}
+STR_OVERWRITE                 {Overwrite}
+STR_OVERWRITE_DESC            {Kontroluje nadpisanie istniejących plików.}
+STR_OVERWRITE_ALWAYS          {zawsze}
+STR_OVERWRITE_NEVER           {nigdy nie}
+STR_OVERWRITE_ASK             {Ask}
+STR_OVERWRITE_DUPLICATE       {Duplicate}
+STR_ASK_TO_OVERWRITE          {Obecnie Archiwum już istnieje. Czy chcesz przepisać istniejące pliki?}
+STR_ASK_TO_DELETE             {Czy chcesz to usunąć?}
