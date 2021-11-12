@@ -23,9 +23,7 @@
 #define YES			1
 #define NO		 	0
 
-extern int64_t prog_bar2_value;
-extern u8 cancel;
-extern void print_load(char *format, ...);
+#include "extern.h"
 
 static int paged_file_init (PagedFile *f, FILE *fd, int reader)
 {
@@ -303,31 +301,32 @@ paged_file_seek (PagedFile *f, u64 offset)
 
   return f->page_pos;
 }
-
-int
-paged_file_splice (PagedFile *f, PagedFile *from, int len)
+#define SPLICE_BUFFSER_SIZE 0x10000
+u64 paged_file_splice (PagedFile *f, PagedFile *from, u64 len)
 {
-  char buffer[1024];
-  int total = 0;
-  int size;
-  int read;
+  char buffer[SPLICE_BUFFSER_SIZE]={0};
+  u64 total = 0;
+  u32 size;
+  u64 read;
 
-  prog_bar2_value = 0;
-  while (len == -1 || total < len) {
-    size = len - total;
-    if (len == -1 || (u32) size > sizeof(buffer))
-      size = sizeof(buffer);
-
+  task_Init(len);
+  while (total < len) {
+    if((len - total) > SPLICE_BUFFSER_SIZE) {
+      size = SPLICE_BUFFSER_SIZE;
+    } else {
+      size = len - total;
+    }
     read = paged_file_read (from, buffer, size);
-    if (read == 0)
-      break;
+    if (read == 0) break;
+    
     paged_file_write (f, buffer, read);
     total += read;
 	
-	if(cancel==YES) break;
-	prog_bar2_value = (total*100)/len;
+	if(cancel) break;
+	task_Update(read);
   }
-
+  task_End();
+  
   return total;
 }
 

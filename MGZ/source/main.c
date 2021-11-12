@@ -9894,7 +9894,7 @@ void Draw_Loading(void *unused)
 						
 						u64 ElapsedTime = sTime() - start;
 						u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
-							
+					
 						char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
 						if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
 						FREE(ElapsedTime_STR);	
@@ -9905,11 +9905,13 @@ void Draw_Loading(void *unused)
 					}
 					
 					DrawFormatString(x, y, elapsed_STR);
+					
 					y+=new_line(1);
 					
 					DrawFormatString(x, y, remaining_STR);
+					
 					y+=new_line(1);
-										
+					
 					char *size_current = get_unit(task_ProgressBar1_val);
 					if(size_current) DrawString(x, y, size_current);
 					FREE(size_current);
@@ -9926,10 +9928,11 @@ void Draw_Loading(void *unused)
 					
 					y+=new_line(1);
 					
-					if( task_ProgressBar2_max !=  task_ProgressBar1_max) {
+					if( task_ProgressBar2_max != task_ProgressBar1_max && task_ProgressBar2_max != 0) {
 						Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar2_max, task_ProgressBar2_val);
-						y+=new_line(1);
 					}
+					
+					y+=new_line(1);
 					
 					if( task_ProgressBar1_max == task_ProgressBar1_val ) {
 						 task_ProgressBar1_max=0;
@@ -23097,7 +23100,7 @@ static void crypt(uint8_t *key, uint8_t *inbuff, uint64_t length, uint8_t *out)
 	uint64_t bytes_to_dump;
 	uint64_t remaining=length;
 	int i;
-	 
+	
 	while (remaining > 0) {
 		bytes_to_dump = remaining;
 		if (remaining > 0x10) bytes_to_dump = 0x10;
@@ -23116,7 +23119,7 @@ static void crypt(uint8_t *key, uint8_t *inbuff, uint64_t length, uint8_t *out)
 //PACK 
 //*******
 
-static int pkg_pack_traverse(const char *global_path, file_table_tr **ftr, int item_count,  const char *local_path)
+static u32 pkg_pack_traverse(const char *global_path, file_table_tr **ftr, u32 item_count,  const char *local_path)
 {
 	file_table_tr *cur = NULL;
 	struct stat s;
@@ -23193,7 +23196,7 @@ static int pkg_pack_traverse(const char *global_path, file_table_tr **ftr, int i
 	return item_count;
 }
 
-static void *pkg_pack_create_filetable(file_table_tr *tr, int item_count, char **n_table, uint32_t *n_table_len)
+static void *pkg_pack_create_filetable(file_table_tr *tr, u32 item_count, char **n_table, uint32_t *n_table_len)
 {
 	pkg_file_entry *table;
 	int i;
@@ -23233,7 +23236,7 @@ static void *pkg_pack_create_filetable(file_table_tr *tr, int item_count, char *
 	return table;
 }
 
-static int pkg_pack_data(file_table_tr *ftr, pkg_file_entry *table,  int item_count, sha1_context *ctx, FILE* out)
+static int pkg_pack_data(file_table_tr *ftr, pkg_file_entry *table,  u32 item_count, sha1_context *ctx, FILE* out)
 {
 	int i;
 	FILE* f;
@@ -23244,13 +23247,16 @@ static int pkg_pack_data(file_table_tr *ftr, pkg_file_entry *table,  int item_co
 	
 	print_head("Packing data...");
 	
-	prog_bar1_value=0;
+	u64 total_size=0;
+	for (i=0; i<item_count; i++) {
+		total_size+=ntohll((table+i)->file_size);
+	}
 	
+	task_Init(total_size);
 	for (i = 0; i < item_count; i++)
 	{
-		prog_bar1_value = (i*100)/item_count;
-		if(cancel == YES) {
-			for (; i < item_count; i++)	free((ftr+i)->path);
+		if(cancel) {
+			for (; i < item_count; i++)	FREE((ftr+i)->path);
 			return FAILED;
 		}
 		
@@ -23258,23 +23264,22 @@ static int pkg_pack_data(file_table_tr *ftr, pkg_file_entry *table,  int item_co
 		
 		f = fopen((ftr+i)->path, "rb");
 		if (f == NULL) {
-			for (; i < item_count; i++)	free((ftr+i)->path);	
+			for (; i < item_count; i++)	FREE((ftr+i)->path);	
 			return FAILED;
 		}
 		
 		print_load((ftr+i)->path);
 		
-		prog_bar2_value=0;
-		
 		u64 read=0;
 		
+		task_Init(ntohll((table+i)->file_size));
 		while ((tmp = fread(buf, 1, BUF_SIZE, f)) > 0) {
 		
 			read += tmp;
-			prog_bar2_value = (read*100)/ntohll((table+i)->file_size);
+			task_Update(tmp);
 			
-			if(cancel == YES) {
-				for (; i < item_count; i++) free((ftr+i)->path);	
+			if(cancel) {
+				for (; i < item_count; i++) FREE((ftr+i)->path);	
 				fclose(f);
 				return FAILED;
 			}
@@ -23282,6 +23287,7 @@ static int pkg_pack_data(file_table_tr *ftr, pkg_file_entry *table,  int item_co
 			sha1_update(ctx, buf, tmp);
 			fwrite(buf, 1, tmp, out);
 		}
+		task_End();
 		
 		tmp = (ntohll((table+i)->file_size) + 0x0f) & ~0x0f;
 		memset(buf, 0, sizeof(buf));
@@ -23289,13 +23295,79 @@ static int pkg_pack_data(file_table_tr *ftr, pkg_file_entry *table,  int item_co
 		
 		fclose(f);
 		
-		free((ftr+i)->path);
+		FREE((ftr+i)->path);
 	}
+	task_End();
 	
 	return SUCCESS;
 }
 
-int pkg_pack(char *fname, const char *content_id, const char *path, const char *dir)
+#define PKG_CRYPT_BUFFER_SIZE 0x10000
+
+u8 pkg_crypt(u8 *key, FILE *dec, FILE *enc, u64 size)
+{
+	print_head("Encrypting and writing data...");
+	
+	u8 *buffer_dec = NULL;
+	u8 *buffer_enc = NULL;
+	u8 ret = FAILED;
+	
+	buffer_dec = (u8 *) malloc(PKG_CRYPT_BUFFER_SIZE);
+	if( buffer_dec == NULL) {
+		print_load("Error: failed to malloc buffer_dec pkg_crypt");
+		goto error;
+	}
+	buffer_enc = (u8 *) malloc(PKG_CRYPT_BUFFER_SIZE);
+	if( buffer_enc == NULL) {
+		print_load("Error: failed to malloc buffer_enc pkg_crypt");
+		goto error;
+	}
+	
+	fseek(dec, 0, SEEK_SET);
+	
+	u64 done = 0;
+	u64 data_len;
+	task_Init(size);
+	while(done < size)
+	{
+		task_Update2(done);
+		
+		if( done + PKG_CRYPT_BUFFER_SIZE < size) {
+			data_len = PKG_CRYPT_BUFFER_SIZE;
+		} else {
+			data_len = size - done;
+		}
+		
+		if(cancel) goto error;
+		
+		fread(buffer_enc, data_len, 1, dec);
+		
+		if(cancel) goto error;
+		
+		crypt(key, buffer_dec, data_len, buffer_enc);
+		
+		if(cancel) goto error;
+		
+		fwrite(buffer_dec, data_len, 1, enc);
+		
+		if(cancel) goto error;
+		
+		done += data_len;
+	}
+	task_End();
+	
+	ret=SUCCESS;
+	
+error:
+	
+	
+	FREE(buffer_dec);
+	FREE(buffer_enc);
+	
+	return ret;
+}
+
+u8 pkg_pack(char *fname, const char *content_id, const char *path, const char *dir)
 {
 	pkg_header header;
 	pkg_info info;
@@ -23303,28 +23375,22 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	pkg_file_entry *table = NULL;
 	char *n_table = NULL;
 	uint32_t n_table_len;
-	int item_count;
+	u32 item_count;
 	sha1_context ctx;
 	unsigned char tmpdigest[32];
-	uint64_t tmp;
+	uint64_t dec_size;
 	FILE* dec, *out;
-	FILE* temp;
 	char *dec_fname;
 	int i;
 	
-	if (strlen(content_id) > sizeof(header.content_id)){
-		return 1;
-	}
+	if(strlen(content_id) > sizeof(header.content_id)) return FAILED;
 	
 	out = fopen(fname, "wb+");
-	if (out == NULL){
-		return NOK;
-	}
+	if(out == NULL) return FAILED;
 	
 	item_count = pkg_pack_traverse(path, &ftr, 0, dir);
-	if (item_count <= 0) {
-		return NOK;
-	}
+	if (item_count <= 0) return FAILED;
+	
 	table = pkg_pack_create_filetable(ftr, item_count, &n_table, &n_table_len);
 	
 	dec_fname = malloc(strlen(fname)+4);
@@ -23332,7 +23398,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	sprintf(dec_fname, "%s.dec", fname);
 	
 	dec = fopen(dec_fname, "wb+");
-	if (dec == NULL) {
+	if(dec == NULL) {
 		free(ftr);
 		free(n_table);
 		return NOK;
@@ -23350,11 +23416,9 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	}
 	
 	fseek(dec, 0, SEEK_END);	
-	tmp = ftell(dec);
+	dec_size = ftell(dec);
 	fseek(dec, 0, SEEK_SET);
 	
-	prog_bar2_value=-1;
-	prog_bar1_value=0;
 	print_head("Making PKG...");
 	
 	header.magic = htonl(PKG_HEADER__MAGIC);
@@ -23362,29 +23426,33 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	header.pkg_info_offset = htonl(PKG_HEADER__PKG_INFO_OFFSET + 0x40); //
 	header.pkg_info_count = htonl(PKG_HEADER__PKG_INFO_COUNT);
 	header.pkg_info_size = htonl(PKG_HEADER__PKG_INFO_SIZE + 0x40);
-	header.item_count = htonl((uint32_t)item_count);
+	header.item_count = htonl(item_count);
 	header.data_offset = htonll((uint64_t)(PKG_HEADER__PKG_INFO_OFFSET + 0x40 + PKG_HEADER__PKG_INFO_SIZE + 0x40 ));
-	header.data_size = htonll(tmp);
-	header.pkg_size = htonll(tmp + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x40 + 0x40 + 0x60);  // +0x60 for sha_crap
+	header.data_size = htonll(dec_size);
+	header.pkg_size = htonll(dec_size + PKG_HEADER__PKG_INFO_OFFSET + PKG_HEADER__PKG_INFO_SIZE + 0x40 + 0x40 + 0x60);  // +0x60 for sha_crap
 	memset(header.content_id, 0, sizeof(header.content_id));
 	memset(header.qa_digest, 0, sizeof(header.qa_digest));
 	memset(header.KLicensee, 0, sizeof(header.KLicensee));
 	
-	uint8_t *in = (uint8_t *) malloc(sizeof(uint8_t)*tmp);
-	uint8_t *ou = (uint8_t *) malloc(sizeof(uint8_t)*tmp);
-	uint8_t section[0x80];
-	memcpy(section, &header, sizeof(section));
-	
-	temp=fopen(dec_fname, "rb");
-	fread(in, tmp, sizeof(uint8_t), temp);
-	fclose(temp);
-	
 	uint64_t fileDescLength = item_count*sizeof(pkg_file_entry) + n_table_len ;
-	sha1_update(&ctx, section, sizeof(uint8_t)*0x80);
-	sha1_update(&ctx, in, fileDescLength);
+	uint8_t section[0x80]={0};
+	u8 *fileDesc = (u8 *) malloc(fileDescLength);
+	if(fileDesc==NULL) {
+		// todo
+		// goto error;
+	}
+	fread(fileDesc, fileDescLength, sizeof(uint8_t), dec);
+	fseek(dec, 0, SEEK_SET);
+	
+	memcpy(section, &header, sizeof(section));
+	sha1_update(&ctx, section, 0x80);
+	sha1_update(&ctx, fileDesc, fileDescLength);
 	sha1_finish(&ctx, tmpdigest);
+	
 	memcpy(&header.qa_digest, tmpdigest, sizeof(header.qa_digest));
 	memcpy(header.content_id, content_id, strlen(content_id));
+	FREE(fileDesc);
+	
 	info.drm_type_id = htonl(1);
 	info.drm_type_size = htonl(sizeof(info.drm_type));
 	info.drm_type = htonl(PKG_INFO__DRM_TYPE_FREE);
@@ -23396,8 +23464,8 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	info.pkg_type = htonl(0xE); //??
 	info.data_size_id = htonl(4);
 	info.data_size_size = htonl(sizeof(info.data_size));
-	info.data_size[0] = htonll(tmp<<32);
-	info.data_size[1] = htonll(tmp);
+	info.data_size[0] = htonll(dec_size<<32);
+	info.data_size[1] = htonll(dec_size);
 	info.vers_id = htonl(5);
 	info.vers_size = htonl(sizeof(info.vers));
 	info.vers = htonl(0x10610000);
@@ -23433,20 +23501,7 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	fwrite(infoSHAPadEnc, 0x30, sizeof(uint8_t), out);
 	keyToContext(header.qa_digest, context);
 	
-	crypt(context, in, tmp, ou);
-	
-	//fwrite(ou, tmp, sizeof(uint8_t), out);
-	u64 write = 0;
-	while(write < tmp)
-	{
-		if(cancel) break;
-		u32 wrlen = 1024;
-		if(write+wrlen > tmp) wrlen = tmp-write;
-		fwrite(ou+write, sizeof(u8), wrlen, out);
-		write += wrlen;
-		prog_bar1_value = (write*100)/tmp;
-	}
-	prog_bar1_value=-1;
+	pkg_crypt(context, dec, out, dec_size); 
 	
 	/*/
 	uint64_t empty[12];
@@ -23463,23 +23518,21 @@ int pkg_pack(char *fname, const char *content_id, const char *path, const char *
 	fwrite(tmpdigest, 1, sizeof(tmpdigest), out);
 	/*/
 
-	fclose(dec);
-	fclose(out);
+	FCLOSE(dec);
+	FCLOSE(out);
 	unlink(dec_fname);
 
-	free(ftr);
-	free(table);
-	free(n_table);
-	free(ou);
-	free(in);
-	free(dec_fname);
+	FREE(ftr);
+	FREE(table);
+	FREE(n_table);
+	FREE(dec_fname);
 	
 	if(cancel) {
 		Delete(fname);
-		return NOK;
+		return FAILED;
 	}
 	
-	return OK;
+	return SUCCESS;
 }
 
 void make_pkg(const char *dir_path)
@@ -23569,7 +23622,7 @@ static int pkg_debug_decrypt (PagedFile* f, PagedFileCryptOperation operation, u
   return TRUE;
 }
 
-u8 pkg_open (const char *filename, PagedFile* in, pkg_header *header, pkg_file_entry **files)
+u8 pkg_open(const char *filename, PagedFile* in, pkg_header *header, pkg_file_entry **files)
 {
 	u32 i;
 
@@ -23817,12 +23870,16 @@ void pkg_unpack (const char *filename, const char *destination)
 	}
 	MGZ_mkdir_recursive (out_dir);
 	
-	prog_bar1_value = 0;
+	u64 total_size=0;
+	for (i = 0; i < header.item_count; i++) {
+		total_size += files[i].file_size;
+	}
+	
+	task_Init(total_size);
 	for (i = 0; i < header.item_count; i++) {
 		int j;
-		
-		prog_bar1_value = (i*100)/header.item_count;
-		if(cancel==YES) break;
+
+		if(cancel) break;
 		
 		paged_file_seek (&in, files[i].name_offset + header.data_offset);
 		pkg_file_path = malloc (files[i].name_size + 1);
@@ -23851,10 +23908,11 @@ void pkg_unpack (const char *filename, const char *destination)
 			paged_file_close (&out);
 		}
 	}
+	task_End();
 	
 	paged_file_close (&in);
 	
-	if(cancel==YES) Delete(out_dir);
+	if(cancel) Delete(out_dir);
 }
 
 //*******************************************************
