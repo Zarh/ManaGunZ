@@ -13688,7 +13688,7 @@ void wait_dialog()
 	while(!dialog_action)
 	{
 		sysUtilCheckCallback();
-		//tiny3d_Flip();
+		if(!loading && !copy_flag && !gathering) tiny3d_Flip();
 	}
 
 	msgDialogAbort();
@@ -16086,88 +16086,70 @@ void dump_lv2(char *path)
 	}
 }
 
-u8 FlashInfo(u64 *flash_id, u8 *mode)
-{
-	int sourceR;
-	u32 read;
-	u64 offset, sector[ 0x40 ];
-	int ret = 1;
-	
-	ret = sys_storage_open( FLASH_NOR, &sourceR );
-    if( ret == 0 ) {
-		offset = 0x178;
-		*flash_id = FLASH_NOR;
-	} else {
-    	offset = 0x204;
-		sys_storage_close( sourceR );
-		ret = sys_storage_open( FLASH_NAND, &sourceR );
-		if( ret != 0 ) return FAILED;
-		*flash_id = FLASH_NAND;
-	}
-	
-	sys_storage_read( sourceR, offset, 0x1, sector, &read, 0x22 );
-	sys_storage_close( sourceR );
-	
-	if(0x0000000100820000 <= sector[0x0E] && sector[0x0E] < 0x0000000100830000)
-		*mode = 0xD;
-	else 
-		*mode = 0xC;
-		
-	return SUCCESS;
-}
-
 void dump_flash(char *path)
 {
 	FILE* f;
 	
-	int source;
+	int source=0;
 	u32 read;
 	u64 sector[0x40];
 	int ret = -1;
 	u64 i;
 	u64 size_dump;
-	
 	u64 flash_id;
-	u8 mode;
-	
-	if( FlashInfo(&flash_id, &mode) == FAILED ) {
-		print_load("Error : FlashInfo sys_storage_open");
-		return;
-	}
-	
-	ret = sys_storage_open(flash_id, &source );
-	if( ret != 0 ) { 
-		print_load("Error : dump_flash sys_storage_open");
-		return;
-	}
-	
+	u32 mode;
 	char temp[255];
+	u32 offset;
+	
+	ret = sys_storage_open( FLASH_NOR, &source );
+    if( ret == 0 ) {
+		flash_id = FLASH_NOR;
+		offset = 0x178;
+		size_dump=0x8000;
+	} else {
+		sys_storage_close( source );
+		ret = sys_storage_open( FLASH_NAND, &source);
+		if( ret != 0 ) return FAILED;
+		flash_id = FLASH_NAND;
+		size_dump=0x77E00;
+		offset = 0x204;
+	}
+	
+	sys_storage_read(source, offset, 0x1, sector, &read, 0x22 );
+	
+	if(0x0000000100820000 <= sector[0x0E] && sector[0x0E] < 0x0000000100830000) {
+		mode = 0xD;
+	} else {
+		mode = 0xC;	
+	}
 	
 	if( flash_id == FLASH_NOR ) {
 		sprintf(temp, "%s/%XEX-FLASH.NOR.BIN", path, mode);
-		size_dump=0x8000 ;
 	} else {
 		sprintf(temp, "%s/%XEX-FLASH.NAND.BIN", path, mode);
-		size_dump=0x77E00;
 	}
-	
-	prog_bar1_value = 0;
 	
 	f = fopen(temp, "wb");
-	if(f==NULL) return;
+	if(f==NULL) {
+		print_load("Error: failed to open %s", temp);
+		goto error;
+	}
+	
+	task_Init(size_dump * 0x200ULL);
 	for(i=0x0; i < size_dump; i+=0x1) {
 		sys_storage_read( source, i, 0x1, sector, &read, 0x22 );
-		fwrite(sector, sizeof(sector), 1, f);
-		prog_bar1_value = (i*100)/size_dump;
-		if(cancel==YES) break;
+		fwrite(sector, 0x200, 1, f);
+		task_Update(0x200ULL);
+		if(cancel) break;
 	}
-	fclose(f);
-	sys_storage_close(source);
+	task_End();
 	
-	if(cancel==YES) {
-		Delete(temp);
-		cancel=NO;
-	}
+error:
+
+	FCLOSE(f);
+	if(source) sys_storage_close(source);
+	
+	if(cancel) Delete(temp);
 }
 
 u8 *Load_from_device(u32 start_offset, u32 size, u32 device_id, u32 sector_size)
@@ -16235,7 +16217,7 @@ u8 *Load_from_device(u32 start_offset, u32 size, u32 device_id, u32 sector_size)
 
 #define FLASH_SECTOR_SIZE	0x200
 
-u8 *Load_from_flash(u32 start_offset, u32 size, u32 source)
+u8 *Load_from_flash(u64 start_offset, u16 size, int source)
 {
 	u8 *data = (u8 *) malloc(size);
 	if(data==NULL) {
@@ -16245,25 +16227,25 @@ u8 *Load_from_flash(u32 start_offset, u32 size, u32 source)
 	
 	u32 read;
 	u32 dumped = 0;
-	u8 buffer[ FLASH_SECTOR_SIZE ];
+	u8 buffer[ FLASH_SECTOR_SIZE ]={0};
 	
 	u32 sector_id = start_offset / FLASH_SECTOR_SIZE;
-	
 	u32 start_sector_offset = start_offset - (sector_id * FLASH_SECTOR_SIZE);
-		
 	u32 end_offset = start_offset + size;
-	
 	u32 end_sector_id = end_offset / FLASH_SECTOR_SIZE ;
 	u32 end_sector_offset = end_offset - (end_sector_id * FLASH_SECTOR_SIZE);
-	
 	u32 start = start_sector_offset;
 	
 	while(sector_id <= end_sector_id ) {
 		
-		memset(buffer, 0, 0x200);
-
-		sys_storage_read( source, sector_id, 1,  buffer, &read, 0x22 );
+		memset(buffer, 0, FLASH_SECTOR_SIZE);
 		
+		int ret = sys_storage_read( source, sector_id, 1, buffer, &read, 0x22 );
+		if( ret != 0 ) {
+			print_load("Error : sys_storage_read failed");
+			FREE(data);
+			return NULL;
+		}
 		u32 cpy_size = FLASH_SECTOR_SIZE - start;
 		
 		if(sector_id == end_sector_id ) cpy_size = end_sector_offset - start;
@@ -16294,9 +16276,9 @@ u8 *get_eid4()
 
     ret = sys_storage_open( FLASH_NOR, &source );
     if( ret == 0 ) {
-		offset = 0x303A0;
+		offset = 0x303A0ULL;
 	} else {
-		offset = 0x81BA0; 
+		offset = 0x81BA0ULL - 0x40000ULL; //without bootldr
 		sys_storage_close( source );
 		sys_storage_open( FLASH_NAND, &source );
 	}
@@ -19662,7 +19644,7 @@ int Extract_SELF(char *in, char *out, u8 *rif)
 	
 	if(rif) np_set_klicensee(rif);
 	
-	print_load("Extracting %s", in);
+	print_head("Extracting %s", in);
 	memset(temp_buffer, 0, sizeof(temp_buffer));
 	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
@@ -20055,7 +20037,6 @@ void SetPrimaryUSB()
 	}
 }
 
-
 char *LoadFileProg(char *path, int *file_size)
 {
 	*file_size = 0;
@@ -20085,7 +20066,7 @@ char *LoadFileProg(char *path, int *file_size)
 		prog_bar1_value = (read*100) / size;
 	}
 	prog_bar1_value = -1;
-		
+	
 	fclose(f1);
 	
 	if(read != *file_size) {
@@ -20988,8 +20969,11 @@ int patch_exp_plug()
 
 char *get_libaudio_path() 
 {
+	
+	print_debug("Start of get_libaudio_path()");
 	char *libaudio_path = sprintf_malloc("/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.sprx", ManaGunZ_id, firmware);
 	
+	print_debug("path_info...");
 	if( path_info(libaudio_path) == _FILE ) return libaudio_path;
 	
 	char ori_prx[128];
@@ -20997,11 +20981,14 @@ char *get_libaudio_path()
 	sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/libaudio_%X.prx", ManaGunZ_id, firmware);
 	sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.prx", ManaGunZ_id, firmware);
 	
+	print_debug("Extract_SELF...");
 	if( Extract_SELF("/dev_flash/sys/external/libaudio.sprx", ori_prx, NULL) == FAILED ) {
+		print_load("Error: failed to extract libaudio.sprx");
 		FREE(libaudio_path);
 		return NULL;
 	}
 	
+	print_debug("LoadFile...");
 	int size=0;
 	char *mem = LoadFile(ori_prx, &size);
 	if(mem==NULL) {
@@ -21010,6 +20997,7 @@ char *get_libaudio_path()
 		return NULL;
 	}
 	
+	print_debug("Patch loop...");
 	//patch
 	//https://blog.madnation.net/ps3-bt-usb-audio-passthrough/
 	u8 bt_usb_audio_offset_flag[] = {0xE8, 0x03, 0x00, 0x00, 0x2F, 0xA0, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x0C, 0x2F, 0xA0, 0x00, 0x02, 0x40, 0x9E, 0x01, 0x44, 0xE8, 0x7E, 0x00, 0x08, 0x2F, 0xA3, 0x00, 0x02, 0x41, 0x9E, 0x00, 0x1C};
@@ -21022,24 +21010,28 @@ char *get_libaudio_path()
 		}
 	}
 	
+	print_debug("SaveFile...");
 	//write
 	u8 ret = SaveFile(patched_prx, mem, size);
 	FREE(mem);
-	if(ret  == FAILED) {
+	if(ret == FAILED) {
 		print_load("Error : cannot save patched_libaudio_%X.prx", firmware);
 		FREE(libaudio_path);
 		return NULL;
 	}
 	
-	if(Sign_PRX(patched_prx, libaudio_path) == NOK) {
-		print_load("Error : : cannot sign prx, patched_libaudio_%X.sprx", firmware);
+	print_debug("Sign_PRX...");
+	if(Sign_PRX(patched_prx, libaudio_path) == FAILED) {
+		print_load("Error : cannot sign prx, patched_libaudio_%X.sprx", firmware);
 		FREE(libaudio_path);
 		return NULL;
 	}
 	
+	print_debug("Delete prx files");
 	Delete(ori_prx);
 	Delete(patched_prx);
 	
+	print_load("End of get_libaudio_path()");
 	return libaudio_path;
 }
 
@@ -23550,13 +23542,11 @@ void make_pkg(const char *dir_path)
 
 	f = fopen(file, "rb");
 	if(f==NULL) {
-		print_load("Warning : EBOOT not found");
 		char title_id[10];
 		strcpy(file, dir_path);
 		strcat(file, "/PARAM.SFO");
 		if( path_info(file) == _NOT_EXIST ) {
-			print_load("Warning : PARAM.SFO not found");
-			print_load("Error : Cannot get Content ID");
+			print_load("Error : PARAM.SFO not found, cannot get Content ID");
 			return;
 		}
 		if(GetParamSFO("TITLE_ID", title_id, file) == FAILED ) {
@@ -28451,7 +28441,9 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		finalize_FileExplorer();
+		char *test = get_libaudio_path();
+		if(test) print_load("test: %s");
+		FREE(test);
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
@@ -37778,9 +37770,6 @@ void init_SETTINGS()
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = lang;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	
-	add_item_MENU(STR_XMB_PRIO, ITEM_TOGGLE);
-	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = XMB_priority;
-	
 	add_item_MENU(STR_OVERWRITE, ITEM_TEXTBOX);
 	add_item_value_MENU(STR_OVERWRITE_ALWAYS);
 	add_item_value_MENU(STR_OVERWRITE_NEVER);
@@ -37788,6 +37777,9 @@ void init_SETTINGS()
 	add_item_value_MENU(STR_OVERWRITE_DUPLICATE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = OVERWRITE;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	
+	add_item_MENU(STR_XMB_PRIO, ITEM_TOGGLE);
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = XMB_priority;
 	
 	add_item_MENU(STR_SHOWLOGS, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = SHOW_LOG;
@@ -38269,6 +38261,8 @@ void init_SETTINGS()
 	
 	add_item_MENU(STR_DUMP_FLASH, ITEM_TEXTBOX);
 	
+	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
+	
 	if( PEEKnPOKE ) {
 		if( ERK_DUMPER_SIZE != 0 ) {
 			add_item_MENU(STR_DUMP_ERK, ITEM_TEXTBOX);
@@ -38276,9 +38270,7 @@ void init_SETTINGS()
 		}
 		add_item_MENU(STR_DYNAREC, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = HaveDynarec();
-	}	
-	
-	add_item_MENU(STR_FIX_PERMS, ITEM_TEXTBOX);
+	}
 	
 	add_item_MENU("MGZ log", ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = LOG;
