@@ -194,7 +194,7 @@ ird_t *IRD_load(char *IRD_PATH)
 	print_verbose("IRD_Load fread filehashesnumber");
 	fread(&ird->FileHashesNumber	, sizeof(u32) , 1, irdu);
 	ird->FileHashesNumber = SWAP_LE(ird->FileHashesNumber);
-	print_load("%X", ird->FileHashesNumber);
+	print_verbose("%X", ird->FileHashesNumber);
 	
 	print_verbose("IRD_Load malloc filehashes");
 	ird->FileHashes = (FileHash_t *) malloc(ird->FileHashesNumber * sizeof(FileHash_t));

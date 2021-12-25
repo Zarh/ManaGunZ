@@ -197,10 +197,16 @@
 #define IRD_SERVER "http://ps3ird.free.fr"
 #define IRD_SCRIPT IRD_SERVER "/script.php"
 
-#define IRD_WEB				"https://irdinfostorage.azurewebsites.net"
-#define IRD_WEB_API			IRD_WEB 	"/api/irdinfo/"
-#define IRD_WEB_API_TRUST	IRD_WEB_API "incrementTrustLevel"
-#define IRD_WEB_API_NEW		IRD_WEB_API "saveird"
+// #define IRD_WEB				"https://irdinfostorage.azurewebsites.net"
+// #define IRD_WEB_API			IRD_WEB 	"/api/irdinfo/"
+// #define IRD_WEB_API_TRUST	IRD_WEB_API "incrementTrustLevel"
+// #define IRD_WEB_API_NEW		IRD_WEB_API "saveird"
+
+#define IRD_WEB				IRD_SERVER "/script.php?json"
+#define IRD_WEB_API			IRD_WEB
+#define IRD_WEB_API_TRUST	IRD_WEB_API
+#define IRD_WEB_API_NEW		IRD_WEB_API
+ 
 
 char *TXTViewerSupport[] = {".txt", ".xml", ".js", ".md5", ".sha1", ".log", ".ini", ".nfo", ".json"};
 
@@ -1502,6 +1508,8 @@ float DrawTXTinLineBox(float x, float y, float z, float w, char *string, u32 bg_
 int Extract_SELF(char *in, char *out, u8 *rif);
 void MGZ_exit();
 s32 sys_map_path(char *oldpath, char *newpath);
+float Get_MgzVersion();
+u8 is_splitted_iso_X(char *file_name);
 
 void Draw_MENU();
 
@@ -2197,7 +2205,7 @@ u8 support_big_files(char *path)
 	return NO;
 }
 
-// this one support use mgz_io.h, 
+// this one (recursive) use mkdir from mgz_io.h, 
 // so, it support ntfs/exfat
 int MGZ_mkdir_recursive(char *path)
 {
@@ -3161,7 +3169,7 @@ u8 npd_decrypt(char *in)
 get_rif_key:
 	get_rifkey(rif_path, rap_path, rifkey);
 
-// get dev_klic
+	// get dev_klic
 	sprintf(klic_db, "/dev_hdd0/game/%s/USRDIR/sys/dev_klics.txt", ManaGunZ_id);
 	if( npdata_bruteforce(in, klic_db, NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
 		goto decrypt;
@@ -3200,7 +3208,7 @@ get_rif_key:
 	
 	print_load("Error : cannot find dev_klicensee");
 	return FAILED;
-		
+	
 db_add: ;
 	char rifkey_str[0x20]={0};
 	FILE *db = fopen(klic_db, "a");
@@ -10722,6 +10730,23 @@ s32 sys_fs_get_mount_info_size(uint64_t *size)
 	return_to_user_prog(s32);
 }
 
+// not working on RPCS3
+s32 _sys_get_title_id(char *TitleID)
+{
+	//syscall(986,out:uint8[0x40])
+	lv2syscall1(986, (u64) TitleID);
+    return_to_user_prog(s32);
+}
+// not working on RPCS3
+s32 _sys_process_get_paramsfo(char *TitleID)
+{
+	char tmp[0x40];
+	lv2syscall1(30, (u64) tmp);
+	strncpy(&tmp[1], TitleID, 9);
+	TitleID[9]=0;
+	return_to_user_prog(s32);
+}
+
 void TestCapFlag()
 {
 	int source;
@@ -11856,7 +11881,7 @@ char *IRD_sig(char *ird_path)
 u8 IRD_DB_upload(char *IRD_PATH, char *IRD_SIG)
 {
 	char URL[128]={0};
-	sprintf(URL, IRD_SCRIPT "?ird=%s&size=%d", IRD_SIG, (int) get_size(IRD_PATH));
+	sprintf(URL, IRD_SCRIPT "?ird=%s&mgz=%05.2f", IRD_SIG, Get_MgzVersion());
 	
 	print_head("Uploading...");
 	int try = 0;
@@ -11893,7 +11918,7 @@ u8 IRD_DB_exist(char *IRD_SIG)
 	}
 	
 	char URL[128]={0};
-	sprintf(URL, IRD_SERVER "/%s.ird", IRD_SIG);
+	sprintf(URL, IRD_SCRIPT "?ird=%s", IRD_SIG);	
 	
 	print_debug("http_exist");
 	
@@ -11902,46 +11927,12 @@ u8 IRD_DB_exist(char *IRD_SIG)
 	if(httpCode == HTTP_STATUS_CODE_OK) { // 200
 		return YES;
 	}
-		
+	
 	if(httpCode == HTTP_STATUS_CODE_Not_Found) { // 404
 		return NO;
 	}
 	
 	return NET_ERROR;	
-}
-
-u8 IRD_upload(char *IRD_PATH)
-{
-	u8 ret=FAILED;
-	char *IRD_NAME = NULL;
-	
-	IRD_NAME = IRD_sig(IRD_PATH);
-	if(IRD_NAME==NULL) {
-		print_load("Error : IRD_upload, failed to get IRD_sig");
-		goto error;
-	}
-	
-	print_debug("IRD_DB_exist");
-	ret = IRD_DB_exist(IRD_NAME); 
-	if( ret == NET_ERROR) {
-		goto error;
-	} else
-	if( ret == YES ) {
-		print_load("The ird already exists in DB");
-		goto error;
-	}
-	
-	ret = IRD_DB_upload(IRD_PATH, IRD_NAME);
-	if( ret == FAILED ) {
-		print_load("Error : failed to upload IRD");
-		goto error;
-	}
-	
-error:
-	
-	FREE(IRD_NAME);
-	
-	return ret;
 }
 
 u8 IRD_WS_upload(char *JSON_PATH)
@@ -11951,7 +11942,7 @@ u8 IRD_WS_upload(char *JSON_PATH)
 		print_load("Error : IRD_WS_upload %d", ret);
 		return FAILED;
 	}
-	
+	Delete(JSON_PATH);
 	return SUCCESS;
 }
 
@@ -11969,8 +11960,12 @@ u8 IRD_WS_trust(char *MGZ_SIG)
 	
 	char JSON_DATA[512];
 	char JSON_PATH[512];
-	sprintf(JSON_DATA, "{\"MgzSignature\":\"%s\",\"Contributor\":\"%s\",\"UniquePS3Id\":\"%08X\"}", MGZ_SIG, UPLOADER, Unique_PS3ID);
 	
+	if( UPLOADER[0] == 0) {
+		sprintf(JSON_DATA, "{\"MgzSignature\":\"%s\",\"Contributor\":\"Anonymous\",\"UniquePS3Id\":\"%08X\"}", MGZ_SIG, Unique_PS3ID);
+	} else {
+		sprintf(JSON_DATA, "{\"MgzSignature\":\"%s\",\"Contributor\":\"%s\",\"UniquePS3Id\":\"%08X\"}", MGZ_SIG, UPLOADER, Unique_PS3ID);
+	}
 	sprintf(JSON_PATH, "/dev_hdd0/tmp/%s.json", MGZ_SIG);
 	
 	FILE *f = fopen(JSON_PATH, "wb");
@@ -11978,12 +11973,12 @@ u8 IRD_WS_trust(char *MGZ_SIG)
 	fputs(JSON_DATA, f);
 	FCLOSE(f);
 	
-	int ret = upload(IRD_WEB_API_TRUST, JSON_PATH, HTTP_METHOD_PUT);
+	int ret = upload(IRD_WEB_API_TRUST, JSON_PATH, HTTP_METHOD_POST);
 	if( ret != 200) {
 		print_load("Error : IRD_WS_trust %d", ret);
 		return FAILED;
 	}
-	
+	Delete(JSON_PATH);
 	return SUCCESS;
 }
 
@@ -12451,8 +12446,13 @@ u8 Build_JSON(ird_t *ird, char *JSON_PATH, char *MGZ_SIG)
 	sprintf(msg, "\t\"GameVersion\" : \"%s\",\n", ird->GameVersion);fputs(msg, json);
 	sprintf(msg, "\t\"AppVersion\" : \"%s\",\n", ird->AppVersion);fputs(msg, json);
 	sprintf(msg, "\t\"UpdateVersion\" : \"%s\",\n", ird->UpdateVersion);fputs(msg, json);
-	sprintf(msg, "\t\"Contributor\" : \"%s\",\n", UPLOADER);fputs(msg, json);
-	sprintf(msg, "\t\"UniquePS3Id\" : \"%08X\"\n", Get_Unique_PS3ID()); fputs(msg, json);
+	if( UPLOADER[0] == 0 )  {
+		fputs("\t\"Contributor\" : \"Anonymous\",\n", json);
+	} else {
+		sprintf(msg, "\t\"Contributor\" : \"%s\",\n", UPLOADER);fputs(msg, json);
+	}
+	sprintf(msg, "\t\"UniquePS3Id\" : \"%08X\",\n", Get_Unique_PS3ID()); fputs(msg, json);
+	sprintf(msg, "\t\"MgzVersion\" : \"%05.2f\"\n", Get_MgzVersion()); fputs(msg, json);
 	fputs("}\n", json);
 	
 	FCLOSE(json);
@@ -12823,8 +12823,9 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	SetPerms(IRD_PATH);
 	
 	if(copy_cancel) goto error;
-		
+	
 	print_head("Uploading IRD");
+
 	print_debug("Getting ird signature");
 	IRD_NAME = IRD_sig2(ird);
 	if(IRD_NAME == NULL) {
@@ -12866,7 +12867,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 			goto error;
 		}
 	}
-	
+
 	ret=SUCCESS;
 error:
 	
@@ -14374,8 +14375,7 @@ void Draw_Copy_screen(void *unused)
 	
 	print_debug("end_of 'Draw_Copy_screen'");
 	
-	if(copy_cancel == YES) Delete_Game(copy_dst, -1);
-	else if(shutdown==YES) {
+	if(shutdown) {
 		Delete("/dev_hdd0/tmp/turnoff");
 		lv2syscall4(379,0x1100,0,0,0);
 	}
@@ -15006,8 +15006,8 @@ u8 CopyFile_stdio(char* src, char* dst)
 	char *mem = NULL;
 	u64 pos = 0ULL;
 	u64 read = 0, writed = 0;
-	u8 join=NO;
-	u8 split=NO;
+	u8 do_join=NO;
+	u8 do_split=NO;
 	u8 cur_file=0;
 	char temp[1024];
 	char source[1024];
@@ -15050,7 +15050,7 @@ u8 CopyFile_stdio(char* src, char* dst)
 		if( OVERWRITE == OVERWRITE_ASK ) {
 			char question[2048];
 			sprintf(question, "%s\n%s: %s", STR_ASK_TO_OVERWRITE, STR_PATH, destination);
-			if( DrawDialogYesNo(question) == NO) return SUCCESS;	
+			if( DrawDialogYesNo(question) == NO) return SUCCESS;
 		}
 	}
 	
@@ -15062,25 +15062,31 @@ u8 CopyFile_stdio(char* src, char* dst)
 	if(S_ISDIR(s.st_mode)) return FAILED;
 	lenght = s.st_size;
 	
-	if(lenght>SPLITSIZE) split = is_FAT32(dst);
+	if(lenght>SPLITSIZE) do_split = is_FAT32(dst);
 	
-	if(is_66600(src)==YES && is_66600(dst)==NO) join = YES;
+	if(is_66600(src) && !is_66600(dst)) do_join=YES;
+	if(is_splitted_iso(src) && !is_splitted_iso(dst)) do_join=YES;
 	
 	mem = malloc(BUFFSIZE);
 	if(mem == NULL) return FAILED;
 
 next_file:
 	
-	if(split) sprintf(destination, "%s.666%02d", dst, cur_file);
+	if(do_split) sprintf(destination, "%s.666%02d", dst, cur_file);
 	
-	if(join) {
+	if(do_join) {
 		strcpy(temp, src);
 		temp[strlen(temp)-2]=0;
-		sprintf(source, "%s%02d", temp, cur_file);	
+		if(is_66600(src)) {
+			sprintf(source, "%s%02d", temp, cur_file);	
+		} else
+		if(is_splitted_iso(src)) {
+			sprintf(source, "%s.%d", temp, cur_file);	
+		}
 		
 		if(0<cur_file) {
 			if(stat(source, &s) != 0) {
-				join=NO; 
+				do_join=NO; 
 				goto skip;
 			}
 			lenght = s.st_size;
@@ -15096,12 +15102,12 @@ next_file:
 	
 	while(pos < lenght) {
 		
-		if(split && pos == SPLITSIZE*(cur_file+1) ) break;
+		if(do_split && pos == SPLITSIZE*(cur_file+1) ) break;
 		
 		if(copy_cancel==YES) {ret = FAILED; goto skip;}
 		
 		read = lenght - pos; 
-		if(split) {
+		if(do_split) {
 			if(lenght > SPLITSIZE*(cur_file+1))
 				read = SPLITSIZE*(cur_file+1) - pos;
 		}
@@ -15125,12 +15131,13 @@ next_file:
 		copy_current_size+=read;
 	}
 	
-	if(join) {
+	if(do_join) {
 		FCLOSE(f1);
 		cur_file++; 
 		goto next_file; 
 	}
-	if(split) {
+	
+	if(do_split) {
 		if(pos==lenght) goto skip;
 		FCLOSE(f2);
 		SetFilePerms(destination);
@@ -15282,6 +15289,7 @@ void SpeedTest()
 	if(f) {fclose(f); f=NULL;}
 }
 
+u8 JOIN = NO;
 u8 Copy(char *src, char *dst)
 {
 	
@@ -15295,6 +15303,16 @@ u8 Copy(char *src, char *dst)
 		tmp = strrchr(src,'/');
 		tmp = &tmp[1];
 		strcpy(copy_file, tmp);
+		
+		if( JOIN ) {
+			if(is_FAT32(dst)==NO) {
+				if(is_666XX(src) || is_splitted_iso_X(src) ) return SUCCESS;
+				
+				if(is_66600(src) && is_66600(dst)) dst[strlen(dst)-6]=0;
+				if(is_splitted_iso(src) && is_splitted_iso(dst)) dst[strlen(dst)-2]=0;
+			}
+		}
+		
 		return CopyFile(src, dst);
 	}
 
@@ -15309,7 +15327,7 @@ u8 Copy(char *src, char *dst)
 	
 	d = opendir(src);
 	if(d==NULL) return FAILED;
-			
+	
 	while ((dir = readdir(d))) {
 		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
 		
@@ -15333,56 +15351,10 @@ u8 Copy(char *src, char *dst)
 
 u8 CopyJoin(char *src, char *dst)
 {
-	
-	u8 info_file = path_info(src);
-	
-	if(info_file == _NOT_EXIST) return FAILED; else
-	if(info_file == _FILE) {
-		char *tmp;
-		tmp = strrchr(src,'/');
-		tmp = &tmp[1];
-		strcpy(copy_file, tmp);
-		
-	// JOIN
-		if(is_FAT32(dst)==NO) {
-			if(is_666XX(src)==YES) return SUCCESS;
-			if(is_66600(src) && is_66600(dst)) dst[strlen(dst)-6]=0;
-		}
-	// ****
-	
-		return CopyFile(src, dst);
-	}
-
-	char temp_src[255];
-	char temp_dst[255];
-	
-	if(path_info(dst) == _NOT_EXIST) mkdir(dst, 0777);
-	
-	DIR *d;
-	struct dirent *dir;
-			
-	d = opendir(src);
-	if(d==NULL) return FAILED;
-			
-	while ((dir = readdir(d))) {
-		if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
-		
-		sprintf(temp_src, "%s/%s", src, dir->d_name);
-		sprintf(temp_dst, "%s/%s", dst, dir->d_name);
-		
-		if(dir->d_type & DT_DIR) mkdir(temp_dst, 0777);
-		
-		if( Copy(temp_src, temp_dst) == FAILED) {closedir(d); return FAILED;}
-			
-		if(copy_cancel==YES) break;
-			
-	}
-	closedir(d);
-	
-	if(copy_cancel==YES) return FAILED;
-	
-	return SUCCESS;
-	
+	JOIN = YES;
+	u8 ret = Copy(src, dst);
+	JOIN = NO;
+	return ret;
 }
 
 u8 Move(char *src, char *dst)
@@ -15734,58 +15706,8 @@ void Copy_Game(char *src, char *dst)
 	end_gathering();
 	
 	start_copy_loading();
-	u8 ret = FAILED;
-	u8 split666 = is_66600(copy_src);		  
-	
-	if(split666) {
-		if(is_FAT32(copy_dst)==NO) { 
-			ret = CopyJoin(copy_src, copy_dst);
-			goto end;
-		}
-	}
-	
-	if(is_splitted_iso(copy_src) || split666) {
-		char temp_src[128];
-		char temp_dst[128];
-		char temp_src1[128];
-		char temp_dst1[128];			
+	CopyJoin(copy_src, copy_dst);
 
-		int i;
-		int l;
-
-		strcpy(temp_src1, copy_src);
-		strcpy(temp_dst1, copy_dst);
-		
-		l= strlen(temp_src1);
-		temp_src1[l-1]=0;
-		if(split666) temp_src1[l-2]=0;
-		
-		l= strlen(temp_dst1);
-		temp_dst1[l-1]=0;
-		if(split666) temp_dst1[l-2]=0;
-		
-		for(i=0; i<99; i++) {
-			if(split666) {
-				sprintf(temp_src , "%s%02d", temp_src1, i);
-				sprintf(temp_dst , "%s%02d", temp_dst1, i);
-			} else {
-				sprintf(temp_src , "%s%d", temp_src1, i);
-				sprintf(temp_dst , "%s%d", temp_dst1, i);
-			}
-			if(copy_cancel==YES) goto end;
-			
-			if(path_info(temp_src) == _NOT_EXIST) break;
-			
-			ret = Copy(temp_src, temp_dst);
-			
-			if(ret==FAILED) break;
-		}
-		
-	} else {
-		ret = CopyJoin(copy_src, copy_dst);
-	}
-
-end:
 	//if(ret==SUCCESS) 
 	if( (gathering_total_size <= copy_current_size && copy_current_size != 0) 
 	||	(gathering_cancel == YES && copy_cancel==NO && copy_current_size > 0) ) {
@@ -16109,7 +16031,7 @@ void dump_flash(char *path)
 	} else {
 		sys_storage_close( source );
 		ret = sys_storage_open( FLASH_NAND, &source);
-		if( ret != 0 ) return FAILED;
+		if( ret != 0 ) return;
 		flash_id = FLASH_NAND;
 		size_dump=0x77E00;
 		offset = 0x204;
@@ -22200,6 +22122,23 @@ u8 is_splitted_iso(char *file_name)
 	return NO;
 }
 
+u8 is_splitted_iso_X(char *file_name)
+{
+	if(is_iso(file_name) == NO) return NO;
+	
+	int l = strlen(file_name);
+	
+	if( file_name[l-2] == '.') {
+		if(file_name[l-1] == '0' ) return NO;
+		if('0' < file_name[l-1] && file_name[l-1] <= '9') return YES;
+	} else 
+	if(file_name[l-3] == '.') {
+		if('1' <= file_name[l-2] && file_name[l-2] <= '9'
+		&& '0' <= file_name[l-1] && file_name[l-1] <= '9') return YES;
+	}
+	
+	return NO;
+}
 u8 can_mount()
 {
 	if(cobra) return YES;
@@ -24294,6 +24233,23 @@ char *get_str_regex(char *mem, char *format)
 	
 }
 
+float Get_MgzVersion()
+{
+	char mgz_title[32];
+	float current_version=0;
+	
+	if(GetParamSFO("TITLE", mgz_title, "/dev_hdd0/game/MANAGUNZ0/PARAM.SFO") == FAILED) {
+		print_load("Error : Get current version failed");
+		return 0;
+	}
+	char *ptr = strrchr(mgz_title, 'v');
+	if( ptr == NULL) return 0;
+	
+	sscanf(&ptr[1], "%f", &current_version);
+	
+	return current_version;
+}
+
 void update_MGZ()
 {
 	start_loading();
@@ -24310,7 +24266,7 @@ void update_MGZ()
 	}
 	
 	sscanf(&strrchr(mgz_title, 'v')[1], "%f", &current_version);
-		
+	
 	print_load("Current version : %.2f", current_version);
 	
 	Delete("/dev_hdd0/game/MANAGUNZ0/USRDIR/temp");
@@ -28441,9 +28397,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		char *test = get_libaudio_path();
-		if(test) print_load("test: %s");
-		FREE(test);
+		
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
@@ -28510,6 +28464,7 @@ void Option(char *item)
 				else {
 					Copy(copy_src, copy_dst);
 				}
+				if(cancel || copy_cancel) break;
 			}
 			end_copy_loading();
 		}
@@ -39131,21 +39086,20 @@ void open_SETTINGS()
 	end_loading();
 }
 
-
 //*******************************************************
 // MODE AutoMount
 //*******************************************************
 
 u8 is_AutoMount()
 {
-	
-	
 	FILE* fp;
 	fp = fopen("/dev_hdd0/vsh/pushlist/game.dat", "rb");
 	if(fp==NULL) return FAILED;
 	fread(ManaGunZ_id, 9, 1, fp);
 	fclose(fp);
-	ManaGunZ_id[9]=0;	
+	ManaGunZ_id[9]=0;
+	
+	//_sys_process_get_paramsfo(ManaGunZ_id);
 	
 	char M_path[128];
 	sprintf(M_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
