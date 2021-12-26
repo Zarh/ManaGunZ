@@ -12025,7 +12025,7 @@ u8 DUMPER_read(int source, u64 current_sector, u64 sector_nb, const void* buff, 
 	int try;
 	u8 old_corrupt = *corrupt;
 	
-	for(try=0; try<DUMPER_MAX_TRY; try++) {
+	for(try=0; try<=DUMPER_MAX_TRY; try++) {
 		memset((char *) buff, 0, BDVD_BUFFSIZE);
 		if( sys_storage_read(source, current_sector, sector_nb, buff, read, 0) == 0) return SUCCESS;
 		
@@ -12043,7 +12043,7 @@ u8 DUMPER_read(int source, u64 current_sector, u64 sector_nb, const void* buff, 
 	print_load("Warning : Now, it's trying to read sector per sector inside the corrupted area...");
 	int n;
 	for(n=0; n<sector_nb; n++) {
-		for(try=0; try<DUMPER_MAX_TRY; try++) {
+		for(try=0; try<=DUMPER_MAX_TRY; try++) {
 			memset((char *) buff, 0, BDVD_BUFFSIZE);
 			if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, read, 0) == 0) {
 				print_load("Succeeded to read sector %X", current_sector+n);
