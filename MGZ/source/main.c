@@ -610,8 +610,6 @@ u8 DUMPER_MAX_TRY = 30;
 #define OVERWRITE_DUPLICATE 3
 u8 OVERWRITE = OVERWRITE_NEVER;
 
-u64 CopyFile_FreeMem=0;
-
 #define STYLE_CUSTOM	0
 #define STYLE1			1
 #define STYLE2			2
@@ -1530,144 +1528,7 @@ func input_MENU = &EmptyFunc;
 // func MENU_CROSS = &EmptyFunc;
 // func MENU_R1 = &EmptyFunc;
 
-//***********************************************************
-// Ugly SpeedFix : Original standard I/O function are slow
-//***********************************************************
-//
-//#define FILE int
-//
-//int FAKE_truncate(const char *path, off_t len)
-//{
-//    int ret;
-//    int fd;
-//
-//    fd = ret = ps3ntfs_open(path, O_RDWR, 0666);
-//
-//    if(ret < 0) return ret;
-//
-//    ret = ps3ntfs_ftruncate(fd, len);
-//	
-//    ps3ntfs_close(fd);
-//	
-//    return ret;
-//}
-//
-//FILE* FAKE_fopen(char *filepath, const char *mode)
-//{
-//	int oflags;
-//	int m, o;
-//	switch (*mode++) {
-//		case 'r':	/* open for reading */
-//			m = O_RDONLY;
-//			o = 0;
-//			break;
-//		case 'w':	/* open for writing */
-//			m = O_WRONLY;
-//			o = O_CREAT | O_TRUNC;
-//			break;
-//		case 'a':	/* open for appending */
-//			m = O_WRONLY;
-//			o = O_CREAT | O_APPEND;
-//			break;
-//		default:	/* illegal mode */
-//			return (0);
-//		}
-//		/* [rwa]\+ or [rwa]b\+ means read and write */
-//		if (*mode == '+' || (*mode == 'b' && mode[1] == '+')) {
-//			m = O_RDWR;
-//	}
-//	
-//	oflags = m | o;
-//	
-//	int *f = malloc(sizeof(int *));
-//	
-//	*f = ps3ntfs_open(filepath, oflags, 0777);
-//	
-//	if(*f<0) {
-//		SetFilePerms(filepath);
-//		*f = ps3ntfs_open(filepath, oflags, 0777);
-//		if(*f<0) {free(f); return NULL;}
-//	}
-//	
-//	return f;
-//}
-//
-//s64 FAKE_fseek(FILE* fp, s64 pos, int dir)
-//{
-//	return ps3ntfs_seek64(*fp, (s64) pos, dir);
-//}
-//
-//size_t FAKE_fread(void *ptr, size_t size, size_t count, FILE* fp)
-//{
-//	return ps3ntfs_read(*fp, (char*)ptr, size*count);
-//}
-//
-//size_t FAKE_fwrite(void *ptr, size_t size, size_t count, FILE* fp)
-//{
-//	return ps3ntfs_write(*fp, (const char *)ptr, size*count);
-//}
-//
-//char *FAKE_fgets(char *str, int length, FILE* fp)
-//{
-//	char c;
-//	int count=0;
-//	if(length==0) return NULL;
-//	
-//	memset(str, 0, length);
-//	while(ps3ntfs_read(*fp, &c, 1))
-//	{	
-//		str[count]=c;
-//		if(count==length) break;
-//		count++;
-//		if(c=='\n' || c==0) break;
-//	}
-//	if(count == 0) return NULL;
-//	
-//	return str;
-//}
-//
-//void FAKE_fputs(char *str, FILE* fp)
-//{
-//	ps3ntfs_write(*fp, str, strlen(str));
-//}
-//
-//int FAKE_fclose(FILE* fp)
-//{	
-//	int ret = ps3ntfs_close(*fp);
-//	FREE(fp);
-//	return ret;
-//}
-//
-//u64 FAKE_ftell(FILE* fp)
-//{
-//	return ps3ntfs_seek64(*fp, 0, SEEK_CUR);
-//}
-//#define FAKE_EOF 0
-//char FAKE_fgetc(FILE* fp)
-//{
-//	char c;
-//	if( ps3ntfs_read(*fp, &c, 1) != 1) return FAKE_EOF;
-//	return c;
-//}
-//
-//char FAKE_fputc(char c, FILE* fp)
-//{
-//	ps3ntfs_write(*fp, (const char *) &c, 1);
-//	return c;
-//}
-//
-//#define truncate FAKE_truncate
-//#define fputc FAKE_fputc
-//#define fgetc FAKE_fgetc
-//#define ftell FAKE_ftell
-//#define fseek FAKE_fseek
-//#define fopen FAKE_fopen
-//#define fclose FAKE_fclose
-//#define fread FAKE_fread
-//#define fwrite FAKE_fwrite
-//#define fgets FAKE_fgets
-//#define fputs FAKE_fputs
-//
+
 //*******************************************************
 // 
 //*******************************************************
@@ -11085,7 +10946,6 @@ u64 GetFreeSpace(char *path)
     }
 	
 	return freeSize;
-	
 }
 
 void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
@@ -12170,6 +12030,11 @@ u8 dump_enc_bdvd(char *outdir, char *result_log)
 	
 	gathering_total_size = (u64) count * 0x800ULL;
 	
+	if( GetFreeSpace(ISO_PATH) < gathering_total_size ) {
+		print_load("Error : Not enough space.");
+		goto error;
+	}
+	
 	ret = FAILED;
 	while( current_sector < count ) {
 		memset(buff, 0, BDVD_BUFFSIZE);
@@ -12596,6 +12461,11 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 		sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
 	}
 	
+	if( GetFreeSpace(ISO_PATH) < gathering_total_size ) {
+		print_load("Error : Not enough space.");
+		goto error;
+	}
+	
 	MGZ_mkdir_recursive(outdir);
 	
 	print_debug("fopen %s", ISO_PATH);
@@ -12760,7 +12630,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	For every region the Ripp3r application processes, the md5 hash is calculated. The next part of the
 	file contains the md5 hash for every complete region in the file. There are two exceptions for this
 	calculation. The first region starts it’s calculation at the start sector of the first file. The last regions
-	ends with the end of the last file (PS3_UPDAT.PUP).
+	ends with the end of the last file (PS3UPDAT.PUP).
 	**/
 	// I forgot to remove header and footer from region MD5... ugly fix :s
 	IRD_FixRegionMD5(ISO_PATH, ird, header_lenght, footer_offset);
@@ -12818,6 +12688,12 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	
 	copy_current_size = 0;
 	gathering_total_size = SIZEOF_IRD(ird);
+	
+	if( GetFreeSpace(IRD_PATH) < gathering_total_size ) {
+		print_load("Error : Not enough space.");
+		goto error;
+	}
+	
 	print_debug("Saving IRD");
 	if(IRD_save(IRD_PATH, ird)==FAILED) {
 		print_load("Error : failed to save IRD");
@@ -13068,6 +12944,11 @@ u8 build_bdvd_iso(char *outdir, char *result_log)
 		sprintf(ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
 	} else {
 		sprintf(ISO_PATH, "%s/%s_%s.iso%c", outdir, ird->GameId, DATE, '\0');
+	}
+	
+	if( GetFreeSpace(ISO_PATH) < gathering_total_size ) {
+		print_load("Error : Not enough space.");
+		goto error;
 	}
 	
 	MGZ_mkdir_recursive(outdir);
@@ -15708,6 +15589,14 @@ void Copy_Game(char *src, char *dst)
 	Get_Game_Size(copy_src);
 	end_gathering();
 	
+	if( gathering_cancel == NO ) {
+		if( GetFreeSpace(copy_dst) < gathering_total_size ) {
+			show_msg("Not enough space!");
+			reset_gathering();
+			return;
+		}
+	}
+	
 	start_copy_loading();
 	CopyJoin(copy_src, copy_dst);
 
@@ -15907,11 +15796,7 @@ void Draw_GameProperties()
 			return;
 		}
 	}
-	
-	gathering_total_size=0;
-	gathering_nb_file=0;
-	gathering_nb_directory=0;
-	
+	reset_gathering();
 }
 
 #define DUMPER_BUFFSIZE		0x10000
@@ -28451,6 +28336,14 @@ void Option(char *item)
 			Get_Game_Size(option_copy[0]);
 			end_gathering();
 			
+			if( gathering_cancel == NO ) {
+				if( GetFreeSpace(copy_dst) < gathering_total_size ) {
+					show_msg("Not enough space!");
+					reset_gathering();
+					return;
+				}
+			}
+			
 			start_copy_loading();
 			CopyJoin(copy_src, copy_dst);
 			end_copy_loading();
@@ -28460,6 +28353,14 @@ void Option(char *item)
 				get_size(option_copy[i]);
 			}
 			end_gathering();
+			
+			if( gathering_cancel == NO ) {
+				if( GetFreeSpace(copy_dst) < gathering_total_size ) {
+					show_msg("Not enough space!");
+					reset_gathering();
+					return;
+				}
+			}
 			
 			start_copy_loading();
 			for(i=0; i<=option_copy_N; i++) {
@@ -34052,7 +33953,7 @@ u8 PS2_GAME_MENU_CROSS()
 		start_gathering();
 		Get_Game_Size(list_game_path[position]);
 		end_gathering();
-			
+		
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
 	} else
@@ -34351,7 +34252,7 @@ u8 PSP_GAME_MENU_CROSS()
 		start_gathering();
 		Get_Game_Size(list_game_path[position]);
 		end_gathering();
-			
+		
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
 	}
@@ -35968,7 +35869,7 @@ u8 PS3_GAME_MENU_CROSS()
 		start_gathering();
 		Get_Game_Size(list_game_path[position]);
 		end_gathering();
-			
+		
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
 	}
@@ -36385,7 +36286,7 @@ u8 BDVD_MENU_CROSS()
 		start_gathering();
 		Get_Game_Size(list_game_path[position]);
 		end_gathering();
-			
+		
 		if(gathering_cancel==NO) Draw_GameProperties();
 		else gathering_cancel=NO;
 	}
@@ -38215,10 +38116,10 @@ void init_SETTINGS()
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = 0;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 		add_item_MENU(STR_DUMPER_MAX_TRY, ITEM_TEXTBOX);
-		add_item_MENU("0", ITEM_TEXTBOX);
-		add_item_MENU("10", ITEM_TEXTBOX);
-		add_item_MENU("20", ITEM_TEXTBOX);
-		add_item_MENU("30", ITEM_TEXTBOX);
+		add_item_value_MENU("0");
+		add_item_value_MENU("10");
+		add_item_value_MENU("20");
+		add_item_value_MENU("30");
 		
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = DUMPER_MAX_TRY / 10 ;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
