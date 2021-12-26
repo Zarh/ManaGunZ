@@ -823,5 +823,10 @@ char *STR_ASK_TO_OVERWRITE=NULL;
 #define STR_ASK_TO_OVERWRITE_DEFAULT		"File already exists. Do you want to overwrite the existing file?"
 char *STR_ASK_TO_DELETE=NULL;
 #define STR_ASK_TO_DELETE_DEFAULT			"Do you really want to delete this ?"
+char *STR_DUMPER_MAX_TRY=NULL;
+#define STR_DUMPER_MAX_TRY_DEFAULT			"Read attempts"
+char *STR_DUMPER_MAX_TRY_DESC=NULL;
+#define STR_DUMPER_MAX_TRY_DESC_DEFAULT		"Set the number of read attempts when there is a disc read error."
+
 
 #endif

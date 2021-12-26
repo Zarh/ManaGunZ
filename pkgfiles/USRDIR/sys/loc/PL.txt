@@ -415,3 +415,5 @@ STR_OVERWRITE_ASK             {Ask}
 STR_OVERWRITE_DUPLICATE       {Duplicate}
 STR_ASK_TO_OVERWRITE          {Obecnie Archiwum już istnieje. Czy chcesz przepisać istniejące pliki?}
 STR_ASK_TO_DELETE             {Czy chcesz to usunąć?}
+STR_DUMPER_MAX_TRY            {czytanie}
+STR_DUMPER_MAX_TRY_DESC       {Szacuje się, że liczba odczyt gdy istnieje błąd odczytu dysku.}

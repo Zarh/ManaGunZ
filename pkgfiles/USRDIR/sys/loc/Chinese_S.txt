@@ -413,3 +413,5 @@ STR_OVERWRITE_ASK             {办公室}
 STR_OVERWRITE_DUPLICATE       {重复}
 STR_ASK_TO_OVERWRITE          {已经存在缺陷。 你是否想推翻现有档案?}
 STR_ASK_TO_DELETE             {你是否真想删除这一点?}
+STR_DUMPER_MAX_TRY            {阅读尝试}
+STR_DUMPER_MAX_TRY_DESC       {在出现错误时,将宣读的尝试数目确定为数。}

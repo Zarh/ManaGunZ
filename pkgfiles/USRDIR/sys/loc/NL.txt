@@ -413,3 +413,5 @@ STR_OVERWRITE_ASK             {Vragen}
 STR_OVERWRITE_DUPLICATE       {Duplicaat}
 STR_ASK_TO_OVERWRITE          {Bestand bestaat al. Wilt u het bestaande bestand overschrijven?}
 STR_ASK_TO_DELETE             {Wil je dit echt verwijderen ?}
+STR_DUMPER_MAX_TRY            {Read attempts}
+STR_DUMPER_MAX_TRY_DESC       {Set the number of read attempts when there is a disc read error.}

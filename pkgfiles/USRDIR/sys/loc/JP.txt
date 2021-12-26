@@ -413,3 +413,5 @@ STR_OVERWRITE_ASK             {お問い合わせ}
 STR_OVERWRITE_DUPLICATE       {重複する}
 STR_ASK_TO_OVERWRITE          {既に存在するファイル。 既存のファイルを上書きしたいですか?}
 STR_ASK_TO_DELETE             {これを削除したいですか?}
+STR_DUMPER_MAX_TRY            {試行を読む}
+STR_DUMPER_MAX_TRY_DESC       {ディスク読み取りエラーがある場合、読み取り回数を設定します。}

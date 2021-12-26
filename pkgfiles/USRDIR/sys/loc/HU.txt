@@ -412,3 +412,5 @@ STR_OVERWRITE_ASK             {Kérdező}
 STR_OVERWRITE_DUPLICATE       {dalszöveg}
 STR_ASK_TO_OVERWRITE          {File már létezik. Szeretné felülírni a meglévő fájlt?}
 STR_ASK_TO_DELETE             {Tényleg szeretné törölni ezt?}
+STR_DUMPER_MAX_TRY            {Read attempts}
+STR_DUMPER_MAX_TRY_DESC       {Set the number of read attempts when there is a disc read error.}

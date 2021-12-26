@@ -602,6 +602,7 @@ char UPLOADER[0x40]={0};
 u8 BOX3D_ALIGN = YES;
 u8 BOX3D_GAP = 1;
 u8 SHOW_LOG = NO;
+u8 DUMPER_MAX_TRY = 30;
 
 #define OVERWRITE_ALWAYS	0
 #define OVERWRITE_NEVER		1
@@ -6648,6 +6649,9 @@ void update_lang()
 	LANG(STR_OVERWRITE_DUPLICATE, "STR_OVERWRITE_DUPLICATE", STR_OVERWRITE_DUPLICATE_DEFAULT);
 	LANG(STR_ASK_TO_OVERWRITE, "STR_ASK_TO_OVERWRITE", STR_ASK_TO_OVERWRITE_DEFAULT);
 	LANG(STR_ASK_TO_DELETE, "STR_ASK_TO_DELETE", STR_ASK_TO_DELETE_DEFAULT);
+	LANG(STR_DUMPER_MAX_TRY, "STR_DUMPER_MAX_TRY", STR_DUMPER_MAX_TRY_DEFAULT);
+	LANG(STR_DUMPER_MAX_TRY_DESC, "STR_DUMPER_MAX_TRY_DESC", STR_DUMPER_MAX_TRY_DESC_DEFAULT);
+	
 	
 	FREE(STR_DB_NET);
 	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
@@ -12013,7 +12017,6 @@ u8 IRD_WS_trust(char *MGZ_SIG)
 
 #define BDVD_BUFF_SEC_NB		0x400
 #define BDVD_BUFFSIZE			0x800 * BDVD_BUFF_SEC_NB
-#define MAX_TRY					30
 #define MAX_SPLIT_SECTOR		0x1FFFFF // 4GB MAX (0xFFFFFFFF / 0x800)
 
 // it's sys_storage_read with several attempt if it fail
@@ -12022,15 +12025,15 @@ u8 DUMPER_read(int source, u64 current_sector, u64 sector_nb, const void* buff, 
 	int try;
 	u8 old_corrupt = *corrupt;
 	
-	for(try=0; try<MAX_TRY; try++) {
+	for(try=0; try<DUMPER_MAX_TRY; try++) {
 		memset((char *) buff, 0, BDVD_BUFFSIZE);
 		if( sys_storage_read(source, current_sector, sector_nb, buff, read, 0) == 0) return SUCCESS;
 		
 		if(copy_cancel || cancel) return FAILED;
 		
-		print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, MAX_TRY); 
+		print_load("Failed to read the block of sectors %X, size %X, try %d/%d", current_sector,  sector_nb, try+1, DUMPER_MAX_TRY); 
 		
-		if(try+1==MAX_TRY) {
+		if(try+1==DUMPER_MAX_TRY) {
 			*corrupt=YES;
 			if( !IGNORE_ERR ) return FAILED;
 		}
@@ -12040,7 +12043,7 @@ u8 DUMPER_read(int source, u64 current_sector, u64 sector_nb, const void* buff, 
 	print_load("Warning : Now, it's trying to read sector per sector inside the corrupted area...");
 	int n;
 	for(n=0; n<sector_nb; n++) {
-		for(try=0; try<MAX_TRY; try++) {
+		for(try=0; try<DUMPER_MAX_TRY; try++) {
 			memset((char *) buff, 0, BDVD_BUFFSIZE);
 			if( sys_storage_read(source, current_sector+n, 1, buff+n*0x800, read, 0) == 0) {
 				print_load("Succeeded to read sector %X", current_sector+n);
@@ -12048,9 +12051,9 @@ u8 DUMPER_read(int source, u64 current_sector, u64 sector_nb, const void* buff, 
 			}
 			
 			if(copy_cancel || cancel) return FAILED;
-			print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, MAX_TRY); 
+			print_load("Failed to read sector %X try %d/%d", current_sector+n, try+1, DUMPER_MAX_TRY); 
 			
-			if(try+1==MAX_TRY) {
+			if(try+1==DUMPER_MAX_TRY) {
 				*corrupt=YES;
 				if( !IGNORE_ERR ) return FAILED;
 			}
@@ -12566,14 +12569,14 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 	}
 	
 	print_debug("sys_storage_read sec0sec1");
-	for(try=0; try<MAX_TRY; try++) {
+	for(try=0; try<DUMPER_MAX_TRY; try++) {
 		memset(sec0sec1, 0, 0x800*2);
 		if( sys_storage_read(source, 0, 2, sec0sec1, &read, 0) == 0) break;
 		
 		if(copy_cancel || cancel) goto error;
-		print_load("Failed to read sector 0 size 2, try %d/%d", try+1, MAX_TRY); 
+		print_load("Failed to read sector 0 size 2, try %d/%d", try+1, DUMPER_MAX_TRY); 
 		
-		if(try+1==MAX_TRY) corrupt=YES;
+		if(try+1==DUMPER_MAX_TRY) corrupt=YES;
 	}
 	
 	u32 regions=(u8_to_u32(sec0sec1)*2)-1;
@@ -13037,14 +13040,14 @@ u8 build_bdvd_iso(char *outdir, char *result_log)
 	}
 	
 	print_debug("sys_storage_read sec0sec1");
-	for(try=0; try<MAX_TRY; try++) {
+	for(try=0; try<DUMPER_MAX_TRY; try++) {
 		memset(sec0sec1, 0, 0x800*2);
 		if( sys_storage_read(source, 0, 2, sec0sec1, &read, 0) == 0) break;
 		
 		if(copy_cancel || cancel) goto error;
-		print_load("Failed to read sector 0 size 2, try %d/%d", try+1, MAX_TRY); 
+		print_load("Failed to read sector 0 size 2, try %d/%d", try+1, DUMPER_MAX_TRY); 
 		
-		if(try+1==MAX_TRY) {
+		if(try+1==DUMPER_MAX_TRY) {
 			corrupt=YES;
 			if( !IGNORE_ERR ) goto error;
 		}
@@ -24536,6 +24539,7 @@ void read_setting()
 		fread(&BOX3D_ALIGN, sizeof(u8), 1, fp);
 		fread(&SHOW_LOG, sizeof(u8), 1, fp);
 		fread(&OVERWRITE, sizeof(u8), 1, fp);
+		fread(&DUMPER_MAX_TRY, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 	} 
@@ -24614,6 +24618,8 @@ void write_setting()
 		fwrite(&BOX3D_ALIGN, sizeof(u8), 1, fp);
 		fwrite(&SHOW_LOG, sizeof(u8), 1, fp);
 		fwrite(&OVERWRITE, sizeof(u8), 1, fp);
+		fwrite(&DUMPER_MAX_TRY, sizeof(u8), 1, fp);
+		
 		fclose(fp);
 		SetFilePerms(setPath);
 	}
@@ -30443,6 +30449,9 @@ void Draw_HELP()
 	} else
 	if(item_is(STR_BOX3D_GAP)) {
 		DrawString(x, y, STR_BOX3D_GAP_DESC);
+	} else
+	if(item_is(STR_DUMPER_MAX_TRY)) {
+		DrawString(x, y, STR_DUMPER_MAX_TRY_DESC);
 	} else
 	if(item_is(STR_BOX3D_ALIGN)) {
 		DrawString(x, y, STR_BOX3D_ALIGN_DESC);
@@ -38205,6 +38214,14 @@ void init_SETTINGS()
 		}
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = 0;
 		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+		add_item_MENU(STR_DUMPER_MAX_TRY, ITEM_TEXTBOX);
+		add_item_MENU("0", ITEM_TEXTBOX);
+		add_item_MENU("10", ITEM_TEXTBOX);
+		add_item_MENU("20", ITEM_TEXTBOX);
+		add_item_MENU("30", ITEM_TEXTBOX);
+		
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = DUMPER_MAX_TRY / 10 ;
+		ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
 	}
 	
 	add_title_MENU(STR_SYSTEM_TOOLS);
@@ -38527,6 +38544,9 @@ void update_SETTINGS()
 		} else
 		if(item_is(STR_IGNORE_ERR)) {
 			IGNORE_ERR = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
+		if(item_is(STR_DUMPER_MAX_TRY)) {
+			DUMPER_MAX_TRY = ITEMS_VALUE_POSITION[ITEMS_POSITION] * 10;
 		}
 	} else
 	if( item_title_is(STR_SYSTEM_TOOLS)){
@@ -38648,7 +38668,7 @@ u8 SETTINGS_CROSS()
 				strcpy(UPLOADER, tmpName);
 			}
 		}
-	} else 
+	} else
 	if(item_is(STR_PLUGIN_MANAGER)) {
 		return open_PLUGINS_MANAGER();
 	} else 
@@ -38738,6 +38758,9 @@ u8 SETTINGS_SQUARE()
 	} else
 	if(item_is(STR_UPLOADER)) {
 		memset(UPLOADER, 0, 0x40);
+	} else
+	if(item_is(STR_DUMPER_MAX_TRY)) {
+		DUMPER_MAX_TRY = 30;
 	} else 
 	if(item_is(STR_THM)) {
 		u8 ThemeType = GetThemeType(Themes_Paths_list[UI_position][ITEMS_VALUE_POSITION[ITEMS_POSITION]]);

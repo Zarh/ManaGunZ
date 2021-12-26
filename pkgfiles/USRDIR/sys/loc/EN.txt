@@ -412,3 +412,5 @@ STR_OVERWRITE_ASK             {Ask}
 STR_OVERWRITE_DUPLICATE       {Duplicate}
 STR_ASK_TO_OVERWRITE          {File already exists. Do you want to overwrite the existing file?}
 STR_ASK_TO_DELETE             {Do you really want to delete this ?}
+STR_DUMPER_MAX_TRY            {Read attempts}
+STR_DUMPER_MAX_TRY_DESC       {Set the number of read attempts when there is a disc read error.}

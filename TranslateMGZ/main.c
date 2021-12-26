@@ -84,11 +84,13 @@ lang_t languages[] =
 	{"PT.txt", "\\x06", "pt", "Português"},
 	{"TR.txt", "\\x21", "tr", "Türkçe"}
 };
-#define enginesCount 4
-const char *engines[enginesCount]= {"https://translate.astian.org",
+#define enginesCount 6
+const char *engines[enginesCount]= {"https://trans.zillyhuhn.com",
 									"https://libretranslate.de",
 									"https://translate.mentality.rip",
-									"https://translate.argosopentech.com"
+									"https://translate.argosopentech.com",
+									"https://translate.astian.org",
+									"https://translate.mentality.rip"
 									};
 int current_engine=0;
 #endif

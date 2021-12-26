@@ -413,3 +413,5 @@ STR_OVERWRITE_ASK             {Demander}
 STR_OVERWRITE_DUPLICATE       {Dupliquer}
 STR_ASK_TO_OVERWRITE          {Le fichier existe déjà. Voulez-vous écraser le fichier existant?}
 STR_ASK_TO_DELETE             {Voulez-vous vraiment supprimer cela?}
+STR_DUMPER_MAX_TRY            {Tentatives de lecture}
+STR_DUMPER_MAX_TRY_DESC       {Définir le nombre de tentatives de lecture lorsqu'il y a une erreur de lecture du disque.}
