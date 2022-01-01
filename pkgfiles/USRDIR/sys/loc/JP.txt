@@ -415,3 +415,5 @@ STR_ASK_TO_OVERWRITE          {既に存在するファイル。 既存のファ
 STR_ASK_TO_DELETE             {これを削除したいですか?}
 STR_DUMPER_MAX_TRY            {試行を読む}
 STR_DUMPER_MAX_TRY_DESC       {ディスク読み取りエラーがある場合、読み取り回数を設定します。}
+STR_HDD_UNLOCK_SPACE          {Hdd0 ロック解除}
+STR_HDD_UNLOCK_SPACE_DESC     {8%から1%までのHDd0で予約されたスペースの量を減らします。}

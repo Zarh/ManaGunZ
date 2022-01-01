@@ -19,6 +19,7 @@ Add : Flow3D setting to align game boxes.
 Add : Flow3D setting to adjust gap between game boxes.
 Change : Flow3D, I increased the zoom of the selected game case (press L3).
 Fix : Square picture 320x320 used by webMAN MOD and sman in XMB won't be stretched anymore.
+Add : PS3 hdd unlock by 3141card. Go to Setting>System>Hdd0 unlock.
 
 Notes:
 (1) This is mostly for damaged disc, some sectors might be unreadable because of scratches.

@@ -421,6 +421,7 @@ u64 *ERK_DUMPER;
 size_t ERK_DUMPER_SIZE;
 u64 OFFSET_1_IDPS;
 u64 OFFSET_2_IDPS;
+u64 UFS_SB_ADDR=0;
 
 //*********** IRIS ****************
 
@@ -6512,6 +6513,8 @@ void update_lang()
 	LANG(STR_ASK_TO_DELETE, "STR_ASK_TO_DELETE", STR_ASK_TO_DELETE_DEFAULT);
 	LANG(STR_DUMPER_MAX_TRY, "STR_DUMPER_MAX_TRY", STR_DUMPER_MAX_TRY_DEFAULT);
 	LANG(STR_DUMPER_MAX_TRY_DESC, "STR_DUMPER_MAX_TRY_DESC", STR_DUMPER_MAX_TRY_DESC_DEFAULT);
+	LANG(STR_HDD_UNLOCK_SPACE, "STR_HDD_UNLOCK_SPACE", STR_HDD_UNLOCK_SPACE);
+	LANG(STR_HDD_UNLOCK_SPACE_DESC, "STR_HDD_UNLOCK_SPACE_DESC", STR_HDD_UNLOCK_SPACE_DESC_DEFAULT);
 	
 	
 	FREE(STR_DB_NET);
@@ -10446,6 +10449,11 @@ u64 lv2poke(u64 addr, u64 value)
 	return_to_user_prog(u64);
 }
 
+u32 lv2peek32(uint64_t addr)
+{
+	return (u32)(lv2peek(addr) >> 32);
+}
+
 static void lv2poke32(u64 addr, uint32_t val)
 {
 	uint32_t next = lv2peek(addr) & 0xffffffff;
@@ -11354,6 +11362,65 @@ void DumpDevicesData()
 	
 	free(info);
 }
+
+
+// ****************************
+// HDD0 UNLOCK RESERVED SPACE
+// ****************************
+#define UFS2_MAGIC	0x19540119ULL
+
+static uint64_t get_ufs_sb_addr(void)
+{
+	u64 LV2_START = 0x8000000000600000ULL;
+	u64 LV2_END = 0x8000000000500000ULL;
+	
+	u64 addr = (u64) (LV2_START - 0xA8ULL);
+
+// fast
+	while(addr > LV2_END) {
+		if(lv2peek(addr) == UFS2_MAGIC)
+			return (uint64_t)(addr - 0x558ULL);
+		addr -= 0x800ULL;
+	}
+	
+	LV2_START = 0x8000000000800000ULL;
+	LV2_END   = 0x8000000000000000ULL;
+	addr = (u64) (LV2_START - 0xA8ULL);
+	
+// slow
+	while(addr > LV2_END) {
+		if(lv2peek(addr) == UFS2_MAGIC)
+			return (uint64_t)(addr - 0x558ULL);
+		addr -= 0x100ULL;
+	}
+	
+	return 0ULL;
+}
+
+u8 hdd0_is_unlocked()
+{
+	if( lv2peek32(UFS_SB_ADDR + 0x3C) == 1) return YES;
+	
+	return NO;
+}
+
+void hdd0_unlock(u8 state)
+{
+	if( state ) {
+		lv2poke32(UFS_SB_ADDR + 0x3C, 1);
+  		lv2poke32(UFS_SB_ADDR + 0x80, 1);
+	} else {
+		lv2poke32(UFS_SB_ADDR + 0x3C, 8);
+  		lv2poke32(UFS_SB_ADDR + 0x80, 0);
+	}
+	sys_fs_unmount("/dev_hdd0");
+	sys_fs_mount("CELL_FS_UTILITY:HDD0", "CELL_FS_UFS", "/dev_hdd0", 0);
+	usleep(1000);
+}
+
+// ****************************
+// HDD0 UNLOCK RESERVED SPACE
+// ****************************
 
 u32 u8_to_u32(u8* arr)
 {
@@ -29118,17 +29185,17 @@ void Open_option()
 			else {
 				add_option_item(STR_UNMOUNT_DEVBLIND);
 			}
-			/*
+			
 			if(PEEKnPOKE) {
 				add_option_item(STR_DUMP_LV1);
 				add_option_item(STR_DUMP_LV2);
 			}
 			add_option_item(STR_DUMP_FLASH);
-			*/
 			
-			add_option_item("Test");
-			add_option_item("Test2");
-			add_option_item("Test3");
+			
+			//add_option_item("Test");
+			//add_option_item("Test2");
+			//add_option_item("Test3");
 			
 			add_option_item("InsertEject");
 			
@@ -30178,7 +30245,7 @@ void show_preview()
 			}
 		}
 	}
-	if(TITLES[title]!=NULL) preview_window(strcmp(TITLES[title], STR_ROOT_DISPLAY) == 0 && MENU_LVL != LVL_TITLE);
+	if(TITLES[title]!=NULL) preview_window(strcmp(TITLES[title], STR_FILEMANAGER) == 0 && MENU_LVL != LVL_TITLE);
 }
 
 //*******************************************************
@@ -30350,6 +30417,9 @@ void Draw_HELP()
 	} else
 	if(item_is(STR_BOX3D_GAP)) {
 		DrawString(x, y, STR_BOX3D_GAP_DESC);
+	} else
+	if(item_is(STR_HDD_UNLOCK_SPACE)) {
+		DrawString(x, y, STR_HDD_UNLOCK_SPACE_DESC);
 	} else
 	if(item_is(STR_DUMPER_MAX_TRY)) {
 		DrawString(x, y, STR_DUMPER_MAX_TRY_DESC);
@@ -38037,7 +38107,7 @@ void init_SETTINGS()
 		}
 	}
 	else { // NOT CUSTOM STYLE
-				
+		
 		add_item_MENU(STR_FM_ICON, ITEM_LOCKED);
 		if(fm_CustomIcons==NO ) add_item_value_MENU(STR_FM_FILEFOLDER);
 		if(fm_CustomIcons==YES) add_item_value_MENU(STR_FM_CUSTOM);
@@ -38143,6 +38213,11 @@ void init_SETTINGS()
 		}
 		add_item_MENU(STR_DYNAREC, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = HaveDynarec();
+		
+		if( UFS_SB_ADDR ) {
+			add_item_MENU(STR_HDD_UNLOCK_SPACE, ITEM_TOGGLE);
+			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = hdd0_is_unlocked();
+		}
 	}
 	
 	add_item_MENU("MGZ log", ITEM_TOGGLE);
@@ -38327,7 +38402,7 @@ void update_SETTINGS()
 			}	
 		}
 	} else 
-	if( item_title_is(STR_ROOT_DISPLAY)){
+	if( item_title_is(STR_FILEMANAGER)){
 		if(item_is(STR_STYLE)) {
 			if( root_display != ITEMS_VALUE_POSITION[ITEMS_POSITION]) {
 				root_display = ITEMS_VALUE_POSITION[ITEMS_POSITION];
@@ -38458,6 +38533,11 @@ void update_SETTINGS()
 				} else {
 					RemoveDynarec();
 				}
+			}
+		} else
+		if(item_is(STR_HDD_UNLOCK_SPACE)) {
+			if( ITEMS_VALUE_POSITION[ITEMS_POSITION] != hdd0_is_unlocked() ) {
+				hdd0_unlock(ITEMS_VALUE_POSITION[ITEMS_POSITION]);
 			}
 		} else
 		if(item_is("MGZ log")) {
@@ -38997,6 +39077,8 @@ void open_SETTINGS()
 #endif
 	update_RootDisplay();
 	read_setting();
+	
+	if( !UFS_SB_ADDR ) UFS_SB_ADDR = get_ufs_sb_addr();
 	
 	REC_UI_position=UI_position;
 	REC_Show_COVER=Show_COVER;

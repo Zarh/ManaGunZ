@@ -415,3 +415,5 @@ STR_ASK_TO_OVERWRITE          {Dosya zaten var. Mevcut dosyayı yazmak mı istiy
 STR_ASK_TO_DELETE             {Gerçekten bu silmek istiyor musunuz?}
 STR_DUMPER_MAX_TRY            {Okuma girişimleri}
 STR_DUMPER_MAX_TRY_DESC       {Bir disk okuma hatası olduğunda okuma girişimlerinin sayısını ayarlayın.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 kilidini aç}
+STR_HDD_UNLOCK_SPACE_DESC     {% 8'ten% 1'e kadar hdd0'da ayrılmış alanın miktarını azaltın.}

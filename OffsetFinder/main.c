@@ -1478,6 +1478,10 @@ u8 init_fw()\n\
 		u64 HTAB_PATCH2=0;
 		u64 HTAB_PATCH3=0;
 		
+		// need to do a dynamic search. It can be at different offset with the same firmware.
+		//u64 UFS_SB_ADDR=0;
+		
+		//u8 ufs_sb_addr_flag[]={0x19, 0x54, 0x01, 0x19};
 		u8 htab_patch1_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x7C, 0x1B, 0x78, 0x41, 0xE2, 0xFD, 0x64};
 		u8 htab_patch2_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x7B, 0x1B, 0x78, 0x40, 0xC2, 0x00, 0xAC};
 		u8 htab_patch3_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x78, 0x1B, 0x78, 0x40, 0xC2, 0x02, 0xD8};
@@ -2199,6 +2203,10 @@ u8 init_fw()\n\
 					}
 				}
 			}
+			
+			// if(compare(0xFF, (char *) &memLV2[n], (char *) ufs_sb_addr_flag, sizeof(ufs_sb_addr_flag))) {
+				// UFS_SB_ADDR = n - 0x55C;
+			// }
 			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch1_flag, sizeof(htab_patch1_flag))) {
 				HTAB_PATCH1 = n;
 			}
@@ -2927,6 +2935,7 @@ u8 init_fw()\n\
 		if(OFFSET_1_IDPS != 0) OFFSET_1_IDPS = 0x8000000000000000ULL + OFFSET_1_IDPS;
 		if(OFFSET_2_IDPS != 0) OFFSET_2_IDPS = 0x8000000000000000ULL + OFFSET_2_IDPS;
 		if(LPAR != 0) LPAR = 0x8000000000000000ULL + LPAR;
+		// if(UFS_SB_ADDR != 0) UFS_SB_ADDR += 0x8000000000000000ULL; 
 		
 		
 		char str[255];
@@ -2981,6 +2990,7 @@ u8 init_fw()\n\
 		sprintf(str, "#define FW_DATE_2_%lld%c             0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, common);
 		sprintf(str, "#define OFFSET_1_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, common);
 		sprintf(str, "#define OFFSET_2_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, common);
+		//sprintf(str, "#define UFS_SB_ADDR_%lld%c           0x%llXULL\n", FIRMWARE, D, UFS_SB_ADDR); fputs(str, common);
 		
 		
 		

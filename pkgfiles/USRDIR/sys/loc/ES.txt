@@ -415,3 +415,5 @@ STR_ASK_TO_OVERWRITE          {El archivo ya existe. ¿Quieres sobreescribir el 
 STR_ASK_TO_DELETE             {¿Realmente quieres borrar esto?}
 STR_DUMPER_MAX_TRY            {Lee los intentos}
 STR_DUMPER_MAX_TRY_DESC       {Establecer el número de intentos de lectura cuando hay un error de lectura de disco.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 desbloqueo}
+STR_HDD_UNLOCK_SPACE_DESC     {Reducir la cantidad de espacio reservado en hdd0 del 8% al 1%.}

@@ -415,3 +415,5 @@ STR_ASK_TO_OVERWRITE          {O arquivo já existe. Você quer substituir o arq
 STR_ASK_TO_DELETE             {Queres mesmo apagar isto?}
 STR_DUMPER_MAX_TRY            {Leia tentativas}
 STR_DUMPER_MAX_TRY_DESC       {Defina o número de tentativas de leitura quando houver um erro de leitura de disco.}
+STR_HDD_UNLOCK_SPACE          {Desbloqueio Hdd0}
+STR_HDD_UNLOCK_SPACE_DESC     {Reduza a quantidade de espaço reservado em hdd0 de 8% a 1%.}

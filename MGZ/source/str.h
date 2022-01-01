@@ -827,6 +827,10 @@ char *STR_DUMPER_MAX_TRY=NULL;
 #define STR_DUMPER_MAX_TRY_DEFAULT			"Read attempts"
 char *STR_DUMPER_MAX_TRY_DESC=NULL;
 #define STR_DUMPER_MAX_TRY_DESC_DEFAULT		"Set the number of read attempts when there is a disc read error."
+char *STR_HDD_UNLOCK_SPACE=NULL;
+#define STR_HDD_UNLOCK_SPACE_DEFAULT		"Hdd0 unlock"
+char *STR_HDD_UNLOCK_SPACE_DESC=NULL;
+#define STR_HDD_UNLOCK_SPACE_DESC_DEFAULT	"Reduce the amount of reserved space in hdd0 from 8% to 1%."
 
 
 #endif

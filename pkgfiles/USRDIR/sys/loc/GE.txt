@@ -414,3 +414,5 @@ STR_ASK_TO_OVERWRITE          {Daten sind bereits vorhanden. Lassen Sie sich die
 STR_ASK_TO_DELETE             {Lassen Sie mich dies wirklich löschen?}
 STR_DUMPER_MAX_TRY            {Versuche lesen}
 STR_DUMPER_MAX_TRY_DESC       {Legen Sie die Anzahl der Leseversuche fest, wenn ein Disc-Lesefehler vorliegt.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 entriegelt}
+STR_HDD_UNLOCK_SPACE_DESC     {Reduzieren Sie die Menge des reservierten Raumes in hdd0 von 8% auf 1%.}

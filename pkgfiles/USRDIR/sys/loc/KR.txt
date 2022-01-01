@@ -415,3 +415,5 @@ STR_ASK_TO_OVERWRITE          {파일이 이미 존재합니다. 기존 파일�
 STR_ASK_TO_DELETE             {당신은 정말로 이것을 삭제하고 싶습니까?}
 STR_DUMPER_MAX_TRY            {다운로드}
 STR_DUMPER_MAX_TRY_DESC       {디스크 읽기 오류가 있을 때 읽는 시도 수를 설정합니다.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 잠금 해제}
+STR_HDD_UNLOCK_SPACE_DESC     {8%에서 1%까지 hdd0에 있는 예약된 공간의 양을 감소시키십시오.}

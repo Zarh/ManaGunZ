@@ -417,3 +417,5 @@ STR_ASK_TO_OVERWRITE          {Obecnie Archiwum już istnieje. Czy chcesz przepi
 STR_ASK_TO_DELETE             {Czy chcesz to usunąć?}
 STR_DUMPER_MAX_TRY            {czytanie}
 STR_DUMPER_MAX_TRY_DESC       {Szacuje się, że liczba odczyt gdy istnieje błąd odczytu dysku.}
+STR_HDD_UNLOCK_SPACE          {HdD0}
+STR_HDD_UNLOCK_SPACE_DESC     {Zawartość przestrzeni zarezerwowanej w hd0 z 8% do 1%.}

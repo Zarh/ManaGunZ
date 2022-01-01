@@ -40,6 +40,7 @@ extern u64 LV2MOUNTADDR_CSIZE;
 extern u64 NEW_POKE_SYSCALL_ADDR;
 extern u64 OFFSET_1_IDPS;
 extern u64 OFFSET_2_IDPS;
+extern u64 UFS_SB_ADDR;
 
 extern void print_head(char *format2, ...);
 extern void print_load(char *format, ...);
@@ -257,6 +258,7 @@ u8 init_fw_unk()
 	
 	print_load("New firmware ! Please wait while MGZ search for the new offsets...");
 	
+	u8 flag_ufs_sb_addr[8] = {0, 0, 0, 0, 0x19, 0x54, 0x01, 0x19};
 	u8 flag_htab[0x8] = {0x41, 0xDA, 0x00, 0x54, 0xE9, 0x7F, 0x00, 0xA8};
 	u8 flag_mmap1[0x8] = {0x88, 0x1F, 0x00, 0x99, 0x54, 0x00, 0x06, 0x3E};
 	u8 flag_mmap2[0x8] = {0xE8, 0xFF, 0x00, 0xE0, 0x7C, 0x08, 0x03, 0x78};
@@ -318,6 +320,9 @@ u8 init_fw_unk()
 			memcpy(&FW_DATE_2, &memLV2[n+8], 8);
 			//FW_DATE_1 = reverse64(FW_DATE_1);
 			//FW_DATE_2 = reverse64(FW_DATE_2);
+		}
+		if(!memcmp((char *) &memLV2[n], (char *) flag_ufs_sb_addr, 0x8)) {
+			UFS_SB_ADDR = n - 0x558;
 		}
 		if(0x50000 < n && n <0x80000) {
 			if(!memcmp((char *) &memLV2[n], (char *) flag_offset_fix, 0x20)) {
@@ -408,7 +413,8 @@ u8 init_fw_unk()
 		&& OFFSET_FIX_LIC
 		&& OFFSET_2_FIX
 		&& OFFSET_FIX
-		&& FW_DATE_OFFSET) {
+		&& FW_DATE_OFFSET
+		&& UFS_SB_ADDR) {
 			flag = SUCCESS;	
 			break;
 		}
@@ -432,10 +438,10 @@ u8 init_fw_unk()
 	LV2MOUNTADDR             = LV2ADDR(LV2MOUNTADDR           );
 	OFFSET_1_IDPS            = LV2ADDR(OFFSET_1_IDPS          );
 	OFFSET_2_IDPS            = LV2ADDR(OFFSET_2_IDPS          );
+	UFS_SB_ADDR              = LV2ADDR(UFS_SB_ADDR            );
 	
 	NEW_POKE_SYSCALL_ADDR = lv2peek( lv2peek(SYSCALL_TABLE + NEW_POKE_SYSCALL*8) ) + 0ULL;
 	UMOUNT_SYSCALL_OFFSET = lv2peek( lv2peek(SYSCALL_TABLE + 838*8) )  + 8ULL;
-	
 	
 	print_load("Loading lv1 in memory...");
 	u8 *memLV1 = LoadLV1();
