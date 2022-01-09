@@ -10099,7 +10099,6 @@ void reset_gathering()
 	gathering_total_size=0;
 	gathering_nb_file=0;
 	gathering_nb_directory=0;
-	
 }
 
 static sys_ppu_thread_t gathering_id;	
@@ -10945,7 +10944,7 @@ u64 GetFreeSpace(char *path)
         ps3ntfs_statvfs(path, &vfs);
         freeSize = (((u64)vfs.f_bsize * vfs.f_bfree));
     } else
-	if( is_exFAT(temp) ) {
+	if(is_exFAT(temp)) {
 		u64 tot;
 		exFAT_get_size(temp, &freeSize, &tot);
 	} else {
@@ -11592,6 +11591,7 @@ ird_t *IRD_new(char *source)
 	ret = GetParamSFO("APP_VER", value, source);
 	if(ret==FAILED) print_load("ird_new failed to get APP_VER");
 	else memcpy(ird->AppVersion, value, 5);
+	
 	
 	
 	print_debug("IRD_new PUP_VER");
@@ -15650,7 +15650,6 @@ void Copy_Game(char *src, char *dst)
 		char *tmp = strrchr(copy_src, '/');
 		strcat(copy_dst, tmp);
 	}
-	
 	
 	start_gathering();
 	Get_Game_Size(copy_src);
@@ -28414,7 +28413,8 @@ void Option(char *item)
 			start_copy_loading();
 			CopyJoin(copy_src, copy_dst);
 			end_copy_loading();
-		} else {
+		} 
+		else {
 			start_gathering();
 			for(i=0; i<=option_copy_N; i++){
 				get_size(option_copy[i]);
@@ -28422,7 +28422,7 @@ void Option(char *item)
 			end_gathering();
 			
 			if( gathering_cancel == NO ) {
-				if( GetFreeSpace(copy_dst) < gathering_total_size ) {
+				if( GetFreeSpace(window_path[window_activ]) < gathering_total_size ) {
 					show_msg("Not enough space!");
 					reset_gathering();
 					return;
