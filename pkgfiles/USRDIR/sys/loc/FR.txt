@@ -395,8 +395,8 @@ STR_BUILD_ISO                 {Construire un iso}
 STR_BUILD_ISO_DESC            {Construisez un iso à partir des fichiers du Blu-Ray.}
 STR_UPLOADER                  {Nom de l'uploader}
 STR_UPLOADER_DESC             {Entrez votre nom ou pseudo si vous souhaitez signer vos uploads d'ird, laissez-le vide pour rester anonyme.}
-STR_BOX3D_ALIGN               {Boîtiers alignés}
-STR_BOX3D_ALIGN_DESC          {Aligner les boîtes de jeu comme si elle était stockée sur une étagère.}
+STR_BOX3D_ALIGN               {Aligner les boites}
+STR_BOX3D_ALIGN_DESC          {Aligner les boîtes de jeu comme si elles étaient stockées sur une étagère.}
 STR_BOX3D_GAP                 {Encadré}
 STR_BOX3D_GAP_DESC            {Réglez l'écart entre les boîtes de jeu.}
 STR_SHORT                     {Court}

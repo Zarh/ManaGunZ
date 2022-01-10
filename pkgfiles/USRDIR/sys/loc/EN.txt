@@ -394,7 +394,7 @@ STR_BUILD_ISO_DESC            {Build a backup iso from Blu-Ray's files.}
 STR_UPLOADER                  {Uploader name}
 STR_UPLOADER_DESC             {Enter your name if you want credits for your ird uploads, leave it empty to stay anonymous.}
 STR_FAVORITE                  {Favorite}
-STR_BOX3D_ALIGN               {Do you really want to delete this ?}
+STR_BOX3D_ALIGN               {Align boxes}
 STR_BOX3D_ALIGN_DESC          {Align game boxes as if it was stored on a shelf.}
 STR_BOX3D_GAP                 {Boxes gap}
 STR_BOX3D_GAP_DESC            {Adjust the gap between game boxes.}
