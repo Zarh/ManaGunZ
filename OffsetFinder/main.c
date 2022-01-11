@@ -1309,6 +1309,9 @@ extern u64 TOC;\n\
 extern u64 SYSCALL_TABLE;\n\
 extern u64 HV_START_OFFSET;\n\
 extern u64 HTAB_OFFSET;\n\
+extern u64 HTAB_PATCH1;\n\
+extern u64 HTAB_PATCH2;\n\
+extern u64 HTAB_PATCH3;\n\
 extern u64 MMAP_OFFSET1;\n\
 extern u64 MMAP_OFFSET2;\n\
 extern u64 SPE_OFFSET;\n\
@@ -1412,6 +1415,9 @@ u8 init_fw()\n\
 		TOC = TOC_%s;\n\
 		SYSCALL_TABLE = SYSCALL_TABLE_%s;\n\
 		HTAB_OFFSET = HTAB_OFFSET_%s;\n\
+		HTAB_PATCH1 = HTAB_PATCH1_%s;\n\
+		HTAB_PATCH2 = HTAB_PATCH2_%s;\n\
+		HTAB_PATCH3 = HTAB_PATCH3_%s;\n\
 		MMAP_OFFSET1 = MMAP_OFFSET1_%s;\n\
 		MMAP_OFFSET2 = MMAP_OFFSET2_%s;\n\
 		SPE_OFFSET = SPE_OFFSET_%s;\n\
@@ -1436,7 +1442,8 @@ u8 init_fw()\n\
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
 		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name,
-		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name);
+		ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, ent->d_name, 
+		ent->d_name);
 		
 		fputs(temp, fwc);
 		
@@ -1466,6 +1473,18 @@ u8 init_fw()\n\
 		u64 MMAP_OFFSET1=0;
 		u64 MMAP_OFFSET2=0;
 		u64 SPE_OFFSET=0;
+		
+		u64 HTAB_PATCH1=0;
+		u64 HTAB_PATCH2=0;
+		u64 HTAB_PATCH3=0;
+		
+		// need to do a dynamic search. It can be at different offset with the same firmware.
+		//u64 UFS_SB_ADDR=0;
+		
+		//u8 ufs_sb_addr_flag[]={0x19, 0x54, 0x01, 0x19};
+		u8 htab_patch1_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x7C, 0x1B, 0x78, 0x41, 0xE2, 0xFD, 0x64};
+		u8 htab_patch2_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x7B, 0x1B, 0x78, 0x40, 0xC2, 0x00, 0xAC};
+		u8 htab_patch3_flag[]={0x44, 0x00, 0x00, 0x22, 0x2C, 0x23, 0x00, 0x00, 0x7C, 0x78, 0x1B, 0x78, 0x40, 0xC2, 0x02, 0xD8};
 		
 		u64 LPAR=0;
 		
@@ -1740,6 +1759,9 @@ u8 init_fw()\n\
 		u64 sm_get_temperature_symbol=0;
 		u64 sm_get_fan_policy_symbol=0;
 		u64 sm_set_fan_policy_symbol=0;
+		u64 sm_get_temperature_patch=0;
+		u64 sm_get_fan_policy_patch=0;
+		u64 sm_set_fan_policy_patch=0;
 		u64 get_path_by_fd_symbol=0;
 		//u64 hash_checked_area=0;
 		//u64 vsh_patch=0;                  
@@ -2013,7 +2035,11 @@ u8 init_fw()\n\
 		u8 sm_get_temperature_symbol_flag[]={0xF8, 0x21, 0xFF, 0x41, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x61, 0x00, 0x98, 0x7C, 0xDB, 0x33, 0x78, 0xFB, 0x41, 0x00, 0x90, 0xFB, 0xA1, 0x00, 0xA8, 0x7C, 0xBA, 0x2B, 0x78, 0x7C, 0x9D, 0x23, 0x78};
 		u8 sm_get_fan_policy_symbol_flag[]={0xF8, 0x21, 0xFF, 0x31, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x01, 0x00, 0x90, 0xFB, 0x21, 0x00, 0x98, 0xFB, 0x41, 0x00, 0xA0, 0xFB, 0xA1, 0x00, 0xB8, 0x7C, 0xBA, 0x2B, 0x78, 0x7C, 0x9D, 0x23, 0x78};
 		u8 sm_set_fan_policy_symbol_flag[]={0xF8, 0x21, 0xFF, 0x71, 0x7C, 0x08, 0x02, 0xA6, 0x39, 0x20, 0x00, 0x08, 0xF8, 0x01, 0x00, 0xA0, 0x38, 0x00, 0x00, 0x10, 0x98, 0x81, 0x00, 0x81, 0x98, 0xA1, 0x00, 0x82, 0x39, 0x60, 0x00, 0x01};
-
+	
+		u8 sm_get_temperature_patch_flag[]={0x7C, 0x7D, 0x1B, 0x78, 0xEB, 0xC1, 0x00, 0xA0, 0xEB, 0xE1, 0x00, 0xA8, 0x7C, 0x08, 0x03, 0xA6, 0x7F, 0xA3, 0x07, 0xB4, 0xEB, 0xA1, 0x00, 0x98, 0x38, 0x21, 0x00, 0xB0, 0x4E, 0x80, 0x00, 0x20, 0xFF, 0xFF, 0xFF, 0xFF, 0x2F, 0x83, 0x00, 0x00};
+		u8 sm_get_fan_policy_patch_flag[]={0x7C, 0xB9, 0x2B, 0x78, 0x7C, 0xD8, 0x33, 0x78, 0x7C, 0xF7, 0x3B, 0x78, 0x7C, 0x7F, 0x1B, 0x78};
+		u8 sm_set_fan_policy_patch_flag[]={0xFB, 0xE1, 0x00, 0x88, 0x7C, 0x9E, 0x23, 0x78, 0x7C, 0x7F, 0x1B, 0x78, 0xF8, 0x01, 0x00, 0xA0, 0x48, 0x04, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7B, 0xE4, 0x06, 0x20, 0x2F, 0x83, 0x00, 0x00};
+		
 		u8 update_mgr_if_get_token_symbol_flag[]={0x7C, 0x08, 0x03, 0xA6, 0x7C, 0x63, 0x07, 0xB4, 0x38, 0x21, 0x00, 0xB0, 0x4E, 0x80, 0x00, 0x20, 0xF8, 0x21, 0xFF, 0x01, 0x7C, 0x08, 0x02, 0xA6};
 		u8 get_path_by_fd_symbol_flag[]={0xF8, 0x21, 0xFF, 0x31, 0x7C, 0x08, 0x02, 0xA6, 0xFB, 0x81, 0x00, 0xB0, 0xFB, 0xC1, 0x00, 0xC0, 0xF8, 0x01, 0x00, 0xE0};
 		
@@ -2176,6 +2202,19 @@ u8 init_fw()\n\
 						}
 					}
 				}
+			}
+			
+			// if(compare(0xFF, (char *) &memLV2[n], (char *) ufs_sb_addr_flag, sizeof(ufs_sb_addr_flag))) {
+				// UFS_SB_ADDR = n - 0x55C;
+			// }
+			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch1_flag, sizeof(htab_patch1_flag))) {
+				HTAB_PATCH1 = n;
+			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch2_flag, sizeof(htab_patch2_flag))) {
+				HTAB_PATCH2 = n;
+			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) htab_patch3_flag, sizeof(htab_patch3_flag))) {
+				HTAB_PATCH3 = n;
 			}
 			if(compare(0xFF, (char *) &memLV2[n], (char *) flag_lpar, sizeof(flag_lpar))) {
 				LPAR = n;
@@ -2677,6 +2716,15 @@ u8 init_fw()\n\
 			if(compare(-1, (char *) &memLV2[n], (char *) sm_set_fan_policy_symbol_flag, sizeof(sm_set_fan_policy_symbol_flag))) {
 				sm_set_fan_policy_symbol = n;
 			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) sm_get_temperature_patch_flag, sizeof(sm_get_temperature_patch_flag))) {
+				sm_get_temperature_patch = n + 0x20;
+			}
+			if(compare(-1, (char *) &memLV2[n], (char *) sm_get_fan_policy_patch_flag, sizeof(sm_get_fan_policy_patch_flag))) {
+				sm_get_fan_policy_patch = n + 0x14;
+			}
+			if(compare(0xFF, (char *) &memLV2[n], (char *) sm_set_fan_policy_patch_flag, sizeof(sm_set_fan_policy_patch_flag))) {
+				sm_set_fan_policy_patch = n + 0x14;
+			}
 			if(compare(-1, (char *) &memLV2[n], (char *) update_mgr_if_get_token_symbol_flag, sizeof(update_mgr_if_get_token_symbol_flag))) {
 				update_mgr_if_get_token_symbol = n+0x10;
 			}
@@ -2887,6 +2935,7 @@ u8 init_fw()\n\
 		if(OFFSET_1_IDPS != 0) OFFSET_1_IDPS = 0x8000000000000000ULL + OFFSET_1_IDPS;
 		if(OFFSET_2_IDPS != 0) OFFSET_2_IDPS = 0x8000000000000000ULL + OFFSET_2_IDPS;
 		if(LPAR != 0) LPAR = 0x8000000000000000ULL + LPAR;
+		// if(UFS_SB_ADDR != 0) UFS_SB_ADDR += 0x8000000000000000ULL; 
 		
 		
 		char str[255];
@@ -2920,6 +2969,9 @@ u8 init_fw()\n\
 		sprintf(str, "#define SYSCALL_TABLE_%lld%c         0x%llXULL\n", FIRMWARE, D, SYSCALL_TABLE); fputs(str, common);
 		sprintf(str, "#define HV_START_OFFSET_%lld%c       0x%06llX\n", FIRMWARE, D, HV_START_OFFSET); fputs(str, common);
 		sprintf(str, "#define HTAB_OFFSET_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_OFFSET); fputs(str, common);
+		sprintf(str, "#define HTAB_PATCH1_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_PATCH1); fputs(str, common);
+		sprintf(str, "#define HTAB_PATCH2_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_PATCH2); fputs(str, common);
+		sprintf(str, "#define HTAB_PATCH3_%lld%c           0x%06llX\n", FIRMWARE, D, HTAB_PATCH3); fputs(str, common);
 		sprintf(str, "#define MMAP_OFFSET1_%lld%c          0x%06llX\n", FIRMWARE, D, MMAP_OFFSET1); fputs(str, common);		
 		sprintf(str, "#define MMAP_OFFSET2_%lld%c          0x%06llX\n", FIRMWARE, D, MMAP_OFFSET2); fputs(str, common);		
 		sprintf(str, "#define SPE_OFFSET_%lld%c            0x%06llX\n", FIRMWARE, D, SPE_OFFSET); fputs(str, common);
@@ -2938,6 +2990,9 @@ u8 init_fw()\n\
 		sprintf(str, "#define FW_DATE_2_%lld%c             0x%llXULL\n", FIRMWARE, D, FW_DATE_2); fputs(str, common);
 		sprintf(str, "#define OFFSET_1_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_1_IDPS); fputs(str, common);
 		sprintf(str, "#define OFFSET_2_IDPS_%lld%c         0x%llXULL\n", FIRMWARE, D, OFFSET_2_IDPS); fputs(str, common);
+		//sprintf(str, "#define UFS_SB_ADDR_%lld%c           0x%llXULL\n", FIRMWARE, D, UFS_SB_ADDR); fputs(str, common);
+		
+		
 		
 		fputs("\n", SKY);
 		sprintf(str, "#ifdef CFW_%lld%c\n", FIRMWARE, D); fputs(str, SKY);
@@ -3299,6 +3354,9 @@ u8 init_fw()\n\
 		sprintf(temp, "\t#define sm_get_temperature_symbol                        0x%X\n",sm_get_temperature_symbol                        ); fputs(temp, symbols);
 		sprintf(temp, "\t#define sm_get_fan_policy_symbol                         0x%X\n",sm_get_fan_policy_symbol                         ); fputs(temp, symbols);
 		sprintf(temp, "\t#define sm_set_fan_policy_symbol                         0x%X\n",sm_set_fan_policy_symbol                         ); fputs(temp, symbols);
+		sprintf(temp, "\t#define sm_get_temperature_patch                         0x%X\n",sm_get_temperature_patch                        ); fputs(temp, symbols);
+		sprintf(temp, "\t#define sm_get_fan_policy_patch                          0x%X\n",sm_get_fan_policy_patch                         ); fputs(temp, symbols);
+		sprintf(temp, "\t#define sm_set_fan_policy_patch                          0x%X\n",sm_set_fan_policy_patch                         ); fputs(temp, symbols);
 		fputs("\n", symbols);
 		sprintf(temp, "\t#define SHA1_init_symbol                                 0x%X\n",SHA1_init_symbol                                 ); fputs(temp, symbols);
 		sprintf(temp, "\t#define SHA1_update_symbol                               0x%X\n",SHA1_update_symbol                               ); fputs(temp, symbols);
@@ -5531,7 +5589,9 @@ int main(int argc, char **argv)
 	PWD = getenv("PWD");
 	char *PS3ENV = getenv("PS3");
 	if(PS3ENV==NULL) {
-		printf("Environnement variable 'PS3' is missing.\nType : export PS3=$PS3DEV/bin/data\nscetool need it to load the keys.\n\n");
+		//putenv("PS3=$PS3DEV/bin/data");
+		printf(error(" "));
+		printf("* Environnement variable 'PS3' is missing.\n* Type : export PS3=$PS3DEV/bin/data\n* scetool need it to load the keys.\n\n");
 		return 0;
 	}
 	

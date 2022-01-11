@@ -50,7 +50,7 @@ unsigned char *_read_buffer(const char *file, unsigned int *length)
 	FILE *fp;
 	unsigned int size=0;
 
-	if((fp = fopen(file, "r")) == NULL)
+	if((fp = fopen(file, "rb")) == NULL)
 		return NULL;
 
 	fseek(fp, 0, SEEK_END);

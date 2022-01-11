@@ -143,7 +143,7 @@ int get_xreg_value(char *key)
 	int value = 0;
 	
 	xreg = fopen("/dev_flash2/etc/xRegistry.sys", "rb");
-	if(xreg==NULL) return FAILED;
+	if(xreg==NULL) return -1;
 
 	uint8_t magic[0x10] = {0xBC, 0xAD, 0xAD, 0xBC, 0x00, 0x00, 0x00, 0x90, 0x00, 0x00, 0x00, 0x02, 0xBC, 0xAD, 0xAD, 0xBC};
 	
@@ -152,7 +152,7 @@ int get_xreg_value(char *key)
 	
 	if( memcmp(data, magic, 0x10) != 0 ) {
 		fclose(xreg);
-		return FAILED;
+		return -1;
 	}
 	uint32_t index_off;
 	uint32_t current_entry_offset;

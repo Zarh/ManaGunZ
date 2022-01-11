@@ -1,0 +1,419 @@
+STR_LANGUAGE                  {Türkçe}
+STR_LANGCODE                  {\x21}
+
+STR_LANG                      {Türkçe}
+STR_LANG_DESC                 {Dilinizi seçin.}
+STR_GATHERING                 {Verileri toplamak.}
+STR_COPYING                   {Kopyalama.}
+STR_FROM                      {Senden}
+STR_TO                        {torun}
+STR_FILES                     {Dosyalar}
+STR_DIRS                      {Yönetimler}
+STR_UNKNOWN                   {Bilinmeyen}
+STR_FILE                      {Dosyalar}
+STR_CANCEL                    {Cancel}
+STR_TURNOFF                   {Kapat}
+STR_CANCELLED                 {İptal}
+STR_UNIT                      {Bytes}
+STR_TOTALSIZE                 {Toplam boyut}
+STR_HIDELOGS                  {Günlükleri gizle}
+STR_SHOWLOGS                  {Günlükleri göster}
+STR_BOOST                     {Boost!}
+STR_GAMEMENU                  {Oyun Menü}
+STR_SETTINGS                  {Ayarlar}
+STR_MOUNTGAME                 {Dağı Game}
+STR_FILTER                    {Filtre}
+STR_FAVORITE                  {Favori}
+STR_FILEMANAGER               {Dosya Yöneticisi}
+STR_HOLD                      {Hold}
+STR_EXIT                      {Exit}
+STR_GAME_PROP                 {Oyun Özellikleri}
+STR_GAME_TITLE                {Title}
+STR_GAME_PATH                 {Yol}
+STR_GAME_FORMAT               {Format}
+STR_GAME_SIZE                 {Size}
+STR_GAME_PLATFORM             {Platform}
+STR_SYSVERS                   {Yazılım}
+STR_GAMEID                    {Identifier}
+STR_ELFCRC                    {ELF CRC}
+STR_ELFCRCO                   {ELF CRC (Original)}
+STR_BACK                      {Geri dön}
+STR_ENTER                     {Giriş}
+STR_UPDATE_FOUND              {Güncelle}
+STR_UPDATE                    {Güncelleştirme}
+STR_SIZE                      {Size}
+STR_SYSTEM                    {Sistemi}
+STR_DL                        {İndir}
+STR_DL_ALL                    {TÜMÜNÜ İndir}
+STR_UNPLUG                    {Aşağıdaki cihazın (ler) yığılması}
+STR_PATH                      {Yol}
+STR_TYPE                      {Tür}
+STR_FOLDER                    {Klasör}
+STR_DIR                       {Directory}
+STR_MULT                      {Çoklu}
+STR_THM_SETTINGS              {Tema ayarları}
+STR_THM                       {Tespit}
+STR_THM_DESC                  {İstediğiniz temayı yükleyin. Onları dev_usbXXX/Themes'ten yükleyebilirsiniz.}
+STR_CREATE                    {Oluşturma}
+STR_ZOOM_OUT                  {Yakınlaştırma}
+STR_ZOOM_IN                   {Yakınlaştırma}
+STR_MOVE_FRAME                {Hareket Çerçevesi}
+STR_CHECK                     {Telefon}
+STR_UNCHECK                   {Kontrol}
+STR_GAME_OPTION               {Oyun Seçenekleri}
+STR_ADD_FAV                   {Favorilere ekle}
+STR_REM_FAV                   {Favorilerden çıkarın}
+STR_FAV_DESC                  {En sevdiğiniz oyunları listeleyin.}
+STR_RENAME                    {Rename}
+STR_RENAME_DESC               {Yedeklemenizin unvanını yeniden adlandırın.}
+STR_DELETE                    {Sildenafil}
+STR_DELETE_DESC               {Yedeklemenizi silin.}
+STR_COPY                      {Kopya}
+STR_COPY_DESC                 {Yedeklemenizi başka bir yola kopyalayın.}
+STR_CREATE_ICON0              {ICON0 Oluşturma}
+STR_CREATE_ICON0_DESC         {Kapaktan sahte bir ICON0 oluşturun.}
+STR_REST_PNACH                {Restore PNACH}
+STR_REST_PNACH_DESC           {Pnach dosyası tarafından yedeklemeye uygulanan yamaları kaldırın.}
+STR_APPLY_PNACH               {PNACH Başvurusu}
+STR_APPLY_PNACH_DESC          {Pnach dosyasından yedeklemeye yamaları uygulayın.}
+STR_DISABLE_WS                {Engelli GenişScreen}
+STR_ENABLE_WS                 {Enable GenişScreen}
+STR_WS_DESC                   {4:3 yerine 16:9 oyunu görüntüleyin.}
+STR_DISABLE_480P              {Engelli 480P}
+STR_ENABLE_480P               {Enable 480P}
+STR_480P_DESC                 {480P'de aşamalı tarama modu.}
+STR_DISABLE_YFIX              {Engelli YFIX}
+STR_ENABLE_YFIX               {Enable YFIX}
+STR_YFIX_DESC                 {Dikey konumu düzeltin.}
+STR_DISABLE_FMVSKIP           {Engelli FMV XHamster}
+STR_ENABLE_FMVSKIP            {FMV'yi etkinleştirin XHamster}
+STR_FMVSKIP_DESC              {Tam hareket videolarını atlamaya izin verin.}
+STR_DISABLE_NETEMU            {Engelli NetEMU}
+STR_ENABLE_NETEMU             {Enable NetEMU}
+STR_NETEMU_DESC               {Ps2 netemu kullanımı kuvvet.}
+STR_SAVE_CONFIG               {CONFIG'den tasarruf edin}
+STR_CONFIG                    {Yapılandırma}
+STR_CONFIG_DESC               {[Experimental] Ps2 yedeklemenizi düzeltmek için kendi CONFIG dosyanızı oluşturun.}
+STR_NONE                      {Yok}
+STR_CHECK_MD5                 {MD5'i kontrol edin}
+STR_PROPS                     {Menü}
+STR_PROPS_DESC                {Yedeklemenizin özelliklerini gösterin.}
+STR_GAME_SETTINGS             {Oyun Ayarları}
+STR_DIRECT_BOOT               {Doğrudan önyükleme}
+STR_DIRECT_BOOT_DESC          {Oyunu doğrudan XMB'ye geri dönmeden başlatın.}
+STR_YES                       {Evet}
+STR_NO                        {Yok hayır}
+STR_CLEAN_SYSCALL             {Temiz syscall}
+STR_CLEAN_SYSCALL_DESC        {Çıkarılabilir peek & poke syscalls.}
+STR_CHANGE_IDPS               {IDPS'i değiştirin}
+STR_CHANGE_IDPS_DESC          {IDPS'inizi lv2'de değiştirin.}
+STR_EXT_GAME_DATA             {Çıkış. Oyun Verileri}
+STR_EXT_GAME_DATA_DESC        {Sistem yerine usb cihazınızda oyundata yükleyin.}
+STR_PAYLOAD                   {Ödeme}
+STR_PAYLOAD_DESC              {Yedeklemenizi monte etmek için yükü seçin.}
+STR_PRIM_USB                  {Birincil USB ayarlar}
+STR_PRIM_USB_DESC             {Oyun ana USB cihazı olarak saklandığı USB cihazını ayarlayın.}
+STR_BDEMU                     {BD emulation}
+STR_BDEMU_DESC                {Yedeklemenizi monte etmek için emulation türünü seçin.}
+STR_PATCH_LIBFS               {Yama libfs}
+STR_PATCH_LIBFS_DESC          {Hangi yamalı libfs kullanmak istediğinizi seçin.}
+STR_MOUNT_APPHOME             {Mount /app_home}
+STR_MOUNT_APPHOME_DESC        {/app_home'ı /dev_bdvd'a yönlendirin.}
+STR_PATCH_EXP                 {Patch explore_plugin}
+STR_PATCH_EXP_DESC            {Yol /app_home eklenti keşfetmek_plugin içinde /dev_bdvd tarafından değiştirilir.}
+STR_MAKE_SHTCUT_PKG           {Kısayol yapın PKG}
+STR_MAKE_SHTCUT_PKG_DESC      {Dev_hdd0/packages için saklanan bir paket dosyası oluşturun. Kurulduktan sonra, yedeklemenizi XMB'den monte etmek için kısayol olacaktır.}
+STR_PATCH_EBOOT               {Yama EBOOT}
+STR_PATCH_EBOOT_DESC          {Hata 0x80010009 önlemek için EBOOT dosyasının 4.21'ine firmware sürümünü değiştirin.}
+STR_RESIGN                    {Re-sign}
+STR_RESIGN_DESC               {Yedeklemenizin her yerine 4.21 tuşuyla tekrar atanır.}
+STR_RESTORE                   {Restore}
+STR_RESTORE_DESC              {Yedeklemenizin orijinallerini geri yükle.}
+STR_EXTRACT_ISO               {Özü ISO}
+STR_EXTRACT_ISO_DESC          {ISO'dan bir klasöre dosyaları ayıklayın.}
+STR_CONVERT_ISO               {ISO'a Dönüştürün}
+STR_CONVERT_ISO_DESC          {JB yedeklemenizi ISO'a dönüştürün.}
+STR_FIX_PERMS                 {Fix izinleri}
+STR_FIX_PERMS_DESC            {Her klasör ve yedeklemenizin dosyalarının 0777'ye izin değeri ayarlayın.}
+STR_CHECK_IRD                 {Dosyaları kontrol edin (IRD)}
+STR_CHECK_DESC                {Yedeklemelerinizin dosyaları değiştirilmediğini kontrol edin.}
+STR_DL_UPDATE                 {Güncellemeyi İndir}
+STR_DL_UPDATE_DESC            {Yedeklemenizin güncellemelerini Dev_hdd0/packages'e indirin.}
+STR_OPEN_WINDOW               {Yeni Pencere Aç}
+STR_DUMP_LV1                  {Damperli lv1}
+STR_DUMP_LV2                  {Damperli lv2}
+STR_DUMP_FLASH                {Damperli flaş}
+STR_REFRESH                   {Yenile}
+STR_NEWFOLDER                 {Yeni Klasör}
+STR_NEWFILE                   {Yeni Dosya}
+STR_PASTE                     {Paste}
+STR_CUT                       {XHamster}
+STR_UNSELECT_ALL              {Tümünü Unselect}
+STR_SELECT_ALL                {Tümünü Seçin}
+STR_MAKE_PKG                  {PKG Yap}
+STR_GETMD5                    {MD5 al}
+STR_GETSHA1                   {PAYLAŞ}
+STR_VIEW                      {View}
+STR_VIEW_TXT                  {Görünüm TXT}
+STR_VIEW_SFO                  {Görünüm SFO}
+STR_READ_XREG                 {xReg Oku}
+STR_EXTRACT_ELF               {Özü ELF}
+STR_RESIGN_SELF               {SELF'i yeniden başlatın}
+STR_LAUNCH_SELF               {SELF Başlat}
+STR_EXTRACT_EBOOT             {Özü EBOOT}
+STR_RESIGN_EBOOT              {EBOOT'ı istifadə et}
+STR_LAUNCH_EBOOT              {EBOOT'ı başlatın}
+STR_SIGN_ELF                  {ELF imzala}
+STR_SIGN_EBOOT                {EBOOT'u işaretleyin}
+STR_SIGN_PRX                  {PRX imzala}
+STR_EXTRACT_PRX               {Özü PRX}
+STR_RESIGN_SPRX               {SPRX istifadə edin}
+STR_REMOVE_PRXLOADER          {PRX Loader kaldır}
+STR_ADD_PRXLOADER             {PRX Loader'a ekle}
+STR_REMOVE_PRXLOADER2         {PRXLoader'den çıkarın}
+STR_ADD_PRXLOADER2            {PRXLoader'e ekle}
+STR_REMOVE_MAMBA              {Mamba listesinden çıkarın}
+STR_ADD_MAMBA                 {Mamba listesine ekle}
+STR_REMOVE_COBRA              {Cobra listesinden çıkarın}
+STR_ADD_COBRA                 {Cobra listesine ekle}
+STR_EXTRACT_RCO               {Özü RCO}
+STR_EXTRACT_PKG               {Özü PKG}
+STR_PKG_INFO                  {PKG bilgisi}
+STR_EXTRACT_TRP               {Özü TRP}
+STR_COMPRESS_ISO              {ISO'yı sıkıştır}
+STR_CHECK_CRC32               {CRC32 kontrol edin}
+STR_DECOMPRESS_CSO            {Dekomprem CSO}
+STR_EXTRACT_THM               {Özü THM}
+STR_EXTRACT_P3T               {Özü P3T}
+STR_EXTRACT_RAF               {Özü RAF}
+STR_EXTRACT_QRC               {Ekstrakt QRC}
+STR_EXTRACT_HERE              {Burada özüm}
+STR_CONVERT_JSX_JS            {JSX'i JS'ye Dönüştürün}
+STR_CONVERT_VAG_WAV           {VAG'ı WAV'a dönüştürün}
+STR_CONVERT_GTF_DDS           {GTF'yi DDS'ye Dönüştürün}
+STR_CONVERT_DDS_PNG           {DDS'yi PNG'ye dönüştürün}
+STR_MAKE_APNG                 {APNG'yi Yapın}
+STR_SET_PERMS                 {Ayar izni}
+STR_NOGAME                    {Oyun Bulunamadı}
+STR_GLOB_SETTINGS             {Küresel ayarlar}
+STR_ADJUST                    {Ekran ayarını ayarla}
+STR_ADJUST_DESC               {Ekranınızı kalibre edin.}
+STR_DL_COVER                  {kapakları indir}
+STR_DL_COVER_DESC             {USRDIR/covers/[gameID].jpg'ye tüm eksik oyun kapaklarını indirin}
+STR_PLUGIN_MANAGER            {Eklenti Yöneticisi}
+STR_PLUGIN_MANAGER_DESC       {Dev_hdd0/plugins'te depolanan eklentilerinizi yönetin.}
+STR_UPD_MGZ                   {Güncelle ManaGunZ}
+STR_UPD_MGZ_DESC              {ManaGunZ'un en son sürümünü indirin ve yükleyin.}
+STR_GAME_PATHS                {Oyun yedekleme yolları}
+STR_GAME_PATHS_DESC           {ManaGunZ'un yedeklemelerini bulacağı dizinlerin adını yapılandırın.}
+STR_XMB_PRIO                  {xHamster Önceliklilik}
+STR_XMB_PRIO_DESC             {XMB ManaGunZ simgesi üstte görüntülenecektir. Bir sonraki sistem önyüklemesinden sonra etkili olacaktır.}
+STR_HELP                      {Yardım göster}
+STR_HELP_DESC                 {Burada okuduğunuz cümleleri görüntüleyin.}
+STR_COLOR_1                   {Renk 1}
+STR_COLOR_2                   {Renk 2}
+STR_COLOR_3                   {Renk 3}
+STR_COLOR_4                   {Renk 4}
+STR_COLOR_DESC                {ManaGunZ tarafından kullanılan renkleri değiştirin.}
+STR_UI_SETTINGS               {Kullanıcı arayüzü ayarları}
+STR_UI                        {Kullanıcı arayüzü}
+STR_UI_DESC                   {Arayüzü değiştirin.}
+STR_SIDE_MENU                 {Oyun SideMenu}
+STR_SIDE_MENU_DESC            {Ekranın sağ tarafındaki oyun menüsünü görüntüleyin.}
+STR_SHOW_PIC1                 {PIC1 göster}
+STR_SHOW_PIC1_DESC            {Mevcut seçilen oyunların arka plan resmini görüntüleyin PIC1. görüntülemek için UI LİST ve GRID ile R1 kullanın.}
+STR_SHOW_COVER                {Kapak göster}
+STR_SHOW_COVER_DESC           {Oyun kapağını görüntüleyin.}
+STR_SHOW_GAMECASE             {Oyun Vakasını Göster}
+STR_SHOW_GAMECASE_DESC        {Oyun kılıfı ile oyun kapağını görüntüleyin.}
+STR_SHOW_ICON0                {ICON0 göster}
+STR_SHOW_ICON0_DESC           {Oyun ICON0 ana resmini görüntüleyin.}
+STR_GRID_TYPE                 {Izgara tipi}
+STR_GRID_TYPE_DESC            {Izgara hareketini nasıl yapacağınızı seçin.}
+STR_SCROLL                    {Kaydol}
+STR_PAGE                      {Sayfa}
+STR_DIRECTION                 {Menü}
+STR_DIRECTION_DESC            {Izgaranın hangi yönde hareket edeceğini seçin.}
+STR_VERTICAL                  {Dikey}
+STR_HORIZONTAL                {Yatay}
+STR_ANIMATED                  {Animasyon}
+STR_ANIMATED_DESC             {Izgaranın kayar hareketlerini yapın.}
+STR_KEEP_PROP                 {Tutma oranı}
+STR_KEEP_PROP_DESC            {ICON0'ın orijinal yönü oranını koruyun.}
+STR_NB_COL                    {sütun sayısı}
+STR_NB_COL_DESC               {Izgaranın sütun sayısını seçin.}
+STR_NB_LINE                   {Çizgi sayısı}
+STR_NB_LINE_DESC              {Izgaranın hatlarını seçin.}
+STR_INVERSE                   {Ters düğme}
+STR_INVERSE_DESC              {Sağ ve sol düğmeleri ters.}
+STR_3D                        {3D}
+STR_3D_DESC                   {Oyun vakalarının 3D modelleri ile menüyü görüntüleyin.}
+STR_ADD                       {Add}
+STR_LOAD                      {Yükle}
+STR_CHANGE                    {Değişim}
+STR_COLOR                     {Renk}
+STR_RESET                     {E-Mail _ Sitemap}
+STR_FAILED                    {Failed}
+STR_DONE                      {Done}
+STR_OPEN                      {Açık}
+STR_CLOSE                     {Close}
+STR_OPTION                    {Option}
+STR_SELECT                    {Select}
+STR_WINDOW                    {Pencere}
+STR_CLICK                     {Click}
+STR_CURSOR                    {Cursor}
+STR_NEXT                      {E-Mail senden}
+STR_PREVIOUS                  {Önceki}
+STR_SET_COLOR                 {Renk ayarla}
+STR_HIDETV                    {TV ekran testi gizle}
+STR_SHOWTV                    {TV ekran testi göster}
+STR_MOVE_TO_PLUGINS           {Dev_hdd0/plugins'e geçin}
+STR_ASK_PLUGINS               {Eklenti yöneticisini kullanmak için, eklentiler dev_hdd0/plugins'te olmalıdır.\n Bu klasörü kullanmayı kabul edersiniz?}
+STR_CHANGE_VALUE              {Değişim değeri}
+STR_LOAD_IDPS_LV2             {Yük IDPS lv2}
+STR_LOAD_IDPS_EID5            {EID5'ten Yük IDPS}
+STR_NAME                      {Adı}
+STR_DOCK_RIGHT                {Sağa giden nokta}
+STR_DOCK_LEFT                 {Solda dock}
+STR_DOCK_FULL                 {Dock tam}
+STR_PLUGIN_MONITOR            {Eklenti Monitörü}
+STR_UNUSED                    {Unused}
+STR_UNLOAD                    {Boşaltma}
+STR_BOOT_FILE                 {Boot dosyası}
+STR_CURRENT                   {Güncel}
+STR_NET                       {NET}
+STR_SOFT                      {SOFT}
+STR_GX                        {GX}
+STR_CUSTOM                    {Özel}
+STR_NEW_CMD                   {Yeni komut}
+STR_PNACH                     {PNACH}
+STR_WIDESCREEN                {Widescreen}
+STR_480P                      {480P}
+STR_YFIX                      {YFIX'nın sohbeti}
+STR_FMV                       {FMV atlama}
+STR_SIMPLE                    {Basit}
+STR_ADVANCED                  {Gelişmiş}
+STR_INSTALL_MGZ               {ManaGunZ yüklemek istiyor musunuz?}
+STR_UP2DATE                   {Bugüne kadar}
+STR_SHOW_WAVES                {Dalgaları göster}
+STR_SHOW_WAVES_DESC           {Arka planda dalgalar görüntüleyin.}
+STR_WAVES_COLOR               {Dalgalar rengi}
+STR_WAVES_COLOR_DESC          {Dalgaların rengini değiştirin.}
+STR_USE_CONFIG                {PS2 yapılandırma dosyası *CONFIG kullanıyorsanız}
+STR_COLORSET                  {RenkSet}
+STR_COLORSET_DESC             {ManaGunZ'da kullanılmak üzere önceden tanımlanmış bir renk seti seçin.}
+STR_GRID_SCROLL               {Kaydol}
+STR_ADD_LIMG                  {LIMG ekle}
+STR_REMOVE_LIMG               {LIMG kaldır}
+STR_LIMG_DESC                 {Birkaç oyunları düzeltebilir.}
+STR_FONT                      {Font}
+STR_FONT_DESC                 {Yazı tipini değiştirin.}
+STR_MOVE                      {Akkus}
+STR_JOIN                      {Üye ol}
+STR_JOIN_DESC                 {Merge .666XX dosyaları.}
+STR_COLOR_FILTER              {Renk Filtreleri}
+STR_COLOR_NOTIF               {Bildirim}
+STR_COLOR_BOXHEAD             {Kutu başlığı}
+STR_COLOR_BOXBODY             {Kutu gövdesi}
+STR_COLOR_SIDEBAR             {Sidebar}
+STR_COLOR_BGS                 {Ayar arka plan}
+STR_COLOR_BG                  {Arka plan}
+STR_ROOT_DISPLAY              {Kök ekran}
+STR_ROOT_DISPLAY_DESC         {FileManager kök ekranını değiştirin.}
+STR_STYLE                     {Style}
+STR_STYLE_CUSTOM              {Özel stil}
+STR_STYLE1                    {Stil 1}
+STR_STYLE2                    {Stil 2}
+STR_STYLE3                    {Stil 3}
+STR_STYLE4                    {Stil 4}
+STR_STYLE5                    {Stil 5}
+STR_STYLE6                    {Stil 6}
+STR_FREEOF                    {ücretsiz}
+STR_ROOTLABEL                 {Kök}
+STR_FM_ICONSIZE               {Simge boyutu}
+STR_FM_BIG                    {Big}
+STR_FM_SMALL                  {Küçük}
+STR_FM_ROWNUMBER              {Metin satırı numarası}
+STR_FM_ROWSIZE                {Satır boyutu}
+STR_FM_LEFT_CONTENT           {Sıra içeriği [LEFT]}
+STR_FM_RIGHT_CONTENT          {Sıra içeriği [RIGHT]}
+STR_FM_EMPTY                  {Boş}
+STR_FM_MOUNTPOINT             {Montaj noktası}
+STR_FM_DEVICE                 {Cihazlar}
+STR_FM_LABEL                  {Label}
+STR_FM_CAPACITY               {Kapasite çubuğu}
+STR_FM_MEMINSIDE              {hafızanın içinde}
+STR_FM_MEMOUTSIDE             {Dış bellek}
+STR_FM_FILESYSTEM             {Dosya sistemi}
+STR_FM_CB_WIDTH               {Kapasite bar genişliği}
+STR_FM_MEMORY                 {Memory}
+STR_FM_ICON                   {Icon}
+STR_FM_FILEFOLDER             {Dosya ve Klasör}
+STR_FM_CUSTOM                 {Özel simgeler}
+STR_FM_CB_FILL                {Fill}
+STR_EDIT_IDPS                 {IDPS Düzenle}
+STR_FILTER_NOGAME             {Oyun bulunamadı. Filtrelerinizi ayarlayın.}
+STR_SYMLINK_SRC               {SymLink kaynağı}
+STR_SYMLINK_TARGET            {SymLink hedefi}
+STR_LOAD_MAMBA                {Yük mamba}
+STR_CONVERT_TO_PNG            {PNG'ye dönüştürme}
+STR_MOUNT_DEVBLIND            {Unprotect dev_flash}
+STR_UNMOUNT_DEVBLIND          {Dev_flash'ı koruyun}
+STR_BT_AUDIO                  {Oyun-pad ses çıkışı}
+STR_BT_AUDIO_DESC             {Oynarken oyun-pad üzerinden ses oynayın. DS4 ile test edilmiştir.}
+STR_GAME_UPDATE_TITLE         {PS3 oyun güncellemeleri indirici}
+STR_CURRENT_VERS              {Güncel sürüm}
+STR_CANT_MOUNT_PEEKPOKE       {Ayarlanabilir: PEEK ve POKE kullanılamaz, mamba kurulamaz}
+STR_CANT_MOUNT_UNKFW          {Ayarlanabilir: bilinmeyen firmware, mamba kurulamaz.}
+STR_CANT_MOUNT                {Uygun}
+STR_ONLY_FAV                  {Sadece favoriler}
+STR_ALL_GAMES                 {Tüm oyunlar}
+STR_DISPLAY                   {Ekran}
+STR_DUMP_DEC                  {Damper decrypted Blu-Ray diski}
+STR_DUMP_DEC_DESC             {IRD ile diskinizin uygun bir izosunu alın. IRD'ı veritabanına bir kez yükleyecektir.}
+STR_DUMP_ENC                  {Damperli şifreli Blu-Ray diski}
+STR_DUMP_DISC_KEY             {Damper Blu-Ray disk anahtarı}
+STR_DUMP_ERK                  {Damper eid kök anahtarı}
+STR_DUMP_3DUMP                {Damat 3Dump.bin}
+STR_SYSTEM_TOOLS              {Sistem araçları}
+STR_DUMP_ENC_DESC             {Blu-Ray diskinizin ham bir izosunu alın.}
+STR_DUMP_ERK_DESC             {Bu sisteminizi şifrelemek için ana anahtardır. Her yerde kullanılır. Yol: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {3k3y IsoTools ile Blu-Ray'ı boşaltmak için gerekli dosyadır. Yol: dev_hdd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {Decrypt edat/sdat}
+STR_REDUMP_LOG                {GetKey dökümünü oluşturun}
+STR_REDUMP_LOG_DESC           {Redump.org gönderimleri için gerekli dosyaları oluşturun.}
+STR_DUMP_OPTION               {Blu-Ray Damper}
+STR_IGNORE_ERR                {Ignore hataları}
+STR_IGNORE_ERR_DESC           {Blu-Ray döküm işlemi sırasında okuma hatalarını görmezden gelir.}
+STR_3K3Y_HEADER               {3k3y başlığını içerir}
+STR_3K3Y_HEADER_DESC          {Blu-ray'ı gömülü 3k3y başlığına sahip bir iso'ya boşaltır. 3k3y IsoTools tanımak mümkün olacak.}
+STR_ELAPSED                   {Türkçe}
+STR_REMAINING                 {Remaining}
+STR_DYNAREC                   {Türkçe}
+STR_DYNAREC_DESC              {Düzenleyicilerin dinamik rekompilasyon kullanmasını sağlar.}
+STR_BUILD_ISO                 {Yapım iso}
+STR_BUILD_ISO_DESC            {Blu-Ray'ın dosyalarından bir yedekleme isosu oluşturun.}
+STR_UPLOADER                  {Uploader adı}
+STR_UPLOADER_DESC             {ird yükleriniz için krediler istiyorsanız adınızı girin, anonim kalmak için boş bırakın.}
+STR_BOX3D_ALIGN               {Align kutuları}
+STR_BOX3D_ALIGN_DESC          {Bir rafta depolandığı gibi oyun kutuları.}
+STR_BOX3D_GAP                 {Kutular boşluğu}
+STR_BOX3D_GAP_DESC            {Oyun kutuları arasındaki boşluğu ayarlayın.}
+STR_SHORT                     {Short}
+STR_MEDIUM                    {Orta}
+STR_LONG                      {Uzun}
+STR_MOUNT_BD                  {BD olarak monte}
+STR_MOUNT_DVD                 {DVD olarak monte}
+STR_SHOWLOGS_DESC             {Yükleme ekranında mevcut görev hakkında bilgilendirmek için mesajlar görüntüleyin.}
+STR_OVERWRITE                 {Overwrite}
+STR_OVERWRITE_DESC            {Mevcut dosyaların yazılmasını kontrol edin.}
+STR_OVERWRITE_ALWAYS          {Her zaman}
+STR_OVERWRITE_NEVER           {Asla}
+STR_OVERWRITE_ASK             {Ask}
+STR_OVERWRITE_DUPLICATE       {Duplicate}
+STR_ASK_TO_OVERWRITE          {Dosya zaten var. Mevcut dosyayı yazmak mı istiyorsunuz?}
+STR_ASK_TO_DELETE             {Gerçekten bu silmek istiyor musunuz?}
+STR_DUMPER_MAX_TRY            {Okuma girişimleri}
+STR_DUMPER_MAX_TRY_DESC       {Bir disk okuma hatası olduğunda okuma girişimlerinin sayısını ayarlayın.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 kilidini aç}
+STR_HDD_UNLOCK_SPACE_DESC     {% 8'ten% 1'e kadar hdd0'da ayrılmış alanın miktarını azaltın.}

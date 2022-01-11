@@ -85,7 +85,7 @@ uint64_t decrypt_config_call;
 
 uint64_t payload_addr;
 
-extern int Extract(char *in, char *out);
+extern int Extract_SELF(char *in, char *out);
 extern int Sign_PS2ELF(char *in, char *out);
 extern void Delete(char* path);
 extern void print_load(char *format, ...);
@@ -545,7 +545,7 @@ uint8_t ps2gen(char *self_input, char *self_output, uint8_t *payload, uint32_t p
 		patch_self(self_input, tmp_self, type);	
 	}
 	
-	Extract(tmp_self, tmp_elf);	
+	Extract_SELF(tmp_self, tmp_elf);	
 		
 	if( Search_Offset(tmp_elf, type) < 0) {
 		print_load("Error : failed to find offsets");

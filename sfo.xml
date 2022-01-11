@@ -4,7 +4,7 @@
 		01.00
 	</value>
 	<value name="ATTRIBUTE" type="integer">
-		133
+		165
 	</value>
 	<value name="BOOTABLE" type="integer">
 		1
@@ -28,7 +28,7 @@
 		63
 	</value>
 	<value name="SOUND_FORMAT" type="integer">
-		279
+		791
 	</value>
 	<value name="TITLE" type="string">
 		Test - PSL1GHT

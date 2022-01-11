@@ -30,7 +30,10 @@ MACHDEP   += -DFAN_CONTROL
 MACHDEP   += -DAPPLY_KERNEL_PATCHES
 MACHDEP   += -DMAKE_RIF
 #MACHDEP   += -DEXT_AUDIO
-
+MACHDEP   += -DDO_AUTO_RESTORE_SC
+MACHDEP   += -DDO_CFW2OFW_FIX
+#MACHDEP   += -DPS3ITA
+#MACHDEP   += -DENABLE_LOG
 
 CFLAGS     = -ffunction-sections -fdata-sections -Os -m64 -fno-builtin -fno-exceptions \
              -Wall -Wno-strict-aliasing -Wno-multichar $(foreach dir,$(INCLUDE),-I$(dir)) -ffreestanding
@@ -57,13 +60,13 @@ endif
 LDFLAGS= -T stage2/stage2.ld -nostartfiles -nostdlib -nodefaultlibs -Wl,-static -L. $(foreach dir,$(LIBSDIR),-L$(dir)) $(LIBS) \
 	 -Wl,--gc-sections -Wl,-Map=stage2/stage2.map
 
-OBJS = stage2/start.o stage2/sm_ext.o stage2/main.o stage2/ps3mapi_core.o stage2/mappath.o stage2/storage_ext.o stage2/crypto.o stage2/modulespatch.o stage2/config.o stage2/region.o \
-	lv2/src/patch.o lv2/src/interrupt.o lv2/src/interrupt_c.o lv2/src/io.o lv2/src/libc.o \
+OBJS = stage2/start.o stage2/main.o stage2/ps3mapi_core.o stage2/mappath.o stage2/storage_ext.o stage2/crypto.o stage2/modulespatch.o stage2/config.o stage2/region.o stage2/sm_ext.o \
+	lv2/src/patch.o lv2/src/interrupt.o lv2/src/interrupt_c.o lv2/src/io.o lv2/src/libc.o stage2/qa.o \
 	lv2/src/libc_c.o lv2/src/memory.o lv2/src/memory_c.o lv2/src/thread.o lv2/src/thread_c.o lv2/src/process.o \
 	lv2/src/synchronization.o lv2/src/modules.o lv2/src/modules_c.o lv2/src/storage.o lv2/src/object.o \
-	lv2/src/security.o lv2/src/time.o  lv2/src/syscall.o \
-	lv1/src/hvcall.o lv1/src/stor.o lv1/src/device.o 
-
+	lv2/src/security.o lv2/src/time.o  lv2/src/syscall.o lv2/src/ctrl.o \
+	lv1/src/hvcall.o lv1/src/stor.o lv1/src/device.o lv1/src/mm.o
+	
 ifeq ($(EMU_SUPPORT),$(filter $(EMU_SUPPORT),psp full))
 OBJS += stage2/psp_s.o stage2/psp.o
 endif

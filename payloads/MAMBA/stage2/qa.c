@@ -18,9 +18,9 @@
 #include "storage_ext.h"
 #include "qa.h"
 
-uint64_t *idps;
-uint64_t IDPS_1, IDPS_2;
-uint32_t UM_ori_patch, DM_ori_patch1, DM_ori_patch2, DM_ori_patch3, DM_ori_patch4;
+u64 *idps;
+u64 IDPS_1, IDPS_2;
+u32 UM_ori_patch, DM_ori_patch1, DM_ori_patch2, DM_ori_patch3, DM_ori_patch4;
 
 static u8 erk[0x20] =
 {
@@ -150,9 +150,9 @@ static void restore_patches()
 
 static int get_idps()
 {
-	uint32_t nread;
-	uint64_t device;
-	uint64_t start_flash_sector = 0x181;
+	u32 nread;
+	u64 device;
+	u64 start_flash_sector = 0x181;
 	device_handle_t handle;
 
 	page_allocate_auto(NULL, 4096, (void **)&idps);
@@ -170,7 +170,7 @@ static int get_idps()
 	if(storage_map_io_memory(device, idps, 4096))
 		return 1;
 
-	if(call_hooked_function_7(emu_storage_read, (uint64_t)handle, 0, start_flash_sector, 1, (uint64_t)idps, (uint64_t)&nread, 0))
+	if(call_hooked_function_7(emu_storage_read, (u64)handle, 0, start_flash_sector, 1, (u64)idps, (u64)&nread, 0))
 		return 1;
 
 	memcpy(&IDPS_1, (void *)&idps[0x3A], 8);
@@ -185,17 +185,17 @@ static int get_idps()
 	return 0;
 }
 
-uint8_t read_qa_flag()
+u8 read_qa_flag()
 {
-	uint8_t value = 0;
+	u8 value = 0;
 	update_mgr_read_eeprom(QA_FLAG_OFFSET, &value, LV2_AUTH_ID);
 	return (value == 0x00);
 }
 
-int set_qa_flag(uint8_t value)
+int set_qa_flag(u8 value)
 {
-	uint8_t seed[TOKEN_SIZE];
-	uint8_t token[TOKEN_SIZE];
+	u8 seed[TOKEN_SIZE];
+	u8 token[TOKEN_SIZE];
 
 	if(get_idps())
 		return 2;

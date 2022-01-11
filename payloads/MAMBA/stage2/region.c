@@ -9,13 +9,13 @@
 
 #define N_PS3_REGIONS	12
 
-uint8_t dvd_video_region;
-uint8_t bd_video_region;
+u8 dvd_video_region;
+u8 bd_video_region;
 
 typedef struct
 {
-	uint8_t ps3_region;
-	uint8_t region;
+	u8 ps3_region;
+	u8 region;
 } RegionMap;
 
 // Maps extracted from bdp_disc_check_plugin reverse
@@ -53,9 +53,9 @@ static RegionMap bd_video_region_map[N_PS3_REGIONS] =
 };
 
 
-static INLINE void set_dvd_video_region(uint8_t *region)
+static INLINE void set_dvd_video_region(u8 *region)
 {
-	uint8_t fake_region = 0;
+	u8 fake_region = 0;
 
 	for (int i = 0; i < N_PS3_REGIONS; i++)
 	{
@@ -74,9 +74,9 @@ static INLINE void set_dvd_video_region(uint8_t *region)
 		*region = fake_region;
 }
 
-static INLINE void set_bd_video_region(uint8_t *region)
+static INLINE void set_bd_video_region(u8 *region)
 {
-	uint8_t fake_region = 0;
+	u8 fake_region = 0;
 
 	for (int i = 0; i < N_PS3_REGIONS; i++)
 	{
@@ -95,7 +95,7 @@ static INLINE void set_bd_video_region(uint8_t *region)
 		*region = fake_region;
 }
 
-LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_2(int, region_func, (uint64_t func, uint8_t *buf))
+LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_2(int, region_func, (u64 func, u8 *buf))
 {
 	if (func == 0x19004)
 	{

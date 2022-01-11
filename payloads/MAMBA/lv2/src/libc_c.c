@@ -24,10 +24,10 @@ int strncasecmp (__const char *s1, __const char *s2, size_t n)
 		/* Use "unsigned char" to make the implementation 8-bit clean */
 		c1 = *((unsigned char *)(s1++));
 		if (c1 >= 'A' && c1 <= 'Z')
-			c1 = c1 + ('a' - 'A');
+			c1 += ('a' - 'A');
 		c2 = *((unsigned char *)(s2++));
 		if (c2 >= 'A' && c2 <= 'Z')
-			c2 = c2 + ('a' - 'A');
+			c2 += ('a' - 'A');
 		if (c1 != c2)
 		{
 			return (c1 - c2);

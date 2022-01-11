@@ -385,7 +385,7 @@ void HMACResult(HMACContext *ctx, u8 *digest)
 	pkg_sha1(ctx->tmp, sizeof ctx->tmp, digest);
 }
 
-int mkdir_recursive (const char *path)
+int mkdir_recursive(const char *path)
 {
   int len = strlen (path);
   char *temp = malloc (len + 1);

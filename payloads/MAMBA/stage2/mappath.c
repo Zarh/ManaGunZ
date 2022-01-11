@@ -21,7 +21,7 @@ typedef struct _MapEntry
 	char *newpath;
 	int16_t oldpath_len;
 	int16_t newpath_len;
-	uint32_t flags;
+	u32 flags;
 } MapEntry;
 
 MapEntry map_table[MAX_TABLE_ENTRIES];
@@ -34,13 +34,8 @@ MapEntry map_table[MAX_TABLE_ENTRIES];
 f_desc_t open_path_callback;
 
 #ifdef DO_PHOTO_GUI
-uint8_t photo_gui = 1;
-static uint8_t libft2d_access = 0;
-#endif
-
-#ifdef DO_AUTO_EARTH
-uint8_t auto_earth = 0;
-uint8_t earth_id = 0;
+u8 photo_gui = 1;
+static u8 libft2d_access = 0;
 #endif
 
 static int8_t avoid_recursive_calls = 0;
@@ -48,13 +43,13 @@ static int8_t max_table_entries = 0;
 static int8_t first_slot = 0;
 int8_t condition_apphome_index = 0;
 
-static uint8_t *path_entries = NULL;
+static u8 *path_entries = NULL;
 
 #define BASE_OLDPATH	(path_entries)
 #define BASE_NEWPATH	(path_entries + (MAX_TABLE_ENTRIES * MAX_PATH_OLD))
 
 
-static void init_map_entry(uint8_t index)
+static void init_map_entry(u8 index)
 {
 	if( map_table[index].newpath
 		&& (map_table[index].newpath_len > 3)
@@ -89,7 +84,7 @@ void map_first_slot(char *oldpath, char *newpath)
 	return;
 }
 */
-int map_path(char *oldpath, char *newpath, uint32_t flags)
+int map_path(char *oldpath, char *newpath, u32 flags)
 {
 	int8_t i, firstfree = UNDEFINED, is_dev_bdvd = 0;
 
@@ -205,7 +200,7 @@ int map_path(char *oldpath, char *newpath, uint32_t flags)
 	return FAILED; // table entries is full
 }
 
-int map_path_user(char *oldpath, char *newpath, uint32_t flags)
+int map_path_user(char *oldpath, char *newpath, u32 flags)
 {
 	char *oldp, *newp;
 
@@ -277,8 +272,8 @@ int sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 {
 	if(num > MAX_TABLE_ENTRIES) num = MAX_TABLE_ENTRIES;
 
-	uint32_t *u_paths = (uint32_t *)get_secure_user_ptr(paths);
-	uint32_t *u_new_paths = (uint32_t *)get_secure_user_ptr(new_paths);
+	u32 *u_paths = (u32 *)get_secure_user_ptr(paths);
+	u32 *u_new_paths = (u32 *)get_secure_user_ptr(new_paths);
 
 	int unmap = 0;
 	int ret = 0;
@@ -294,7 +289,7 @@ int sys_map_paths(char *paths[], char *new_paths[], unsigned int num)
 
 		for (unsigned int i = 0; i < num; i++)
 		{
-			ret = map_path_user((char *)(uint64_t)u_paths[i], (char *)(uint64_t)u_new_paths[i], FLAG_TABLE);
+			ret = map_path_user((char *)(u64)u_paths[i], (char *)(u64)u_new_paths[i], FLAG_TABLE);
 			if (ret) // (ret != SUCCEEDED)
 			{
 				unmap = 1;
@@ -350,7 +345,7 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 		{
 			char not_update[40];
 			sprintf(not_update, "/dev_bdvd/PS3_NOT_UPDATE/PS3UPDAT.PUP");
-			set_patched_func_param(1, (uint64_t)not_update);
+			set_patched_func_param(1, (u64)not_update);
 			#ifdef DEBUG
 			DPRINTF("Update from disc blocked!\n");
 			#endif
@@ -361,24 +356,6 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 		if(*path == '/')
 		{
 			//DPRINTF("?: [%s]\n", path);
-
-			////////////////////////////////////////////////////////////////////////////////////
-			// Auto change earth.qrc - DeViL303 & AV                                          //
-			////////////////////////////////////////////////////////////////////////////////////
-			#ifdef DO_AUTO_EARTH
-			if(auto_earth && (strcmp(path, "/dev_flash/vsh/resource/qgl/earth.qrc") == SUCCEEDED))
-			{
-				char new_earth[30];
-				sprintf(new_earth, "%s/%i.qrc", "/dev_hdd0/tmp/earth", ++earth_id);
-
-				CellFsStat stat;
-				if(cellFsStat(new_earth, &stat) == CELL_FS_SUCCEEDED)
-					set_patched_func_param(1, (uint64_t)new_earth);
-				else
-					earth_id = 0;
-				return;
-			}
-			#endif
 
 			////////////////////////////////////////////////////////////////////////////////////
 			// Photo_GUI integration with webMAN MOD - DeViL303 & AV                          //
@@ -437,7 +414,7 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 						}
 						#endif
 
-						set_patched_func_param(1, (uint64_t)map_table[i].newpath);
+						set_patched_func_param(1, (u64)map_table[i].newpath);
 
 						#ifdef DEBUG
 						DPRINTF("open_path %s\n", map_table[i].newpath);
@@ -554,11 +531,6 @@ void map_path_patches(int syscall)
 	//hook_function_with_postcall(get_syscall_address(814), cellFsUnlink_hook, 1);
 
 	open_path_callback.addr = NULL;
-
-	#ifdef DO_AUTO_EARTH
-	CellFsStat stat;
-	auto_earth = (cellFsStat("/dev_hdd0/tmp/earth", &stat) == CELL_FS_SUCCEEDED); // auto rotare 1.qrc to 255.qrc each time earth.qrc is accessed
-	#endif
 
 	if (syscall)
 		create_syscall2(SYS_MAP_PATH, sys_map_path);

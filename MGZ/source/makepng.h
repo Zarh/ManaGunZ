@@ -1,8 +1,7 @@
 #ifndef MAKEPNG_H
 #define MAKEPNG_H
 
-#define FAILED	0
-#define SUCCESS	1
+#include "extern.h"
 
 typedef struct
 {

@@ -17,6 +17,9 @@ typedef uint32_t sys_memory_container_t;
 void *kalloc(size_t size);
 void kfree(void *ptr);
 
+void *palloc(size_t size);
+void pfree(void *ptr);
+
 LV2_EXPORT void *alloc(int size, uint64_t flags);
 
 LV2_EXPORT void *dealloc(void *ptr, uint64_t flags);

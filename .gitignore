@@ -21,4 +21,5 @@ OffsetFinder/*
 !OffsetFinder/GetFlash.exe
 
 !/MGZ/data/*.bin
-
+/MGZ/source/vsh
+TranslateMGZ/*.txt

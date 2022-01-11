@@ -29,7 +29,7 @@
 #undef APPLY_KERNEL_PATCHES
 
 #ifdef DO_CFW2OFW_FIX
-extern uint8_t CFW2OFW_game; // homebrew_blocker.h
+extern u8 CFW2OFW_game; // homebrew_blocker.h
 #endif
 
 static inline void enable_kernel_patches(void)
@@ -50,7 +50,7 @@ static inline void enable_kernel_patches(void)
 	do_patch(MKA(fix_8001003D),      0x63FF003D60000000); // fix 8001003D error
 	do_patch(MKA(fix_8001003E),      0x3FE080013BE00000); // fix 8001003E error
 	do_patch(MKA(PATCH_JUMP),        0x2F84000448000098);
-	*(uint64_t *)MKA(ECDSA_FLAG) = 0;
+	*(u64 *)MKA(ECDSA_FLAG) = 0;
 #endif
 }
 
@@ -64,18 +64,18 @@ static inline void enable_kernel_patches(void)
    If you want PSP and PS2 ISO support set in the Makefile_x.xx EMU_SUPPORT to full
 //----------------------------------------*/
 
-LV2_EXPORT int decrypt_func(uint64_t *, uint32_t *);
+LV2_EXPORT int decrypt_func(u64 *, u32 *);
 
 typedef struct
 {
-	uint64_t hash;
+	u64 hash;
 	SprxPatch *patch_table;
 } PatchTableEntry;
 
 typedef struct
 {
-	uint8_t keys[16];
-	uint64_t nonce;
+	u8 keys[16];
+	u64 nonce;
 } KeySet;
 
 #define N_SPRX_KEYS_1 (sizeof(sprx_keys_set1)/sizeof(KeySet))
@@ -117,12 +117,12 @@ static KeySet sprx_keys_set2[] =
 	},
 };
 
-static uint8_t *saved_buf;
+static u8 *saved_buf;
 static void *saved_sce_hdr;
 
 #ifndef APPLY_KERNEL_PATCHES
 
-LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj, uint64_t *spu_args))
+LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (u64 *spu_obj, u64 *spu_args))
 {
 	saved_buf = (void *)spu_args[0x20/8];
 	saved_sce_hdr = (void *)spu_args[8/8];
@@ -169,13 +169,13 @@ static void disable_kernel_patches(void)
 		do_patch(MKA(fix_8001003D),      0x63FF003D419EFFD4); // fix 8001003D error
 		do_patch(MKA(fix_8001003E),      0x3FE0800163FF003E); // fix 8001003E error
 		do_patch(MKA(PATCH_JUMP),        0x2F840004409C0048);
-		*(uint64_t *)MKA(ECDSA_FLAG) = 0;
+	*(u64 *)MKA(ECDSA_FLAG) = 0;
 	#endif
 #endif
 
 }
 
-LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj, uint64_t *spu_args))
+LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (u64 *spu_obj, u64 *spu_args))
 {
 	apply_kernel_patches_call99();
 
@@ -197,7 +197,7 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj,
 	}
 	#endif
 
-	uint8_t is_ptr = (((uint64_t)saved_sce_hdr & 0xff00000000000000)>>56); //new
+	u8 is_ptr = (((u64)saved_sce_hdr & 0xff00000000000000)>>56); //new
 	#ifdef	DEBUG
 	DPRINTF("IS_PTR:%x\n", is_ptr);
 	#endif
@@ -205,7 +205,7 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj,
 	if(is_ptr == 0x80) //new -> if(is_ptr>=0x8000000000000000)
 	{
 		// self types: 0x180 = sprx, 0x210 = self, 0x130 = spu
-		if((*(uint64_t *)(saved_sce_hdr+0x48) >= 0x200) || (*(uint64_t *)(saved_sce_hdr+0x48) == 0x130))
+		if((*(u64 *)(saved_sce_hdr+0x48) >= 0x200) || (*(u64 *)(saved_sce_hdr+0x48) == 0x130))
 		{
 			#ifdef DEBUG
 			DPRINTF("SELF loading!\n");
@@ -227,7 +227,7 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj,
 }
 #endif
 
-LV2_HOOKED_FUNCTION_COND_POSTCALL_2(int, pre_modules_verification, (uint32_t *ret, uint32_t error))
+LV2_HOOKED_FUNCTION_COND_POSTCALL_2(int, pre_modules_verification, (u32 *ret, u32 error))
 {
 	#ifdef FIRMWARE_CEX
 	/* Patch original from psjailbreak. Needs some tweaks to fix some games */
@@ -248,7 +248,7 @@ LV2_HOOKED_FUNCTION_COND_POSTCALL_2(int, pre_modules_verification, (uint32_t *re
 	#endif
 }
 #ifdef DEBUG
-static char *hash_to_name(uint64_t trunc_hash, uint64_t hash2)
+static char *hash_to_name(u64 trunc_hash, u64 hash2)
 {
 	if(trunc_hash == (LIBFS_EXTERNAL_HASH >> 16))
 		return "libfs.sprx";
@@ -392,16 +392,16 @@ static char *hash_to_name(uint64_t trunc_hash, uint64_t hash2)
 #ifdef DO_PATCH
 
 #ifdef DO_PATCH_COBRA810
-static uint8_t condition_true = 1;
+static u8 condition_true = 1;
 #endif
 
 #ifdef DO_PATCH_PS2
-uint8_t condition_ps2softemu = 0;
+u8 condition_ps2softemu = 0;
 
 ///////////////////
 #ifdef ps2tonet_patch
-static uint8_t condition_false = 0;
-static uint64_t vsh_check = 0;
+static u8 condition_false = 0;
+static u64 vsh_check = 0;
 static int bc_to_net_status = 0;
 
 static SprxPatch main_vsh_patches[] =
@@ -604,11 +604,11 @@ static SprxPatch premo_game_plugin_patches[] =
 #endif // EXT_AUDIO
 
 #ifdef DO_PATCH_PSP
-uint8_t condition_psp_iso = 0;
-uint8_t condition_psp_dec = 0;
-uint8_t condition_psp_keys = 0;
-//uint8_t condition_psp_change_emu = 0;   // sys_psp_set_emu_path has been deleted (BASIC_PLUGINS patch not needed)
-uint8_t condition_psp_prometheus = 0;
+u8 condition_psp_iso = 0;
+u8 condition_psp_dec = 0;
+u8 condition_psp_keys = 0;
+//u8 condition_psp_change_emu = 0;   // sys_psp_set_emu_path has been deleted (BASIC_PLUGINS patch not needed)
+u8 condition_psp_prometheus = 0;
 
 static SprxPatch psp_emulator_patches[] =
 {
@@ -727,7 +727,7 @@ static SprxPatch libsysutil_savedata_psp_patches[] =
 };
 #endif //#ifdef DO_PATCH_PSP
 
-uint8_t condition_apphome = 0; //JB format game
+u8 condition_apphome = 0; //JB format game
 
 static SprxPatch libfs_external_patches[] =
 {
@@ -828,26 +828,26 @@ static PatchTableEntry patch_table_rebug[] =
 
 void clear_key(void *key);
 
-LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
+LV2_PATCHED_FUNCTION(int, modules_patching, (u64 *arg1, u32 *arg2))
 {
 	static unsigned int total = 0;
-	static uint32_t *buf;
-	static uint8_t keys[16];
-	static uint64_t nonce = 0;
+	static u32 *buf;
+	static u8 keys[16];
+	static u64 nonce = 0;
 
 	SELF *self;
-	uint64_t *ptr;
-	uint32_t *ptr32;
-	uint8_t *sce_hdr;
+	u64 *ptr;
+	u32 *ptr32;
+	u8 *sce_hdr;
 
-	ptr = (uint64_t *)(*(uint64_t *)MKA(TOC+decrypt_rtoc_entry_2));
-	ptr = (uint64_t *)ptr[0x68/8];
-	ptr = (uint64_t *)ptr[0x18/8];
-	ptr32 = (uint32_t *)ptr;
-	sce_hdr = (uint8_t *)saved_sce_hdr;
+	ptr = (u64 *)(*(u64 *)MKA(TOC+decrypt_rtoc_entry_2));
+	ptr = (u64 *)ptr[0x68/8];
+	ptr = (u64 *)ptr[0x18/8];
+	ptr32 = (u32 *)ptr;
+	sce_hdr = (u8 *)saved_sce_hdr;
 	self = (SELF *)sce_hdr;
 
-	uint32_t *p = (uint32_t *)arg1[0x18/8];
+	u32 *p = (u32 *)arg1[0x18/8];
 
 	#ifdef DEBUG
 	DPRINTF("Flags = %x      %x\n", self->flags, (p[0x30/4] >> 16));
@@ -880,11 +880,11 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 			*arg2 = 6;
 		}
 
-		uint8_t *enc_buf = (uint8_t *)ptr[8/8];
-		uint32_t chunk_size = ptr32[4/4];
+		u8 *enc_buf = (u8 *)ptr[8/8];
+		u32 chunk_size = ptr32[4/4];
 		SPRX_EXT_HEADER *extHdr = (SPRX_EXT_HEADER *)(sce_hdr+self->metadata_offset+0x20);
-		uint64_t magic = extHdr->magic&SPRX_EXT_MAGIC_MASK;
-		uint8_t keyIndex = extHdr->magic&0xFF;
+		u64 magic = extHdr->magic&SPRX_EXT_MAGIC_MASK;
+		u8 keyIndex = extHdr->magic&0xFF;
 
 		if (magic == SPRX_EXT_MAGIC)
 		{
@@ -918,7 +918,7 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 		{
 			if (total == 0)
 			{
-				uint8_t dif_keys[0x10];
+				u8 dif_keys[0x10];
 
 				clear_key(dif_keys);
 
@@ -932,7 +932,7 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 				nonce = keySet->nonce ^ extHdr->nonce_mod;
 			}
 
-			uint32_t num_blocks = chunk_size / 8;
+			u32 num_blocks = chunk_size / 8;
 
 			xtea_ctr(keys, nonce, enc_buf, num_blocks * 8);
 			nonce += num_blocks;
@@ -948,7 +948,7 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 
 		if (total == 0)
 		{
-			buf = (uint32_t *)saved_buf;
+			buf = (u32 *)saved_buf;
 		}
 
 		#ifdef DEBUG
@@ -963,14 +963,14 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 	else
 	{
 		decrypt_func(arg1, arg2);
-		buf = (uint32_t *)saved_buf;
+		buf = (u32 *)saved_buf;
 	}
 
 	total += ptr32[4/4];
 
 	if (((ptr[0x10/8] << 24) >> 56) == 0xFF)
 	{
-		uint64_t hash = 0, hash2 = 0;
+		u64 hash = 0, hash2 = 0;
 
 		for (int i = 0; i < 0x100; i++)
 		{
@@ -997,8 +997,8 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 		#endif
 
 		#ifdef DO_PATCH
-		uint64_t trunc_hash = (hash >> 16), plugin_trunc_hash = 0;
-		//uint64_t pspemu_off = pspemu_path_offset, psptrans_off = psptrans_path_offset;
+		u64 trunc_hash = (hash >> 16), plugin_trunc_hash = 0;
+		//u64 pspemu_off = pspemu_path_offset, psptrans_off = psptrans_path_offset;
 
 		#ifdef ps2tonet_patch
 		if(trunc_hash == (VSH_HASH >> 16))
@@ -1033,7 +1033,7 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 						DPRINTF("Button Shortcut detected! Applying pemucorelib Extra Savedata Patch...\n");
 						DPRINTF("Now patching %s %lx\n", hash_to_name(hash), hash);
 
-						uint32_t data = LI(R31, 1);
+						u32 data = LI(R31, 1);
 						buf[psp_extra_savedata_patch/4] = data;
 
 						DPRINTF("Offset: 0x%08X | Data: 0x%08X\n", psp_extra_savedata_patch, data);
@@ -1097,7 +1097,7 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 					{
 						buf[patch->offset/4] = patch->data;
 						#ifdef DEBUG
-						DPRINTF("Offset: 0x%08X | Data: 0x%08X\n", (uint32_t)patch->offset, (uint32_t)patch->data);
+						DPRINTF("Offset: 0x%08X | Data: 0x%08X\n", (u32)patch->offset, (u32)patch->data);
 						#endif
 					}
 
@@ -1121,20 +1121,20 @@ process_t vsh_process;
 
 process_t get_vsh_process(void) //NzV
 {
-	uint64_t *proc_list = *(uint64_t **)MKA(TOC + process_rtoc_entry_1);
-	proc_list = *(uint64_t **)proc_list;
-	proc_list = *(uint64_t **)proc_list;
+	u64 *proc_list = *(u64 **)MKA(TOC + process_rtoc_entry_1);
+	proc_list = *(u64 **)proc_list;
+	proc_list = *(u64 **)proc_list;
 	for (int i = 0; i < 16; i++)
 	{
 		process_t process = (process_t)proc_list[1];
 		proc_list += 2;
-		if ((((uint64_t)process) & 0xFFFFFFFF00000000ULL) != MKA(0)) continue;
+		if ((((u64)process) & 0xFFFFFFFF00000000ULL) != MKA(0)) continue;
 		if (is_vsh_process(process)) return process;
 	}
 	return NULL;
 }
 
-LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t process, int fd, char *path, int r6, uint64_t r7, uint64_t r8, uint64_t r9, uint64_t r10, uint64_t sp_70))
+LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t process, int fd, char *path, int r6, u64 r7, u64 r8, u64 r9, u64 r10, u64 sp_70))
 {
 	#ifdef DEBUG
 	DPRINTF("PROCESS %s (%08X) loaded\n", path, process->pid);
@@ -1194,8 +1194,8 @@ int bc_to_net(int param)
 		switch(vsh_check)
 		{
 			case VSH_HASH:
-			copy_to_process(vsh_process, &main_vsh_patches[0].data, (void *)(uint64_t)(0x10000 + main_vsh_patches[0].offset), 4);
-			copy_to_process(vsh_process, &main_vsh_patches[1].data, (void *)(uint64_t)(0x10000 + main_vsh_patches[1].offset), 4);
+			copy_to_process(vsh_process, &main_vsh_patches[0].data, (void *)(u64)(0x10000 + main_vsh_patches[0].offset), 4);
+			copy_to_process(vsh_process, &main_vsh_patches[1].data, (void *)(u64)(0x10000 + main_vsh_patches[1].offset), 4);
 			break;
 		}
 
@@ -1208,8 +1208,8 @@ int bc_to_net(int param)
 		switch(vsh_check)
 		{
 			case VSH_HASH:
-			copy_to_process(vsh_process, &main_vsh_patches[2].data, (void *)(uint64_t)(0x10000 + main_vsh_patches[2].offset), 4);
-			copy_to_process(vsh_process, &main_vsh_patches[3].data, (void *)(uint64_t)(0x10000 + main_vsh_patches[3].offset), 4);
+			copy_to_process(vsh_process, &main_vsh_patches[2].data, (void *)(u64)(0x10000 + main_vsh_patches[2].offset), 4);
+			copy_to_process(vsh_process, &main_vsh_patches[3].data, (void *)(u64)(0x10000 + main_vsh_patches[3].offset), 4);
 			break;
 		}
 
@@ -1225,9 +1225,9 @@ int bc_to_net(int param)
 #endif
 
 #ifdef PS3M_API
-void pre_map_process_memory(void *object, uint64_t process_addr, uint64_t size, uint64_t flags, void *unk, void *elf, uint64_t *out);
+void pre_map_process_memory(void *object, u64 process_addr, u64 size, u64 flags, void *unk, void *elf, u64 *out);
 
-LV2_HOOKED_FUNCTION_POSTCALL_7(void, pre_map_process_memory, (void *object, uint64_t process_addr, uint64_t size, uint64_t flags, void *unk, void *elf, uint64_t *out))
+LV2_HOOKED_FUNCTION_POSTCALL_7(void, pre_map_process_memory, (void *object, u64 process_addr, u64 size, u64 flags, void *unk, void *elf, u64 *out))
 {
 	#ifdef DEBUG
 	DPRINTF("Map %lx %lx %s %lx\n", process_addr, size, get_current_process() ? get_process_name(get_current_process())+8 : "KERNEL", flags);
@@ -1243,10 +1243,10 @@ LV2_HOOKED_FUNCTION_POSTCALL_7(void, pre_map_process_memory, (void *object, uint
 
 
 #ifdef DEBUG
-LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, create_process_common_hooked, (process_t parent, uint32_t *pid, int fd, char *path, int r7, uint64_t r8,
-									  uint64_t r9, void *argp, uint64_t args, void *argp_user, uint64_t sp_80,
-									 void **sp_88, uint64_t *sp_90, process_t *process, uint64_t *sp_A0,
-									  uint64_t *sp_A8))
+LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, create_process_common_hooked, (process_t parent, u32 *pid, int fd, char *path, int r7, u64 r8,
+									  u64 r9, void *argp, u64 args, void *argp_user, u64 sp_80,
+									 void **sp_88, u64 *sp_90, process_t *process, u64 *sp_A0,
+									  u64 *sp_A8))
 {
 	char *parent_name = get_process_name(parent);
 	DPRINTF("PROCESS %s (%s) (%08X) created from parent process: %s\n", path, get_process_name(*process), *pid, ((int64_t)parent_name < 0) ? parent_name : "");
@@ -1254,10 +1254,10 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, create_process_common_hooked, (proces
 	return 0;
 }
 
-LV2_HOOKED_FUNCTION_POSTCALL_8(void, create_process_common_hooked_pre, (process_t parent, uint32_t *pid, int fd, char *path, int r7, uint64_t r8,
-									  uint64_t r9, void *argp, uint64_t args, void *argp_user, uint64_t sp_80,
-									 void **sp_88, uint64_t *sp_90, process_t *process, uint64_t *sp_A0,
-									  uint64_t *sp_A8))
+LV2_HOOKED_FUNCTION_POSTCALL_8(void, create_process_common_hooked_pre, (process_t parent, u32 *pid, int fd, char *path, int r7, u64 r8,
+									  u64 r9, void *argp, u64 args, void *argp_user, u64 sp_80,
+									 void **sp_88, u64 *sp_90, process_t *process, u64 *sp_A0,
+									  u64 *sp_A8))
 {
 
 	DPRINTF("Pre-process\n");
@@ -1287,7 +1287,7 @@ static sys_prx_id_t vsh_plugins[MAX_VSH_PLUGINS];
 static int loading_vsh_plugin = 0;
 
 // Kernel version of prx_load_vsh_plugin
-int prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, uint32_t arg_size)
+int prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, u32 arg_size)
 {
 	void *kbuf, *vbuf;
 	sys_prx_id_t prx;
@@ -1304,11 +1304,11 @@ int prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, uint32_t arg_s
 	CellFsStat stat;
 	if ((cellFsStat(path, &stat) != CELL_OK) || (stat.st_size < 0x230)) return EINVAL; // prevent a semi-brick (black screen on start up) if the sprx is 0 bytes (due a bad ftp transfer).
 
-	uint8_t sprx_check[0x20];
+	u8 sprx_check[0x20];
 	if(read_file(path, sprx_check, 0x20))
 	{
-		uint64_t header_len = *(uint64_t *)(sprx_check + 0x10);
-		uint64_t data_len   = *(uint64_t *)(sprx_check + 0x18);
+		u64 header_len = *(u64 *)(sprx_check + 0x10);
+		u64 data_len   = *(u64 *)(sprx_check + 0x18);
 
 		if(stat.st_size < (header_len + data_len))
 		{
@@ -1336,7 +1336,7 @@ int prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, uint32_t arg_s
 	else
 		vbuf = NULL;
 
-	ret = prx_start_module_with_thread(prx, vsh_process, 0, (uint64_t)vbuf);
+	ret = prx_start_module_with_thread(prx, vsh_process, 0, (u64)vbuf);
 
 	if (vbuf)
 	{
@@ -1360,7 +1360,7 @@ int prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, uint32_t arg_s
 }
 
 // User version of prx_load_vsh_plugin
-int sys_prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, uint32_t arg_size)
+int sys_prx_load_vsh_plugin(unsigned int slot, char *path, void *arg, u32 arg_size)
 {
 	if (slot >= MAX_VSH_PLUGINS) for(slot = BOOT_PLUGINS_FIRST_SLOT; slot < MAX_VSH_PLUGINS; slot++) if(!vsh_plugins[slot]) break;
 
@@ -1430,8 +1430,8 @@ int read_text_line(int fd, char *line, unsigned int size, int *eof)
 
 	while (i < size)
 	{
-		uint8_t ch;
-		uint64_t r;
+		u8 ch;
+		u64 r;
 
 		if ((cellFsRead(fd, &ch, 1, &r) != CELL_FS_SUCCEEDED) || (r != 1))
 		{
@@ -1646,7 +1646,7 @@ void unhook_all_modules(void)
 
 
 #ifdef patch_func2_offset_restore
-	*(uint32_t *)MKA(patch_func2 + patch_func2_offset) = patch_func2_offset_restore;
+	*(u32 *)MKA(patch_func2 + patch_func2_offset) = patch_func2_offset_restore;
 	clear_icache((void *)MKA(patch_func2 + patch_func2_offset), 4);
 #endif
 

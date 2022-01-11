@@ -83,6 +83,7 @@ int GZ_compress2(FILE *source, int sourceLen, char **dest, int *destLen)
     }
 
     *dest=NULL;
+    *destLen=0;
     
     gathering_total_size = sourceLen;
     copy_current_size = 0;
@@ -142,7 +143,7 @@ int GZ_compress2(FILE *source, int sourceLen, char **dest, int *destLen)
     } while (flush != Z_FINISH);
     assert(ret == Z_STREAM_END);        /* stream will be complete */
     
-    *destLen = strm.total_out;
+    *destLen = (int) strm.total_out;
     
     /* clean up and return */
     (void)deflateEnd(&strm);

@@ -6,8 +6,8 @@
 #ifdef DO_PATCH_KERNEL_PATCH
 typedef struct
 {
-	uint32_t address;
-	uint32_t data;
+	u32 address;
+	u32 data;
 } Patch;
 
 static Patch kernel_patches[] =
@@ -51,7 +51,7 @@ static INLINE void apply_kernel_patches(void)
 {
 	for (int i = 0; i < N_KERNEL_PATCHES; i++)
 	{
-		uint32_t *addr = (uint32_t *)MKA(kernel_patches[i].address);
+		u32 *addr = (u32 *)MKA(kernel_patches[i].address);
 		*addr = kernel_patches[i].data;
 		clear_icache(addr, 4);
 	}
@@ -61,14 +61,14 @@ static INLINE void apply_kernel_patches(void)
 
 ////////////////////////////////////////////////////////////////////////////
 
-void do_patch(uint64_t addr, uint64_t patch)
+void do_patch(u64 addr, u64 patch)
 {
-	*(uint64_t *)addr = patch;
+	*(u64 *)addr = patch;
 	clear_icache((void *)addr, 8);
 }
 
-void do_patch32(uint64_t addr, uint32_t patch)
+void do_patch32(u64 addr, u32 patch)
 {
-	*(uint32_t *)addr = patch;
+	*(u32 *)addr = patch;
 	clear_icache((void *)addr, 4);
 }

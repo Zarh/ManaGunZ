@@ -1,0 +1,419 @@
+STR_LANGUAGE                  {日本語}
+STR_LANGCODE                  {\x08}
+
+STR_LANG                      {中国語(簡体)}
+STR_LANG_DESC                 {言語を選択}
+STR_GATHERING                 {データ収集}
+STR_COPYING                   {コピー}
+STR_FROM                      {から}
+STR_TO                        {へ へ へ}
+STR_FILES                     {ファイル}
+STR_DIRS                      {ディレクター}
+STR_UNKNOWN                   {未知の}
+STR_FILE                      {ファイル}
+STR_CANCEL                    {キャンセル}
+STR_TURNOFF                   {オフ}
+STR_CANCELLED                 {キャンセル}
+STR_UNIT                      {バイト}
+STR_TOTALSIZE                 {総サイズ}
+STR_HIDELOGS                  {ログを隠す}
+STR_SHOWLOGS                  {ログを表示}
+STR_BOOST                     {ブースト!}
+STR_GAMEMENU                  {ゲームメニュー}
+STR_SETTINGS                  {コンテンツ}
+STR_MOUNTGAME                 {マウントゲーム}
+STR_FILTER                    {フィルター}
+STR_FAVORITE                  {お気に入り}
+STR_FILEMANAGER               {ファイルマネージャ}
+STR_HOLD                      {ホールド}
+STR_EXIT                      {エントランス}
+STR_GAME_PROP                 {ゲームの特性}
+STR_GAME_TITLE                {タイトル}
+STR_GAME_PATH                 {パス}
+STR_GAME_FORMAT               {フォーマット}
+STR_GAME_SIZE                 {サイズ:}
+STR_GAME_PLATFORM             {プラットフォーム}
+STR_SYSVERS                   {ファームウェア}
+STR_GAMEID                    {識別子}
+STR_ELFCRC                    {エルフCRC}
+STR_ELFCRCO                   {ELF CRC(オリジナル)}
+STR_BACK                      {バックナンバー}
+STR_ENTER                     {エントリー}
+STR_UPDATE_FOUND              {更新履歴}
+STR_UPDATE                    {ニュース}
+STR_SIZE                      {サイズ:}
+STR_SYSTEM                    {システム}
+STR_DL                        {ダウンロード}
+STR_DL_ALL                    {ダウンロード}
+STR_UNPLUG                    {次のデバイスを抜く}
+STR_PATH                      {パス}
+STR_TYPE                      {タイプ:}
+STR_FOLDER                    {フォルダ}
+STR_DIR                       {ディレクトリ}
+STR_MULT                      {複数個}
+STR_THM_SETTINGS              {テーマ設定}
+STR_THM                       {テーマ}
+STR_THM_DESC                  {必要なテーマをロードします。 dev_usbXXX/Themes からインストールできます。}
+STR_CREATE                    {作成する}
+STR_ZOOM_OUT                  {ズームアウト}
+STR_ZOOM_IN                   {ズームイン}
+STR_MOVE_FRAME                {移動フレーム}
+STR_CHECK                     {チェックイン}
+STR_UNCHECK                   {チェック解除}
+STR_GAME_OPTION               {ゲームオプション}
+STR_ADD_FAV                   {お気に入りに追加}
+STR_REM_FAV                   {お気に入りから削除する}
+STR_FAV_DESC                  {お気に入りのゲームのリストを管理する。}
+STR_RENAME                    {リネーム}
+STR_RENAME_DESC               {バックアップのタイトルの名前を変更します。}
+STR_DELETE                    {削除}
+STR_DELETE_DESC               {バックアップを削除します。}
+STR_COPY                      {コピー}
+STR_COPY_DESC                 {バックアップを別のパスにコピーします。}
+STR_CREATE_ICON0              {ICON0の作成}
+STR_CREATE_ICON0_DESC         {カバーから偽のICON0を作成します。}
+STR_REST_PNACH                {PNACHを復元}
+STR_REST_PNACH_DESC           {pnachファイルで適用されたパッチをバックアップに削除します。}
+STR_APPLY_PNACH               {PNACHを適用}
+STR_APPLY_PNACH_DESC          {pnachファイルからバックアップにパッチを適用します。}
+STR_DISABLE_WS                {障害者ワイドスクリーン}
+STR_ENABLE_WS                 {WideScreenを有効にする}
+STR_WS_DESC                   {4:3の代わりに16:9でゲームを表示します。}
+STR_DISABLE_480P              {無効な480P}
+STR_ENABLE_480P               {480Pを有効にする}
+STR_480P_DESC                 {480Pのプログレッシブスキャンモード。}
+STR_DISABLE_YFIX              {YFIXの無効化}
+STR_ENABLE_YFIX               {YFIXを有効にする}
+STR_YFIX_DESC                 {縦の位置を固定して下さい。}
+STR_DISABLE_FMVSKIP           {消火FMV ツイート}
+STR_ENABLE_FMVSKIP            {FMVを有効にする ツイート}
+STR_FMVSKIP_DESC              {フルモーション動画をスキップできます。}
+STR_DISABLE_NETEMU            {無効なNetEMU}
+STR_ENABLE_NETEMU             {NetEMUを有効にする}
+STR_NETEMU_DESC               {ps2 netemu の使用を強制します。}
+STR_SAVE_CONFIG               {CONFIGを節約}
+STR_CONFIG                    {設定}
+STR_CONFIG_DESC               {[実験的] 独自のCONFIGファイルを作成し、ps2バックアップを固定します。}
+STR_NONE                      {なし}
+STR_CHECK_MD5                 {MD5をチェック}
+STR_PROPS                     {プロパティ}
+STR_PROPS_DESC                {バックアップのプロパティを表示します。}
+STR_GAME_SETTINGS             {ゲーム設定}
+STR_DIRECT_BOOT               {ダイレクトブーツ}
+STR_DIRECT_BOOT_DESC          {XMBに戻ってから直接ゲームを起動します。}
+STR_YES                       {はい}
+STR_NO                        {なし}
+STR_CLEAN_SYSCALL             {クリーンなsyscall}
+STR_CLEAN_SYSCALL_DESC        {peek と poke syscalls を無効にします。}
+STR_CHANGE_IDPS               {IDPSの変更}
+STR_CHANGE_IDPS_DESC          {IDPSをlv2に変更します。}
+STR_EXT_GAME_DATA             {ゲームデータ}
+STR_EXT_GAME_DATA_DESC        {システムではなく、usbデバイスにGamedataをインストールします。}
+STR_PAYLOAD                   {ペイロード}
+STR_PAYLOAD_DESC              {バックアップをマウントするペイロードを選択します。}
+STR_PRIM_USB                  {プライマリUSBの設定}
+STR_PRIM_USB_DESC             {ゲームがメインUSBデバイスとして保存されるUSBデバイスを設定します。}
+STR_BDEMU                     {BDエミュレーション}
+STR_BDEMU_DESC                {バックアップをマウントするエミュレーションの種類を選択します。}
+STR_PATCH_LIBFS               {パッチlibfs}
+STR_PATCH_LIBFS_DESC          {使用するパッチ付きlibfを選択します。}
+STR_MOUNT_APPHOME             {マウント /app_home}
+STR_MOUNT_APPHOME_DESC        {/app_home を /dev_bdvd にリダイレクトします。}
+STR_PATCH_EXP                 {パッチ探検_プラグイン}
+STR_PATCH_EXP_DESC            {/app_home のパスは、プラグインエクスプローラーのエクスプローラー内で /dev_bdvd に置き換えられます。}
+STR_MAKE_SHTCUT_PKG           {ショートカットを作る PKGの特長}
+STR_MAKE_SHTCUT_PKG_DESC      {dev_hdd0/packages に保存されているパッケージファイルを作成します。 インストールすると、XMBからバックアップをマウントするショートカットになります。}
+STR_PATCH_EBOOT               {パッチ EBOOT}
+STR_PATCH_EBOOT_DESC          {ファームウェアバージョンを EBOOT ファイルの 4.21 に変更して、エラー 0x80010009 を防ぐことができます。}
+STR_RESIGN                    {リサイン}
+STR_RESIGN_DESC               {4.21 キーでバックアップの実行可能をすべて再署名します。}
+STR_RESTORE                   {ストア}
+STR_RESTORE_DESC              {バックアップの元々の実行ファイルを復元する。}
+STR_EXTRACT_ISO               {エキスISO}
+STR_EXTRACT_ISO_DESC          {ISOからフォルダにファイルを抽出します。}
+STR_CONVERT_ISO               {ISOへの変換}
+STR_CONVERT_ISO_DESC          {JBバックアップをISOに変換します。}
+STR_FIX_PERMS                 {許可の修正}
+STR_FIX_PERMS_DESC            {バックアップの各フォルダとファイルの0777にパーミッション値を設定します。}
+STR_CHECK_IRD                 {ファイルをチェック (IRD)}
+STR_CHECK_DESC                {バックアップのファイルが変更されていないか確認してください。}
+STR_DL_UPDATE                 {ダウンロード}
+STR_DL_UPDATE_DESC            {バックアップの更新を dev_hdd0/packages にダウンロードします。}
+STR_OPEN_WINDOW               {新しいウィンドウを開く}
+STR_DUMP_LV1                  {ダンプ lv1}
+STR_DUMP_LV2                  {ダンプ lv2}
+STR_DUMP_FLASH                {ダンプフラッシュ}
+STR_REFRESH                   {リフレッシュ}
+STR_NEWFOLDER                 {新しいフォルダー}
+STR_NEWFILE                   {新しいファイル}
+STR_PASTE                     {ペースト}
+STR_CUT                       {カット}
+STR_UNSELECT_ALL              {選択解除}
+STR_SELECT_ALL                {全て選択}
+STR_MAKE_PKG                  {PKGを作る}
+STR_GETMD5                    {MD5を入手}
+STR_GETSHA1                   {SHA1を入手}
+STR_VIEW                      {ニュース}
+STR_VIEW_TXT                  {TXTを見る}
+STR_VIEW_SFO                  {SFOを見る}
+STR_READ_XREG                 {xRegを読む}
+STR_EXTRACT_ELF               {エキス エルフ}
+STR_RESIGN_SELF               {SELF を割り当てて下さい}
+STR_LAUNCH_SELF               {SELFの起動}
+STR_EXTRACT_EBOOT             {エキス EBOOT}
+STR_RESIGN_EBOOT              {EBOOT を割り当てる}
+STR_LAUNCH_EBOOT              {EBOOTの発売}
+STR_SIGN_ELF                  {サイン ELF}
+STR_SIGN_EBOOT                {サインエボット}
+STR_SIGN_PRX                  {サインPRX}
+STR_EXTRACT_PRX               {エキストラPRX}
+STR_RESIGN_SPRX               {SPRXのリサイン}
+STR_REMOVE_PRXLOADER          {PRXローダーから削除}
+STR_ADD_PRXLOADER             {PRXローダーに追加}
+STR_REMOVE_PRXLOADER2         {PRXLoaderから削除}
+STR_ADD_PRXLOADER2            {PRXLoaderに追加}
+STR_REMOVE_MAMBA              {Mambaリストから削除}
+STR_ADD_MAMBA                 {Mambaリストに追加}
+STR_REMOVE_COBRA              {Cobraリストから削除}
+STR_ADD_COBRA                 {Cobraリストに追加}
+STR_EXTRACT_RCO               {エキストラRCO}
+STR_EXTRACT_PKG               {エキス末 PKG}
+STR_PKG_INFO                  {PKG情報}
+STR_EXTRACT_TRP               {エキストラTRP}
+STR_COMPRESS_ISO              {圧縮ISO}
+STR_CHECK_CRC32               {チェックCRC32}
+STR_DECOMPRESS_CSO            {CSOを解凍}
+STR_EXTRACT_THM               {エキス THM}
+STR_EXTRACT_P3T               {エキス末 P3T}
+STR_EXTRACT_RAF               {エキストラ RAF}
+STR_EXTRACT_QRC               {QRCの抽出}
+STR_EXTRACT_HERE              {詳細はこちら}
+STR_CONVERT_JSX_JS            {JSX を JS に変換する}
+STR_CONVERT_VAG_WAV           {VAGをWAVに変換する}
+STR_CONVERT_GTF_DDS           {GTFをDDSに変換する}
+STR_CONVERT_DDS_PNG           {DDSをPNGに変換}
+STR_MAKE_APNG                 {APNGを作る}
+STR_SET_PERMS                 {権限の設定}
+STR_NOGAME                    {ゲームが見つかりません}
+STR_GLOB_SETTINGS             {グローバル設定}
+STR_ADJUST                    {スクリーンを調節して下さい}
+STR_ADJUST_DESC               {ディスプレイをキャリブレーションします。}
+STR_DL_COVER                  {ダウンロードカバー}
+STR_DL_COVER_DESC             {見つかりのゲームカバーをUSRDIR/covers/[gameID].jpgにダウンロードしてください。}
+STR_PLUGIN_MANAGER            {プラグインマネージャ}
+STR_PLUGIN_MANAGER_DESC       {dev_hdd0/plugins に保存されているプラグインを管理します。}
+STR_UPD_MGZ                   {ManaGunZの更新}
+STR_UPD_MGZ_DESC              {ManaGunZの最新バージョンをダウンロードしてインストールします。}
+STR_GAME_PATHS                {ゲームバックアップパス}
+STR_GAME_PATHS_DESC           {ManaGunZがバックアップを見つけるディレクトリの名前を設定します。}
+STR_XMB_PRIO                  {XMBの 優先順位}
+STR_XMB_PRIO_DESC             {XMBのManaGunZのアイコンがトップに表示されます。 次のシステム起動後に有効になります。}
+STR_HELP                      {ヘルプを表示}
+STR_HELP_DESC                 {ここを読んでいる文章を表示します。}
+STR_COLOR_1                   {色 1}
+STR_COLOR_2                   {色 2}
+STR_COLOR_3                   {色 3}
+STR_COLOR_4                   {色 4}
+STR_COLOR_DESC                {マナグンツが使用する色を変更します。}
+STR_UI_SETTINGS               {ユーザーインターフェイスの設定}
+STR_UI                        {ユーザーインターフェイス}
+STR_UI_DESC                   {インターフェイスを変更します。}
+STR_SIDE_MENU                 {ゲーム サイドメニュー}
+STR_SIDE_MENU_DESC            {画面の右側にあるゲームメニューを表示します。}
+STR_SHOW_PIC1                 {PIC1を表示}
+STR_SHOW_PIC1_DESC            {現在の選択したゲームの背景画像を表示します。 PIC1. UIリストとGRIDでR1を使用して表示します。}
+STR_SHOW_COVER                {ショー カバー}
+STR_SHOW_COVER_DESC           {ゲームカバーを表示します。}
+STR_SHOW_GAMECASE             {ゲームケースを表示する}
+STR_SHOW_GAMECASE_DESC        {ゲームケースでゲームカバーを表示します。}
+STR_SHOW_ICON0                {ICON0を表示する}
+STR_SHOW_ICON0_DESC           {ゲーム ICON0 のメイン画像を表示します。}
+STR_GRID_TYPE                 {格子タイプ}
+STR_GRID_TYPE_DESC            {グリッドの移動方法を選択します。}
+STR_SCROLL                    {スクロール}
+STR_PAGE                      {サイトマップ}
+STR_DIRECTION                 {アクセス}
+STR_DIRECTION_DESC            {グリッドが移動する方向を選択します。}
+STR_VERTICAL                  {垂直方向}
+STR_HORIZONTAL                {水平方向}
+STR_ANIMATED                  {アニメーション}
+STR_ANIMATED_DESC             {グリッドの動きをスライドさせます。}
+STR_KEEP_PROP                 {比率を保って下さい}
+STR_KEEP_PROP_DESC            {ICON0 の元のアスペクト比を保持します。}
+STR_NB_COL                    {列の数}
+STR_NB_COL_DESC               {グリッドの列の数を選択します。}
+STR_NB_LINE                   {ライン数}
+STR_NB_LINE_DESC              {グリッドの行数を選択します。}
+STR_INVERSE                   {逆ボタン}
+STR_INVERSE_DESC              {ボタンを左右に反転します。}
+STR_3D                        {3Dの}
+STR_3D_DESC                   {ゲームケースの3Dモデルでメニューを表示します。}
+STR_ADD                       {追加する}
+STR_LOAD                      {ログイン}
+STR_CHANGE                    {新着情報}
+STR_COLOR                     {色: 色:}
+STR_RESET                     {リセット}
+STR_FAILED                    {失敗した}
+STR_DONE                      {ログイン}
+STR_OPEN                      {営業拠点}
+STR_CLOSE                     {おすすめ}
+STR_OPTION                    {オプション}
+STR_SELECT                    {選択する}
+STR_WINDOW                    {ウィンドウ}
+STR_CLICK                     {クリック}
+STR_CURSOR                    {カーソル}
+STR_NEXT                      {次へ}
+STR_PREVIOUS                  {新着情報}
+STR_SET_COLOR                 {カラーセット}
+STR_HIDETV                    {TV画面テストを隠す}
+STR_SHOWTV                    {テレビ画面テストを表示する}
+STR_MOVE_TO_PLUGINS           {dev_hdd0/plugins に移動}
+STR_ASK_PLUGINS               {プラグインマネージャを使用するには、プラグインは dev_hdd0/plugins'.\n このフォルダを使用することはできますか?}
+STR_CHANGE_VALUE              {値の変更}
+STR_LOAD_IDPS_LV2             {lv2からIDPSをロードする}
+STR_LOAD_IDPS_EID5            {EID5からIDPSをロードする}
+STR_NAME                      {お名前 (必須)}
+STR_DOCK_RIGHT                {右にドック}
+STR_DOCK_LEFT                 {左にドック}
+STR_DOCK_FULL                 {ドック}
+STR_PLUGIN_MONITOR            {プラグインモニター}
+STR_UNUSED                    {未使用}
+STR_UNLOAD                    {ダウンロード}
+STR_BOOT_FILE                 {ブートファイル}
+STR_CURRENT                   {現在の位置}
+STR_NET                       {コンテンツ}
+STR_SOFT                      {ソフト}
+STR_GX                        {GXシリーズ}
+STR_CUSTOM                    {カスタム}
+STR_NEW_CMD                   {新しいコマンド}
+STR_PNACH                     {プナッチ}
+STR_WIDESCREEN                {ワイドスクリーン}
+STR_480P                      {480Pの}
+STR_YFIX                      {YFIX(イフィックス)}
+STR_FMV                       {FMV スキップ}
+STR_SIMPLE                    {シンプル}
+STR_ADVANCED                  {アドバンス}
+STR_INSTALL_MGZ               {ManaGunZをインストールしたいですか?}
+STR_UP2DATE                   {最新情報}
+STR_SHOW_WAVES                {波を表示}
+STR_SHOW_WAVES_DESC           {背景に波を表示。}
+STR_WAVES_COLOR               {波の色}
+STR_WAVES_COLOR_DESC          {波の色を変更します。}
+STR_USE_CONFIG                {PS2の設定ファイル*CONFIGは使用していません}
+STR_COLORSET                  {カラーセット}
+STR_COLORSET_DESC             {マナガンズで使用できる色をあらかじめ定義したセットを選択します。}
+STR_GRID_SCROLL               {スクロール}
+STR_ADD_LIMG                  {LIMGを追加}
+STR_REMOVE_LIMG               {LIMG を削除}
+STR_LIMG_DESC                 {いくつかのゲームを修正する場合があります。}
+STR_FONT                      {トピックス}
+STR_FONT_DESC                 {フォントを変更します。}
+STR_MOVE                      {ふりがな}
+STR_JOIN                      {参加する}
+STR_JOIN_DESC                 {.666XXXファイルをマージします。}
+STR_COLOR_FILTER              {色のフィルター}
+STR_COLOR_NOTIF               {お知らせ}
+STR_COLOR_BOXHEAD             {ボックスヘッダー}
+STR_COLOR_BOXBODY             {ボックスボディ}
+STR_COLOR_SIDEBAR             {サイドバー}
+STR_COLOR_BGS                 {背景の設定}
+STR_COLOR_BG                  {プロフィール}
+STR_ROOT_DISPLAY              {ルート表示}
+STR_ROOT_DISPLAY_DESC         {FileManagerのルートの表示を変更します。}
+STR_STYLE                     {スタイル}
+STR_STYLE_CUSTOM              {カスタムスタイル}
+STR_STYLE1                    {スタイル 1}
+STR_STYLE2                    {スタイル2}
+STR_STYLE3                    {スタイル 3}
+STR_STYLE4                    {スタイル 4}
+STR_STYLE5                    {スタイル 5}
+STR_STYLE6                    {スタイル 6}
+STR_FREEOF                    {無料で}
+STR_ROOTLABEL                 {ログイン}
+STR_FM_ICONSIZE               {アイコンサイズ}
+STR_FM_BIG                    {おすすめ}
+STR_FM_SMALL                  {小さい}
+STR_FM_ROWNUMBER              {テキスト行番号}
+STR_FM_ROWSIZE                {列のサイズ}
+STR_FM_LEFT_CONTENT           {列コンテンツ [LEFT]}
+STR_FM_RIGHT_CONTENT          {列コンテンツ [右]}
+STR_FM_EMPTY                  {スタッフ}
+STR_FM_MOUNTPOINT             {マウントポイント}
+STR_FM_DEVICE                 {デバイス}
+STR_FM_LABEL                  {ラベル}
+STR_FM_CAPACITY               {容量棒}
+STR_FM_MEMINSIDE              {インサイドメモリ}
+STR_FM_MEMOUTSIDE             {外部メモリ}
+STR_FM_FILESYSTEM             {ファイルシステム}
+STR_FM_CB_WIDTH               {容量棒の幅}
+STR_FM_MEMORY                 {メモリ}
+STR_FM_ICON                   {アイコン}
+STR_FM_FILEFOLDER             {ファイルとフォルダ}
+STR_FM_CUSTOM                 {カスタムアイコン}
+STR_FM_CB_FILL                {お問い合わせ}
+STR_EDIT_IDPS                 {IDPSの編集}
+STR_FILTER_NOGAME             {ゲームが見つかりません。 フィルターを調整します。}
+STR_SYMLINK_SRC               {SymLink ソース}
+STR_SYMLINK_TARGET            {SymLink ターゲット}
+STR_LOAD_MAMBA                {ロードマンバ}
+STR_CONVERT_TO_PNG            {PNGへの変換}
+STR_MOUNT_DEVBLIND            {dev_flash を未保護}
+STR_UNMOUNT_DEVBLIND          {dev_flash を保護}
+STR_BT_AUDIO                  {ゲームパッドのオーディオアウト}
+STR_BT_AUDIO_DESC             {ゲームパッドを通して音を再生しながら再生します。 DS4 でテストしました。}
+STR_GAME_UPDATE_TITLE         {PS3ゲームアップデートダウンローダー}
+STR_CURRENT_VERS              {現在のバージョン}
+STR_CANT_MOUNT_PEEKPOKE       {取付不可 : PEEK と POKE は使用不可、mamba はインストールできません}
+STR_CANT_MOUNT_UNKFW          {未装着 : 不明なファームウェア、mamba はインストールできません。}
+STR_CANT_MOUNT                {不燃性}
+STR_ONLY_FAV                  {お気に入りだけ}
+STR_ALL_GAMES                 {すべてのゲーム}
+STR_DISPLAY                   {ディスプレイ}
+STR_DUMP_DEC                  {ダンプはブルーレイディスクを復号化}
+STR_DUMP_DEC_DESC             {ディスクの適切なアイソをIRDで入手してください。 完了したら、IRDをデータベースにアップロードします。}
+STR_DUMP_ENC                  {ダンプ暗号化されたBlu-Rayディスク}
+STR_DUMP_DISC_KEY             {ダンプブルーレイディスクキー}
+STR_DUMP_ERK                  {ダンプのeidの根キー}
+STR_DUMP_3DUMP                {ダンプ3Dump.bin}
+STR_SYSTEM_TOOLS              {システムツール}
+STR_DUMP_ENC_DESC             {Blu-Rayディスクの生のアイコンを入手してください。}
+STR_DUMP_ERK_DESC             {これは、システムを解読主要なキーです。 どこでも使われています。 パス: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {3k3y IsoToolsでBlu-Rayをダンプするのに必要なファイルです。 パス: dev_hdd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {edat/sdat を復号化}
+STR_REDUMP_LOG                {GetKey ダンプを生成する}
+STR_REDUMP_LOG_DESC           {redump.org の投稿に必要なファイルを生成します。}
+STR_DUMP_OPTION               {ブルーレイダンプ}
+STR_IGNORE_ERR                {エラーを無視する}
+STR_IGNORE_ERR_DESC           {Blu-Ray のダンプ処理中にエラーを読み込みません。}
+STR_3K3Y_HEADER               {3k3yヘッダーを含める}
+STR_3K3Y_HEADER_DESC          {Blu-rayを埋め込まれた3k3yヘッダーでisoにダンプします。 3k3y IsoToolsはそれを認識することができます。}
+STR_ELAPSED                   {脱出}
+STR_REMAINING                 {メンテナンス}
+STR_DYNAREC                   {ダイナレック}
+STR_DYNAREC_DESC              {エミュレータは、動的再コンパイルを使用することを可能にします。}
+STR_BUILD_ISO                 {ビルドイソ}
+STR_BUILD_ISO_DESC            {Blu-Ray のファイルからバックアップ iso をビルドします。}
+STR_UPLOADER                  {アップロード者名}
+STR_UPLOADER_DESC             {id アップロードのクレジットが必要な場合は、名前を入力してください。}
+STR_BOX3D_ALIGN               {箱を並べて下さい}
+STR_BOX3D_ALIGN_DESC          {棚に保管されているかのようにゲームボックスを揃えます。}
+STR_BOX3D_GAP                 {箱のギャップ}
+STR_BOX3D_GAP_DESC            {ゲームボックス間のギャップを調整します。}
+STR_SHORT                     {ショートショート}
+STR_MEDIUM                    {メディア}
+STR_LONG                      {ロング}
+STR_MOUNT_BD                  {BDとしてマウント}
+STR_MOUNT_DVD                 {DVDとしてマウント}
+STR_SHOWLOGS_DESC             {ロード画面中に現在のタスクについて通知するメッセージを表示します。}
+STR_OVERWRITE                 {オーバーライト}
+STR_OVERWRITE_DESC            {既存のファイルの上書きを制御する。}
+STR_OVERWRITE_ALWAYS          {常に}
+STR_OVERWRITE_NEVER           {決して}
+STR_OVERWRITE_ASK             {お問い合わせ}
+STR_OVERWRITE_DUPLICATE       {重複する}
+STR_ASK_TO_OVERWRITE          {既に存在するファイル。 既存のファイルを上書きしたいですか?}
+STR_ASK_TO_DELETE             {これを削除したいですか?}
+STR_DUMPER_MAX_TRY            {試行を読む}
+STR_DUMPER_MAX_TRY_DESC       {ディスク読み取りエラーがある場合、読み取り回数を設定します。}
+STR_HDD_UNLOCK_SPACE          {Hdd0 ロック解除}
+STR_HDD_UNLOCK_SPACE_DESC     {8%から1%までのHDd0で予約されたスペースの量を減らします。}

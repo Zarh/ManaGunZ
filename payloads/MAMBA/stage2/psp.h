@@ -1,12 +1,12 @@
 #ifndef __PSP_H__
 #define __PSP_H__
 
-typedef uint32_t Elf32_Addr;
+typedef u32 Elf32_Addr;
 typedef uint16_t Elf32_Half;
-typedef uint32_t Elf32_Off;
+typedef u32 Elf32_Off;
 typedef int32_t  Elf32_Sword;
-typedef uint32_t Elf32_Word;
-typedef uint32_t Elf32_Size;
+typedef u32 Elf32_Word;
+typedef u32 Elf32_Size;
 
 /*
  * ELF header.
@@ -65,33 +65,33 @@ typedef struct
 typedef struct
 {
 	uint16_t attribute;
-	uint8_t module_ver_lo;
-	uint8_t module_ver_hi;
+	u8 module_ver_lo;
+	u8 module_ver_hi;
 	char	modname[28];
 } __attribute__((packed)) PspModuleInfo;
 
-extern uint32_t psp_tag;
-extern uint8_t psp_keys[16];
-extern uint8_t psp_code;
+extern u32 psp_tag;
+extern u8 psp_keys[16];
+extern u8 psp_code;
 //extern char pspemu_path[36];
 //extern char psptrans_path[37];
 extern int vsh_type;
-extern uint64_t vsh_offset;
+extern u64 vsh_offset;
 
-extern void psp_func1(void *unk, uint8_t *elf_buf);
+extern void psp_func1(void *unk, u8 *elf_buf);
 
 int sys_psp_set_umdfile(char *file, char *id, int prometheus);
-int sys_psp_set_decrypt_options(int decrypt_patch, uint32_t tag, uint8_t *keys, uint8_t code, uint32_t tag2, uint8_t *keys2, uint8_t code2);
-int sys_psp_read_header(int fd, char *buf, uint64_t nbytes, uint64_t *nread);
-int sys_psp_read_umd(int unk, void *buf, uint64_t sector, uint64_t ofs, uint64_t size);
-int sys_psp_prx_patch(uint32_t *unk, uint8_t *elf_buf, void *link_register);
+int sys_psp_set_decrypt_options(int decrypt_patch, u32 tag, u8 *keys, u8 code, u32 tag2, u8 *keys2, u8 code2);
+int sys_psp_read_header(int fd, char *buf, u64 nbytes, u64 *nread);
+int sys_psp_read_umd(int unk, void *buf, u64 sector, u64 ofs, u64 size);
+int sys_psp_prx_patch(u32 *unk, u8 *elf_buf, void *link_register);
 int sys_psp_set_emu_path(char *path);
 int sys_psp_post_savedata_initstart(int result, void *param);
 int sys_psp_post_savedata_shutdownstart(void);
 
 #ifdef DEBUG
-int sys_psp_sony_bug(uint32_t *mips_registers, void *unk, uint32_t mips_PC);
-//int sys_generic_debug(uint64_t unk, uint32_t *ptr, void *sp);
+int sys_psp_sony_bug(u32 *mips_registers, void *unk, u32 mips_PC);
+//int sys_generic_debug(u64 unk, u32 *ptr, void *sp);
 #endif
 
 #endif /* __PSP_H__ */

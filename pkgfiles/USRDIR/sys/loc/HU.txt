@@ -1,381 +1,418 @@
-STR_LANGUAGE			{Magyar}
-STR_LANGCODE			{\x20}
+STR_LANGUAGE                  {Magyar}
+STR_LANGCODE                  {\x20}
 
-STR_LANG					{Nyelv}
-STR_LANG_DESC				{Válaszd ki a nyelvet.}
-STR_GATHERING				{Adat gyűjtés...}
-STR_COPYING					{Másolás...}
-STR_FROM					{ból}
-STR_TO						{ba}
-STR_FILES					{Fájlok}
-STR_DIRS					{Könyvtárak}
-STR_UNKNOWN					{Ismeretlen}
-STR_FILE					{Fájl}
-STR_CANCEL					{Elvet}
-STR_TURNOFF					{Kikapcsolni}
-STR_CANCELLED				{Törölve}
-STR_UNIT					{Bytes}
-STR_TOTALSIZE				{Teljes méret}
-STR_HIDELOGS				{Naplók elrejtése}
-STR_SHOWLOGS				{Naplók mutatása}
-STR_BOOST					{Gyorsítás!}
-STR_GAMEMENU				{Játék menü}
-STR_SETTINGS				{Beállítások}
-STR_MOUNTGAME				{Játék indítás}
-STR_FILTER					{Szűrő}
-STR_FAVORITE				{Kedvencek}
-STR_FILEMANAGER				{Fájl Kezelő}
-STR_HOLD					{Lenyomva tart}
-STR_EXIT					{Vissza az XMB-be}
-STR_GAME_PROP				{Játék Tulajdonságai}
-STR_GAME_TITLE				{Cím}
-STR_GAME_PATH				{Útvonal}
-STR_GAME_FORMAT				{Formátum}
-STR_GAME_SIZE				{Méret}
-STR_GAME_PLATFORM			{Platform}
-STR_SYSVERS					{Firmware}
-STR_GAMEID					{Azonosító}
-STR_ELFCRC					{ELF CRC}
-STR_ELFCRCO					{ELF CRC (Eredeti)}
-STR_BACK					{Vissza}
-STR_ENTER					{Belép}
-STR_UPDATE_FOUND			{Frissítés található}
-STR_UPDATE					{Frissítés}
-STR_SIZE					{Méret}
-STR_SYSTEM					{Rendszer}
-STR_DL						{Letöltés}
-STR_DL_ALL					{ÖSSZES Letöltése}
-STR_UNPLUG					{Húzd ki a következő eszközt}
-STR_PATH					{Útvonal}
-STR_TYPE					{Típus}
-STR_FOLDER					{Mappa}
-STR_DIR						{Könyvtár}
-STR_MULT					{Többszörös}
-STR_THM_SETTINGS			{Téma beállítások}
-STR_THM						{Téma}
-STR_THM_DESC				{Töltsd be a kívánt témát. Telepítheted őket a(z)  /dev_usbXXX/Témákból.}
-STR_CREATE					{Létrehoz}
-STR_ZOOM_OUT				{Nagyítás KI}
-STR_ZOOM_IN					{Nagyítás BE}
-STR_MOVE_FRAME				{Váz Mozgatása}
-STR_CHECK					{Megjelöl}
-STR_UNCHECK					{Jelölést töröl}
-STR_GAME_OPTION				{Játék Beállítások}
-STR_ADD_FAV					{Hozzáadás a Kedvencekhez}
-STR_REM_FAV					{Eltávolítás a Kedvencekből}
-STR_FAV_DESC				{Kedvenc játékaid listájának kezelése.}
-STR_RENAME					{Átnevez}
-STR_RENAME_DESC				{Nevezd át a játékod címét.}
-STR_DELETE					{Törlés}
-STR_DELETE_DESC				{Egy játékod törlése.}
-STR_COPY					{Másolás}
-STR_COPY_DESC				{Másold át a játékod egy másik elérési útra.}
-STR_CREATE_ICON0			{ICON0 készítés}
-STR_CREATE_ICON0_DESC		{Hozz létre egy 'hamis' ICON0-t a borítóról.}
-STR_REST_PNACH				{PNACH visszaállítása}
-STR_REST_PNACH_DESC			{Távolítsd el a pnach fájl által a játékra alkalmazott javításokat.}
-STR_APPLY_PNACH				{PNACH Alkalmazása}
-STR_APPLY_PNACH_DESC		{Alkalmazd a pnach javításokat a játékhoz.}
-STR_DISABLE_WS				{Szélesvászon Kikapcsolása}
-STR_ENABLE_WS				{Szélesvászon Bekapcsolása}
-STR_WS_DESC					{A játékot 16:9-ben jeleníti meg 4:3 helyett.}
-STR_DISABLE_480P			{480P Kikapcsolása}
-STR_ENABLE_480P				{480P Bekapcsolása}
-STR_480P_DESC				{Progressive scan mód 480P-ben.}
-STR_DISABLE_YFIX			{YFIX Kikapcsolása}
-STR_ENABLE_YFIX				{YFIX Bekapcsolása}
-STR_YFIX_DESC				{Függőleges pozíció rögzítése.}
-STR_DISABLE_FMVSKIP			{Videók kihagyásának Kikapcsolása}
-STR_ENABLE_FMVSKIP			{Videók kihagyásának Bekapcsolása}
-STR_FMVSKIP_DESC			{Engedélyezi, hogy kihagyhasd a játékbeli videókat.}
-STR_DISABLE_NETEMU			{NetEMU Kikapcsolása}
-STR_ENABLE_NETEMU			{NetEMU Bekapcsolása}
-STR_NETEMU_DESC				{A ps2 netemu használatának kényszerítése.}
-STR_SAVE_CONFIG				{Mentés CONFIG}
-STR_CONFIG					{Configuration}
-STR_CONFIG_DESC				{[Próba] Hozz létre saját CONFIG fájlt, javítást a játékodhoz.}
-STR_NONE					{Semmi}
-STR_CHECK_MD5				{MD5 Ellenőrzés}
-STR_PROPS					{Tulajdonságok}
-STR_PROPS_DESC				{A játék tulajdonságainak megjelenítése.}
-STR_ASK_DEL					{Tényleg törölni szeretnéd}
-STR_GAME_SETTINGS			{Játék Beállítások}
-STR_DIRECT_BOOT				{Közvetlen indítás}
-STR_DIRECT_BOOT_DESC		{Indítsd el a játékot anélkül, hogy visszatérnél az XMB-hez.}
-STR_YES						{Igen}
-STR_NO						{Nem}
-STR_CLEAN_SYSCALL			{syscall tisztítás}
-STR_CLEAN_SYSCALL_DESC		{Peek & poke syscall-ok kikapcsolása.}
-STR_CHANGE_IDPS				{IDPS váltás}
-STR_CHANGE_IDPS_DESC		{Módosítsd az IDPS-edet lv2-n.}
-STR_EXT_GAME_DATA			{USB Játék Adatok}
-STR_EXT_GAME_DATA_DESC		{Telepíts játékadatot az USB eszközödre a belső tároló helyett.}
-STR_PAYLOAD					{Betöltési mód}
-STR_PAYLOAD_DESC			{Válaszd ki a betöltési módot a játékodhoz.}
-STR_PRIM_USB				{Állítsd be az Elsődleges USB-t}
-STR_PRIM_USB_DESC			{Állítsd be azt az USB eszközt, ami a játékot a fő USB eszközként tárolja.}
-STR_BDEMU					{BD emulálás}
-STR_BDEMU_DESC				{Válaszd ki az emuláció típusát a játékodhoz.}
-STR_PATCH_LIBFS				{libfs Javítás}
-STR_PATCH_LIBFS_DESC		{Válaszd ki, hogy melyik javított libf-eket akarod használni.}
-STR_MOUNT_APPHOME			{Indítás /app_home-ból}
-STR_MOUNT_APPHOME_DESC		{Javítás átirányítása a(z) /app_home -ból  /dev_bdvd. -be}
-STR_PATCH_EXP				{explore_plugin Javítás}
-STR_PATCH_EXP_DESC			{Az elérési út /app_home helyét a /dev_bdvd helyettesíti az explorer plugin bővítményen belül.}
-STR_MAKE_SHTCUT_PKG			{PKG Parancsikon Készítés}
-STR_MAKE_SHTCUT_PKG_DESC	{Hozz létre egy csomagfájlt a /dev_hdd0/packages mappába. A telepítés után egy 'parancsikon' lesz a játékhoz az XMB-ből.}
-STR_PATCH_EBOOT				{EBOOT Javítás}
-STR_PATCH_EBOOT_DESC		{Módosítsd a firmware verzióját 4.21-re, hogy megakadályozd az EBOOT fájl hibáját. (0x80010009 Hibakód).}
-STR_RESIGN					{Újraírás}
-STR_RESIGN_DESC				{4.21 kulcsokkal írja alá újra a játék összes végrehajtható fájlját.}
-STR_RESTORE					{Visszaállítás}
-STR_RESTORE_DESC			{Állítsd vissza a játék eredetileg végrehajtható fájljait.}
-STR_EXTRACT_ISO				{ISO Kibontás}
-STR_EXTRACT_ISO_DESC		{ISO-ból csomagolja ki a fájlokat egy mappába}
-STR_CONVERT_ISO				{Konvertálás ISO-ba}
-STR_CONVERT_ISO_DESC		{JB játék konvertálása ISO-ba.}
-STR_FIX_PERMS				{Jogosultság beállítása}
-STR_FIX_PERMS_DESC			{Állítsd be a jogosultság értékét (0777) a játék minden egyes mappájához és fájljához.}
-STR_CHECK_IRD				{Fájlellenőrzés(IRD)}
-STR_CHECK_DESC				{Ellenőrizd, hogy a játékok fájljai nem módosultak-e.}
-STR_DL_UPDATE				{Frissítés letöltése}
-STR_DL_UPDATE_DESC			{Töltsd le a játék frissítéseit a /dev_hdd0/ packages mappába.}
-STR_OPEN_WINDOW				{Új Ablak}
-STR_DUMP_LV1				{Dump lv1}
-STR_DUMP_LV2				{Dump lv2}
-STR_DUMP_FLASH				{Dump flash}
-STR_REFRESH					{Frissítés}
-STR_NEWFOLDER				{Új Mappa}
-STR_NEWFILE					{Új Fájl}
-STR_PASTE					{Beillesztés}
-STR_CUT						{Kivágás}
-STR_UNSELECT_ALL			{Minden kijelölés megszüntetése}
-STR_SELECT_ALL				{Mindent kijelöl}
-STR_MAKE_PKG				{PKG Készítés}
-STR_GETMD5					{MD5 Mutatása}
-STR_GETSHA1					{SHA1 Mutatása}
-STR_VIEW					{Megtekintés}
-STR_VIEW_TXT				{TXT Megtekinése}
-STR_VIEW_SFO				{SFO Megtekinése}
-STR_READ_XREG				{xReg Olvasása}
-STR_EXTRACT_ELF				{ELF Kicsomagolása}
-STR_RESIGN_SELF				{SELF Újraírása}
-STR_LAUNCH_SELF				{SELF Indítása}
-STR_EXTRACT_EBOOT			{EBOOT Kicsomagolása}
-STR_RESIGN_EBOOT			{EBOOT Újraírása}
-STR_LAUNCH_EBOOT			{EBOOT Indítása}
-STR_SIGN_ELF				{ELF Aláírása}
-STR_SIGN_EBOOT				{EBOOT Aláírása}
-STR_SIGN_PRX				{PRX Aláírása}
-STR_EXTRACT_PRX				{PRX Kicsomagolása}
-STR_RESIGN_SPRX				{SPRX Újraírása}
-STR_REMOVE_PRXLOADER		{Eltávolítás a PRXLoader-ből}
-STR_ADD_PRXLOADER			{Hozzáadás a PRXLoader-hez}
-STR_REMOVE_PRXLOADER2		{Eltávolítás a PRXLoader-ből}
-STR_ADD_PRXLOADER2			{Hozzáadás a PRXLoader-hez}
-STR_REMOVE_MAMBA			{Eltávolítás a Mamba listából}
-STR_ADD_MAMBA				{Hozzáadás a Mamba listához}
-STR_REMOVE_COBRA			{Eltávolítás a Cobra listából}
-STR_ADD_COBRA				{Hozzáadás a Cobra listához}
-STR_EXTRACT_RCO				{RCO Kicsomagolása}
-STR_EXTRACT_PKG				{PKG Kicsomagolása }
-STR_PKG_INFO				{PKG Információ}
-STR_EXTRACT_TRP				{TRP Kicsomagolása }
-STR_COMPRESS_ISO			{Tömörítés ISO-ba}
-STR_CHECK_CRC32				{CRC32 Ellenőrzés}
-STR_DECOMPRESS_CSO			{CSO Kicsomagolása}
-STR_EXTRACT_THM				{THM Kicsomagolása}
-STR_EXTRACT_P3T				{P3T Kicsomagolása}
-STR_EXTRACT_RAF				{RAF Kicsomagolása}
-STR_EXTRACT_QRC				{QRC Kicsomagolása}
-STR_EXTRACT_HERE			{Kicsomagolása ki itt}
-STR_CONVERT_JSX_JS			{Konvertálás: JSX-JS}
-STR_CONVERT_VAG_WAV			{Konvertálás: VAG-WAV}
-STR_CONVERT_GTF_DDS			{Konvertálás: GTF-DDS}
-STR_CONVERT_DDS_PNG			{Konvertálás: DDS-PNG}
-STR_MAKE_APNG				{APNG Készítés}
-STR_SET_PERMS				{Állítsd be az engedélyt}
-STR_NOGAME					{Nem található játék}
-STR_GLOB_SETTINGS			{Globális Beállítások}
-STR_ADJUST					{Képernyőbeállítás}
-STR_ADJUST_DESC				{Képernyőkalibrálás.}
-STR_DL_COVER				{Borítók Letöltése}
-STR_DL_COVER_DESC			{Töltsd le az összes hiányzó játékborítót a(z) USRDIR/covers/[gameID].jpg helyre}
-STR_PLUGIN_MANAGER			{Bövítmény Kezelő}
-STR_PLUGIN_MANAGER_DESC		{A /dev_hdd0/plugins-ban tárolt bővítmények kezelése.}
-STR_UPD_MGZ					{ManaGunZ Frissítés}
-STR_UPD_MGZ_DESC			{A ManaGunZ legújabb verziójának letöltése és telepítése.}
-STR_GAME_PATHS				{'Játék' útvonalak}
-STR_GAME_PATHS_DESC			{Állítsd be azon könyvtárak nevét, ahol a ManaGunZ megtalálja a játékokat.}
-STR_XMB_PRIO				{XMB prioritás}
-STR_XMB_PRIO_DESC			{A ManaGunZ XMB ikonja felül jelenik meg. A következő rendszerindítás után lesz látható.}
-STR_HELP					{Segítség mutatása}
-STR_HELP_DESC				{Jelenítsd meg az itt olvasható mondatokat.}
-STR_COLOR_1					{Szín 1}
-STR_COLOR_2					{Szín 2}
-STR_COLOR_3					{Szín 3}
-STR_COLOR_4					{Szín 4}
-STR_COLOR_DESC				{Módosítsd a ManaGunZ által használt színeket.}
-STR_UI_SETTINGS				{A felhasználói felület beállításai}
-STR_UI						{Felhasználói felület}
-STR_UI_DESC					{A felhasználói felület módosítása.}
-STR_SIDE_MENU				{Oldalsó játékmenü}
-STR_SIDE_MENU_DESC			{Játékmenü megjelenítése a képernyő jobb oldalán.}
-STR_SHOW_PIC1				{PIC1 megjelenítése}
-STR_SHOW_PIC1_DESC			{Az aktuálisan kiválasztott játékok "PIC1" háttérképének megjelenítése. Használd az R1-t az UI LIST és a GRID segítségével a megjelenítéshez.}
-STR_SHOW_COVER				{Borító megjelenítése }
-STR_SHOW_COVER_DESC			{Játék borítójának megjelenítése.}
-STR_SHOW_GAMECASE			{Játéktároló megjelenítése }
-STR_SHOW_GAMECASE_DESC		{Játék borítójának megjelenítése a Játéktárolóval együtt.}
-STR_SHOW_ICON0				{ICON0 megjelenítése }
-STR_SHOW_ICON0_DESC			{Megjeleníti a 'ICON0' játék fő képét.}
-STR_GRID_TYPE				{Rács típusa}
-STR_GRID_TYPE_DESC			{Kiválasztja, hogy hogyan lehet elérni, hogy a rácsháló mozogjon.}
-STR_SCROLL					{Görgetés}
-STR_PAGE					{Oldal}
-STR_DIRECTION				{Irány}
-STR_DIRECTION_DESC			{Válaszd ki, hogy a rácsháló melyik irányba mozogjon}
-STR_VERTICAL				{Függőleges}
-STR_HORIZONTAL				{vízszintes}
-STR_ANIMATED				{Animált}
-STR_ANIMATED_DESC			{Csúsztasd a rácshálót}
-STR_KEEP_PROP				{Tartsd az arányokat}
-STR_KEEP_PROP_DESC			{Tartsd az ICON0 eredeti képarányát.}
-STR_NB_COL					{Oszlopok száma}
-STR_NB_COL_DESC				{Válaszd ki a rács oszlopainak számát.}
-STR_NB_LINE					{Sorok száma}
-STR_NB_LINE_DESC			{Válasszd ki a rács sorainak számát.}
-STR_INVERSE					{Fordított gomb}
-STR_INVERSE_DESC			{A jobb és a bal gombok megfordítása.?}
-STR_3D						{3D}
-STR_3D_DESC					{A menü megjelenítése 3D-s modellekkel.}
-STR_ADD						{Hozzáadás}
-STR_LOAD					{Betöltés}
-STR_CHANGE					{Csere}
-STR_COLOR					{Szín}
-STR_RESET					{Reset}
-STR_FAILED					{Sikertelen}
-STR_DONE					{Kész}
-STR_OPEN					{Nyit}
-STR_CLOSE					{Zár}
-STR_OPTION					{Beállítás}
-STR_SELECT					{Kiválasztás}
-STR_WINDOW					{Ablak}
-STR_CLICK					{Kattintás}
-STR_CURSOR					{Kurzor}
-STR_NEXT					{Következő}
-STR_PREVIOUS				{Előző}
-STR_SET_COLOR				{Szín beállítása}
-STR_HIDETV					{A TV-képernyő teszt elrejtése}
-STR_SHOWTV					{A TV-képernyő teszt megjelenítése}
-STR_MOVE_TO_PLUGINS			{Mozgatás a(z) /dev_hdd0/plugins-ba}
-STR_ASK_PLUGINS				{A pluginkezelő használatához a plugineknek a(z) '/dev_hdd0/plugins'-ban kell lenniük.\nElfogadod ezt a mappát?}
-STR_CHANGE_VALUE			{Érték megváltoztatása}
-STR_LOAD_IDPS_LV2			{IDPS betöltése lv2-ből}
-STR_LOAD_IDPS_EID5			{IDPS betöltése EID5-ből}
-STR_NAME					{Név}
-STR_DOCK_RIGHT				{Dock jobbra}
-STR_DOCK_LEFT				{Dock balra}
-STR_DOCK_FULL				{A dokkoló tele}
-STR_PLUGIN_MONITOR			{Plugins monitor}
-STR_UNUSED					{Felhasználatlan}
-STR_UNLOAD					{kirakodik}
-STR_BOOT_FILE				{Boot fájl}
-STR_CURRENT					{Jelenlegi}
-STR_NET						{Net}
-STR_SOFT					{Soft}
-STR_GX						{GX}
-STR_CUSTOM					{Szokás}
-STR_NEW_CMD					{Új parancs}
-STR_PNACH					{Pnach}
-STR_WIDESCREEN				{Szélesvásznú}
-STR_480P					{480P}
-STR_YFIX					{YFIX}
-STR_FMV						{FMV kihagyja}
-STR_SIMPLE					{Egyszerű}
-STR_ADVANCED				{Fejlett}
-STR_INSTALL_MGZ				{Szeretné telepíteni a ManaGunZ-t?}
-STR_UP2DATE					{Naprakész}
-STR_SHOW_WAVES				{Hullámok megjelenítése}
-STR_SHOW_WAVES_DESC			{Hullámok megjelenítése a háttérben.}
-STR_WAVES_COLOR				{Hullám színe}
-STR_WAVES_COLOR_DESC		{Módosítsa a hullámok színét.}
-STR_USE_CONFIG				{Nem használja a "* .CONFIG" PS2 konfigurációs fájlt.}
-STR_COLORSET				{ColorSet}
-STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
-STR_GRID_SCROLL				{Scroll}
-STR_ADD_LIMG				{Add LIMG}
-STR_REMOVE_LIMG				{Remove LIMG}
-STR_LIMG_DESC				{It may fix few games.}
-STR_FONT					{Font}
-STR_FONT_DESC				{Change the font.}
-STR_MOVE					{Move}
-STR_JOIN					{Join}
-STR_JOIN_DESC				{Merge .666XX files.}
-STR_COLOR_FILTER			{Color Filters}
-STR_COLOR_NOTIF				{Notification}
-STR_COLOR_BOXHEAD			{Box header}
-STR_COLOR_BOXBODY			{Box body}
-STR_COLOR_SIDEBAR			{Sidebar }
-STR_COLOR_BGS				{Setting background}
-STR_COLOR_BG				{Background}
-
-STR_ROOT_DISPLAY			{Root display}
-STR_ROOT_DISPLAY_DESC		{Change the display of the root in FileManager.}
-STR_STYLE					{Style}
-STR_STYLE_CUSTOM			{Custom style}
-STR_STYLE1					{Style 1}
-STR_STYLE2					{Style 2}
-STR_STYLE3					{Style 3}
-STR_STYLE4					{Style 4}
-STR_STYLE5					{Style 5}
-STR_STYLE6					{Style 6}
-STR_FREEOF					{free of}
-STR_ROOTLABEL				{Root}
-STR_FM_ICONSIZE				{Icon size}
-STR_FM_BIG					{Big}
-STR_FM_SMALL				{Small}
-STR_FM_ROWNUMBER			{Text row number}
-STR_FM_ROWSIZE				{Row size}
-STR_FM_LEFT_CONTENT			{Row content [LEFT]}
-STR_FM_RIGHT_CONTENT		{Row content [RIGHT]}
-STR_FM_EMPTY				{Empty}
-STR_FM_MOUNTPOINT			{Mount point}
-STR_FM_DEVICE				{Device}
-STR_FM_LABEL				{Label}
-STR_FM_CAPACITY				{Capacity bar}
-STR_FM_MEMINSIDE			{Inside memory}
-STR_FM_MEMOUTSIDE			{Outside memory}
-STR_FM_FILESYSTEM			{Files system}
-STR_FM_CB_WIDTH				{Capacity bar width}
-STR_FM_MEMORY				{Memory}
-STR_FM_ICON					{Icons}
-STR_FM_FILEFOLDER			{File and Folder}
-STR_FM_CUSTOM				{Custom icons}
-STR_FM_CB_FILL				{Fill}
-STR_EDIT_IDPS				{Edit IDPS}
-STR_FILTER_NOGAME			{No games found. Adjust your filter.}
-STR_SYMLINK_SRC				{SymLink source}
-STR_SYMLINK_TARGET			{SymLink target}
-STR_LOAD_MAMBA				{Load mamba}
-
-STR_CONVERT_TO_PNG			{Convert to PNG}
-STR_MOUNT_DEVBLIND			{Unprotect dev_flash}
-STR_UNMOUNT_DEVBLIND		{Protect dev_flash}
-STR_BT_AUDIO				{Game-pad audio out}
-STR_BT_AUDIO_DESC			{Play sound through the game-pad while playing. Tested with a DS4.}
-STR_GAME_UPDATE_TITLE		{PS3 game updates downloader}
-STR_CURRENT_VERS			{Current version}
-STR_CANT_MOUNT_PEEKPOKE		{Unmountable : PEEK and POKE unavailable, mamba can't be installed}
-STR_CANT_MOUNT_UNKFW		{Unmountable : unknown firmware, mamba can't be installed.}
-STR_CANT_MOUNT				{Unmountable}
-STR_ONLY_FAV				{Only favorites}
-STR_ALL_GAMES				{All games}
-STR_DISPLAY					{Display}
-STR_DUMP_DEC				{Dump decrypted Blu-Ray disc}
-STR_DUMP_DEC_DESC			{Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
-STR_DUMP_ENC				{Dump encrypted Blu-Ray disc}
-STR_DUMP_DISC_KEY			{Dump Blu-Ray disc key}
-STR_DUMP_ERK				{Dump eid root key}
-STR_DUMP_3DUMP				{Dump 3Dump.bin}
-STR_SYSTEM_TOOLS			{System tools}
+STR_LANG                      {Nyelv}
+STR_LANG_DESC                 {Válaszd ki a nyelvet.}
+STR_GATHERING                 {Adat gyűjtés...}
+STR_COPYING                   {Másolás...}
+STR_FROM                      {ból}
+STR_TO                        {ba}
+STR_FILES                     {Fájlok}
+STR_DIRS                      {Könyvtárak}
+STR_UNKNOWN                   {Ismeretlen}
+STR_FILE                      {Fájl}
+STR_CANCEL                    {Elvet}
+STR_TURNOFF                   {Kikapcsolni}
+STR_CANCELLED                 {Törölve}
+STR_UNIT                      {Bytes}
+STR_TOTALSIZE                 {Teljes méret}
+STR_HIDELOGS                  {Naplók elrejtése}
+STR_SHOWLOGS                  {Naplók mutatása}
+STR_BOOST                     {Gyorsítás!}
+STR_GAMEMENU                  {Játék menü}
+STR_SETTINGS                  {Beállítások}
+STR_MOUNTGAME                 {Játék indítás}
+STR_FILTER                    {Szűrő}
+STR_FAVORITE                  {Kedvencek}
+STR_FILEMANAGER               {Fájl Kezelő}
+STR_HOLD                      {Lenyomva tart}
+STR_EXIT                      {Vissza az XMB-be}
+STR_GAME_PROP                 {Játék Tulajdonságai}
+STR_GAME_TITLE                {Cím}
+STR_GAME_PATH                 {Útvonal}
+STR_GAME_FORMAT               {Formátum}
+STR_GAME_SIZE                 {Méret}
+STR_GAME_PLATFORM             {Platform}
+STR_SYSVERS                   {Firmware}
+STR_GAMEID                    {Azonosító}
+STR_ELFCRC                    {ELF CRC}
+STR_ELFCRCO                   {ELF CRC (Eredeti)}
+STR_BACK                      {Vissza}
+STR_ENTER                     {Belép}
+STR_UPDATE_FOUND              {Frissítés található}
+STR_UPDATE                    {Frissítés}
+STR_SIZE                      {Méret}
+STR_SYSTEM                    {Rendszer}
+STR_DL                        {Letöltés}
+STR_DL_ALL                    {ÖSSZES Letöltése}
+STR_UNPLUG                    {Húzd ki a következő eszközt}
+STR_PATH                      {Útvonal}
+STR_TYPE                      {Típus}
+STR_FOLDER                    {Mappa}
+STR_DIR                       {Könyvtár}
+STR_MULT                      {Többszörös}
+STR_THM_SETTINGS              {Téma beállítások}
+STR_THM                       {Téma}
+STR_THM_DESC                  {Töltsd be a kívánt témát. Telepítheted őket a(z)  /dev_usbXXX/Témákból.}
+STR_CREATE                    {Létrehoz}
+STR_ZOOM_OUT                  {Nagyítás KI}
+STR_ZOOM_IN                   {Nagyítás BE}
+STR_MOVE_FRAME                {Váz Mozgatása}
+STR_CHECK                     {Megjelöl}
+STR_UNCHECK                   {Jelölést töröl}
+STR_GAME_OPTION               {Játék Beállítások}
+STR_ADD_FAV                   {Hozzáadás a Kedvencekhez}
+STR_REM_FAV                   {Eltávolítás a Kedvencekből}
+STR_FAV_DESC                  {Kedvenc játékaid listájának kezelése.}
+STR_RENAME                    {Átnevez}
+STR_RENAME_DESC               {Nevezd át a játékod címét.}
+STR_DELETE                    {Törlés}
+STR_DELETE_DESC               {Egy játékod törlése.}
+STR_COPY                      {Másolás}
+STR_COPY_DESC                 {Másold át a játékod egy másik elérési útra.}
+STR_CREATE_ICON0              {ICON0 készítés}
+STR_CREATE_ICON0_DESC         {Hozz létre egy 'hamis' ICON0-t a borítóról.}
+STR_REST_PNACH                {PNACH visszaállítása}
+STR_REST_PNACH_DESC           {Távolítsd el a pnach fájl által a játékra alkalmazott javításokat.}
+STR_APPLY_PNACH               {PNACH Alkalmazása}
+STR_APPLY_PNACH_DESC          {Alkalmazd a pnach javításokat a játékhoz.}
+STR_DISABLE_WS                {Szélesvászon Kikapcsolása}
+STR_ENABLE_WS                 {Szélesvászon Bekapcsolása}
+STR_WS_DESC                   {A játékot 16:9-ben jeleníti meg 4:3 helyett.}
+STR_DISABLE_480P              {480P Kikapcsolása}
+STR_ENABLE_480P               {480P Bekapcsolása}
+STR_480P_DESC                 {Progressive scan mód 480P-ben.}
+STR_DISABLE_YFIX              {YFIX Kikapcsolása}
+STR_ENABLE_YFIX               {YFIX Bekapcsolása}
+STR_YFIX_DESC                 {Függőleges pozíció rögzítése.}
+STR_DISABLE_FMVSKIP           {Videók kihagyásának Kikapcsolása}
+STR_ENABLE_FMVSKIP            {Videók kihagyásának Bekapcsolása}
+STR_FMVSKIP_DESC              {Engedélyezi, hogy kihagyhasd a játékbeli videókat.}
+STR_DISABLE_NETEMU            {NetEMU Kikapcsolása}
+STR_ENABLE_NETEMU             {NetEMU Bekapcsolása}
+STR_NETEMU_DESC               {A ps2 netemu használatának kényszerítése.}
+STR_SAVE_CONFIG               {Mentés CONFIG}
+STR_CONFIG                    {Configuration}
+STR_CONFIG_DESC               {[Próba] Hozz létre saját CONFIG fájlt, javítást a játékodhoz.}
+STR_NONE                      {Semmi}
+STR_CHECK_MD5                 {MD5 Ellenőrzés}
+STR_PROPS                     {Tulajdonságok}
+STR_PROPS_DESC                {A játék tulajdonságainak megjelenítése.}
+STR_GAME_SETTINGS             {Játék Beállítások}
+STR_DIRECT_BOOT               {Közvetlen indítás}
+STR_DIRECT_BOOT_DESC          {Indítsd el a játékot anélkül, hogy visszatérnél az XMB-hez.}
+STR_YES                       {Igen}
+STR_NO                        {Nem}
+STR_CLEAN_SYSCALL             {syscall tisztítás}
+STR_CLEAN_SYSCALL_DESC        {Peek & poke syscall-ok kikapcsolása.}
+STR_CHANGE_IDPS               {IDPS váltás}
+STR_CHANGE_IDPS_DESC          {Módosítsd az IDPS-edet lv2-n.}
+STR_EXT_GAME_DATA             {USB Játék Adatok}
+STR_EXT_GAME_DATA_DESC        {Telepíts játékadatot az USB eszközödre a belső tároló helyett.}
+STR_PAYLOAD                   {Betöltési mód}
+STR_PAYLOAD_DESC              {Válaszd ki a betöltési módot a játékodhoz.}
+STR_PRIM_USB                  {Állítsd be az Elsődleges USB-t}
+STR_PRIM_USB_DESC             {Állítsd be azt az USB eszközt, ami a játékot a fő USB eszközként tárolja.}
+STR_BDEMU                     {BD emulálás}
+STR_BDEMU_DESC                {Válaszd ki az emuláció típusát a játékodhoz.}
+STR_PATCH_LIBFS               {libfs Javítás}
+STR_PATCH_LIBFS_DESC          {Válaszd ki, hogy melyik javított libf-eket akarod használni.}
+STR_MOUNT_APPHOME             {Indítás /app_home-ból}
+STR_MOUNT_APPHOME_DESC        {Javítás átirányítása a(z) /app_home -ból  /dev_bdvd. -be}
+STR_PATCH_EXP                 {explore_plugin Javítás}
+STR_PATCH_EXP_DESC            {Az elérési út /app_home helyét a /dev_bdvd helyettesíti az explorer plugin bővítményen belül.}
+STR_MAKE_SHTCUT_PKG           {PKG Parancsikon Készítés}
+STR_MAKE_SHTCUT_PKG_DESC      {Hozz létre egy csomagfájlt a /dev_hdd0/packages mappába. A telepítés után egy 'parancsikon' lesz a játékhoz az XMB-ből.}
+STR_PATCH_EBOOT               {EBOOT Javítás}
+STR_PATCH_EBOOT_DESC          {Módosítsd a firmware verzióját 4.21-re, hogy megakadályozd az EBOOT fájl hibáját. (0x80010009 Hibakód).}
+STR_RESIGN                    {Újraírás}
+STR_RESIGN_DESC               {4.21 kulcsokkal írja alá újra a játék összes végrehajtható fájlját.}
+STR_RESTORE                   {Visszaállítás}
+STR_RESTORE_DESC              {Állítsd vissza a játék eredetileg végrehajtható fájljait.}
+STR_EXTRACT_ISO               {ISO Kibontás}
+STR_EXTRACT_ISO_DESC          {ISO-ból csomagolja ki a fájlokat egy mappába}
+STR_CONVERT_ISO               {Konvertálás ISO-ba}
+STR_CONVERT_ISO_DESC          {JB játék konvertálása ISO-ba.}
+STR_FIX_PERMS                 {Jogosultság beállítása}
+STR_FIX_PERMS_DESC            {Állítsd be a jogosultság értékét (0777) a játék minden egyes mappájához és fájljához.}
+STR_CHECK_IRD                 {Fájlellenőrzés(IRD)}
+STR_CHECK_DESC                {Ellenőrizd, hogy a játékok fájljai nem módosultak-e.}
+STR_DL_UPDATE                 {Frissítés letöltése}
+STR_DL_UPDATE_DESC            {Töltsd le a játék frissítéseit a /dev_hdd0/ packages mappába.}
+STR_OPEN_WINDOW               {Új Ablak}
+STR_DUMP_LV1                  {Dump lv1}
+STR_DUMP_LV2                  {Dump lv2}
+STR_DUMP_FLASH                {Dump flash}
+STR_REFRESH                   {Frissítés}
+STR_NEWFOLDER                 {Új Mappa}
+STR_NEWFILE                   {Új Fájl}
+STR_PASTE                     {Beillesztés}
+STR_CUT                       {Kivágás}
+STR_UNSELECT_ALL              {Minden kijelölés megszüntetése}
+STR_SELECT_ALL                {Mindent kijelöl}
+STR_MAKE_PKG                  {PKG Készítés}
+STR_GETMD5                    {MD5 Mutatása}
+STR_GETSHA1                   {SHA1 Mutatása}
+STR_VIEW                      {Megtekintés}
+STR_VIEW_TXT                  {TXT Megtekinése}
+STR_VIEW_SFO                  {SFO Megtekinése}
+STR_READ_XREG                 {xReg Olvasása}
+STR_EXTRACT_ELF               {ELF Kicsomagolása}
+STR_RESIGN_SELF               {SELF Újraírása}
+STR_LAUNCH_SELF               {SELF Indítása}
+STR_EXTRACT_EBOOT             {EBOOT Kicsomagolása}
+STR_RESIGN_EBOOT              {EBOOT Újraírása}
+STR_LAUNCH_EBOOT              {EBOOT Indítása}
+STR_SIGN_ELF                  {ELF Aláírása}
+STR_SIGN_EBOOT                {EBOOT Aláírása}
+STR_SIGN_PRX                  {PRX Aláírása}
+STR_EXTRACT_PRX               {PRX Kicsomagolása}
+STR_RESIGN_SPRX               {SPRX Újraírása}
+STR_REMOVE_PRXLOADER          {Eltávolítás a PRXLoader-ből}
+STR_ADD_PRXLOADER             {Hozzáadás a PRXLoader-hez}
+STR_REMOVE_PRXLOADER2         {Eltávolítás a PRXLoader-ből}
+STR_ADD_PRXLOADER2            {Hozzáadás a PRXLoader-hez}
+STR_REMOVE_MAMBA              {Eltávolítás a Mamba listából}
+STR_ADD_MAMBA                 {Hozzáadás a Mamba listához}
+STR_REMOVE_COBRA              {Eltávolítás a Cobra listából}
+STR_ADD_COBRA                 {Hozzáadás a Cobra listához}
+STR_EXTRACT_RCO               {RCO Kicsomagolása}
+STR_EXTRACT_PKG               {PKG Kicsomagolása }
+STR_PKG_INFO                  {PKG Információ}
+STR_EXTRACT_TRP               {TRP Kicsomagolása }
+STR_COMPRESS_ISO              {Tömörítés ISO-ba}
+STR_CHECK_CRC32               {CRC32 Ellenőrzés}
+STR_DECOMPRESS_CSO            {CSO Kicsomagolása}
+STR_EXTRACT_THM               {THM Kicsomagolása}
+STR_EXTRACT_P3T               {P3T Kicsomagolása}
+STR_EXTRACT_RAF               {RAF Kicsomagolása}
+STR_EXTRACT_QRC               {QRC Kicsomagolása}
+STR_EXTRACT_HERE              {Kicsomagolása ki itt}
+STR_CONVERT_JSX_JS            {Konvertálás: JSX-JS}
+STR_CONVERT_VAG_WAV           {Konvertálás: VAG-WAV}
+STR_CONVERT_GTF_DDS           {Konvertálás: GTF-DDS}
+STR_CONVERT_DDS_PNG           {Konvertálás: DDS-PNG}
+STR_MAKE_APNG                 {APNG Készítés}
+STR_SET_PERMS                 {Állítsd be az engedélyt}
+STR_NOGAME                    {Nem található játék}
+STR_GLOB_SETTINGS             {Globális Beállítások}
+STR_ADJUST                    {Képernyőbeállítás}
+STR_ADJUST_DESC               {Képernyőkalibrálás.}
+STR_DL_COVER                  {Borítók Letöltése}
+STR_DL_COVER_DESC             {Töltsd le az összes hiányzó játékborítót a(z) USRDIR/covers/[gameID].jpg helyre}
+STR_PLUGIN_MANAGER            {Bövítmény Kezelő}
+STR_PLUGIN_MANAGER_DESC       {A /dev_hdd0/plugins-ban tárolt bővítmények kezelése.}
+STR_UPD_MGZ                   {ManaGunZ Frissítés}
+STR_UPD_MGZ_DESC              {A ManaGunZ legújabb verziójának letöltése és telepítése.}
+STR_GAME_PATHS                {'Játék' útvonalak}
+STR_GAME_PATHS_DESC           {Állítsd be azon könyvtárak nevét, ahol a ManaGunZ megtalálja a játékokat.}
+STR_XMB_PRIO                  {XMB prioritás}
+STR_XMB_PRIO_DESC             {A ManaGunZ XMB ikonja felül jelenik meg. A következő rendszerindítás után lesz látható.}
+STR_HELP                      {Segítség mutatása}
+STR_HELP_DESC                 {Jelenítsd meg az itt olvasható mondatokat.}
+STR_COLOR_1                   {Szín 1}
+STR_COLOR_2                   {Szín 2}
+STR_COLOR_3                   {Szín 3}
+STR_COLOR_4                   {Szín 4}
+STR_COLOR_DESC                {Módosítsd a ManaGunZ által használt színeket.}
+STR_UI_SETTINGS               {A felhasználói felület beállításai}
+STR_UI                        {Felhasználói felület}
+STR_UI_DESC                   {A felhasználói felület módosítása.}
+STR_SIDE_MENU                 {Oldalsó játékmenü}
+STR_SIDE_MENU_DESC            {Játékmenü megjelenítése a képernyő jobb oldalán.}
+STR_SHOW_PIC1                 {PIC1 megjelenítése}
+STR_SHOW_PIC1_DESC            {Az aktuálisan kiválasztott játékok "PIC1" háttérképének megjelenítése. Használd az R1-t az UI LIST és a GRID segítségével a megjelenítéshez.}
+STR_SHOW_COVER                {Borító megjelenítése }
+STR_SHOW_COVER_DESC           {Játék borítójának megjelenítése.}
+STR_SHOW_GAMECASE             {Játéktároló megjelenítése }
+STR_SHOW_GAMECASE_DESC        {Játék borítójának megjelenítése a Játéktárolóval együtt.}
+STR_SHOW_ICON0                {ICON0 megjelenítése }
+STR_SHOW_ICON0_DESC           {Megjeleníti a 'ICON0' játék fő képét.}
+STR_GRID_TYPE                 {Rács típusa}
+STR_GRID_TYPE_DESC            {Kiválasztja, hogy hogyan lehet elérni, hogy a rácsháló mozogjon.}
+STR_SCROLL                    {Görgetés}
+STR_PAGE                      {Oldal}
+STR_DIRECTION                 {Irány}
+STR_DIRECTION_DESC            {Válaszd ki, hogy a rácsháló melyik irányba mozogjon}
+STR_VERTICAL                  {Függőleges}
+STR_HORIZONTAL                {vízszintes}
+STR_ANIMATED                  {Animált}
+STR_ANIMATED_DESC             {Csúsztasd a rácshálót}
+STR_KEEP_PROP                 {Tartsd az arányokat}
+STR_KEEP_PROP_DESC            {Tartsd az ICON0 eredeti képarányát.}
+STR_NB_COL                    {Oszlopok száma}
+STR_NB_COL_DESC               {Válaszd ki a rács oszlopainak számát.}
+STR_NB_LINE                   {Sorok száma}
+STR_NB_LINE_DESC              {Válasszd ki a rács sorainak számát.}
+STR_INVERSE                   {Fordított gomb}
+STR_INVERSE_DESC              {A jobb és a bal gombok megfordítása.?}
+STR_3D                        {3D}
+STR_3D_DESC                   {A menü megjelenítése 3D-s modellekkel.}
+STR_ADD                       {Hozzáadás}
+STR_LOAD                      {Betöltés}
+STR_CHANGE                    {Csere}
+STR_COLOR                     {Szín}
+STR_RESET                     {Reset}
+STR_FAILED                    {Sikertelen}
+STR_DONE                      {Kész}
+STR_OPEN                      {Nyit}
+STR_CLOSE                     {Zár}
+STR_OPTION                    {Beállítás}
+STR_SELECT                    {Kiválasztás}
+STR_WINDOW                    {Ablak}
+STR_CLICK                     {Kattintás}
+STR_CURSOR                    {Kurzor}
+STR_NEXT                      {Következő}
+STR_PREVIOUS                  {Előző}
+STR_SET_COLOR                 {Szín beállítása}
+STR_HIDETV                    {A TV-képernyő teszt elrejtése}
+STR_SHOWTV                    {A TV-képernyő teszt megjelenítése}
+STR_MOVE_TO_PLUGINS           {Mozgatás a(z) /dev_hdd0/plugins-ba}
+STR_ASK_PLUGINS               {A pluginkezelő használatához a plugineknek a(z) '/dev_hdd0/plugins'-ban kell lenniük.\nElfogadod ezt a mappát?}
+STR_CHANGE_VALUE              {Érték megváltoztatása}
+STR_LOAD_IDPS_LV2             {IDPS betöltése lv2-ből}
+STR_LOAD_IDPS_EID5            {IDPS betöltése EID5-ből}
+STR_NAME                      {Név}
+STR_DOCK_RIGHT                {Dock jobbra}
+STR_DOCK_LEFT                 {Dock balra}
+STR_DOCK_FULL                 {A dokkoló tele}
+STR_PLUGIN_MONITOR            {Plugins monitor}
+STR_UNUSED                    {Felhasználatlan}
+STR_UNLOAD                    {kirakodik}
+STR_BOOT_FILE                 {Boot fájl}
+STR_CURRENT                   {Jelenlegi}
+STR_NET                       {Net}
+STR_SOFT                      {Soft}
+STR_GX                        {GX}
+STR_CUSTOM                    {Szokás}
+STR_NEW_CMD                   {Új parancs}
+STR_PNACH                     {Pnach}
+STR_WIDESCREEN                {Szélesvásznú}
+STR_480P                      {480P}
+STR_YFIX                      {YFIX}
+STR_FMV                       {FMV kihagyja}
+STR_SIMPLE                    {Egyszerű}
+STR_ADVANCED                  {Fejlett}
+STR_INSTALL_MGZ               {Szeretné telepíteni a ManaGunZ-t?}
+STR_UP2DATE                   {Naprakész}
+STR_SHOW_WAVES                {Hullámok megjelenítése}
+STR_SHOW_WAVES_DESC           {Hullámok megjelenítése a háttérben.}
+STR_WAVES_COLOR               {Hullám színe}
+STR_WAVES_COLOR_DESC          {Módosítsa a hullámok színét.}
+STR_USE_CONFIG                {Nem használja a "* .CONFIG" PS2 konfigurációs fájlt.}
+STR_COLORSET                  {ColorSet}
+STR_COLORSET_DESC             {Válasszon egy előre meghatározott színkészletet a ManaGunZ-ban.}
+STR_GRID_SCROLL               {Scroll}
+STR_ADD_LIMG                  {Add hozzá LIMG}
+STR_REMOVE_LIMG               {Távolítsa el a LIMG-t}
+STR_LIMG_DESC                 {Lehet, hogy néhány játékot rögzít.}
+STR_FONT                      {Font}
+STR_FONT_DESC                 {Változtassa meg a betűt.}
+STR_MOVE                      {Mozgás}
+STR_JOIN                      {Csatlakozz}
+STR_JOIN_DESC                 {Merge .666XX fájlok.}
+STR_COLOR_FILTER              {Színes szűrők}
+STR_COLOR_NOTIF               {Bejelentés}
+STR_COLOR_BOXHEAD             {Szűrő doboz fejléc}
+STR_COLOR_BOXBODY             {Szűrő doboz test}
+STR_COLOR_SIDEBAR             {Sidebar}
+STR_COLOR_BGS                 {háttér beállítása}
+STR_COLOR_BG                  {Háttér}
+STR_ROOT_DISPLAY              {Root megjelenítés}
+STR_ROOT_DISPLAY_DESC         {Változtassa meg a gyökeret a FileManagerben.}
+STR_STYLE                     {Stílus}
+STR_STYLE_CUSTOM              {egyedi stílus}
+STR_STYLE1                    {Style 1}
+STR_STYLE2                    {Style 2}
+STR_STYLE3                    {Style 3}
+STR_STYLE4                    {Style 4}
+STR_STYLE5                    {Style 5}
+STR_STYLE6                    {Style 6}
+STR_FREEOF                    {szabad}
+STR_ROOTLABEL                 {Root}
+STR_FM_ICONSIZE               {Icon méret}
+STR_FM_BIG                    {Nagy}
+STR_FM_SMALL                  {Kis kicsi}
+STR_FM_ROWNUMBER              {Szöveges sorszám}
+STR_FM_ROWSIZE                {Row méret}
+STR_FM_LEFT_CONTENT           {Row tartalom [LEFT]}
+STR_FM_RIGHT_CONTENT          {Row tartalom [RIGHT]}
+STR_FM_EMPTY                  {Munkaerő}
+STR_FM_MOUNTPOINT             {Hegyi pont}
+STR_FM_DEVICE                 {Eszköz}
+STR_FM_LABEL                  {Címke}
+STR_FM_CAPACITY               {kapacitás bár}
+STR_FM_MEMINSIDE              {Belül memória}
+STR_FM_MEMOUTSIDE             {Külső memória}
+STR_FM_FILESYSTEM             {Files rendszer}
+STR_FM_CB_WIDTH               {Kaacitás bár szélessége}
+STR_FM_MEMORY                 {Memory}
+STR_FM_ICON                   {Ikonok}
+STR_FM_FILEFOLDER             {File és Folder}
+STR_FM_CUSTOM                 {Custom ikonok}
+STR_FM_CB_FILL                {Fiók}
+STR_EDIT_IDPS                 {Edit IDPS}
+STR_FILTER_NOGAME             {Nincs talált játék. Állítsa be a szűrőt.}
+STR_SYMLINK_SRC               {SymLink forrás}
+STR_SYMLINK_TARGET            {SymLink cél}
+STR_LOAD_MAMBA                {Load mamba}
+STR_CONVERT_TO_PNG            {Konvertáljon PNG-re}
+STR_MOUNT_DEVBLIND            {Védelmi dev_flash}
+STR_UNMOUNT_DEVBLIND          {Protect dev_flash}
+STR_BT_AUDIO                  {Gamepad audio}
+STR_BT_AUDIO_DESC             {Játssz hangot a játékpad játék közben. Tesztelt egy DS4.}
+STR_GAME_UPDATE_TITLE         {PS3 játék frissítések letöltő}
+STR_CURRENT_VERS              {Jelenlegi verzió}
+STR_CANT_MOUNT_PEEKPOKE       {Mountable: PEEK és POKE nem érhető el, mamba nem telepíthető}
+STR_CANT_MOUNT_UNKFW          {Mountable: ismeretlen firmware, a mamba nem telepíthető.}
+STR_CANT_MOUNT                {Összefüggő}
+STR_ONLY_FAV                  {Csak a kedvencek}
+STR_ALL_GAMES                 {Minden játék}
+STR_DISPLAY                   {Kijelző}
+STR_DUMP_DEC                  {Dump decrypted Blu-Ray lemez}
+STR_DUMP_DEC_DESC             {Szerezd meg a lemezed megfelelő szigetét az IRD-vel. Ez feltölti az IRD-t az adatbázisba, miután befejeződött.}
+STR_DUMP_ENC                  {Dump titkosított Blu-Ray lemez}
+STR_DUMP_ENC_DESC             {Szerezzen egy nyers izomot a Blu-Ray lemezéről.}
+STR_DUMP_ERK                  {Dump eid gyökér kulcs}
+STR_DUMP_ERK_DESC             {Ez a fő kulcs a rendszer titkosításához. Mindenütt használják. dalszöveg: dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP                {Dump 3Dump.bin}
+STR_DUMP_3DUMP_DESC           {Ez a szükséges fájl, hogy egy Blu-Ray 3k3y IsoTools. Path: dev_hdd0/tmp/3Dump.bin}
+STR_SYSTEM_TOOLS              {Rendszereszközök}
+STR_DECRYPT_NPDATA            {Decrypt edat/sdat}
+STR_REDUMP_LOG                {Generáció GetKey dump}
+STR_REDUMP_LOG_DESC           {A Redump.org beadványokhoz szükséges fájlok generálása.}
+STR_DUMP_OPTION               {Blu-Ray dumper}
+STR_IGNORE_ERR                {Ignore hibák}
+STR_IGNORE_ERR_DESC           {Nem hagyja figyelmen kívül a hibákat a Blu-Ray dömping folyamat során.}
+STR_3K3Y_HEADER               {Tartalmazza a 3k3y vezetőt}
+STR_3K3Y_HEADER_DESC          {A Blu-ray-t egy olyan szigetre dobja, ahol beágyazott 3k3y fejléc van. 3k3y IsoTools képes lesz felismerni.}
+STR_ELAPSED                   {Összeomlott}
+STR_REMAINING                 {Remaining}
+STR_DYNAREC                   {Dynarec}
+STR_DYNAREC_DESC              {Ez lehetővé teszi az emulátorok számára, hogy dinamikus újraépítést alkalmazzanak.}
+STR_BUILD_ISO                 {Build iso}
+STR_BUILD_ISO_DESC            {Építsen egy backup iso-t a Blu-Ray fájljaiból.}
+STR_UPLOADER                  {Uploader neve}
+STR_UPLOADER_DESC             {Írja be a nevét, ha hiteleketeket szeretne az ird feltöltéséhez, hagyja üres maradni anonim.}
+STR_BOX3D_ALIGN               {Align dobozok}
+STR_BOX3D_ALIGN_DESC          {Align játék dobozok, mintha tárolták egy polcon.}
+STR_BOX3D_GAP                 {Boxs gap}
+STR_BOX3D_GAP_DESC            {Adjust a szakadék a játék dobozok között.}
+STR_SHORT                     {Rövid}
+STR_MEDIUM                    {Közepes}
+STR_LONG                      {Hosszú}
+STR_MOUNT_BD                  {Mount as BD}
+STR_MOUNT_DVD                 {Mount mint DVD}
+STR_SHOWLOGS_DESC             {Mutasson üzeneteket, hogy tájékoztassa a jelenlegi feladatot a töltő képernyő alatt.}
+STR_OVERWRITE                 {Átírás}
+STR_OVERWRITE_DESC            {A meglévő fájlok túlírásának ellenőrzése.}
+STR_OVERWRITE_ALWAYS          {Mindig}
+STR_OVERWRITE_NEVER           {Soha}
+STR_OVERWRITE_ASK             {Kérdező}
+STR_OVERWRITE_DUPLICATE       {dalszöveg}
+STR_ASK_TO_OVERWRITE          {File már létezik. Szeretné felülírni a meglévő fájlt?}
+STR_ASK_TO_DELETE             {Tényleg szeretné törölni ezt?}
+STR_DUMPER_MAX_TRY            {Read attempts}
+STR_DUMPER_MAX_TRY_DESC       {Set the number of read attempts when there is a disc read error.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 unlock}
+STR_HDD_UNLOCK_SPACE_DESC     {Reduce the amount of reserved space in hdd0 from 8% to 1%.}

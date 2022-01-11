@@ -6,9 +6,9 @@
 
 // For whatever reason, if this function gets inlined automatically, it fucks everything
 // Stupid compiler
-static __attribute__ ((noinline)) void xtea_encrypt_block(uint32_t *k, uint32_t *in, uint32_t *out)
+static __attribute__ ((noinline)) void xtea_encrypt_block(u32 *k, u32 *in, u32 *out)
 {
-	uint32_t sum, y, z;
+	u32 sum, y, z;
 	unsigned char i;
 
 	sum = 0;
@@ -28,20 +28,20 @@ static __attribute__ ((noinline)) void xtea_encrypt_block(uint32_t *k, uint32_t 
 
 static inline void xor64(void *in, void *out)
 {
-	uint8_t *in8 = (uint8_t *)in;
-	uint8_t *out8 = (uint8_t *)out;
+	u8 *in8 = (u8 *)in;
+	u8 *out8 = (u8 *)out;
 
 	for (int i = 0; i < 8; i++)
 		out8[i] ^= in8[i];
 }
 
-void xtea_ctr(uint8_t *key, uint64_t nounce, uint8_t *buf, int size)
+void xtea_ctr(u8 *key, u64 nounce, u8 *buf, int size)
 {
-	uint8_t ct[8];
+	u8 ct[8];
 
 	for (int i = 0; i < size; i += 8, ++nounce)
 	{
-		xtea_encrypt_block((uint32_t *)key, (uint32_t *)&nounce, (uint32_t *)ct);
+		xtea_encrypt_block((u32 *)key, (u32 *)&nounce, (u32 *)ct);
 		xor64(ct, buf + i);
 	}
 }

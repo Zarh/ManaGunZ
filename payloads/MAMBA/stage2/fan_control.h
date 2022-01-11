@@ -4,29 +4,29 @@
 #define SYS_SHUTDOWN			0x0100
 #define SYS_SHUTDOWN2			0x1100
 
-static uint8_t fan_control_running = 0;
+static u8 fan_control_running = 0;
 
-uint8_t set_fan_speed = 0;
+u8 set_fan_speed = 0;
 
 static int sm_get_fan_speed(void)
 {
-	uint8_t st;
-	uint8_t mode;
-	uint8_t fan_speed;
-	uint8_t unk;
+	u8 st;
+	u8 mode;
+	u8 fan_speed;
+	u8 unk;
 
 	sm_get_fan_policy(0, &st, &mode, &fan_speed, &unk);
 
 	return fan_speed;
 }
 
-static void fan_control(uint64_t arg0)
+static void fan_control(u64 arg0)
 {
 	#ifdef DEBUG
 	DPRINTF("FAN CONTROL: started.\n");
 	#endif
 
-	uint32_t t_cpu, t_rsx, prev = 0;
+	u32 t_cpu, t_rsx, prev = 0;
 	fan_control_running = 1;
 
 	while(fan_control_running)
@@ -82,13 +82,13 @@ void load_fan_control(void)
 		do_fan_control();  // Dynamic fan control
 }
 
-LV2_HOOKED_FUNCTION_COND_POSTCALL_3(int, sm_set_fan_policy_sc, (uint8_t unk, uint8_t _fan_mode, uint8_t _fan_speed))
+LV2_HOOKED_FUNCTION_COND_POSTCALL_3(int, sm_set_fan_policy_sc, (u8 unk, u8 _fan_mode, u8 _fan_speed))
 {
 	fan_control_running = 0; // disable internal fan control if fan speed is set manually via syscall 389
 	return DO_POSTCALL;
 }
 
-LV2_HOOKED_FUNCTION_COND_POSTCALL_3(int, sys_shutdown, (uint16_t op, const void *buf, uint64_t size))
+LV2_HOOKED_FUNCTION_COND_POSTCALL_3(int, sys_shutdown, (uint16_t op, const void *buf, u64 size))
 {
 	// Avoids max FAN speed after a shutdown by Evilnat
 	if(op == SYS_SHUTDOWN || op == SYS_SHUTDOWN2)

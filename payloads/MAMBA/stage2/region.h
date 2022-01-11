@@ -1,8 +1,10 @@
 #ifndef __REGION_H__
 #define __REGION_H__
 
-extern uint8_t dvd_video_region;
-extern uint8_t bd_video_region;
+#include <lv1/inttypes.h>
+
+extern u8 dvd_video_region;
+extern u8 bd_video_region;
 
 enum 
 {
@@ -32,6 +34,3 @@ void unhook_all_region(void);
 #endif
 
 #endif
-
-
-

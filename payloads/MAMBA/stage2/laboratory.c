@@ -23,11 +23,11 @@
 
 #include "common.h"
 
-LV2_PATCHED_FUNCTION(uint64_t, syscall_handler, (uint64_t r3, uint64_t r4, uint64_t r5, uint64_t r6, uint64_t r7, uint64_t r8, uint64_t r9, uint64_t r10))
+LV2_PATCHED_FUNCTION(u64, syscall_handler, (u64 r3, u64 r4, u64 r5, u64 r6, u64 r7, u64 r8, u64 r9, u64 r10))
 {
-	register uint64_t r11 asm("r11");
-	register uint64_t r13 asm("r13");
-	uint64_t num, p;
+	register u64 r11 asm("r11");
+	register u64 r13 asm("r13");
+	u64 num, p;
 	f_desc_t func;
 
 	num = r11/8;
@@ -35,7 +35,7 @@ LV2_PATCHED_FUNCTION(uint64_t, syscall_handler, (uint64_t r3, uint64_t r4, uint6
 
 	func.addr = (void *)p;
 	func.toc = (void *)MKA(TOC);
-	uint64_t (* syscall)() = (void *)&func;
+	u64 (* syscall)() = (void *)&func;
 
 	suspend_intr();
 
@@ -43,14 +43,14 @@ LV2_PATCHED_FUNCTION(uint64_t, syscall_handler, (uint64_t r3, uint64_t r4, uint6
 	{
 		/*if (num == 378)
 		{
-			uint64_t *p1, *p2, *p3;
+			u64 *p1, *p2, *p3;
 
-			p1 = (uint64_t *)r3;
-			p2 = (uint64_t *)r4;
-			p3 = (uint64_t *)r5;
+			p1 = (u64 *)r3;
+			p2 = (u64 *)r4;
+			p3 = (u64 *)r5;
 
 			resume_intr();
-			uint64_t ret = syscall(r3, r4, r5, r6);
+			u64 ret = syscall(r3, r4, r5, r6);
 
 			DPRINTF("ret=%lx r3 %016lx r4 %016lx r5 %016lx\n", ret, *p1, *p2, *p3);
 			// r3 = 3 -> power off button pressed
@@ -83,19 +83,19 @@ void do_hook_all_syscalls(void)
 
 static void dump_threads_info(void)
 {
-	uint8_t *thread_info = (uint8_t *)MKA(thread_info_symbol);
+	u8 *thread_info = (u8 *)MKA(thread_info_symbol);
 	int num_threads;
 
-	num_threads = *(uint32_t *)&thread_info[8];
+	num_threads = *(u32 *)&thread_info[8];
 
 	for (int i = 0; i < num_threads; i++)
 	{
-		DPRINTF("Thread: %s   entry: %016lx    PC: %016lx\n", (char *)(thread_info+0x58), *(uint64_t *)(thread_info+0xB0), *(uint64_t *)(thread_info+0x208));
+		DPRINTF("Thread: %s   entry: %016lx    PC: %016lx\n", (char *)(thread_info+0x58), *(u64 *)(thread_info+0xB0), *(u64 *)(thread_info+0x208));
 		thread_info += 0x600;
 	}
 }
 
-static void dump_threads_info_test(uint64_t arg0)
+static void dump_threads_info_test(u64 arg0)
 {
 	DPRINTF("Threads info will be dumped in 13 seconds.\n");
 	timer_usleep(SECONDS(13));
@@ -117,7 +117,7 @@ static void dump_process(process_t process)
 {
 	char path[0x420];
 	void *buf;
-	uint64_t addr;
+	u64 addr;
 	int ret, fd;
 
 	DPRINTF("Dumping process %s\n", get_process_name(process));
@@ -139,7 +139,7 @@ static void dump_process(process_t process)
 
 	for (addr = 0x10000; ; addr += KB(64))
 	{
-		uint64_t written;
+		u64 written;
 
 		ret = copy_from_process(process, (void *)addr, buf, KB(64));
 		if (ret) // (ret != 0)
@@ -164,7 +164,7 @@ static void dump_process(process_t process)
 
 	for (addr = 0x30000000; ; addr += KB(64))
 	{
-		uint64_t written;
+		u64 written;
 
 		ret = copy_from_process(process, (void *)addr, buf, KB(64));
 		if (ret) // (ret != 0)
@@ -182,10 +182,10 @@ static void dump_process(process_t process)
 
 static void dump_processes(void)
 {
-	uint64_t *proc_list = *(uint64_t **)MKA(TOC + process_rtoc_entry_1);
+	u64 *proc_list = *(u64 **)MKA(TOC + process_rtoc_entry_1);
 
-	proc_list = *(uint64_t **)proc_list;
-	proc_list = *(uint64_t **)proc_list;
+	proc_list = *(u64 **)proc_list;
+	proc_list = *(u64 **)proc_list;
 
 	for (int i = 0; i < 0x10; i++)
 	{
@@ -194,14 +194,14 @@ static void dump_processes(void)
 		proc_list += 2;
 		DPRINTF("%p\n", process);
 
-		if ((((uint64_t)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
+		if ((((u64)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
 			continue;
 
 		dump_process(process);
 	}
 }
 
-static void dump_processes_test(uint64_t arg0)
+static void dump_processes_test(u64 arg0)
 {
 	DPRINTF("Processes will be dumped in 74 seconds.\nGo, go, run what you want to dump!\n");
 	timer_usleep(SECONDS(74));
@@ -229,14 +229,14 @@ void do_hook_load_module(void)
 	hook_function_with_postcall(get_syscall_address(_SYS_PRX_LOAD_MODULE_ON_MEMCONTAINER ), load_module_hook, 6);
 }
 
-LV2_HOOKED_FUNCTION_POSTCALL_2(void, mutex_create_hooked, (void *mutex, uint64_t blah))
+LV2_HOOKED_FUNCTION_POSTCALL_2(void, mutex_create_hooked, (void *mutex, u64 blah))
 {
 	process_t process = get_current_process();
 	//char *name = get_process_name(process)+8;
 	if (1)
 	{
 		static char name[32];
-		uint64_t r3 = (uint64_t)mutex;
+		u64 r3 = (u64)mutex;
 
 		if (r3 > 0xb90000 && r3 < 0x100000000ULL && prx_get_module_name_by_address(process, mutex, name) == 0)
 		{
@@ -262,7 +262,7 @@ void do_hook_mutex_create(void)
 
 static void read_and_clear_ps2netemu_log(void)
 {
-	uint8_t *buf;
+	u8 *buf;
 
 	if (page_allocate_auto(NULL, 0x10000, (void **)&buf) != 0)
 	{
@@ -288,7 +288,7 @@ static void read_and_clear_ps2netemu_log(void)
 	free_page(NULL, buf);
 }
 
-static void ps2net_copy_test(uint64_t arg0)
+static void ps2net_copy_test(u64 arg0)
 {
 	DPRINTF("+++ Sleeping for 16 seconds\n");
 	timer_usleep(SECONDS(16));
@@ -302,7 +302,7 @@ static void ps2net_copy_test(uint64_t arg0)
 	}
 
 	int src, dst;
-	uint64_t rw;
+	u64 rw;
 
 	if (cellFsOpen("/dev_usb000/ps2_netemu.self", CELL_FS_O_RDONLY, &src, 0, NULL, 0) != CELL_FS_SUCCEEDED)
 	{
@@ -317,7 +317,7 @@ static void ps2net_copy_test(uint64_t arg0)
 		goto umount_exit;
 	}
 
-	uint8_t *buf;
+	u8 *buf;
 
 	if (page_allocate_auto(NULL, 0x10000, (void **)&buf) != SUCCEEDED)
 	{
@@ -330,7 +330,7 @@ static void ps2net_copy_test(uint64_t arg0)
 	memset(buf, 0, 0x10000);
 
 	DPRINTF("Enter copy loop\n");
-	uint64_t total = 0;
+	u64 total = 0;
 
 	while (1)
 	{
@@ -383,13 +383,13 @@ void do_ps2net_copy_test(void)
 static void dump_process_modules_info(process_t process)
 {
 	sys_prx_id_t *list;
-	uint32_t *unk;
-	uint32_t n, unk2;
+	u32 *unk;
+	u32 n, unk2;
 
 	DPRINTF("******** %s ********\n", get_process_name(process));
 
 	list = kalloc(SPRX_NUM*sizeof(sys_prx_module_info_t));
-	unk  = kalloc(SPRX_NUM*sizeof(uint32_t));
+	unk  = kalloc(SPRX_NUM*sizeof(u32));
 
 	if (prx_get_module_list(process, list, unk, SPRX_NUM, &n, &unk2) == 0)
 	{
@@ -420,10 +420,10 @@ static void dump_process_modules_info(process_t process)
 
 static void dump_processes_modules_info(void)
 {
-	uint64_t *proc_list = *(uint64_t **)MKA(TOC+process_rtoc_entry_1);
+	u64 *proc_list = *(u64 **)MKA(TOC+process_rtoc_entry_1);
 
-	proc_list = *(uint64_t **)proc_list;
-	proc_list = *(uint64_t **)proc_list;
+	proc_list = *(u64 **)proc_list;
+	proc_list = *(u64 **)proc_list;
 
 	for (int i = 0; i < 0x10; i++)
 	{
@@ -431,14 +431,14 @@ static void dump_processes_modules_info(void)
 
 		proc_list += 2;
 
-		if ((((uint64_t)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
+		if ((((u64)process) & 0xFFFFFFFF00000000ULL) != MKA(0))
 			continue;
 
 		dump_process_modules_info(process);
 	}
 }
 
-static void dump_modules_info_test(uint64_t arg0)
+static void dump_modules_info_test(u64 arg0)
 {
 	DPRINTF("Modules info will be dumped in 71 seconds.\n");
 	timer_usleep(SECONDS(71));
@@ -454,7 +454,7 @@ void do_dump_modules_info_test(void)
 }
 
 
-static void pad_test(uint64_t arg0)
+static void pad_test(u64 arg0)
 {
 	int error_shown = 0;
 	pad_data data, odata;

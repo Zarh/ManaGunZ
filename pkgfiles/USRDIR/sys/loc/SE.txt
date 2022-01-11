@@ -1,381 +1,418 @@
-﻿STR_LANGUAGE	{Svenska}
-STR_LANGCODE	{\x0D}
+﻿STR_LANGUAGE                  {Svenska}
+STR_LANGCODE                  {\x0D}
 
-STR_LANG					{Språk}
-STR_LANG_DESC				{Välj språk.}
-STR_GATHERING				{Samlar data ...}
-STR_COPYING					{Kopiering ...}
-STR_FROM					{från}
-STR_TO						{till}
-STR_FILES					{Filer}
-STR_DIRS					{Kataloger}
-STR_UNKNOWN					{Okänd}
-STR_FILE					{Fil}
-STR_CANCEL					{Avbryt}
-STR_TURNOFF					{Stäng AV}
-STR_CANCELLED				{Avbrutet}
-STR_UNIT					{Bytes}
-STR_TOTALSIZE				{Total storlek}
-STR_HIDELOGS				{Dölj loggar}
-STR_SHOWLOGS				{Visa loggar}
-STR_BOOST					{Öka!}
-STR_GAMEMENU				{Spelmeny}
-STR_SETTINGS				{Inställningar}
-STR_MOUNTGAME				{Montera Spel}
-STR_FILTER					{Filter}
-STR_FAVORITE				{favorit}
-STR_FILEMANAGER				{Filhanteraren}
-STR_HOLD					{Håll}
-STR_EXIT					{Återgå till XMB}
-STR_GAME_PROP				{Spelegenskaper}
-STR_GAME_TITLE				{Titel}
-STR_GAME_PATH				{Sökväg}
-STR_GAME_FORMAT				{Format}
-STR_GAME_SIZE				{Storlek}
-STR_GAME_PLATFORM			{Platform}
-STR_SYSVERS					{Firmware}
-STR_GAMEID					{Identifierare}
-STR_ELFCRC					{ELF CRC}
-STR_ELFCRCO					{ELF CRC (Original)}
-STR_BACK					{Tillbaka}
-STR_ENTER					{OK}
-STR_UPDATE_FOUND			{Uppdatering hittades}
-STR_UPDATE					{Uppdatera}
-STR_SIZE					{Storlek}
-STR_SYSTEM					{System}
-STR_DL						{Hämta}
-STR_DL_ALL					{Hämta Alla}
-STR_UNPLUG					{Koppla ur följande enhet(er)}
-STR_PATH					{Sökväg}
-STR_TYPE					{Typ}
-STR_FOLDER					{Mapp}
-STR_DIR						{register}
-STR_MULT					{Flera}
-STR_THM_SETTINGS			{Inställningar Tema}
-STR_THM						{Tema}
-STR_THM_DESC				{Ladda det tema du vill ha. Du kan installera dem från /dev_usbXXX/Themes.}
-STR_CREATE					{Skapa}
-STR_ZOOM_OUT				{Zooma UT}
-STR_ZOOM_IN					{Zooma IN}
-STR_MOVE_FRAME				{Flytta ram}
-STR_CHECK					{Markera}
-STR_UNCHECK					{Avmarkera}
-STR_GAME_OPTION				{Spelalternativ}
-STR_ADD_FAV					{Lägg till i favoriter}
-STR_REM_FAV					{Ta bort från favoriter}
-STR_FAV_DESC				{Hantera lista över favoritspel.}
-STR_RENAME					{Byt namn}
-STR_RENAME_DESC				{Byt namn på din Backup.}
-STR_DELETE					{Radera}
-STR_DELETE_DESC				{Ta bort din Backup.}
-STR_COPY					{Kopiera}
-STR_COPY_DESC				{Kopiera din backup till en annan sökväg.}
-STR_CREATE_ICON0			{Skapa ICON0}
-STR_CREATE_ICON0_DESC		{Skapa en "falsk" ICON0 från omslaget.}
-STR_REST_PNACH				{Återställ PNACH}
-STR_REST_PNACH_DESC			{Ta bort de korrigeringar som appliceras av pnach-filen till Backupen.}
-STR_APPLY_PNACH				{Använd PNACH}
-STR_APPLY_PNACH_DESC		{Applicera korrigeringsfilerna från pnach-filen till Backupen.}
-STR_DISABLE_WS				{Inaktivera WideScreen}
-STR_ENABLE_WS				{Aktivera WideScreen}
-STR_WS_DESC					{Visa spelet i 16:9 istället för 4:3.}
-STR_DISABLE_480P			{Inaktivera 480P}
-STR_ENABLE_480P				{Aktivera 480P}
-STR_480P_DESC				{Progressivt skanningsläge i 480P.}
-STR_DISABLE_YFIX			{Inaktivera YFIX}
-STR_ENABLE_YFIX				{Aktivera YFIX}
-STR_YFIX_DESC				{Fixa det vertikala läget.}
-STR_DISABLE_FMVSKIP			{Inaktivera hoppa över FMV}
-STR_ENABLE_FMVSKIP			{Aktivera hoppa över FMV}
-STR_FMVSKIP_DESC			{låter dig hoppa över videofilmerna.}
-STR_DISABLE_NETEMU			{Inaktivera NetEMU}
-STR_ENABLE_NETEMU			{Aktivera NetEMU}
-STR_NETEMU_DESC				{Tvinga användning av ps2 netemu.}
-STR_SAVE_CONFIG				{Spara CONFIG}
-STR_CONFIG					{Konfiguration}
-STR_CONFIG_DESC				{[Experimentell] Skapa din egen CONFIG-fil för att "fixa" din ps2-Backup.}
-STR_NONE					{Ingen}
-STR_CHECK_MD5				{Kontrollera MD5}
-STR_PROPS					{Egenskaper}
-STR_PROPS_DESC				{Visa egenskaperna för din Backup.}
-STR_ASK_DEL					{Vill du verkligen radera}
-STR_GAME_SETTINGS			{Spelinställningar}
-STR_DIRECT_BOOT				{Direktstart}
-STR_DIRECT_BOOT_DESC		{Starta spelet direkt utan att gå tillbaka till XMB.}
-STR_YES						{Ja}
-STR_NO						{Nej}
-STR_CLEAN_SYSCALL			{Rensa syscall}
-STR_CLEAN_SYSCALL_DESC		{Inaktivera peek and poke syscalls.}
-STR_CHANGE_IDPS				{Ändra IDPS}
-STR_CHANGE_IDPS_DESC		{Ändra din IDPS i lv2.}
-STR_EXT_GAME_DATA			{Ext. Speldata}
-STR_EXT_GAME_DATA_DESC		{Installera speldata på USB-enhet istället för ditt system.}
-STR_PAYLOAD					{Payload}
-STR_PAYLOAD_DESC			{Välj Payload för att montera din Backup.}
-STR_PRIM_USB				{Ställ in primär USB}
-STR_PRIM_USB_DESC			{Ställ in USB-enheten där spelet är lagrat som den huvudsakliga USB-enheten.}
-STR_BDEMU					{BD-emulering}
-STR_BDEMU_DESC				{Välj vilken typ av emulering du vill säkerhetskopiera.}
-STR_PATCH_LIBFS				{Patcha libfs}
-STR_PATCH_LIBFS_DESC		{Välj vilka patchade libfs du vill använda.}
-STR_MOUNT_APPHOME			{Montera /app_home}
-STR_MOUNT_APPHOME_DESC		{Omdirigera sökvägen /app_home till /dev_bdvd.}
-STR_PATCH_EXP				{Patcha explore_plugin}
-STR_PATCH_EXP_DESC			{Sökvägen /app_home är ersatt av /dev_bdvd i plugin explorer_plugin.}
-STR_MAKE_SHTCUT_PKG			{Gör genväg PKG}
-STR_MAKE_SHTCUT_PKG_DESC	{Skapa en paketfil som är lagrad till /dev_hdd0/packages. När det är installerat kommer det att bli en "genväg" för att montera din säkerhetskopia från XMB.}
-STR_PATCH_EBOOT				{Patcha EBOOT}
-STR_PATCH_EBOOT_DESC		{Ändra firmwareversionen till 4.21 i EBOOT-filen för att förhindra fel 0x80010009.}
-STR_RESIGN					{Omsignera}
-STR_RESIGN_DESC				{Skriv om igen alla exekveringar av din Backup med 4,21 nycklar.}
-STR_RESTORE					{Återställ}
-STR_RESTORE_DESC			{Återställ originalkörställen för din Backup.}
-STR_EXTRACT_ISO				{Extrahera ISO}
-STR_EXTRACT_ISO_DESC		{Extrahera filer från din ISO till en mapp.}
-STR_CONVERT_ISO				{Konvertera till ISO}
-STR_CONVERT_ISO_DESC		{Konvertera din JB-Backup till en ISO.}
-STR_FIX_PERMS				{Fixa behörigheter}
-STR_FIX_PERMS_DESC			{Ange behörighetsvärde till 0777 av varje mapp och filer i din Backup.}
-STR_CHECK_IRD				{Kontrollera filer (IRD)}
-STR_CHECK_DESC				{Kontrollera om filerna i dina Backups inte ändras.}
-STR_DL_UPDATE				{Hämta uppdatering}
-STR_DL_UPDATE_DESC			{Ladda ner dina backup-uppdateringar till / dev_hdd0 / packages.}
-STR_OPEN_WINDOW				{Öppna nytt fönster}
-STR_DUMP_LV1				{Dumpa lv1}
-STR_DUMP_LV2				{Dumpa lv2}
-STR_DUMP_FLASH				{Dumpa flash}
-STR_REFRESH					{Uppdatera}
-STR_NEWFOLDER				{Ny mapp}
-STR_NEWFILE					{Ny fil}
-STR_PASTE					{Klistra in}
-STR_CUT						{Klipp ut}
-STR_UNSELECT_ALL			{Avmarkera alla}
-STR_SELECT_ALL				{Välj alla}
-STR_MAKE_PKG				{Skapa PKG}
-STR_GETMD5					{Hämta MD5}
-STR_GETSHA1					{Hämta SHA1}
-STR_VIEW					{Visa}
-STR_VIEW_TXT				{Visa TXT}
-STR_VIEW_SFO				{Visa SFO}
-STR_READ_XREG				{Läs xReg}
-STR_EXTRACT_ELF				{Extrahera ELF}
-STR_RESIGN_SELF				{Omsignera SELF}
-STR_LAUNCH_SELF				{Starta SELF}
-STR_EXTRACT_EBOOT			{Extrahera EBOOT}
-STR_RESIGN_EBOOT			{Omsignera EBOOT}
-STR_LAUNCH_EBOOT			{Starta EBOOT}
-STR_SIGN_ELF				{Signera ELF}
-STR_SIGN_EBOOT				{Signera EBOOT}
-STR_SIGN_PRX				{Signera PRX}
-STR_EXTRACT_PRX				{Extrahera PRX}
-STR_RESIGN_SPRX				{Avsluta SPRX}
-STR_REMOVE_PRXLOADER		{Ta bort från PRX Loader}
-STR_ADD_PRXLOADER			{Lägg till PRX Loader}
-STR_REMOVE_PRXLOADER2		{Ta bort från PRXLoader}
-STR_ADD_PRXLOADER2			{Lägg till PRXLoader}
-STR_REMOVE_MAMBA			{Ta bort från Mamba-listan}
-STR_ADD_MAMBA				{Lägg till i Mamba-listan}
-STR_REMOVE_COBRA			{Ta bort från Cobra-listan}
-STR_ADD_COBRA				{Lägg till i Cobra-listan}
-STR_EXTRACT_RCO				{Extrahera RCO}
-STR_EXTRACT_PKG				{Extrahera PKG}
-STR_PKG_INFO				{PKG info}
-STR_EXTRACT_TRP				{Extrahera TRP}
-STR_COMPRESS_ISO			{Komprimera ISO}
-STR_CHECK_CRC32				{Kontrollera CRC32}
-STR_DECOMPRESS_CSO			{Dekomprimera CSO}
-STR_EXTRACT_THM				{Extrahera THM}
-STR_EXTRACT_P3T				{Extrahera P3T}
-STR_EXTRACT_RAF				{Extrahera RAF}
-STR_EXTRACT_QRC				{Extrahera QRC}
-STR_EXTRACT_HERE			{Extrahera här}
-STR_CONVERT_JSX_JS			{Konvertera JSX till JS}
-STR_CONVERT_VAG_WAV			{Konvertera VAG till WAV}
-STR_CONVERT_GTF_DDS			{Konvertera GTF till DDS}
-STR_CONVERT_DDS_PNG			{Konvertera DDS till PNG}
-STR_MAKE_APNG				{Skapa APNG}
-STR_SET_PERMS				{Ange behörighet}
-STR_NOGAME					{Inget spel hittades}
-STR_GLOB_SETTINGS			{Globala inställningar}
-STR_ADJUST					{Justera skärm}
-STR_ADJUST_DESC				{Kalibrera din bildskärm.}
-STR_DL_COVER				{Hämta omslag}
-STR_DL_COVER_DESC			{Ladda ner alla saknade spelomslag till USRDIR/covers/[gameID].jpg}
-STR_PLUGIN_MANAGER			{Plugins Manager}
-STR_PLUGIN_MANAGER_DESC		{Hantera dina plugin lagrade i /dev_hdd0/plugins.}
-STR_UPD_MGZ					{Uppdatera ManaGunZ}
-STR_UPD_MGZ_DESC			{Hämta och installera den senaste versionen av ManaGunZ.}
-STR_GAME_PATHS				{Sökväg Spelbackup}
-STR_GAME_PATHS_DESC			{Konfigurera namnet på kataloger där ManaGunZ hittar dina Backups.}
-STR_XMB_PRIO				{XMB Prioritet}
-STR_XMB_PRIO_DESC			{Ikonen för ManaGunZ i XMB visas överst. Det kommer att vara effektivt efter nästa systemstart.}
-STR_HELP					{Visa hjälp}
-STR_HELP_DESC				{Visa meningarna du läser här.}
-STR_COLOR_1					{Färg 1}
-STR_COLOR_2					{Färg 2}
-STR_COLOR_3					{Färg 3}
-STR_COLOR_4					{Färg 4}
-STR_COLOR_DESC				{Ändra färgerna som används av ManaGunZ.}
-STR_UI_SETTINGS				{Gränssnittsinställningar}
-STR_UI						{Användargränssnitt}
-STR_UI_DESC					{Ändra gränssnittet.}
-STR_SIDE_MENU				{SidoMeny Spel}
-STR_SIDE_MENU_DESC			{Visa spelmenyn på höger sida av skärmen.}
-STR_SHOW_PIC1				{Visa PIC1}
-STR_SHOW_PIC1_DESC			{Visa bakgrundsbilden för de aktuella valda spelen "PIC1". Använd R1 med UI LIST och GRID för att visa den.}
-STR_SHOW_COVER				{Visa omslag}
-STR_SHOW_COVER_DESC			{Visa kåpa.}
-STR_SHOW_GAMECASE			{Visa fodral}
-STR_SHOW_GAMECASE_DESC		{Visa kåpa med fodralet.}
-STR_SHOW_ICON0				{Visa ICON0}
-STR_SHOW_ICON0_DESC			{Visa huvudbilden av spelet 'ICON0'.}
-STR_GRID_TYPE				{Rutnäts-typ}
-STR_GRID_TYPE_DESC			{Välj hur du gör nätet flyttar.}
-STR_SCROLL					{Scrolla}
-STR_PAGE					{Sida}
-STR_DIRECTION				{Riktning}
-STR_DIRECTION_DESC			{Välj i vilken riktning nätet ska röra sig.}
-STR_VERTICAL				{Vertikalt}
-STR_HORIZONTAL				{Horisontalt}
-STR_ANIMATED				{Animerad}
-STR_ANIMATED_DESC			{Gör nätets rörelser glidande.}
-STR_KEEP_PROP				{Behåll proportionen}
-STR_KEEP_PROP_DESC			{Behåll det ursprungliga bildförhållandet för ICON0.}
-STR_NB_COL					{Antal kolumner}
-STR_NB_COL_DESC				{Välj antal kolumner i rutnätet.}
-STR_NB_LINE					{Antal rader}
-STR_NB_LINE_DESC			{Välj antal rader i rutnätet.}
-STR_INVERSE					{Invertera Knappar}
-STR_INVERSE_DESC			{Invertera knapparna höger och vänster.}
-STR_3D						{3D}
-STR_3D_DESC					{Visa menyn med 3D-modeller av spelfodral.}
-STR_ADD						{Lägg till}
-STR_LOAD					{Ladda}
-STR_CHANGE					{Ändra}
-STR_COLOR					{Färg}
-STR_RESET					{Återställ}
-STR_FAILED					{Misslyckades}
-STR_DONE					{Klart}
-STR_OPEN					{Öppna}
-STR_CLOSE					{Stäng}
-STR_OPTION					{Alternativ}
-STR_SELECT					{Välj}
-STR_WINDOW					{Fönster}
-STR_CLICK					{Klicka}
-STR_CURSOR					{Markör}
-STR_NEXT					{Nästa}
-STR_PREVIOUS				{Föregående}
-STR_SET_COLOR				{Ange färg}
-STR_HIDETV					{Dölj TV-skärmtest}
-STR_SHOWTV					{Visa tv-skärmtest}
-STR_MOVE_TO_PLUGINS			{Flytta till /dev_hdd0/plugins}
-STR_ASK_PLUGINS				{För att använda plugin-hanteraren måste plugins vara i '/dev_hdd0/plugins'.\nOm du accepterar att använda den här mappen?}
-STR_CHANGE_VALUE			{Ändra värde}
-STR_LOAD_IDPS_LV2			{Ladda IDPS från lv2}
-STR_LOAD_IDPS_EID5			{Ladda IDPS från EID5}
-STR_NAME					{Namn}
-STR_DOCK_RIGHT				{Dock till höger}
-STR_DOCK_LEFT				{Dock till vänster}
-STR_DOCK_FULL				{Docka till full}
-STR_PLUGIN_MONITOR			{Plugins Monitor}
-STR_UNUSED					{Oanvänd}
-STR_UNLOAD					{Lasta av}
-STR_BOOT_FILE				{Startfil}
-STR_CURRENT					{Nuvarande}
-STR_NET						{Net}
-STR_SOFT					{Soft}
-STR_GX						{GX}
-STR_CUSTOM					{Beställnings}
-STR_NEW_CMD					{Nytt kommando}
-STR_PNACH					{Pnach}
-STR_WIDESCREEN				{WideScreen}
-STR_480P					{480P}
-STR_YFIX					{YFIX}
-STR_FMV						{FMV hoppa över}
-STR_SIMPLE					{Enkel}
-STR_ADVANCED				{Avancerad}
-STR_INSTALL_MGZ				{Vill du installera ManaGunZ ?} 
-STR_UP2DATE					{Det är aktuellt}
-STR_SHOW_WAVES				{Visa vågor}
-STR_SHOW_WAVES_DESC			{Visa vågor i bakgrunden.}
-STR_WAVES_COLOR				{Vågor färg}
-STR_WAVES_COLOR_DESC		{Ändra vågornas färg.}
-STR_USE_CONFIG				{Du använder inte en PS2-konfigurationsfil "* .CONFIG".}
-STR_COLORSET				{ColorSet}
-STR_COLORSET_DESC 			{Choose a predefined set of colors to use in ManaGunZ.}
-STR_GRID_SCROLL				{Scroll}
-STR_ADD_LIMG				{Add LIMG}
-STR_REMOVE_LIMG				{Remove LIMG}
-STR_LIMG_DESC				{It may fix few games.}
-STR_FONT					{Font}
-STR_FONT_DESC				{Change the font.}
-STR_MOVE					{Flytta}
-STR_JOIN					{Join}
-STR_JOIN_DESC				{Merge .666XX files.}
-STR_COLOR_FILTER			{Color Filters}
-STR_COLOR_NOTIF				{Notification}
-STR_COLOR_BOXHEAD			{Box header}
-STR_COLOR_BOXBODY			{Box body}
-STR_COLOR_SIDEBAR			{Sidebar }
-STR_COLOR_BGS				{Setting background}
-STR_COLOR_BG				{Background}
-
-STR_ROOT_DISPLAY			{Root display}
-STR_ROOT_DISPLAY_DESC		{Change the display of the root in FileManager.}
-STR_STYLE					{Style}
-STR_STYLE_CUSTOM			{Custom style}
-STR_STYLE1					{Style 1}
-STR_STYLE2					{Style 2}
-STR_STYLE3					{Style 3}
-STR_STYLE4					{Style 4}
-STR_STYLE5					{Style 5}
-STR_STYLE6					{Style 6}
-STR_FREEOF					{free of}
-STR_ROOTLABEL				{Root}
-STR_FM_ICONSIZE				{Icon size}
-STR_FM_BIG					{Big}
-STR_FM_SMALL				{Small}
-STR_FM_ROWNUMBER			{Text row number}
-STR_FM_ROWSIZE				{Row size}
-STR_FM_LEFT_CONTENT			{Row content [LEFT]}
-STR_FM_RIGHT_CONTENT		{Row content [RIGHT]}
-STR_FM_EMPTY				{Empty}
-STR_FM_MOUNTPOINT			{Mount point}
-STR_FM_DEVICE				{Device}
-STR_FM_LABEL				{Label}
-STR_FM_CAPACITY				{Capacity bar}
-STR_FM_MEMINSIDE			{Inside memory}
-STR_FM_MEMOUTSIDE			{Outside memory}
-STR_FM_FILESYSTEM			{Files system}
-STR_FM_CB_WIDTH				{Capacity bar width}
-STR_FM_MEMORY				{Memory}
-STR_FM_ICON					{Icons}
-STR_FM_FILEFOLDER			{File and Folder}
-STR_FM_CUSTOM				{Custom icons}
-STR_FM_CB_FILL				{Fill}
-STR_EDIT_IDPS				{Edit IDPS}
-STR_FILTER_NOGAME			{No games found. Adjust your filter.}
-STR_SYMLINK_SRC				{SymLink source}
-STR_SYMLINK_TARGET			{SymLink target}
-STR_LOAD_MAMBA				{Load mamba}
-
-STR_CONVERT_TO_PNG			{Convert to PNG}
-STR_MOUNT_DEVBLIND			{Unprotect dev_flash}
-STR_UNMOUNT_DEVBLIND		{Protect dev_flash}
-STR_BT_AUDIO				{Game-pad audio out}
-STR_BT_AUDIO_DESC			{Play sound through the game-pad while playing. Tested with a DS4.}
-STR_GAME_UPDATE_TITLE		{PS3 game updates downloader}
-STR_CURRENT_VERS			{Current version}
-STR_CANT_MOUNT_PEEKPOKE		{Unmountable : PEEK and POKE unavailable, mamba can't be installed}
-STR_CANT_MOUNT_UNKFW		{Unmountable : unknown firmware, mamba can't be installed.}
-STR_CANT_MOUNT				{Unmountable}
-STR_ONLY_FAV				{Only favorites}
-STR_ALL_GAMES				{All games}
-STR_DISPLAY					{Display}
-STR_DUMP_DEC				{Dump decrypted Blu-Ray disc}
-STR_DUMP_DEC_DESC			{Get a proper iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
-STR_DUMP_ENC				{Dump encrypted Blu-Ray disc}
-STR_DUMP_DISC_KEY			{Dump Blu-Ray disc key}
-STR_DUMP_ERK				{Dump eid root key}
-STR_DUMP_3DUMP				{Dump 3Dump.bin}
-STR_SYSTEM_TOOLS			{System tools}
+STR_LANG                      {Språk}
+STR_LANG_DESC                 {Välj språk.}
+STR_GATHERING                 {Samlar data...}
+STR_COPYING                   {Kopiering...}
+STR_FROM                      {från}
+STR_TO                        {till}
+STR_FILES                     {Filer}
+STR_DIRS                      {Kataloger}
+STR_UNKNOWN                   {Okänd}
+STR_FILE                      {Fil}
+STR_CANCEL                    {Avbryt}
+STR_TURNOFF                   {Stäng AV}
+STR_CANCELLED                 {Avbrutet}
+STR_UNIT                      {Bytes}
+STR_TOTALSIZE                 {Total storlek}
+STR_HIDELOGS                  {Dölj loggar}
+STR_SHOWLOGS                  {Visa loggar}
+STR_BOOST                     {Öka!}
+STR_GAMEMENU                  {Spelmeny}
+STR_SETTINGS                  {Inställningar}
+STR_MOUNTGAME                 {Montera Spel}
+STR_FILTER                    {Filter}
+STR_FAVORITE                  {favorit}
+STR_FILEMANAGER               {Filhanteraren}
+STR_HOLD                      {Håll}
+STR_EXIT                      {Återgå till XMB}
+STR_GAME_PROP                 {Spelegenskaper}
+STR_GAME_TITLE                {Titel}
+STR_GAME_PATH                 {Sökväg}
+STR_GAME_FORMAT               {Format}
+STR_GAME_SIZE                 {Storlek}
+STR_GAME_PLATFORM             {Platform}
+STR_SYSVERS                   {Firmware}
+STR_GAMEID                    {Identifierare}
+STR_ELFCRC                    {ELF CRC}
+STR_ELFCRCO                   {ELF CRC (Original)}
+STR_BACK                      {Tillbaka}
+STR_ENTER                     {OK}
+STR_UPDATE_FOUND              {Uppdatering hittades}
+STR_UPDATE                    {Uppdatera}
+STR_SIZE                      {Storlek}
+STR_SYSTEM                    {System}
+STR_DL                        {Hämta}
+STR_DL_ALL                    {Hämta Alla}
+STR_UNPLUG                    {Koppla ur följande enhet(er)}
+STR_PATH                      {Sökväg}
+STR_TYPE                      {Typ}
+STR_FOLDER                    {Mapp}
+STR_DIR                       {register}
+STR_MULT                      {Flera}
+STR_THM_SETTINGS              {Inställningar Tema}
+STR_THM                       {Tema}
+STR_THM_DESC                  {Ladda det tema du vill ha. Du kan installera dem från /dev_usbXXX/Themes.}
+STR_CREATE                    {Skapa}
+STR_ZOOM_OUT                  {Zooma UT}
+STR_ZOOM_IN                   {Zooma IN}
+STR_MOVE_FRAME                {Flytta ram}
+STR_CHECK                     {Markera}
+STR_UNCHECK                   {Avmarkera}
+STR_GAME_OPTION               {Spelalternativ}
+STR_ADD_FAV                   {Lägg till i favoriter}
+STR_REM_FAV                   {Ta bort från favoriter}
+STR_FAV_DESC                  {Hantera lista över favoritspel.}
+STR_RENAME                    {Byt namn}
+STR_RENAME_DESC               {Byt namn på din Backup.}
+STR_DELETE                    {Radera}
+STR_DELETE_DESC               {Ta bort din Backup.}
+STR_COPY                      {Kopiera}
+STR_COPY_DESC                 {Kopiera din backup till en annan sökväg.}
+STR_CREATE_ICON0              {Skapa ICON0}
+STR_CREATE_ICON0_DESC         {Skapa en "falsk" ICON0 från omslaget.}
+STR_REST_PNACH                {Återställ PNACH}
+STR_REST_PNACH_DESC           {Ta bort de korrigeringar som appliceras av pnach-filen till Backupen.}
+STR_APPLY_PNACH               {Använd PNACH}
+STR_APPLY_PNACH_DESC          {Applicera korrigeringsfilerna från pnach-filen till Backupen.}
+STR_DISABLE_WS                {Inaktivera WideScreen}
+STR_ENABLE_WS                 {Aktivera WideScreen}
+STR_WS_DESC                   {Visa spelet i 16:9 istället för 4:3.}
+STR_DISABLE_480P              {Inaktivera 480P}
+STR_ENABLE_480P               {Aktivera 480P}
+STR_480P_DESC                 {Progressivt skanningsläge i 480P.}
+STR_DISABLE_YFIX              {Inaktivera YFIX}
+STR_ENABLE_YFIX               {Aktivera YFIX}
+STR_YFIX_DESC                 {Fixa det vertikala läget.}
+STR_DISABLE_FMVSKIP           {Inaktivera hoppa över FMV}
+STR_ENABLE_FMVSKIP            {Aktivera hoppa över FMV}
+STR_FMVSKIP_DESC              {låter dig hoppa över videofilmerna.}
+STR_DISABLE_NETEMU            {Inaktivera NetEMU}
+STR_ENABLE_NETEMU             {Aktivera NetEMU}
+STR_NETEMU_DESC               {Tvinga användning av ps2 netemu.}
+STR_SAVE_CONFIG               {Spara CONFIG}
+STR_CONFIG                    {Konfiguration}
+STR_CONFIG_DESC               {[Experimentell] Skapa din egen CONFIG-fil för att "fixa" din ps2-Backup.}
+STR_NONE                      {Ingen}
+STR_CHECK_MD5                 {Kontrollera MD5}
+STR_PROPS                     {Egenskaper}
+STR_PROPS_DESC                {Visa egenskaperna för din Backup.}
+STR_GAME_SETTINGS             {Spelinställningar}
+STR_DIRECT_BOOT               {Direktstart}
+STR_DIRECT_BOOT_DESC          {Starta spelet direkt utan att gå tillbaka till XMB.}
+STR_YES                       {Ja}
+STR_NO                        {Nej}
+STR_CLEAN_SYSCALL             {Rensa syscall}
+STR_CLEAN_SYSCALL_DESC        {Inaktivera peek and poke syscalls.}
+STR_CHANGE_IDPS               {Ändra IDPS}
+STR_CHANGE_IDPS_DESC          {Ändra din IDPS i lv2.}
+STR_EXT_GAME_DATA             {Ext. Speldata}
+STR_EXT_GAME_DATA_DESC        {Installera speldata på USB-enhet istället för ditt system.}
+STR_PAYLOAD                   {Payload}
+STR_PAYLOAD_DESC              {Välj Payload för att montera din Backup.}
+STR_PRIM_USB                  {Ställ in primär USB}
+STR_PRIM_USB_DESC             {Ställ in USB-enheten där spelet är lagrat som den huvudsakliga USB-enheten.}
+STR_BDEMU                     {BD-emulering}
+STR_BDEMU_DESC                {Välj vilken typ av emulering du vill säkerhetskopiera.}
+STR_PATCH_LIBFS               {Patcha libfs}
+STR_PATCH_LIBFS_DESC          {Välj vilka patchade libfs du vill använda.}
+STR_MOUNT_APPHOME             {Montera /app_home}
+STR_MOUNT_APPHOME_DESC        {Omdirigera sökvägen /app_home till /dev_bdvd.}
+STR_PATCH_EXP                 {Patcha explore_plugin}
+STR_PATCH_EXP_DESC            {Sökvägen /app_home är ersatt av /dev_bdvd i plugin explorer_plugin.}
+STR_MAKE_SHTCUT_PKG           {Gör genväg PKG}
+STR_MAKE_SHTCUT_PKG_DESC      {Skapa en paketfil som är lagrad till /dev_hdd0/packages. När det är installerat kommer det att bli en "genväg" för att montera din säkerhetskopia från XMB.}
+STR_PATCH_EBOOT               {Patcha EBOOT}
+STR_PATCH_EBOOT_DESC          {Ändra firmwareversionen till 4.21 i EBOOT-filen för att förhindra fel 0x80010009.}
+STR_RESIGN                    {Omsignera}
+STR_RESIGN_DESC               {Skriv om igen alla exekveringar av din Backup med 4,21 nycklar.}
+STR_RESTORE                   {Återställ}
+STR_RESTORE_DESC              {Återställ originalkörställen för din Backup.}
+STR_EXTRACT_ISO               {Extrahera ISO}
+STR_EXTRACT_ISO_DESC          {Extrahera filer från din ISO till en mapp.}
+STR_CONVERT_ISO               {Konvertera till ISO}
+STR_CONVERT_ISO_DESC          {Konvertera din JB-Backup till en ISO.}
+STR_FIX_PERMS                 {Fixa behörigheter}
+STR_FIX_PERMS_DESC            {Ange behörighetsvärde till 0777 av varje mapp och filer i din Backup.}
+STR_CHECK_IRD                 {Kontrollera filer (IRD)}
+STR_CHECK_DESC                {Kontrollera om filerna i dina Backups inte ändras.}
+STR_DL_UPDATE                 {Hämta uppdatering}
+STR_DL_UPDATE_DESC            {Ladda ner dina backup-uppdateringar till / dev_hdd0 / packages.}
+STR_OPEN_WINDOW               {Öppna nytt fönster}
+STR_DUMP_LV1                  {Dumpa lv1}
+STR_DUMP_LV2                  {Dumpa lv2}
+STR_DUMP_FLASH                {Dumpa flash}
+STR_REFRESH                   {Uppdatera}
+STR_NEWFOLDER                 {Ny mapp}
+STR_NEWFILE                   {Ny fil}
+STR_PASTE                     {Klistra in}
+STR_CUT                       {Klipp ut}
+STR_UNSELECT_ALL              {Avmarkera alla}
+STR_SELECT_ALL                {Välj alla}
+STR_MAKE_PKG                  {Skapa PKG}
+STR_GETMD5                    {Hämta MD5}
+STR_GETSHA1                   {Hämta SHA1}
+STR_VIEW                      {Visa}
+STR_VIEW_TXT                  {Visa TXT}
+STR_VIEW_SFO                  {Visa SFO}
+STR_READ_XREG                 {Läs xReg}
+STR_EXTRACT_ELF               {Extrahera ELF}
+STR_RESIGN_SELF               {Omsignera SELF}
+STR_LAUNCH_SELF               {Starta SELF}
+STR_EXTRACT_EBOOT             {Extrahera EBOOT}
+STR_RESIGN_EBOOT              {Omsignera EBOOT}
+STR_LAUNCH_EBOOT              {Starta EBOOT}
+STR_SIGN_ELF                  {Signera ELF}
+STR_SIGN_EBOOT                {Signera EBOOT}
+STR_SIGN_PRX                  {Signera PRX}
+STR_EXTRACT_PRX               {Extrahera PRX}
+STR_RESIGN_SPRX               {Avsluta SPRX}
+STR_REMOVE_PRXLOADER          {Ta bort från PRX Loader}
+STR_ADD_PRXLOADER             {Lägg till PRX Loader}
+STR_REMOVE_PRXLOADER2         {Ta bort från PRXLoader}
+STR_ADD_PRXLOADER2            {Lägg till PRXLoader}
+STR_REMOVE_MAMBA              {Ta bort från Mamba-listan}
+STR_ADD_MAMBA                 {Lägg till i Mamba-listan}
+STR_REMOVE_COBRA              {Ta bort från Cobra-listan}
+STR_ADD_COBRA                 {Lägg till i Cobra-listan}
+STR_EXTRACT_RCO               {Extrahera RCO}
+STR_EXTRACT_PKG               {Extrahera PKG}
+STR_PKG_INFO                  {PKG info}
+STR_EXTRACT_TRP               {Extrahera TRP}
+STR_COMPRESS_ISO              {Komprimera ISO}
+STR_CHECK_CRC32               {Kontrollera CRC32}
+STR_DECOMPRESS_CSO            {Dekomprimera CSO}
+STR_EXTRACT_THM               {Extrahera THM}
+STR_EXTRACT_P3T               {Extrahera P3T}
+STR_EXTRACT_RAF               {Extrahera RAF}
+STR_EXTRACT_QRC               {Extrahera QRC}
+STR_EXTRACT_HERE              {Extrahera här}
+STR_CONVERT_JSX_JS            {Konvertera JSX till JS}
+STR_CONVERT_VAG_WAV           {Konvertera VAG till WAV}
+STR_CONVERT_GTF_DDS           {Konvertera GTF till DDS}
+STR_CONVERT_DDS_PNG           {Konvertera DDS till PNG}
+STR_MAKE_APNG                 {Skapa APNG}
+STR_SET_PERMS                 {Ange behörighet}
+STR_NOGAME                    {Inget spel hittades}
+STR_GLOB_SETTINGS             {Globala inställningar}
+STR_ADJUST                    {Justera skärm}
+STR_ADJUST_DESC               {Kalibrera din bildskärm.}
+STR_DL_COVER                  {Hämta omslag}
+STR_DL_COVER_DESC             {Ladda ner alla saknade spelomslag till USRDIR/covers/[gameID].jpg}
+STR_PLUGIN_MANAGER            {Plugins Manager}
+STR_PLUGIN_MANAGER_DESC       {Hantera dina plugin lagrade i /dev_hdd0/plugins.}
+STR_UPD_MGZ                   {Uppdatera ManaGunZ}
+STR_UPD_MGZ_DESC              {Hämta och installera den senaste versionen av ManaGunZ.}
+STR_GAME_PATHS                {Sökväg Spelbackup}
+STR_GAME_PATHS_DESC           {Konfigurera namnet på kataloger där ManaGunZ hittar dina Backups.}
+STR_XMB_PRIO                  {XMB Prioritet}
+STR_XMB_PRIO_DESC             {Ikonen för ManaGunZ i XMB visas överst. Det kommer att vara effektivt efter nästa systemstart.}
+STR_HELP                      {Visa hjälp}
+STR_HELP_DESC                 {Visa meningarna du läser här.}
+STR_COLOR_1                   {Färg 1}
+STR_COLOR_2                   {Färg 2}
+STR_COLOR_3                   {Färg 3}
+STR_COLOR_4                   {Färg 4}
+STR_COLOR_DESC                {Ändra färgerna som används av ManaGunZ.}
+STR_UI_SETTINGS               {Gränssnittsinställningar}
+STR_UI                        {Användargränssnitt}
+STR_UI_DESC                   {Ändra gränssnittet.}
+STR_SIDE_MENU                 {SidoMeny Spel}
+STR_SIDE_MENU_DESC            {Visa spelmenyn på höger sida av skärmen.}
+STR_SHOW_PIC1                 {Visa PIC1}
+STR_SHOW_PIC1_DESC            {Visa bakgrundsbilden för de aktuella valda spelen "PIC1". Använd R1 med UI LIST och GRID för att visa den.}
+STR_SHOW_COVER                {Visa omslag}
+STR_SHOW_COVER_DESC           {Visa kåpa.}
+STR_SHOW_GAMECASE             {Visa fodral}
+STR_SHOW_GAMECASE_DESC        {Visa kåpa med fodralet.}
+STR_SHOW_ICON0                {Visa ICON0}
+STR_SHOW_ICON0_DESC           {Visa huvudbilden av spelet 'ICON0'.}
+STR_GRID_TYPE                 {Rutnäts-typ}
+STR_GRID_TYPE_DESC            {Välj hur du gör nätet flyttar.}
+STR_SCROLL                    {Scrolla}
+STR_PAGE                      {Sida}
+STR_DIRECTION                 {Riktning}
+STR_DIRECTION_DESC            {Välj i vilken riktning nätet ska röra sig.}
+STR_VERTICAL                  {Vertikalt}
+STR_HORIZONTAL                {Horisontalt}
+STR_ANIMATED                  {Animerad}
+STR_ANIMATED_DESC             {Gör nätets rörelser glidande.}
+STR_KEEP_PROP                 {Behåll proportionen}
+STR_KEEP_PROP_DESC            {Behåll det ursprungliga bildförhållandet för ICON0.}
+STR_NB_COL                    {Antal kolumner}
+STR_NB_COL_DESC               {Välj antal kolumner i rutnätet.}
+STR_NB_LINE                   {Antal rader}
+STR_NB_LINE_DESC              {Välj antal rader i rutnätet.}
+STR_INVERSE                   {Invertera Knappar}
+STR_INVERSE_DESC              {Invertera knapparna höger och vänster.}
+STR_3D                        {3D}
+STR_3D_DESC                   {Visa menyn med 3D-modeller av spelfodral.}
+STR_ADD                       {Lägg till}
+STR_LOAD                      {Ladda}
+STR_CHANGE                    {Ändra}
+STR_COLOR                     {Färg}
+STR_RESET                     {Återställ}
+STR_FAILED                    {Misslyckades}
+STR_DONE                      {Klart}
+STR_OPEN                      {Öppna}
+STR_CLOSE                     {Stäng}
+STR_OPTION                    {Alternativ}
+STR_SELECT                    {Välj}
+STR_WINDOW                    {Fönster}
+STR_CLICK                     {Klicka}
+STR_CURSOR                    {Markör}
+STR_NEXT                      {Nästa}
+STR_PREVIOUS                  {Föregående}
+STR_SET_COLOR                 {Ange färg}
+STR_HIDETV                    {Dölj TV-skärmtest}
+STR_SHOWTV                    {Visa tv-skärmtest}
+STR_MOVE_TO_PLUGINS           {Flytta till /dev_hdd0/plugins}
+STR_ASK_PLUGINS               {För att använda plugin-hanteraren måste plugins vara i '/dev_hdd0/plugins'.\nOm du accepterar att använda den här mappen?}
+STR_CHANGE_VALUE              {Ändra värde}
+STR_LOAD_IDPS_LV2             {Ladda IDPS från lv2}
+STR_LOAD_IDPS_EID5            {Ladda IDPS från EID5}
+STR_NAME                      {Namn}
+STR_DOCK_RIGHT                {Dock till höger}
+STR_DOCK_LEFT                 {Dock till vänster}
+STR_DOCK_FULL                 {Docka till full}
+STR_PLUGIN_MONITOR            {Plugins Monitor}
+STR_UNUSED                    {Oanvänd}
+STR_UNLOAD                    {Lasta av}
+STR_BOOT_FILE                 {Startfil}
+STR_CURRENT                   {Nuvarande}
+STR_NET                       {Net}
+STR_SOFT                      {Soft}
+STR_GX                        {GX}
+STR_CUSTOM                    {Beställnings}
+STR_NEW_CMD                   {Nytt kommando}
+STR_PNACH                     {Pnach}
+STR_WIDESCREEN                {WideScreen}
+STR_480P                      {480P}
+STR_YFIX                      {YFIX}
+STR_FMV                       {FMV hoppa över}
+STR_SIMPLE                    {Enkel}
+STR_ADVANCED                  {Avancerad}
+STR_INSTALL_MGZ               {Vill du installera ManaGunZ ?} 
+STR_UP2DATE                   {Det är aktuellt}
+STR_SHOW_WAVES                {Visa vågor}
+STR_SHOW_WAVES_DESC           {Visa vågor i bakgrunden.}
+STR_WAVES_COLOR               {Vågor färg}
+STR_WAVES_COLOR_DESC          {Ändra vågornas färg.}
+STR_USE_CONFIG                {Du använder inte en PS2-konfigurationsfil "* .CONFIG".}
+STR_COLORSET                  {ColorSet}
+STR_COLORSET_DESC             {Choose a predefined set of colors to use in ManaGunZ.}
+STR_GRID_SCROLL               {Scroll}
+STR_ADD_LIMG                  {Add LIMG}
+STR_REMOVE_LIMG               {Remove LIMG}
+STR_LIMG_DESC                 {It may fix few games.}
+STR_FONT                      {Font}
+STR_FONT_DESC                 {Change the font.}
+STR_MOVE                      {Move}
+STR_JOIN                      {Join}
+STR_JOIN_DESC                 {Merge .666XX files.}
+STR_COLOR_FILTER              {Color Filters}
+STR_COLOR_NOTIF               {Notification}
+STR_COLOR_BOXHEAD             {Filter box header}
+STR_COLOR_BOXBODY             {Filter box body}
+STR_COLOR_SIDEBAR             {Sidebar}
+STR_COLOR_BGS                 {Setting background}
+STR_COLOR_BG                  {Background}
+STR_ROOT_DISPLAY              {Root display}
+STR_ROOT_DISPLAY_DESC         {Change the display of the root in FileManager.}
+STR_STYLE                     {Style}
+STR_STYLE_CUSTOM              {Custom style}
+STR_STYLE1                    {Style 1}
+STR_STYLE2                    {Style 2}
+STR_STYLE3                    {Style 3}
+STR_STYLE4                    {Style 4}
+STR_STYLE5                    {Style 5}
+STR_STYLE6                    {Style 6}
+STR_FREEOF                    {free of}
+STR_ROOTLABEL                 {Root}
+STR_FM_ICONSIZE               {Icon size}
+STR_FM_BIG                    {Big}
+STR_FM_SMALL                  {Small}
+STR_FM_ROWNUMBER              {Text row number}
+STR_FM_ROWSIZE                {Row size}
+STR_FM_LEFT_CONTENT           {Row content [LEFT]}
+STR_FM_RIGHT_CONTENT          {Row content [RIGHT]}
+STR_FM_EMPTY                  {Empty}
+STR_FM_MOUNTPOINT             {Mount point}
+STR_FM_DEVICE                 {Device}
+STR_FM_LABEL                  {Label}
+STR_FM_CAPACITY               {Capacity bar}
+STR_FM_MEMINSIDE              {Inside memory}
+STR_FM_MEMOUTSIDE             {Outside memory}
+STR_FM_FILESYSTEM             {Files system}
+STR_FM_CB_WIDTH               {Capacity bar width}
+STR_FM_MEMORY                 {Memory}
+STR_FM_ICON                   {Icons}
+STR_FM_FILEFOLDER             {File and Folder}
+STR_FM_CUSTOM                 {Custom icons}
+STR_FM_CB_FILL                {Fill}
+STR_EDIT_IDPS                 {Edit IDPS}
+STR_FILTER_NOGAME             {No games found. Adjust your filter.}
+STR_SYMLINK_SRC               {SymLink source}
+STR_SYMLINK_TARGET            {SymLink target}
+STR_LOAD_MAMBA                {Load mamba}
+STR_CONVERT_TO_PNG            {Convert to PNG}
+STR_MOUNT_DEVBLIND            {Unprotect dev_flash}
+STR_UNMOUNT_DEVBLIND          {Protect dev_flash}
+STR_BT_AUDIO                  {Gamepad audio out}
+STR_BT_AUDIO_DESC             {Play sound through the gamepad while playing. Tested with a DS4.}
+STR_GAME_UPDATE_TITLE         {PS3 game updates downloader}
+STR_CURRENT_VERS              {Current version}
+STR_CANT_MOUNT_PEEKPOKE       {Unmountable : PEEK and POKE unavailable, mamba can't be installed}
+STR_CANT_MOUNT_UNKFW          {Unmountable : unknown firmware, mamba can't be installed.}
+STR_CANT_MOUNT                {Unmountable}
+STR_ONLY_FAV                  {Only favorites}
+STR_ALL_GAMES                 {All games}
+STR_DISPLAY                   {Display}
+STR_DUMP_DEC                  {Dump decrypted Blu-Ray disc}
+STR_DUMP_DEC_DESC             {Get a 'proper' iso of your disc with the IRD. It will upload the IRD to the database once it's finished.}
+STR_DUMP_ENC                  {Dump encrypted Blu-Ray disc}
+STR_DUMP_ENC_DESC             {Get a raw iso of your Blu-Ray disc.}
+STR_DUMP_ERK                  {Dump eid root key}
+STR_DUMP_ERK_DESC             {This is the 'main' key to decrypt your system. It's used everywhere. Path: /dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP                {Dump 3Dump.bin}
+STR_DUMP_3DUMP_DESC           {It's the needed file to dump a Blu-Ray with 3k3y IsoTools. Path: /dev_hdd0/tmp/3Dump.bin}
+STR_SYSTEM_TOOLS              {System tools}
+STR_DECRYPT_NPDATA            {Decrypt edat/sdat}
+STR_REDUMP_LOG                {Generate GetKey dump}
+STR_REDUMP_LOG_DESC           {Generate files required for redump.org submissions.}
+STR_DUMP_OPTION               {Blu-Ray dumper}
+STR_IGNORE_ERR                {Ignore errors}
+STR_IGNORE_ERR_DESC           {It ignores reading errors during the Blu-Ray dumping process.}
+STR_3K3Y_HEADER               {Include 3k3y header}
+STR_3K3Y_HEADER_DESC          {It dumps the Blu-ray to an iso with embedded 3k3y header. 3k3y IsoTools will be able to recognize it.}
+STR_ELAPSED                   {Elapsed}
+STR_REMAINING                 {Remaining}
+STR_DYNAREC                   {Dynarec}
+STR_DYNAREC_DESC              {It allows emulators to use dynamic recompilation.}
+STR_BUILD_ISO                 {Build iso}
+STR_BUILD_ISO_DESC            {Build a backup iso from Blu-Ray's files.}
+STR_UPLOADER                  {Uploader name}
+STR_UPLOADER_DESC             {Enter your name if you want credits for your ird uploads, leave it empty to stay anonymous.}
+STR_BOX3D_ALIGN               {Align boxes}
+STR_BOX3D_ALIGN_DESC          {Align game boxes as if it was stored on a shelf.}
+STR_BOX3D_GAP                 {Boxes gap}
+STR_BOX3D_GAP_DESC            {Adjust the gap between game boxes.}
+STR_SHORT                     {Short}
+STR_MEDIUM                    {Medium}
+STR_LONG                      {Long}
+STR_MOUNT_BD                  {Mount as BD}
+STR_MOUNT_DVD                 {Mount as DVD}
+STR_SHOWLOGS_DESC             {Display messages to inform about the current task during the loading screen.}
+STR_OVERWRITE                 {Overwrite}
+STR_OVERWRITE_DESC            {Control the overwriting of existing files.}
+STR_OVERWRITE_ALWAYS          {Always}
+STR_OVERWRITE_NEVER           {Never}
+STR_OVERWRITE_ASK             {Ask}
+STR_OVERWRITE_DUPLICATE       {Duplicate}
+STR_ASK_TO_OVERWRITE          {File already exists. Do you want to overwrite the existing file?}
+STR_ASK_TO_DELETE             {Do you really want to delete this ?}
+STR_DUMPER_MAX_TRY            {Read attempts}
+STR_DUMPER_MAX_TRY_DESC       {Set the number of read attempts when there is a disc read error.}
+STR_HDD_UNLOCK_SPACE          {Hdd0 unlock}
+STR_HDD_UNLOCK_SPACE_DESC     {Reduce the amount of reserved space in hdd0 from 8% to 1%.}

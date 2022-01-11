@@ -12,13 +12,13 @@
 
 //void	map_first_slot(char *old, char *newp);
 void	map_path_patches(int syscall);
-int		map_path(char *oldpath, char *newpath, uint32_t flags);
-int 	map_path_user(char *oldpath, char *newpath, uint32_t flags);
+int		map_path(char *oldpath, char *newpath, u32 flags);
+int 	map_path_user(char *oldpath, char *newpath, u32 flags);
 int		get_map_path(unsigned int num, char *path, char *new_path);
 int 	sys_map_path(char *oldpath, char *newpath);
 int 	sys_map_paths(char *paths[], char *new_paths[], unsigned int num);
 /*int	sys_map_game(char *path);
-int	sys_hermes_pathtable(uint64_t pathtable);*/
+int	sys_hermes_pathtable(u64 pathtable);*/
 int 	sys_aio_copy_root(char *src, char *dst);
 
 void unhook_all_map_path(void);

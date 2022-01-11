@@ -19,12 +19,14 @@ int main()
  
 	FILE* fp;
 	char self_path[50];
-	char launcher_id[10];
+	char launcher_id[10]={0};
 
 	if((fp = fopen("/dev_hdd0/vsh/pushlist/game.dat", "r"))!=NULL) {
-		fgets(launcher_id, 10, fp);
+		fread(launcher_id, 9, 1, fp);
 		fclose(fp);
 	}
+	launcher_id[9]=0;
+	
 	sprintf(self_path, "/dev_hdd0/game/%s/USRDIR/ManaGunZ.self", launcher_id);
 	
 	sysProcessExitSpawn2(self_path, NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
