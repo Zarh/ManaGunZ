@@ -376,46 +376,45 @@ STR_DUMP_DISC_KEY             {Zrzuć klucz dysku Blu-Ray}
 STR_DUMP_ERK                  {Zrzuć klucz główny eid}
 STR_DUMP_3DUMP                {Zrzuć 3Dump.bin}
 STR_SYSTEM_TOOLS              {Narzędzia systemowe}
-STR_EXIT                      {Wydawca}
-STR_DUMP_ENC_DESC             {Jest to surowa płyta twojego Blu-Ray.}
-STR_DUMP_ERK_DESC             {Jest to główny klucz do deszyfrowania systemu. Jest używany wszędzie dev_hdd0/tmp/eid_root_key}
-STR_DUMP_3DUMP                {Jest 3Dump.bin}
-STR_DUMP_3DUMP_DESC           {Jest to potrzebny plik, aby zrzucić Blu-Ray z 3k3y IsoTools. Path: dev_hdd0/tmp/3Dump.bin}
-STR_DECRYPT_NPDATA            {Decryptedat/sdat}
-STR_REDUMP_LOG                {Generacja GetKey}
-STR_REDUMP_LOG_DESC           {pliki generacyjne wymagane do składania redump.org.}
+STR_EXIT                      {Wyjście}
+STR_DUMP_ENC_DESC             {Uzyskaj ISO swojej płyty Blu-Ray.}
+STR_DUMP_ERK_DESC             {To jest „główny” klucz do odszyfrowania twojego systemu. Jest używany wszędzie. Ścieżka: /dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP_DESC           {Jest to plik potrzebny aby zrzucić Blu-Ray z 3k3y IsoTools. Path: dev_hdd0/tmp/3Dump.bin}
+STR_DECRYPT_NPDATA            {Odszyfrowanedat/sdat}
+STR_REDUMP_LOG                {Generuj zrzut GetKey}
+STR_REDUMP_LOG_DESC           {Wygeneruj pliki wymagane do przesłania redump.org.}
 STR_DUMP_OPTION               {Blu-Ray dumper}
-STR_IGNORE_ERR                {Niepowodzenie błędów}
-STR_IGNORE_ERR_DESC           {Zignoruje błędy czytania w trakcie procesu zrzutowego Blu-Ray.}
+STR_IGNORE_ERR                {Ignoruj błędy}
+STR_IGNORE_ERR_DESC           {Ignoruje błędy odczytu podczas procesu zrzucania Blu-Ray.}
 STR_3K3Y_HEADER               {Zawiera 3k3y header}
-STR_3K3Y_HEADER_DESC          {Zrzuca Blu-ray do izomorfu z wbudowanym 3k3y headerem. 3k3y IsoTools będzie mógł ją rozpoznać.}
-STR_ELAPSED                   {Elapse}
-STR_REMAINING                 {Remaining}
-STR_DYNAREC                   {Dynarec}
+STR_3K3Y_HEADER_DESC          {Zrzuca Blu-ray do ISO z wbudowanym 3k3y headerem. 3k3y IsoTools będzie mógł ją rozpoznać.}
+STR_ELAPSED                   {Upłyneło}
+STR_REMAINING                 {Pozostały czas}
+STR_DYNAREC                   {Dynamiczna rekompilacja}
 STR_DYNAREC_DESC              {Pozwala to emulatorom na użycie dynamicznej rekompilacji.}
-STR_BUILD_ISO                 {Build isoform}
-STR_BUILD_ISO_DESC            {Build a backup iso from Blu-Ray's files (ang.).}
-STR_UPLOADER                  {Nazwisko}
-STR_UPLOADER_DESC             {Wejście do twojej nazwy, jeśli chcesz kredytować twoje ściąganie, zostawia go pustym, by zostać anonimowym.}
-STR_BOX3D_ALIGN               {Align box}
-STR_BOX3D_ALIGN_DESC          {Align Game, tak jakby był przechowywany na szelfie.}
-STR_BOX3D_GAP                 {boks}
-STR_BOX3D_GAP_DESC            {Poniższa różnica między kartami gry.}
-STR_SHORT                     {Short}
-STR_MEDIUM                    {Medium}
-STR_LONG                      {Long}
-STR_MOUNT_BD                  {Mount jako BD}
-STR_MOUNT_DVD                 {Góra na DVD}
-STR_SHOWLOGS_DESC             {Dysplay informuje o aktualnym założeniu podczas ekranu ładowania.}
-STR_OVERWRITE                 {Overwrite}
+STR_BUILD_ISO                 {Zbuduj ISO}
+STR_BUILD_ISO_DESC            {Zbuduj kopię zapasową ISO z plików Blu-Ray (ang.).}
+STR_UPLOADER                  {Nazwa przesyłającego}
+STR_UPLOADER_DESC             {Wpisz swoje imię i nazwisko, jeśli chcesz być umieszczony w liście uznaniowej za przesłane pliki ird, pozostaw to pole puste, aby pozostać anonimowym.}
+STR_BOX3D_ALIGN               {Wyrównaj pole}
+STR_BOX3D_ALIGN_DESC          {Wyrównaj pola z grami tak, jakby były przechowywane na półce.}
+STR_BOX3D_GAP                 {Luki w polach}
+STR_BOX3D_GAP_DESC            {Dostosuj odstęp między polami z grami.}
+STR_SHORT                     {Krótki}
+STR_MEDIUM                    {Średni}
+STR_LONG                      {Długi}
+STR_MOUNT_BD                  {Załaduj jako BD}
+STR_MOUNT_DVD                 {Załaduj jako DVD}
+STR_SHOWLOGS_DESC             {Wyświetlaj komunikaty informujące o bieżącym zadaniu na ekranie ładowania.}
+STR_OVERWRITE                 {Zastąp}
 STR_OVERWRITE_DESC            {Kontroluje nadpisanie istniejących plików.}
-STR_OVERWRITE_ALWAYS          {zawsze}
-STR_OVERWRITE_NEVER           {nigdy nie}
-STR_OVERWRITE_ASK             {Ask}
-STR_OVERWRITE_DUPLICATE       {Duplicate}
-STR_ASK_TO_OVERWRITE          {Obecnie Archiwum już istnieje. Czy chcesz przepisać istniejące pliki?}
+STR_OVERWRITE_ALWAYS          {Zawsze}
+STR_OVERWRITE_NEVER           {Nigdy}
+STR_OVERWRITE_ASK             {Zapytaj}
+STR_OVERWRITE_DUPLICATE       {Duplikuj}
+STR_ASK_TO_OVERWRITE          {Obecnie Archiwum już istnieje. Czy chcesz nadpisać istniejące pliki?}
 STR_ASK_TO_DELETE             {Czy chcesz to usunąć?}
-STR_DUMPER_MAX_TRY            {czytanie}
-STR_DUMPER_MAX_TRY_DESC       {Szacuje się, że liczba odczyt gdy istnieje błąd odczytu dysku.}
-STR_HDD_UNLOCK_SPACE          {HdD0}
+STR_DUMPER_MAX_TRY            {Próby odczytu}
+STR_DUMPER_MAX_TRY_DESC       {Ustaw liczbę prób odczytu w przypadku błędu odczytu dysku.}
+STR_HDD_UNLOCK_SPACE          {Odblokuj hdd0}
 STR_HDD_UNLOCK_SPACE_DESC     {Zawartość przestrzeni zarezerwowanej w hd0 z 8% do 1%.}
