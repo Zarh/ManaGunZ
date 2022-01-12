@@ -414,5 +414,5 @@ STR_ASK_TO_OVERWRITE          {File already exists. Do you want to overwrite the
 STR_ASK_TO_DELETE             {Do you really want to delete this ?}
 STR_DUMPER_MAX_TRY            {Read attempts}
 STR_DUMPER_MAX_TRY_DESC       {Set the number of read attempts when there is a disc read error.}
-STR_HDD_UNLOCK_SPACE          {Hdd0 unlock}
+STR_HDD_UNLOCK_SPACE          {Odblokowanie hdd0}
 STR_HDD_UNLOCK_SPACE_DESC     {Reduce the amount of reserved space in hdd0 from 8% to 1%.}
