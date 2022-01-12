@@ -375,7 +375,7 @@ STR_DUMP_ENC_DESC             {获取蓝光光盘的原始ISO.}
 STR_DUMP_ERK                  {提取EID根密钥}
 STR_DUMP_ERK_DESC             {这个是用于解密系统的'主'密钥. 它在各种地方都有使用. 路径: /dev_hdd0/tmp/eid_root_key}
 STR_DUMP_3DUMP                {提取3Dump.bin}
-STR_DUMP_3DUMP_DESC           {It's the needed file to dump a Blu-Ray with 3k3y IsoTools. Path: /dev_hdd0/tmp/3Dump.bin}
+STR_DUMP_3DUMP_DESC           {这是3k3y IsoTools提取蓝光所需要的文件. 路径: /dev_hdd0/tmp/3Dump.bin}
 STR_SYSTEM_TOOLS              {系统工具}
 STR_DECRYPT_NPDATA            {解密edat/sdat}
 STR_REDUMP_LOG                {生成GetKey}
@@ -384,7 +384,7 @@ STR_DUMP_OPTION               {蓝光提取器}
 STR_IGNORE_ERR                {忽略错误}
 STR_IGNORE_ERR_DESC           {将在蓝光提取过程中忽略读取错误.}
 STR_3K3Y_HEADER               {包含3k3y文件头}
-STR_3K3Y_HEADER_DESC          {将提取的蓝光ISO赋予3k3y文件头It dumps the Blu-ray to an iso with embedded 3k3y header. 3k3y IsoTools will be able to recognize it.}
+STR_3K3Y_HEADER_DESC          {将提取的蓝光ISO赋予3k3y文件头. 以便3k3y IsoTools识别.}
 STR_ELAPSED                   {已用}
 STR_REMAINING                 {剩余}
 STR_DYNAREC                   {动态重编译}
