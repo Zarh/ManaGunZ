@@ -23,7 +23,6 @@ STR_GAMEMENU                  {Menú juego}
 STR_SETTINGS                  {MGZ Config.}
 STR_MOUNTGAME                 {Montar juego}
 STR_FILTER                    {Filtros}
-STR_FAVORITE                  {Favoritos}
 STR_FILEMANAGER               {Gestor de archivos}
 STR_HOLD                      {Mantener}
 STR_EXIT                      {Salir}
@@ -370,50 +369,50 @@ STR_ONLY_FAV                  {Solo favoritos}
 STR_ALL_GAMES                 {Todos}
 STR_DISPLAY                   {Mostrar}
 STR_DUMP_DEC                  {Copiar Blu-Ray (desencriptado)}
-STR_DUMP_DEC_DESC             {Crea una ISO del disco Blu-Ray original. Y un archivo IRD que es enviado a la base de datos online de ManaGunZ.}
+STR_DUMP_DEC_DESC             {Crea una ISO desencriptada del disco Blu-Ray original. Y un archivo IRD que es enviado a la base de datos online de ManaGunZ.}
 STR_DUMP_ENC                  {Copiar Blu-Ray (encriptado)}
-STR_DUMP_DISC_KEY             {Copiar Blu-Ray (key)}
+STR_DUMP_ENC_DESC             {Crea una ISO encriptada del disco Blu-Ray original.}
 STR_DUMP_ERK                  {Dump ERK}
-STR_DUMP_3DUMP                {Dump ERK + EID4 (3Dump.bin)}
+STR_DUMP_ERK_DESC             {Extrae el "EID Root Key" único de tu PS3 a la ruta: /dev_hdd0/tmp/eid_root_key}
+STR_DUMP_3DUMP                {Dump 3Dump.bin}
+STR_DUMP_3DUMP_DESC           {Extrae el "3Dump.bin" (EID4+ERK) único de tu PS3 a la ruta: /dev_hdd0/tmp/3Dump.bin}
 STR_SYSTEM_TOOLS              {Herramientas del sistema}
-STR_DUMP_ENC_DESC             {Obtenga un iso crudo de su disco Blu-Ray.}
-STR_DUMP_ERK_DESC             {Esta es la clave principal para descifrar su sistema. Se usa en todas partes. Path: dev_hdd0/tmp/eid_root_key}
-STR_DUMP_3DUMP_DESC           {Es el archivo necesario para tirar un Blu-Ray con 3k3y IsoTools. Camino: dev_hdd0/tmp/3Dump.bin}
-STR_DECRYPT_NPDATA            {Decrypt edat/sdat}
-STR_REDUMP_LOG                {Generar el vertedero de GetKey}
-STR_REDUMP_LOG_DESC           {Genera archivos necesarios para las presentaciones redump.org.}
+STR_DECRYPT_NPDATA            {Desencriptar edat/sdat}
+STR_REDUMP_LOG                {Dump GetKey}
+STR_REDUMP_LOG_DESC           {Genera los archivos requeridos por la base de datos de redump.org.}
 STR_DUMP_OPTION               {Blu-Ray dumper}
 STR_IGNORE_ERR                {Ignorar errores}
-STR_IGNORE_ERR_DESC           {ignora errores de lectura durante el proceso de dumping Blu-Ray.}
-STR_3K3Y_HEADER               {Incluido el encabezado 3k3y}
-STR_3K3Y_HEADER_DESC          {Se tira el Blu-ray a un iso con cabecera 3k3y incrustada. 3k3y IsoTools será capaz de reconocerlo.}
-STR_ELAPSED                   {Elapsed}
-STR_REMAINING                 {Permaneciendo}
+STR_IGNORE_ERR_DESC           {Ignora errores de lectura durante el proceso de copia del Blu-Ray original.}
+STR_3K3Y_HEADER               {Incluir el encabezado 3k3y}
+STR_3K3Y_HEADER_DESC          {Crea una ISO con el encabezado 3k3y, compatible con el programa '3k3y IsoTools'.}
+STR_ELAPSED                   {Transcurrido}
+STR_REMAINING                 {Restante}
 STR_DYNAREC                   {Dynarec}
 STR_DYNAREC_DESC              {Permite a los emuladores utilizar la recompilación dinámica.}
-STR_BUILD_ISO                 {Build iso}
-STR_BUILD_ISO_DESC            {Constru iso de copia de seguridad de los archivos de Blu-Ray.}
-STR_UPLOADER                  {Nombre de descarga}
-STR_UPLOADER_DESC             {Introduzca su nombre si desea créditos para sus subidas de ird, déjelo vacío para permanecer anónimo.}
+STR_BUILD_ISO                 {Crear ISO}
+STR_BUILD_ISO_DESC            {Crea una ISO del Blu-Ray original.}
+STR_UPLOADER                  {Nombre de usuario}
+STR_UPLOADER_DESC             {Tu nick, se envía a la base de datos de ManaGunz cuando subes un archivo IRD, déjalo vacío para permanecer anónimo.}
+STR_FAVORITE                  {Favoritos}
 STR_BOX3D_ALIGN               {Cajas alineadas}
-STR_BOX3D_ALIGN_DESC          {Alinear cajas de juego como si estuviera almacenada en un estante.}
-STR_BOX3D_GAP                 {Necesidades de caja}
-STR_BOX3D_GAP_DESC            {Ajuste la brecha entre cajas de juego.}
-STR_SHORT                     {Corto}
-STR_MEDIUM                    {Mediana}
-STR_LONG                      {Largo}
-STR_MOUNT_BD                  {Mount as BD}
-STR_MOUNT_DVD                 {Montaje como DVD}
-STR_SHOWLOGS_DESC             {Mostrar mensajes para informar sobre la tarea actual durante la pantalla de carga.}
+STR_BOX3D_ALIGN_DESC          {Alinea las cajas de los juegos como si estuvieran almacenadas en un estante.}
+STR_BOX3D_GAP                 {Separación de cajas}
+STR_BOX3D_GAP_DESC            {Ajusta la separación entre las cajas de los juegos.}
+STR_SHORT                     {Corta}
+STR_MEDIUM                    {Media}
+STR_LONG                      {Larga}
+STR_MOUNT_BD                  {Montar como BD}
+STR_MOUNT_DVD                 {Montar como DVD}
+STR_SHOWLOGS_DESC             {Muestra mensajes para informar sobre la tarea actual durante la pantalla de carga.}
 STR_OVERWRITE                 {Sobreescritura}
-STR_OVERWRITE_DESC            {Controle la sobreescritura de los archivos existentes.}
+STR_OVERWRITE_DESC            {Controla la sobreescritura de los archivos existentes.}
 STR_OVERWRITE_ALWAYS          {Siempre}
 STR_OVERWRITE_NEVER           {Nunca}
-STR_OVERWRITE_ASK             {Pregunta}
+STR_OVERWRITE_ASK             {Preguntar}
 STR_OVERWRITE_DUPLICATE       {Duplicar}
-STR_ASK_TO_OVERWRITE          {El archivo ya existe. ¿Quieres sobreescribir el archivo existente?}
+STR_ASK_TO_OVERWRITE          {Ya existe un archivo con el mismo nombre. ¿Quieres sobreescribir el archivo existente?}
 STR_ASK_TO_DELETE             {¿Realmente quieres borrar esto?}
-STR_DUMPER_MAX_TRY            {Lee los intentos}
-STR_DUMPER_MAX_TRY_DESC       {Establecer el número de intentos de lectura cuando hay un error de lectura de disco.}
-STR_HDD_UNLOCK_SPACE          {Hdd0 desbloqueo}
-STR_HDD_UNLOCK_SPACE_DESC     {Reducir la cantidad de espacio reservado en hdd0 del 8% al 1%.}
+STR_DUMPER_MAX_TRY            {Intentos de lectura}
+STR_DUMPER_MAX_TRY_DESC       {Establece el número de intentos cuando hay un error de lectura de disco.}
+STR_HDD_UNLOCK_SPACE          {Desbloquear hdd0}
+STR_HDD_UNLOCK_SPACE_DESC     {Reduce la cantidad de espacio reservado en hdd0 del 8% al 1%.}
