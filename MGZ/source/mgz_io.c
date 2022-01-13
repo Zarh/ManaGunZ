@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <dirent.h>
+#include <stdarg.h>
 
 #include "mgz_io.h"
 #include "ff.h"
@@ -249,6 +250,25 @@ int MGZ_fflush(MGZ_FILE *mgz_file)
 	if(mgz_file->type==TYPE_EXFAT) return f_sync(&mgz_file->fp);
 	
 	return -1;
+}
+
+int MGZ_fprintf(MGZ_FILE *mgz_file, const char *fmt, ...)
+{
+    char *buf = NULL;
+    int len;
+    va_list ap;
+
+    va_start(ap, fmt);
+    len = vasprintf((void *)&buf, fmt, ap);
+    va_end(ap);
+
+    if (len < 0) return len;
+
+	len = MGZ_fputs(buf, mgz_file);
+	
+    free(buf);
+	
+    return len;
 }
 
 #define FILE		MGZ_FILE

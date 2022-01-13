@@ -10034,7 +10034,8 @@ void print_head(char *format2, ...)
 	va_end(opt2);
 	
 	strcpy(head_title, str2);
-	
+
+// TTY
 	fprintf(stdout, head_title);
 	fprintf(stdout, "\n");
 	

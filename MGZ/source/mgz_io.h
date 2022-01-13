@@ -43,7 +43,7 @@ char MGZ_fputc(char c, MGZ_FILE* mgz_file);
 //int MGZ_ferror(FILE * mgz_file);
 //int MGZ_feof(MGZ_FILE *mgz_file);
 int MGZ_fflush(MGZ_FILE *mgz_file);
-
+int MGZ_fprintf(MGZ_FILE *mgz_file, const char *fmt, ...);
 
 #define FILE		MGZ_FILE
 #define fopen		MGZ_fopen
@@ -60,6 +60,7 @@ int MGZ_fflush(MGZ_FILE *mgz_file);
 //#define ferror		MGZ_ferror
 //#define feof			MGZ_feof
 #define fflush		MGZ_fflush
+//#define fprintf		MGZ_fprintf
 
 //*******************************************************************************************
 //*******************************************************************************************
