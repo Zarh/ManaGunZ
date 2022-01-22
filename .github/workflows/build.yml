@@ -1,0 +1,41 @@
+name: Nightly Release
+
+on: 
+  push
+
+jobs:
+  build:
+    
+    runs-on: ubuntu-20.04
+    
+    container:
+      image: debian:bullseye
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install build requirements
+      run: |
+        apt-get update
+        apt-get -y install build-essential autoconf automake bison flex libelf-dev make texinfo libncurses5-dev patch python subversion wget zlib1g-dev libtool-bin python-dev bzip2 libgmp3-dev pkg-config
+
+    - name: Build release
+      run: |
+        wget --no-check-certificate https://github.com/rhynec/PSDK3v2-Linux/releases/download/v1.0/PSDK3v2.tar.gz -O PSDK3v2.tar.gz
+        tar -C /usr/local/ -xvzf PSDK3v2.tar.gz
+        . ./.github/scripts/environment.sh
+        make pkg
+        FILEMANAGER=1 make pkg
+        ./.github/scripts/rename.sh
+        
+
+    - name: Upload release
+      uses: andelf/nightly-release@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        name: 'Nightly Release'
+        prerelease: true
+        body: '- Nightly release; see commits for changes'
+        files: ./*.pkg
+
