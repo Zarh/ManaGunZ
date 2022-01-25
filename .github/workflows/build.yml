@@ -21,7 +21,7 @@ jobs:
 
     - name: Build release
       run: |
-        wget --no-check-certificate https://github.com/rhynec/PSDK3v2-Linux/releases/download/v1.0/PSDK3v2.tar.gz -O PSDK3v2.tar.gz
+        wget --no-check-certificate https://github.com/rhynec/PS3SDK-Build/releases/download/2022.01.25_053310/ps3dev-psdk-bullseye.tar.gz -O PSDK3v2.tar.gz
         tar -C /usr/local/ -xvzf PSDK3v2.tar.gz
         . ./.github/scripts/environment.sh
         make pkg
@@ -34,8 +34,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: 'Nightly Release'
+        name: 'Nightly-Release'
         prerelease: true
-        body: '- Nightly release; see commits for changes'
+        body: '- See commit log for included features and fixes.'
         files: ./*.pkg
 
