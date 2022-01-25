@@ -31,6 +31,8 @@ jobs:
 
     - name: Upload release
       uses: andelf/nightly-release@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         name: 'Nightly-Release'
         prerelease: true
