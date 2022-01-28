@@ -1,41 +1,35 @@
-name: Nightly Release
+name: nightly
 
 on: 
   push
 
 jobs:
   build:
-    
     runs-on: ubuntu-20.04
-    
     container:
       image: debian:bullseye
-
     steps:
     - uses: actions/checkout@v2
-
     - name: Install build requirements
-      run: |
-        apt-get update
-        apt-get -y install build-essential autoconf automake bison flex libelf-dev make texinfo libncurses5-dev patch python subversion wget zlib1g-dev libtool-bin python-dev bzip2 libgmp3-dev pkg-config
-
+      run: ./.github/scripts/req.sh
     - name: Build release
       run: |
-        wget --no-check-certificate https://github.com/rhynec/PS3SDK-Build/releases/download/2022.01.25_053310/ps3dev-psdk-bullseye.tar.gz -O PSDK3v2.tar.gz
-        tar -C /usr/local/ -xvzf PSDK3v2.tar.gz
-        . ./.github/scripts/environment.sh
-        make pkg
-        FILEMANAGER=1 make pkg
-        ./.github/scripts/rename.sh
-        
-
-    - name: Upload release
-      uses: andelf/nightly-release@main
+        wget --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.27_045936/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
+        tar -C /usr/local/ -xvzf psdk.tar.gz
+        . ./.github/scripts/env.sh
+        make pkg && export FILEMANAGER=1 && make pkg
+        ./.github/scripts/name.sh
+    - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      with:
+        delete_release: true
+        tag_name: nightly
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v0.1.14
       with:
-        name: 'Nightly-Release'
-        prerelease: true
-        body: '- See commit log for included features and fixes.'
+        name: "ManaGunZ nightly"
+        tag_name: nightly
+        body: "- Non-tested nightly binaries. See commit log for included features and fixes."
         files: ./*.pkg
-
+        prerelease: true
