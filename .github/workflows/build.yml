@@ -19,7 +19,8 @@ jobs:
         . ./.github/scripts/env.sh
         make pkg && export FILEMANAGER=1 && make pkg
         ./.github/scripts/name.sh
-    - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+    - name: "Re-tag nightly"
+      uses: dev-drprasad/delete-tag-and-release@v0.2.0
       with:
         delete_release: true
         tag_name: nightly
