@@ -14,22 +14,23 @@ jobs:
       run: ./.github/scripts/req.sh
     - name: Build release
       run: |
-        wget --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.27_045936/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
+        wget --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.29_051503/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
         tar -C /usr/local/ -xvzf psdk.tar.gz
         . ./.github/scripts/env.sh
+        export APPVER="00.50" TAIL="Nightly"
         make pkg && export FILEMANAGER=1 && make pkg
-        ./.github/scripts/name.sh
-    - name: "Re-tag nightly"
+        export TAGGY="$(date +'%y%m%d%H%M%S')" && ./.github/scripts/name.sh
+    - name: Remove previous release
       uses: dev-drprasad/delete-tag-and-release@v0.2.0
       with:
         delete_release: true
         tag_name: nightly
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload release assets
+    - name: Create nightly release
       uses: softprops/action-gh-release@v0.1.14
       with:
-        name: "ManaGunZ nightly"
+        name: "MGZ Nightly Releases"
         tag_name: nightly
         body: "- Non-tested nightly binaries. See commit log for included features and fixes."
         files: ./*.pkg

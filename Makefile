@@ -34,19 +34,20 @@ PKGFILES1	:=	$(CURDIR)/pkgfiles
 PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.41
+APPVER		?=	01.41
+TAIL		?=	
 
 ifeq ($(FILEMANAGER), 1)
 PKGFILES	:=	$(PKGFILES2)
-MACHDEP		+= -DFILEMANAGER
+MACHDEP		+=	-DFILEMANAGER
 TARGET		:=	FileManager
-TITLE		:=	File Manager v$(VERSION)
-APPID		:=	FILEMANAG
+TITLE		:=	$(TARGET) $(TAIL)
+APPID		?=	FILEMANAG
 else
 PKGFILES	:=	$(PKGFILES1)
 TARGET		:=	ManaGunZ
-TITLE		:=	$(TARGET) v$(VERSION)
-APPID		:=	MANAGUNZ0
+TITLE		:=	$(TARGET) $(TAIL)
+APPID		?=	MANAGUNZ0
 endif
 CONTENTID	:=	EP0001-$(APPID)_00-0000000000000000
 
@@ -71,7 +72,7 @@ LIBS	:=
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS)
+LIBDIRS	:=	$(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -80,7 +81,7 @@ LIBDIRS	:= $(PORTLIBS)
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)_v$(VERSION)
+export OUTPUT	:=	$(CURDIR)/$(TARGET)_v$(APPVER)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
@@ -136,7 +137,7 @@ export INCLUDE	:=	-I$(PORTLIBS)/include/freetype2 \
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					$(LIBPSL1GHT_LIB)
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)_v$(VERSION)
+export OUTPUT	:=	$(CURDIR)/$(TARGET)_v$(APPVER)
 .PHONY: $(BUILD) clean
 
 #---------------------------------------------------------------------------------
