@@ -34,19 +34,19 @@ PKGFILES1	:=	$(CURDIR)/pkgfiles
 PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=  1.41
+VERSION		?=	1.41
 
 ifeq ($(FILEMANAGER), 1)
 PKGFILES	:=	$(PKGFILES2)
-MACHDEP		+= -DFILEMANAGER
+MACHDEP		+=	-DFILEMANAGER
 TARGET		:=	FileManager
-TITLE		:=	File Manager v$(VERSION)
-APPID		:=	FILEMANAG
+TITLE		:=	$(TARGET) v$(VERSION) $(TAIL)
+APPID		?=	FILEMANAG
 else
 PKGFILES	:=	$(PKGFILES1)
 TARGET		:=	ManaGunZ
-TITLE		:=	$(TARGET) v$(VERSION)
-APPID		:=	MANAGUNZ0
+TITLE		:=	$(TARGET) v$(VERSION) $(TAIL)
+APPID		?=	MANAGUNZ0
 endif
 CONTENTID	:=	EP0001-$(APPID)_00-0000000000000000
 
@@ -71,7 +71,7 @@ LIBS	:=
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS)
+LIBDIRS	:=	$(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
