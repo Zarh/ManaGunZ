@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-20.04
     container:
       image: debian:bullseye
+    defaults:
+        run:
+          shell: bash
     steps:
     - uses: actions/checkout@v2
     - name: Install build requirements
@@ -15,7 +18,7 @@ jobs:
     - name: Build release
       run: |
         wget --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.29_051503/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
-        tar -C /usr/local/ -xvzf psdk.tar.gz
+        tar -C /usr/local/ -xzf psdk.tar.gz
         . ./.github/scripts/env.sh
         export CSHA=${GITHUB_SHA:0:7}
         export TAIL="Nightly_${CSHA}"
