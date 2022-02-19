@@ -1398,11 +1398,8 @@ static char *STR_LANGUAGE[MAX_LANG]; // "English"
 static u8 LANGCODE[MAX_LANG];
 static char *lang_path[MAX_LANG];
 
-#define DB_PREFIX			"[DB] "
-static char *STR_DB_NET    = NULL;
-static char *STR_DB_SOFT   = NULL;
-static char *STR_DB_GX     = NULL;
-static char *STR_DB_CUSTOM = NULL;
+#define MGZ_PREFIX			"[MGZ] "
+static char *STR_MGZ_CUSTOM = NULL;
 
 #include "str.h"
 
@@ -6517,14 +6514,8 @@ void update_lang()
 	LANG(STR_HDD_UNLOCK_SPACE_DESC, "STR_HDD_UNLOCK_SPACE_DESC", STR_HDD_UNLOCK_SPACE_DESC_DEFAULT);
 	
 	
-	FREE(STR_DB_NET);
-	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
-	FREE(STR_DB_SOFT);
-	STR_DB_SOFT = sprintf_malloc( DB_PREFIX "%s", STR_SOFT);
-	FREE(STR_DB_GX);
-	STR_DB_GX = sprintf_malloc( DB_PREFIX "%s", STR_GX);
-	FREE(STR_DB_CUSTOM);
-	STR_DB_CUSTOM = sprintf_malloc( DB_PREFIX "%s", STR_CUSTOM);	
+	FREE(STR_MGZ_CUSTOM);
+	STR_MGZ_CUSTOM = sprintf_malloc( MGZ_PREFIX "%s", STR_CUSTOM);	
 	
 	FREE(flang);
 	lang_code_loaded = lang_code;
@@ -31182,10 +31173,7 @@ void open_PS2_GAME_MENU();
 #define SOFTCONFIG		4
 #define CUSTCONFIG		8
 #define CURRCONFIG		16
-#define DB_NETCONFIG	32
-#define DB_GXCONFIG		64
-#define DB_SOFTCONFIG	128
-#define DB_CUSTCONFIG	256
+#define MGZ_CUSTCONFIG	32
 	
 int ps2netemu_cobra(int param)
 {
@@ -31331,8 +31319,8 @@ u8 Create_PS2_CONFIG()
 	unsigned int val32_2=0;
 	unsigned int cmdID;
 	char CFG_path[255];
-	u64 cur_MD5[2];
-	u64 cfg_md5[2];
+	// u64 cur_MD5[2];
+	// u64 cfg_md5[2];
 	
 	sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
 	Delete(CONFIG_path);
@@ -31619,6 +31607,8 @@ u8 Create_PS2_CONFIG()
 	
 CopyCustom:
 	
+	/*
+
 	md5_file(CONFIG_path, (u8 *) cur_MD5);
 	
 	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
@@ -31638,8 +31628,10 @@ CopyCustom:
 		md5_file(CFG_path, (u8 *) cfg_md5);
 		if(cur_MD5[0]==cfg_md5[0] && cur_MD5[1]==cfg_md5[1]) return SUCCESS;
 	}
+
+	*/
 	
-	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/custom_cfg/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
 	CopyFile(CONFIG_path, CFG_path);
 	
 	return SUCCESS;
@@ -31650,37 +31642,22 @@ u16 MGZCONFIG()
 	u8 ret=0;
 	char CONFIG_path[128];
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += NETCONFIG;
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += GXCONFIG;
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += SOFTCONFIG;
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += CUSTCONFIG;
 	
 	sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
 	if(path_info(CONFIG_path) == _FILE) ret += CURRCONFIG;
 	
-	if(!(ret & NETCONFIG)) {
-		sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
-		if(path_info(CONFIG_path) == _FILE) ret += DB_NETCONFIG;	
-	}
-	
-	if(!(ret & GXCONFIG)) {
-		sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
-		if(path_info(CONFIG_path) == _FILE) ret += DB_GXCONFIG;
-	}
-	
-	if(!(ret & SOFTCONFIG)) {
-		sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
-		if(path_info(CONFIG_path) == _FILE) ret += DB_SOFTCONFIG;
-	}
-	
-	sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
+	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/custom_cfg/%s.CONFIG", ManaGunZ_id, PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) {
 		if(ret & CUSTCONFIG) {
 			u8 MGZ_CONFIG_MD5[0x10];
@@ -31688,11 +31665,11 @@ u16 MGZCONFIG()
 			
 			md5_file(CONFIG_path, (u8 *) DB_CONFIG_MD5);
 			
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
 			
 			md5_file(CONFIG_path, (u8 *) MGZ_CONFIG_MD5);
 			
-			if( memcmp(DB_CONFIG_MD5, MGZ_CONFIG_MD5, 0x10) != 0) ret += DB_CUSTCONFIG;
+			if( memcmp(DB_CONFIG_MD5, MGZ_CONFIG_MD5, 0x10) != 0) ret += MGZ_CUSTCONFIG;
 		}
 	}
 	
@@ -31718,7 +31695,11 @@ void CONFIG_check(char *IsoPath)
 		u8 config_position=0;
 		s8 config_number=-1;
 		char CONFIG_STR[10][10];
-		
+
+		if(MGZCFGS & MGZ_CUSTCONFIG)  {
+			config_number++;
+			strcpy(CONFIG_STR[config_number], STR_MGZ_CUSTOM);
+		}
 		if(MGZCFGS & NETCONFIG) {
 			config_number++;
 			strcpy(CONFIG_STR[config_number], STR_NET);
@@ -31729,27 +31710,11 @@ void CONFIG_check(char *IsoPath)
 		}
 		if(MGZCFGS & SOFTCONFIG) {
 			config_number++;
-			strcpy(CONFIG_STR[config_number], STR_SOFT);
+			sprintf(CONFIG_STR[config_number], STR_SOFT);
 		}
 		if(MGZCFGS & CUSTCONFIG)  {
 			config_number++;
-			strcpy(CONFIG_STR[config_number], STR_CUSTOM);
-		}
-		if(MGZCFGS & DB_NETCONFIG) {
-			config_number++;
-			strcpy(CONFIG_STR[config_number], STR_DB_NET);
-		}
-		if(MGZCFGS & DB_GXCONFIG) {
-			config_number++;
-			strcpy(CONFIG_STR[config_number], STR_DB_GX);
-		}
-		if(MGZCFGS & DB_SOFTCONFIG) {
-			config_number++;
-			sprintf(CONFIG_STR[config_number], STR_DB_SOFT);
-		}
-		if(MGZCFGS & DB_CUSTCONFIG)  {
-			config_number++;
-			sprintf(CONFIG_STR[config_number], STR_DB_CUSTOM);
+			sprintf(CONFIG_STR[config_number], STR_CUSTOM);
 		}
 		
 		u8 LoopBreak=1;
@@ -31793,28 +31758,19 @@ void CONFIG_check(char *IsoPath)
 			if(NewPad(BUTTON_CROSS)) {
 				char CONFIG_path[128];
 				
+				if( strcmp(	CONFIG_STR[config_position], STR_MGZ_CUSTOM) == 0) {
+					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/custom_cfg/%s.CONFIG", ManaGunZ_id, PS2_ID);
+				} else
 				if( strcmp(	CONFIG_STR[config_position], STR_CUSTOM) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
-				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_NET) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
-				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_GX) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
-				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_SOFT) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
-				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_DB_CUSTOM) == 0) {
 					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
 				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_DB_NET) == 0) {
+				if( strcmp(	CONFIG_STR[config_position], STR_NET) == 0) {
 					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
 				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_DB_GX) == 0) {
+				if( strcmp(	CONFIG_STR[config_position], STR_GX) == 0) {
 					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
 				} else
-				if( strcmp(	CONFIG_STR[config_position], STR_DB_SOFT) == 0) {
+				if( strcmp(	CONFIG_STR[config_position], STR_SOFT) == 0) {
 					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
 				}
 				
@@ -32302,17 +32258,8 @@ void init_PS2_CONFIG_EDITOR()
 		if(MGZCFGS & CUSTCONFIG) {
 			add_item_value_MENU(STR_CUSTOM);
 		}
-		if(MGZCFGS & DB_NETCONFIG) {
-			add_item_value_MENU(STR_DB_NET);
-		}
-		if(MGZCFGS & SOFTCONFIG) {
-			add_item_value_MENU(STR_DB_SOFT);
-		}
-		if(MGZCFGS & GXCONFIG) {
-			add_item_value_MENU(STR_DB_GX);
-		}
-		if(MGZCFGS & CUSTCONFIG) {
-			add_item_value_MENU(STR_DB_CUSTOM);
+		if(MGZCFGS & MGZ_CUSTCONFIG) {
+			add_item_value_MENU(STR_MGZ_CUSTOM);
 		}
 	}
 		
@@ -32949,31 +32896,19 @@ void PS2_CONFIG_MENU_CROSS()
 		if(item_value_is(STR_CURRENT)) {
 			sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
 		} else
+		if(item_value_is(STR_MGZ_CUSTOM)) {
+			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/custom_cfg/%s.CONFIG", ManaGunZ_id, PS2_ID);
+		} else
 		if(item_value_is(STR_NET)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
-		} else
-		if(item_value_is(STR_SOFT)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
-		} else
-		if(item_value_is(STR_GX)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
-		} else
-		if(item_value_is(STR_CUSTOM)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
-		} else
-		if(item_value_is(STR_CURRENT)) {
-			sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
-		} else
-		if(item_value_is(STR_DB_NET)) {
 			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/NET/%s.CONFIG", PS2_ID);
 		} else
-		if(item_value_is(STR_DB_SOFT)) {
+		if(item_value_is(STR_SOFT)) {
 			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/SOFT/%s.CONFIG", PS2_ID);
 		} else
-		if(item_value_is(STR_DB_GX)) {
+		if(item_value_is(STR_GX)) {
 			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/GX/%s.CONFIG", PS2_ID);
 		} else
-		if(item_value_is(STR_DB_CUSTOM)) {
+		if(item_value_is(STR_CUSTOM)) {
 			sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
 		}
 		if( DEBUG ) start_loading();
