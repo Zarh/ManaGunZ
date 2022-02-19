@@ -31631,7 +31631,7 @@ CopyCustom:
 
 	*/
 	
-	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/custom_cfg/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/custom_cfg/%s.CONFIG", ManaGunZ_id, PS2_ID);
 	CopyFile(CONFIG_path, CFG_path);
 	
 	return SUCCESS;
