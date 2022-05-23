@@ -1,0 +1,41 @@
+name: nightly
+
+on: 
+  push
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    container:
+      image: debian:bullseye
+    defaults:
+        run:
+          shell: bash
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install build requirements
+      run: ./.github/scripts/req.sh
+    - name: Build release
+      run: |
+        wget --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.27_045936/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
+        tar -C /usr/local/ -xzf psdk.tar.gz
+        . ./.github/scripts/env.sh
+        export CSHA=${GITHUB_SHA:0:7}
+        export TAIL="Nightly_${CSHA}"
+        make pkg && export FILEMANAGER=1 && make pkg
+        export TAGGY="nightly_${CSHA}" && ./.github/scripts/name.sh
+    - name: Remove previous release
+      uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      with:
+        delete_release: true
+        tag_name: nightly
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create nightly release
+      uses: softprops/action-gh-release@v0.1.14
+      with:
+        name: "MGZ Nightly Releases"
+        tag_name: nightly
+        body: "- Non-tested nightly binaries. See commit log [here](https://github.com/Zarh/ManaGunZ/commits/master) for included features and fixes."
+        files: ./*.pkg
+        prerelease: true
