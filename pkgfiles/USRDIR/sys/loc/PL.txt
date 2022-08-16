@@ -76,8 +76,8 @@ STR_REST_PNACH                {Przywróć PNACH}
 STR_REST_PNACH_DESC           {Usuń poprawki zastosowane przez plik pnach.}
 STR_APPLY_PNACH               {Zastosuj PNACH}
 STR_APPLY_PNACH_DESC          {Zastosuj poprawki z pliku pnach do gry.}
-STR_DISABLE_WS                {Wyłącz WideScreen}
-STR_ENABLE_WS                 {Włącz WideScreen}
+STR_DISABLE_WS                {Wyłącz szeroki ekran}
+STR_ENABLE_WS                 {Włącz szeroki ekran}
 STR_WS_DESC                   {Wyświetl grę w formacie 16:9 zamiast 4:3.}
 STR_DISABLE_480P              {Wyłącz 480P}
 STR_ENABLE_480P               {Włącz 480P}
@@ -90,10 +90,10 @@ STR_ENABLE_FMVSKIP            {Włącz pominięcie FMV}
 STR_FMVSKIP_DESC              {Umożliwia pominięcie FMV.}
 STR_DISABLE_NETEMU            {Wyłącz Netemu}
 STR_ENABLE_NETEMU             {Włącz Netemu}
-STR_NETEMU_DESC               {Wymuś użycie ps2_neemu.}
+STR_NETEMU_DESC               {Wymuś użycie ps2_netemu.}
 STR_SAVE_CONFIG               {Zapisz CONFIG}
 STR_CONFIG                    {Konfiguracja}
-STR_CONFIG_DESC               {[Eksperymentalne] Stwórz swój własny plik CONFIG, aby poprawić kompatybilnośc gry ps2.}
+STR_CONFIG_DESC               {[Eksperymentalne] Stwórz swój własny plik CONFIG, aby poprawić kompatybilnośc gry PS2.}
 STR_NONE                      {Nic}
 STR_CHECK_MD5                 {Sprawdź MD5}
 STR_PROPS                     {Właściwości}
@@ -365,12 +365,12 @@ STR_GAME_UPDATE_TITLE         {Narzędzie do pobierania aktualizacji gier na PS3
 STR_CURRENT_VERS              {Obecna wersja}
 STR_CANT_MOUNT_PEEKPOKE       {Nie do zamontowania: PEEK i POKE są niedostępne, nie można zainstalować mamby}
 STR_CANT_MOUNT_UNKFW          {Nie do zamontowania: nieznane oprogramowanie, nie można zainstalować mamby..}
-STR_CANT_MOUNT                {Nie do zamontowania}
+STR_CANT_MOUNT                {Nie można zamontować}
 STR_ONLY_FAV                  {Tylko ulubione}
 STR_ALL_GAMES                 {Wszystkie gry}
 STR_DISPLAY                   {Wyświetl}
 STR_DUMP_DEC                  {Zrzuć odszyfrowaną płytę Blu-Ray}
-STR_DUMP_DEC_DESC             {Uzyskaj właściwą iso płyty dzięki IRD. Po zakończeniu załaduje IRD do bazy danych.}
+STR_DUMP_DEC_DESC             {Uzyskaj właściwe ISO płyty dzięki IRD. Po zakończeniu załaduje IRD do bazy danych.}
 STR_DUMP_ENC                  {Zrzuć zaszyfrowaną płytę Blu-Ray}
 STR_DUMP_DISC_KEY             {Zrzuć klucz dysku Blu-Ray}
 STR_DUMP_ERK                  {Zrzuć klucz główny eid}
@@ -387,13 +387,13 @@ STR_DUMP_OPTION               {Blu-Ray dumper}
 STR_IGNORE_ERR                {Ignoruj błędy}
 STR_IGNORE_ERR_DESC           {Ignoruje błędy odczytu podczas procesu zrzucania Blu-Ray.}
 STR_3K3Y_HEADER               {Zawiera 3k3y header}
-STR_3K3Y_HEADER_DESC          {Zrzuca Blu-ray do ISO z wbudowanym 3k3y headerem. 3k3y IsoTools będzie mógł ją rozpoznać.}
+STR_3K3Y_HEADER_DESC          {Zrzuca Blu-ray do ISO z wbudowanym headerem 3k3y. 3k3y IsoTools będzie mógł ją rozpoznać.}
 STR_ELAPSED                   {Upłyneło}
 STR_REMAINING                 {Pozostały czas}
 STR_DYNAREC                   {Dynamiczna rekompilacja}
 STR_DYNAREC_DESC              {Pozwala to emulatorom na użycie dynamicznej rekompilacji.}
 STR_BUILD_ISO                 {Zbuduj ISO}
-STR_BUILD_ISO_DESC            {Zbuduj kopię zapasową ISO z plików Blu-Ray (ang.).}
+STR_BUILD_ISO_DESC            {Zbuduj kopię zapasową ISO z plików płyty Blu-Ray.}
 STR_UPLOADER                  {Nazwa przesyłającego}
 STR_UPLOADER_DESC             {Wpisz swoje imię i nazwisko, jeśli chcesz być umieszczony w liście uznaniowej za przesłane pliki ird, pozostaw to pole puste, aby pozostać anonimowym.}
 STR_BOX3D_ALIGN               {Wyrównaj pole}
@@ -403,8 +403,8 @@ STR_BOX3D_GAP_DESC            {Dostosuj odstęp między polami z grami.}
 STR_SHORT                     {Krótki}
 STR_MEDIUM                    {Średni}
 STR_LONG                      {Długi}
-STR_MOUNT_BD                  {Załaduj jako BD}
-STR_MOUNT_DVD                 {Załaduj jako DVD}
+STR_MOUNT_BD                  {Zamontuj jako BD}
+STR_MOUNT_DVD                 {Zamontuj jako DVD}
 STR_SHOWLOGS_DESC             {Wyświetlaj komunikaty informujące o bieżącym zadaniu na ekranie ładowania.}
 STR_OVERWRITE                 {Zastąp}
 STR_OVERWRITE_DESC            {Kontroluje nadpisanie istniejących plików.}
@@ -417,4 +417,4 @@ STR_ASK_TO_DELETE             {Czy chcesz to usunąć?}
 STR_DUMPER_MAX_TRY            {Próby odczytu}
 STR_DUMPER_MAX_TRY_DESC       {Ustaw liczbę prób odczytu w przypadku błędu odczytu dysku.}
 STR_HDD_UNLOCK_SPACE          {Odblokuj hdd0}
-STR_HDD_UNLOCK_SPACE_DESC     {Zawartość przestrzeni zarezerwowanej w hd0 z 8% do 1%.}
+STR_HDD_UNLOCK_SPACE_DESC     {Redukuj zawartość przestrzeni zarezerwowanej w hd0 z 8% do 1%.}
