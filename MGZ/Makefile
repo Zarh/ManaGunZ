@@ -26,12 +26,13 @@ INCLUDES	+=	lib/libntfs_ext/include lib/fatfs/include lib/fatfs/include lib/libu
 INCLUDES	+=	lib/libun7zip/include lib/libminitar/include
 
 PKGFILES	:=	$(CURDIR)/pkgfiles
-ifeq ($(RPCS3), 1)
-MACHDEP	= -DRPCS3
-endif
 
 ifeq ($(FILEMANAGER), 1)
 MACHDEP		+= -DFILEMANAGER
+endif
+
+ifeq ($(BDVD), 1)
+MACHDEP		+= -D_BDVD_BUILD_
 endif
 
 MACHDEP		+= -DPS3_GEKKO

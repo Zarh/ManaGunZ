@@ -294,7 +294,7 @@ u8 get_keys(u8 *d1, u8 *d2, u8 *pic)
 	load_keys(eid4, cmac, ke, ie);
 	
 	memset(d1,  0, 0x10);
-	memset(d1,  0, 0x10);
+	memset(d2,  0, 0x10);
 	memset(pic, 0, PIC_LEN);
 	
 	print_debug("Getting PIC");

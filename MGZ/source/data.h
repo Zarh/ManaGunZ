@@ -243,5 +243,11 @@
 #include "mamba_488C_lz_bin.h"
 #include "mamba_loader_488C_bin.h"
 
+#include "erk_dumper_489C_bin.h"
+#include "payload_sky_489C_bin.h"
+#include "umount_489C_bin.h"
+#include "mamba_489C_lz_bin.h"
+#include "mamba_loader_489C_bin.h"
+
 
 #endif /* __DATA_H__ */

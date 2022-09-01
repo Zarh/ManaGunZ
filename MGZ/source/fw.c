@@ -1,47 +1,4 @@
-
 #include "fw.h"
-
-#define SUCCESS		1
-#define FAILED 		0
-
-extern int firmware;
-extern u64 TOC;
-extern u64 SYSCALL_TABLE;
-extern u64 HV_START_OFFSET;
-extern u64 HTAB_OFFSET;
-extern u64 HTAB_PATCH1;
-extern u64 HTAB_PATCH2;
-extern u64 HTAB_PATCH3;
-extern u64 MMAP_OFFSET1;
-extern u64 MMAP_OFFSET2;
-extern u64 SPE_OFFSET;
-extern u64 OFFSET_FIX;
-extern u64 OFFSET_2_FIX;
-extern u64 OFFSET_FIX_3C;
-extern u64 OFFSET_FIX_2B17;
-extern u64 OFFSET_FIX_LIC;
-extern u64 OPEN_HOOK;
-extern u64 BASE_ADDR;
-extern u64 UMOUNT_SYSCALL_OFFSET;
-extern u64 LV2MOUNTADDR;
-extern u64 LV2MOUNTADDR_ESIZE;
-extern u64 LV2MOUNTADDR_CSIZE;
-extern u64 NEW_POKE_SYSCALL_ADDR;
-extern u64 PAYLOAD_SKY;
-extern size_t PAYLOAD_SKY_SIZE;
-extern u64 UMOUNT;
-extern size_t UMOUNT_SIZE;
-extern u64 MAMBA;
-extern size_t MAMBA_SIZE;
-extern u64 *MAMBA_LOADER;
-extern size_t MAMBA_LOADER_SIZE;
-extern u64 *ERK_DUMPER;
-extern size_t ERK_DUMPER_SIZE;
-extern u64 OFFSET_1_IDPS;
-extern u64 OFFSET_2_IDPS;
-
-extern void print_load(char *format, ...);
-extern u64 lv2peek(u64 addr);
 
 u8 init_fw()
 {
@@ -1683,6 +1640,47 @@ u8 init_fw()
 		MAMBA_LOADER = (u64 *) mamba_loader_488C_bin;
 		ERK_DUMPER_SIZE = erk_dumper_488C_bin_size;
 		ERK_DUMPER = (u64 *) erk_dumper_488C_bin;
+		
+	} else
+	if(( lv2peek(FW_DATE_OFFSET_489C    )==FW_DATE_1_489C) &&
+	   ( lv2peek(FW_DATE_OFFSET_489C + 8)==FW_DATE_2_489C) )
+	{
+		
+		firmware = 0x489C;
+		
+		OFFSET_2_FIX = OFFSET_2_FIX_489C;
+		LV2MOUNTADDR_ESIZE = LV2MOUNTADDR_ESIZE_489C;
+		LV2MOUNTADDR_CSIZE = LV2MOUNTADDR_CSIZE_489C;
+		OFFSET_FIX = OFFSET_FIX_489C;
+		HV_START_OFFSET = HV_START_OFFSET_489C;
+		OFFSET_FIX_2B17 = OFFSET_FIX_2B17_489C;
+		OFFSET_FIX_LIC = OFFSET_FIX_LIC_489C;
+		OFFSET_FIX_3C = OFFSET_FIX_3C_489C;
+		TOC = TOC_489C;
+		SYSCALL_TABLE = SYSCALL_TABLE_489C;
+		HTAB_OFFSET = HTAB_OFFSET_489C;
+		HTAB_PATCH1 = HTAB_PATCH1_489C;
+		HTAB_PATCH2 = HTAB_PATCH2_489C;
+		HTAB_PATCH3 = HTAB_PATCH3_489C;
+		MMAP_OFFSET1 = MMAP_OFFSET1_489C;
+		MMAP_OFFSET2 = MMAP_OFFSET2_489C;
+		SPE_OFFSET = SPE_OFFSET_489C;
+		LV2MOUNTADDR = LV2MOUNTADDR_489C;
+		OPEN_HOOK = OPEN_HOOK_489C;
+		BASE_ADDR = BASE_ADDR_489C;
+		OFFSET_1_IDPS = OFFSET_1_IDPS_489C;
+		OFFSET_2_IDPS = OFFSET_2_IDPS_489C;
+		
+		PAYLOAD_SKY_SIZE = payload_sky_489C_bin_size;
+		PAYLOAD_SKY = (u64) payload_sky_489C_bin;
+		UMOUNT_SIZE = umount_489C_bin_size;
+		UMOUNT = (u64) umount_489C_bin;
+		MAMBA_SIZE = mamba_489C_lz_bin_size;
+		MAMBA = (u64) mamba_489C_lz_bin;
+		MAMBA_LOADER_SIZE = mamba_loader_489C_bin_size;
+		MAMBA_LOADER = (u64 *) mamba_loader_489C_bin;
+		ERK_DUMPER_SIZE = erk_dumper_489C_bin_size;
+		ERK_DUMPER = (u64 *) erk_dumper_489C_bin;
 		
 	} else {return FAILED;}
 	

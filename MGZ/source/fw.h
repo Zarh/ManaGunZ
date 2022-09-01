@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "data.h"
+#include "extern.h"
 
 u8 init_fw();
 

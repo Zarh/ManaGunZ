@@ -1,6 +1,18 @@
 TO DO :
 Add : MultiContent PKGDIR/PS3_GMXX/PK3_EXTRA/INSDIR
 
+v1.49
+Add : Support FW 4.89C
+Remove : Included PS2CONFIG files. See note (1).
+Add : Test with latest firmware offsets on a new firmware.
+Fix : IRD build with backup having empty PUP.
+Fix : freeze in settings/file manager, from ntfs lib (strtok).
+Fix : freeze in settings/language, bug introduced in 1.41.
+
+Notes:
+(1) I can't keep it up to date.
+Instead, you can install PS2CONFIG pkg from https://github.com/aldostools/webMAN-MOD/releases/latest which is up to date thanks to Aldostools.
+
 v1.41
 Add : On dump BR functions, it checks if sys_storage_read succeeded. See notes (1).
 Add : Toggle in "Settings/Blu-Ray dumper" to disable/enable the check on sys_storage_read.

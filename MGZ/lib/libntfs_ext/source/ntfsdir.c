@@ -498,7 +498,6 @@ DIR_ITER *ntfs_diropen_r (struct _reent *r, DIR_ITER *dirState, const char *path
     dir->ni = ntfsOpenEntry(dir->vd, path);
     if (!dir->ni) {
         ntfsUnlock(dir->vd);
-        ntfs_free(dir->vd);
         r->_errno = ENOENT;
         return NULL;
     }

@@ -1298,50 +1298,8 @@ int init_IDPSet()\n\
 	OFFSET_1_IDPS = 0;\n\
 	OFFSET_2_IDPS = 0;\n", IDPSET_firmware_c);
 
-	fputs("\n\
+	fputs("\
 #include \"fw.h\"\n\
-\n\
-#define SUCCESS		1\n\
-#define FAILED 		0\n\
-\n\
-extern int firmware;\n\
-extern u64 TOC;\n\
-extern u64 SYSCALL_TABLE;\n\
-extern u64 HV_START_OFFSET;\n\
-extern u64 HTAB_OFFSET;\n\
-extern u64 HTAB_PATCH1;\n\
-extern u64 HTAB_PATCH2;\n\
-extern u64 HTAB_PATCH3;\n\
-extern u64 MMAP_OFFSET1;\n\
-extern u64 MMAP_OFFSET2;\n\
-extern u64 SPE_OFFSET;\n\
-extern u64 OFFSET_FIX;\n\
-extern u64 OFFSET_2_FIX;\n\
-extern u64 OFFSET_FIX_3C;\n\
-extern u64 OFFSET_FIX_2B17;\n\
-extern u64 OFFSET_FIX_LIC;\n\
-extern u64 OPEN_HOOK;\n\
-extern u64 BASE_ADDR;\n\
-extern u64 UMOUNT_SYSCALL_OFFSET;\n\
-extern u64 LV2MOUNTADDR;\n\
-extern u64 LV2MOUNTADDR_ESIZE;\n\
-extern u64 LV2MOUNTADDR_CSIZE;\n\
-extern u64 NEW_POKE_SYSCALL_ADDR;\n\
-extern u64 PAYLOAD_SKY;\n\
-extern size_t PAYLOAD_SKY_SIZE;\n\
-extern u64 UMOUNT;\n\
-extern size_t UMOUNT_SIZE;\n\
-extern u64 MAMBA;\n\
-extern size_t MAMBA_SIZE;\n\
-extern u64 *MAMBA_LOADER;\n\
-extern size_t MAMBA_LOADER_SIZE;\n\
-extern u64 *ERK_DUMPER;\n\
-extern size_t ERK_DUMPER_SIZE;\n\
-extern u64 OFFSET_1_IDPS;\n\
-extern u64 OFFSET_2_IDPS;\n\
-\n\
-extern void print_load(char *format, ...);\n\
-extern u64 lv2peek(u64 addr);\n\
 \n\
 u8 init_fw()\n\
 {", fwc);

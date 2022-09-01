@@ -12,11 +12,7 @@ include $(PSL1GHT)/ppu_rules
 
 #---------------------------------------------------------------------------------
 # ManaGunZ : "make pkg"
-# ManaGunZ for rpcs3 : "RPCS3=1 make pkg"
-# FileManger : "FILEMANAGER=1 make pkg"
-# FileManager for rpcs3 : "FILEMANAGER=1 RPCS3=1 make pkg"
-# 
-# Note : RPCS3 doesn't support "opendir" on system root : "/"
+# FileManager : "FILEMANAGER=1 make pkg"
 #---------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------
@@ -34,7 +30,11 @@ PKGFILES1	:=	$(CURDIR)/pkgfiles
 PKGFILES2	:=	$(CURDIR)/pkgfiles2
 SFOXML		:=	sfo.xml
 
-VERSION		:=	1.41
+VERSION		:=	1.42
+
+ifeq ($(BDVD), 1)
+MACHDEP		+= -D_BDVD_BUILD_
+endif
 
 ifeq ($(FILEMANAGER), 1)
 PKGFILES	:=	$(PKGFILES2)
@@ -212,10 +212,12 @@ lib:
 	$(MAKE) -C MGZ/lib/cobra --no-print-directory
 	@mv -f MGZ/lib/cobra/libcobra.a MGZ/lib/libcobra.a
 	$(MAKE) -C MGZ/lib/libntfs_ext --no-print-directory
-	@mv -f MGZ/lib/libntfs_ext/libntfs_ext.a MGZ/lib/libntfs_ext.a
 	$(MAKE) -C MGZ/lib/OpenSSL --no-print-directory
 	@mv -f MGZ/lib/OpenSSL/libcrypto.a MGZ/lib/libcrypto.a
 	@mv -f MGZ/lib/OpenSSL/libssl.a MGZ/lib/libssl.a
+#---------------------------------------------------------------------------------
+ntfs:
+	$(MAKE) -C MGZ/lib/libntfs_ext --no-print-directory
 #---------------------------------------------------------------------------------
 run:
 	ps3load $(OUTPUT).self

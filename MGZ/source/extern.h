@@ -5,7 +5,8 @@
 
 // https://www.cs.technion.ac.il/users/yechiel/c++-faq/macros-with-if.html
 #define print_debug(...) 		if( DEBUG ) print_load(__VA_ARGS__); else (void)0
-								
+
+#define LV2ADDR(x) 0x8000000000000000ULL + x
 
 #define OK 			1
 #define NOK 		0
@@ -38,11 +39,50 @@
 #define FREE(x)					if(x!=NULL) {free(x);x=NULL;}
 #define FCLOSE(x) 				if(x!=NULL) {fclose(x);x=NULL;}
 
+extern u64 TOC;
+extern int firmware;
+extern u64 SYSCALL_TABLE;
+extern u64 HV_START_OFFSET;
+extern u64 HTAB_OFFSET;
 extern u64 HTAB_PATCH1;
 extern u64 HTAB_PATCH2;
 extern u64 HTAB_PATCH3;
+extern u64 MMAP_OFFSET1;
+extern u64 MMAP_OFFSET2;
+extern u64 SPE_OFFSET;
+extern u64 OFFSET_FIX;
+extern u64 OFFSET_2_FIX;
+extern u64 OFFSET_FIX_3C;
+extern u64 OFFSET_FIX_2B17;
+extern u64 OFFSET_FIX_LIC;
+extern u64 OPEN_HOOK;
+extern u64 BASE_ADDR;
+extern u64 UMOUNT_SYSCALL_OFFSET;
+extern u64 LV2MOUNTADDR;
+extern u64 LV2MOUNTADDR_ESIZE;
+extern u64 LV2MOUNTADDR_CSIZE;
+extern u64 NEW_POKE_SYSCALL_ADDR;
+extern u64 PAYLOAD_SKY;
+extern size_t PAYLOAD_SKY_SIZE;
+extern u64 UMOUNT;
+extern size_t UMOUNT_SIZE;
+extern u64 MAMBA;
+extern size_t MAMBA_SIZE;
+extern u64 *MAMBA_LOADER;
+extern size_t MAMBA_LOADER_SIZE;
+extern u64 *ERK_DUMPER;
+extern size_t ERK_DUMPER_SIZE;
+extern u64 OFFSET_1_IDPS;
+extern u64 OFFSET_2_IDPS;
+extern u64 UFS_SB_ADDR;
+extern u64 FW_DATE_OFFSET;
+extern u64 FW_DATE_1;
+extern u64 FW_DATE_2;
 
 extern u64 lv2peek(u64 addr);
+extern u64 lv1peek(u64 addr);
+extern void MEM_lv2peek(uint64_t src, const void* dst, uint64_t size);
+extern void MEM_lv1peek(uint64_t src, const void* dst, uint64_t size);
 extern void remove_lv2_protection();
 extern void write_htab(void);
 extern u64 lv2poke(u64 addr, u64 value);
@@ -55,8 +95,13 @@ extern void print_head(char *format2, ...);
 extern void print_load(char *format, ...);
 extern u8 DEBUG;
 extern u8 cancel;
+extern u8 disable_cancel;
 extern u8 copy_cancel;
 extern void task_Init(const u64 max);
 extern void task_Update(u64 val);
 extern void task_Update2(u64 val);
 extern void task_End();
+extern char *ManaGunZ_path;
+extern int64_t prog_bar1_value;
+extern char ManaGunZ_id[10];
+extern u8 SetFilePerms(char *path);

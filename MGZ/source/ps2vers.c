@@ -276,6 +276,12 @@ u8 get_hwemu(u32 crc, u8 **stage1, u32 *stage1_size, u8 **stage2, u32 *stage2_si
 		*stage1 = (uint8_t *) ps2hwemu_stage1_488C_bin;
 		*stage2_size = (uint32_t) ps2hwemu_stage2_488C_bin_size;
 		*stage2 = (uint8_t *) ps2hwemu_stage2_488C_bin;
+	} else 
+	if(crc == CRC32HWEMU_489C) {
+		*stage1_size = (uint32_t) ps2hwemu_stage1_489C_bin_size;
+		*stage1 = (uint8_t *) ps2hwemu_stage1_489C_bin;
+		*stage2_size = (uint32_t) ps2hwemu_stage2_489C_bin_size;
+		*stage2 = (uint8_t *) ps2hwemu_stage2_489C_bin;
 	} else  return FAILED;
 
 	return SUCCESS;
@@ -553,6 +559,12 @@ u8 get_gxemu(u32 crc, u8 **stage1, u32 *stage1_size, u8 **stage2, u32 *stage2_si
 		*stage1 = (uint8_t *) ps2gxemu_stage1_488C_bin;
 		*stage2_size = (uint32_t) ps2gxemu_stage2_488C_bin_size;
 		*stage2 = (uint8_t *) ps2gxemu_stage2_488C_bin;
+	} else 
+	if(crc == CRC32GXEMU_489C) {
+		*stage1_size = (uint32_t) ps2gxemu_stage1_489C_bin_size;
+		*stage1 = (uint8_t *) ps2gxemu_stage1_489C_bin;
+		*stage2_size = (uint32_t) ps2gxemu_stage2_489C_bin_size;
+		*stage2 = (uint8_t *) ps2gxemu_stage2_489C_bin;
 	} else  return FAILED;
 	
 	return SUCCESS;
@@ -741,6 +753,10 @@ u8 get_netemu(u32 crc, u8 **stage2, u32 *stage2_size)
 	if(crc == CRC32NETEMU_488C) {
 		*stage2_size = (uint32_t) ps2netemu_stage2_488C_bin_size;
 		*stage2 = (uint8_t *) ps2netemu_stage2_488C_bin;
+	} else 
+	if(crc == CRC32NETEMU_489C) {
+		*stage2_size = (uint32_t) ps2netemu_stage2_489C_bin_size;
+		*stage2 = (uint8_t *) ps2netemu_stage2_489C_bin;
 	} else  return FAILED;
 	
 	return SUCCESS;

@@ -32,14 +32,21 @@ endif
 
 TARGET		:=	libntfs_ext
 BUILD		:=	build
-SOURCE		:=	source source/libext2fs
+SOURCE		:=	source
 INCLUDE		:=	include
 DATA		:=	data
 LIBS		:=	
 
-MACHDEP		:= -DBIGENDIAN 
-CFLAGS		+= -O2 -Wall -mcpu=cell $(MACHDEP) -fno-strict-aliasing $(INCLUDES) -DPS3_GEKKO -DHAVE_CONFIG_H -DPS3_STDIO
+MACHDEP		:= -DBIGENDIAN -DPS3_GEKKO -DHAVE_CONFIG_H
+#MACHDEP     += -DPS3_STDIO
+#CFLAGS		 += -O3 -Wall -mcpu=cell $(MACHDEP) -fno-strict-aliasing $(INCLUDES) 
+#https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+CFLAGS       = -ffunction-sections -fdata-sections -Os -m64 -mcpu=cell -fno-builtin -fno-exceptions $(MACHDEP) \
+             -Wall -Wno-strict-aliasing -Wno-multichar -ffreestanding $(INCLUDES) 
+CFLAGS      += --std=gnu99
 LD			:=	ppu-ld
+
+
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
@@ -76,6 +83,7 @@ export INCLUDES	=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@cp -f $(CURDIR)/$(TARGET).a ../$(TARGET).a
 
 shader:
 	@echo "[VPCOMP] $(notdir $<)"

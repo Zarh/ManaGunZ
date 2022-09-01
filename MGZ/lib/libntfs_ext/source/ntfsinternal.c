@@ -128,7 +128,9 @@ void ntfsRemoveDevice (const char *path)
 
     // Get the device name from the path
     strncpy(name, path, 127);
-    strtok(name, ":/");
+    char *s = strstr(name, ":/");
+	if(s != NULL) 
+		*s = 0;
 
     // Find and remove the specified device from the devoptab table
     // NOTE: We do this manually due to a 'bug' in RemoveDevice
@@ -156,7 +158,9 @@ const devoptab_t *ntfsGetDevice (const char *path, bool useDefaultDevice)
 
     // Get the device name from the path
     strncpy(name, path, 127);
-    strtok(name, ":/");
+	char *s = strstr(name, ":/");
+	if(s != NULL)
+		*s = 0;
 
     // Search the devoptab table for the specified device name
     // NOTE: We do this manually due to a 'bug' in GetDeviceOpTab

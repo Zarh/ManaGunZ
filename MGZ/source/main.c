@@ -189,6 +189,7 @@
 #define _ISO_BD_VIDEO	".mgz_bd_video"
 #define _ISO_DVD_VIDEO	".mgz_dvd_video"
 #define _BDVD			".mgz_bdvd"
+#define _ENC_ISO_PS3    ".mgz_enc_isops3"
 
 #define	_EBOOT_BIN		"eboot.bin"
 #define	_EBOOT_ELF		"eboot.elf"
@@ -422,6 +423,9 @@ size_t ERK_DUMPER_SIZE;
 u64 OFFSET_1_IDPS;
 u64 OFFSET_2_IDPS;
 u64 UFS_SB_ADDR=0;
+u64 FW_DATE_OFFSET=0;
+u64 FW_DATE_1=0;
+u64 FW_DATE_2=0;
 
 //*********** IRIS ****************
 
@@ -454,6 +458,7 @@ static char head_title[128];
 int64_t prog_bar1_value=-1;
 int64_t prog_bar2_value=-1;
 u8 cancel = NO;
+u8 disable_cancel = NO;
 uint8_t ERR = FALSE;
 uint8_t WAR = FALSE;
 static u32 LoadIconRot=0;
@@ -512,7 +517,12 @@ static u8 usb = NO;
 static int position=0;
 char ManaGunZ_id[10];
 
+char *ManaGunZ_path=NULL;
+
 static int position_CURPIC=-1;
+
+static u8 RPCS3=NO;
+
 
 //********** Scan DIR ****************
 
@@ -1511,6 +1521,12 @@ void MGZ_exit();
 s32 sys_map_path(char *oldpath, char *newpath);
 float Get_MgzVersion();
 u8 is_splitted_iso_X(char *file_name);
+void IRD_search(ird_t *ird, u32 meta_sig, char *g_path, char ***IRD_Path, u32 *IRD_nPath);
+void IRD_download(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath);
+extern void hex_to_bytes(unsigned char *data, const char *hex_str, unsigned int str_length);
+extern bool is_hex(const char* hex_str, unsigned int str_length);
+u64 lv2poke8(u64 addr, u8 value);
+u8 lv2peek8(u64 addr);
 
 void Draw_MENU();
 
@@ -1758,7 +1774,7 @@ void GetFont()
 	u8 FontDirNumber = 2;
 	char FontDir[FontDirNumber][64];
 	
-	sprintf(FontDir[0], "/dev_hdd0/game/%s/USRDIR/GUI",  ManaGunZ_id);
+	sprintf(FontDir[0], "%s/USRDIR/GUI",  ManaGunZ_path);
 	strcpy(FontDir[1], "/dev_flash/data/font");
 	
 	for(i=0; i<FontDirNumber; i++) {
@@ -2147,8 +2163,8 @@ char *GetExtension(char *path)
 			m-=4;
 		}
 	}
-	if(strcasecmp(&path[m], ".iso")==0) {
-		if(strcasecmp(&path[m-4], ".enc.iso")==0) {
+	if(strncasecmp(&path[m], ".iso", 4)==0) {
+		if(strncasecmp(&path[m-4], ".enc.iso", 8)==0) {
 			m-=4;
 		}
 	}
@@ -3029,7 +3045,7 @@ get_rif_key:
 	get_rifkey(rif_path, rap_path, rifkey);
 
 	// get dev_klic
-	sprintf(klic_db, "/dev_hdd0/game/%s/USRDIR/sys/dev_klics.txt", ManaGunZ_id);
+	sprintf(klic_db, "%s/USRDIR/sys/dev_klics.txt", ManaGunZ_path);
 	if( npdata_bruteforce(in, klic_db, NPDATA_BF_MODE_LINES_STREAM, dev_klicensee) == SUCCESS) {
 		goto decrypt;
 	}
@@ -3095,6 +3111,149 @@ decrypt:
 //*******************************************************
 // TEST ZONE
 //*******************************************************
+
+u64 char_to_u64(char *t)
+{
+// memcpy(ret, t, 8);
+    return (u64) t[0] << 56ULL |
+           (u64) t[1] << 48ULL |
+           (u64) t[2] << 40ULL |
+           (u64) t[3] << 32ULL |
+           (u64) t[4] << 24ULL |
+           (u64) t[5] << 16ULL |
+           (u64) t[6] << 8ULL |
+           (u64) t[7] ;
+}
+
+// test to improve direct boot compatibility
+// change current directories (use 
+void PokeNewCHDIR(char *title_id)
+{
+	char mgz_path[255];
+	memset(mgz_path, 0, 255);
+	sprintf(mgz_path, "%s/USRDIR/ManaGunZ.self%c", ManaGunZ_path, '\0');
+	
+	int mgz_path_len = strlen(mgz_path);
+	
+	char new_path[mgz_path_len+1];
+	memset(new_path, 0, mgz_path_len+1);
+	
+	strcpy(new_path, "/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN");
+	
+	print_debug("Searching mgz path in lv2...");
+	
+	u64 start = 0x500000ULL;
+	u64 end = 0x700000ULL;
+	task_Init(end - start );
+	u64 value;
+	int i, j, k;
+	for(i=start ; i < end; i+=0x10 ) {
+		memset(&value, 0, 8);
+		value = lv2peek(0x8000000000000000ULL + i);
+		task_Update2(i-0x500000ULL);
+
+		if( !memcmp((char *) &value, mgz_path, 8) ) {
+			u8 found_it = YES;
+			for( j=1; j<mgz_path_len/8+1; j++) {
+				memset(&value, 0, 8);
+				value = lv2peek(0x8000000000000000ULL + i + 8*j);
+				u8 len = 8;
+				if(j==mgz_path_len/8) {
+					len = mgz_path_len - 8*j;
+				}
+				if( memcmp((char *) &value, mgz_path+8*j, len) != 0 ) {
+					print_debug("different !");
+					found_it = NO;
+					break;
+				}
+			}
+			if( found_it == YES ) {
+				for( j=0; j<mgz_path_len/8+1; j++) {
+					u8 len = 8;
+					if(j==mgz_path_len/8) {
+						len = mgz_path_len - 8*j;
+					}
+					if( len == 8 ) {
+						lv2poke(0x8000000000000000ULL + i + 8*j, (u64) char_to_u64(new_path + 8*j));
+					} else {
+						for(k=0; k < len; k++) {
+							lv2poke8(0x8000000000000000ULL + i + 8*j + k, (u8) new_path[8*j+k]);
+						}
+					}
+				}
+			}
+		}
+	}
+	task_End();
+	
+	print_debug("poking title_id in lv2");
+	// 'fixed' offset for title_id per fw version
+	u32 title_id_offset = 0x3E3469;
+	memset(&value, 0, 8);
+	memcpy(&value, title_id, 8);
+	lv2poke(0x8000000000000000ULL + title_id_offset, value);
+	lv2poke8(0x8000000000000000ULL + title_id_offset + 8, (u8) title_id[8]);
+	
+	print_debug("Creating a new game.dat");
+	FILE *f;
+	f = fopen("/dev_hdd0/vsh/pushlist/game.dat", "wb");
+	if( f != NULL ) {
+		fwrite(title_id, 9, 1, f);
+		fclose(f);
+	}
+	Delete("/dev_hdd0/vsh/pushlist/patch.dat");
+	
+}
+
+void PokeNewTitleID(char *title_id)
+{
+	print_debug("Searching mgz path in lv2...");
+	
+	u64 start = 0x500000ULL;
+	u64 end = 0x700000ULL;
+	task_Init(end - start );
+	u64 value64;
+	u8 value8;
+	
+	u64 mgz_64 = char_to_u64(ManaGunZ_id);
+	u8 mgz_u8 = (u8) ManaGunZ_id[8];
+	
+	u64 title_id_64 = char_to_u64(title_id);
+	u8 title_id_8 = (u8) title_id[8];
+	
+	int i;
+	for(i=start ; i < end; i++ ) {
+		memset(&value64, 0, 8);
+		value64 = lv2peek(0x8000000000000000ULL + i);
+		
+		task_Update2(i-start);
+		
+		if( mgz_64 == value64 ) {
+			value8=0;
+			value8 = lv2peek8(0x8000000000000000ULL + i + 8);
+			if( value8 == mgz_u8 ) {
+				lv2poke(0x8000000000000000ULL + i, title_id_64);
+				lv2poke8(0x8000000000000000ULL + i + 8, title_id_8);
+			}
+		}
+	}
+	task_End();
+	
+	print_debug("poking title_id in lv2");
+	// 'fixed' offset for title_id per fw version
+	u32 title_id_offset = 0x3E3469;
+	lv2poke(0x8000000000000000ULL + title_id_offset, title_id_64);
+	lv2poke8(0x8000000000000000ULL + title_id_offset + 8, title_id_8);
+	
+	print_debug("Creating a new game.dat");
+	FILE *f;
+	f = fopen("/dev_hdd0/vsh/pushlist/game.dat", "wb");
+	if( f != NULL ) {
+		fwrite(title_id, 9, 1, f);
+		fclose(f);
+	}
+	Delete("/dev_hdd0/vsh/pushlist/patch.dat");
+}
 
 void test_permit()
 {
@@ -3323,9 +3482,15 @@ void exFAT_test()
 // http://www.psdevwiki.com/ps3/AIM_Manager#0x19003_-_Get_Device_ID
 
 u8 TEST_IDPS[0x10];
+u8 TEST_PSID[0x10];
 void GetIDPS()
 {
 	lv2syscall2(867, 0x19003, (u64) TEST_IDPS);
+}
+
+void GetPSID()
+{
+	lv2syscall2(867, 0x19005, (u64) TEST_PSID);
 }
 
 //  https://www.imagemagick.org/api/magick-image.php
@@ -3647,20 +3812,20 @@ char *GetPath_GAMEPIC_COVER3D(int game_pos, int n)
 	char t[10] = {0};
 	if(is_PS1) strcpy(t, "_FRONT");
 	
-	if(n==0) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(n==1) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(n==2) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_id, list_game_ID[game_pos], t);
-	if(n==3) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_id, list_game_ID[game_pos], t);
+	if(n==0) return sprintf_malloc("%s/USRDIR/covers/3D/%s%s.jpg", ManaGunZ_path, list_game_ID[game_pos], t);
+	if(n==1) return sprintf_malloc("%s/USRDIR/covers/3D/%s%s.JPG", ManaGunZ_path, list_game_ID[game_pos], t);
+	if(n==2) return sprintf_malloc("%s/USRDIR/covers/3D/%s%s.png", ManaGunZ_path, list_game_ID[game_pos], t);
+	if(n==3) return sprintf_malloc("%s/USRDIR/covers/3D/%s%s.PNG", ManaGunZ_path, list_game_ID[game_pos], t);
 	
 	return NULL;
 }
 
 char *GetPath_GAMEPIC_COVER2D(int game_pos, int n)
 {	
-	if(n==0) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
-	if(n==1) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
-	if(n==2) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
-	if(n==3) return sprintf_malloc("/dev_hdd0/game/%s/USRDIR/covers/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
+	if(n==0) return sprintf_malloc("%s/USRDIR/covers/%s.jpg", ManaGunZ_path, list_game_ID[game_pos]);
+	if(n==1) return sprintf_malloc("%s/USRDIR/covers/%s.JPG", ManaGunZ_path, list_game_ID[game_pos]);
+	if(n==2) return sprintf_malloc("%s/USRDIR/covers/%s.png", ManaGunZ_path, list_game_ID[game_pos]);
+	if(n==3) return sprintf_malloc("%s/USRDIR/covers/%s.PNG", ManaGunZ_path, list_game_ID[game_pos]);
 	
 	if(n==4) return sprintf_malloc("/dev_hdd0/tmp/covers/%s.jpg", list_game_ID[game_pos]);
 	if(n==5) return sprintf_malloc("/dev_hdd0/tmp/covers/%s.JPG", list_game_ID[game_pos]);
@@ -3804,13 +3969,13 @@ u8 Read_PS1BACK(int game_pos, imgData *DataPic)
 	
 	char temp[128];
 	
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.JPG", ManaGunZ_id, list_game_ID[game_pos]);
+	sprintf(temp, "%s/USRDIR/covers/3D/%s.JPG", ManaGunZ_path, list_game_ID[game_pos]);
 	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.jpg", ManaGunZ_id, list_game_ID[game_pos]);
+	sprintf(temp, "%s/USRDIR/covers/3D/%s.jpg", ManaGunZ_path, list_game_ID[game_pos]);
 	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.PNG", ManaGunZ_id, list_game_ID[game_pos]);
+	sprintf(temp, "%s/USRDIR/covers/3D/%s.PNG", ManaGunZ_path, list_game_ID[game_pos]);
 	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/covers/3D/%s.png", ManaGunZ_id, list_game_ID[game_pos]);
+	sprintf(temp, "%s/USRDIR/covers/3D/%s.png", ManaGunZ_path, list_game_ID[game_pos]);
 	if(imgLoadFromFile(temp, DataPic, NO) == SUCCESS) return SUCCESS;
 
 	return FAILED;
@@ -6054,7 +6219,7 @@ void init_lang()
 
 	lang_N++;
 	
-	sprintf(LOCPath, "/dev_hdd0/game/%s/USRDIR/sys/loc", ManaGunZ_id);
+	sprintf(LOCPath, "%s/USRDIR/sys/loc", ManaGunZ_path);
 	
 	DIR *d;
 	struct dirent *dir;
@@ -6514,6 +6679,7 @@ void update_lang()
 	MACRO_LANG(STR_DUMPER_MAX_TRY_DESC);
 	MACRO_LANG(STR_HDD_UNLOCK_SPACE);
 	MACRO_LANG(STR_HDD_UNLOCK_SPACE_DESC);
+	MACRO_LANG(STR_DECRYPT_ISO);
 	
 	FREE(STR_DB_NET);
 	STR_DB_NET = sprintf_malloc( DB_PREFIX "%s", STR_NET);
@@ -6532,7 +6698,6 @@ void load_lang()
 {
 	int i;
 	
-#ifndef RPCS3	
 	if(lang_code == LANG_UNDEFINED) {
 		int res = get_xreg_value((char*)"/setting/system/language");
 		if( res == -1 ) {
@@ -6543,7 +6708,6 @@ void load_lang()
 		}
 		lang_code = (u8) res;
 	}
-#endif
 
 	for(i=0; i < lang_N ;i++) {
 		if(LANGCODE[i] == lang_code) {
@@ -6883,7 +7047,7 @@ u8 GetFromP3T(char *src, char *file, char *dst)
 			if(RAF_size != 0) {
 				char raf_tmp[128];
 				char tmp_dir[128];
-				sprintf(tmp_dir, "/dev_hdd0/game/%s/USRDIR/temp", ManaGunZ_id);
+				sprintf(tmp_dir, "%s/USRDIR/temp", ManaGunZ_path);
 				//Delete(tmp_dir);
 				mkdir(tmp_dir, 0777);
 				
@@ -7152,7 +7316,7 @@ void GetThemes()
 			sprintf(THM_path, "/%s/Themes", list_device[i]);
 		} else
 		if(strstr(list_device[i], "dev_hdd0") != NULL) {
-			sprintf(THM_path, "/dev_hdd0/game/%s/USRDIR/GUI", ManaGunZ_id);
+			sprintf(THM_path, "%s/USRDIR/GUI", ManaGunZ_path);
 		} else continue;
 		
 		DIR *d;
@@ -7242,7 +7406,7 @@ u8 InstallTheme()
 	
 	u8 ThemeType = GetThemeType( Themes_Paths_list[UI_position][Themes_position[UI_position]]);
 	
-	sprintf(folder, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
+	sprintf(folder, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
 	
 	print_head("Installing Theme...");
 			
@@ -7280,7 +7444,7 @@ u8 InstallTheme()
 	}
 	else if(ThemeType == P3T) {
 		char tmp[128];
-		sprintf(tmp, "/dev_hdd0/game/%s/USRDIR/temp", ManaGunZ_id);
+		sprintf(tmp, "%s/USRDIR/temp", ManaGunZ_path);
 		Delete(tmp);
 		mkdir(tmp, 0777);
 		strcat(tmp, "/tmp.p3t");
@@ -7369,7 +7533,7 @@ void LoadColorSet(char *ColorSetName)
 	
 	FILE *f;
 	char SysColorSetPath[128];
-	sprintf(SysColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+	sprintf(SysColorSetPath, "%s/USRDIR/GUI/colorset.ini",  ManaGunZ_path);
 
 	f = fopen(SysColorSetPath, "rb");
 	if(f==NULL) return;
@@ -7451,7 +7615,7 @@ void AddColorSet(char *ColorSetName)
 	FILE *f;
 	char temp[255];
 	char SysColorSetPath[128];
-	sprintf(SysColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+	sprintf(SysColorSetPath, "%s/USRDIR/GUI/colorset.ini",  ManaGunZ_path);
 
 	f = fopen(SysColorSetPath, "rb+");
 	if(f==NULL) return;
@@ -7492,7 +7656,7 @@ void RemoveColorSet(char *ColorSetName)
 {
 	char SysColorSetPath[128];
 	int SysColorSetSize;
-	sprintf(SysColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+	sprintf(SysColorSetPath, "%s/USRDIR/GUI/colorset.ini",  ManaGunZ_path);
 	
 	char *ColorSetData = LoadFile(SysColorSetPath, &SysColorSetSize);
 	if(ColorSetData == NULL) return;
@@ -7540,8 +7704,8 @@ void AddThemeColorSet()
 	char ThemeColorSetPath[128];
 	char ColorSetPath[128];
 	
-	sprintf(ThemeColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s/colorset.ini",  ManaGunZ_id, UI[UI_position], Themes[UI_position]);
-	sprintf(ColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+	sprintf(ThemeColorSetPath, "%s/USRDIR/GUI/%s/%s/colorset.ini",  ManaGunZ_path, UI[UI_position], Themes[UI_position]);
+	sprintf(ColorSetPath, "%s/USRDIR/GUI/colorset.ini",  ManaGunZ_path);
 
 	f1 = fopen(ThemeColorSetPath, "rb");
 	if(f1==NULL) return;
@@ -7622,7 +7786,7 @@ char *GetCurrentColorSet()
 	
 	FILE *f;
 	char SysColorSetPath[128];
-	sprintf(SysColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+	sprintf(SysColorSetPath, "%s/USRDIR/GUI/colorset.ini",  ManaGunZ_path);
 
 	f = fopen(SysColorSetPath, "rb");
 	if(f==NULL) return strcpy_malloc(STR_NONE);
@@ -7707,7 +7871,7 @@ void LoadThemeFont()
 {
 	char ThemeFontPath[128];
 	
-	sprintf(ThemeFontPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s/FONT.TTF",  ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+	sprintf(ThemeFontPath, "%s/USRDIR/GUI/%s/%s/FONT.TTF",  ManaGunZ_path, UI[UI_position], Themes[UI_position]);
 	
 	if(path_info(ThemeFontPath) == _NOT_EXIST) return;
 
@@ -7735,7 +7899,7 @@ void LoadThemeColorSet()
 	FILE *f;
 	char ThemeColorSetPath[128];
 	
-	sprintf(ThemeColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s/colorset.ini",  ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+	sprintf(ThemeColorSetPath, "%s/USRDIR/GUI/%s/%s/colorset.ini",  ManaGunZ_path, UI[UI_position], Themes[UI_position]);
 
 	f = fopen(ThemeColorSetPath, "rb");
 	if(f==NULL) return;
@@ -7843,10 +8007,10 @@ void ReloadTheme(u8 i)
 	u32 SIZE=0;
 	u8 gray=NO;
 	
-	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+	sprintf(thmPath, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], Themes[UI_position]);
 	if(path_info(thmPath) == _NOT_EXIST) {
 		strcpy(Themes[UI_position], STR_NONE);
-		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+		sprintf(thmPath, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], Themes[UI_position]);
 	}
 	
 	if(i == NOTIF) texture_pointer = texture_mem + TEXTURE_POINTER_THEME + texture_NOTIF;
@@ -7884,10 +8048,10 @@ void ReloadTheme(u8 i)
 	sprintf(temp, "%s/%s.JPG", thmPath, PICTURE_NAME[i]);
 	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
 	
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_id, PICTURE_NAME[i]);
+	sprintf(temp, "%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_path, PICTURE_NAME[i]);
 	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
 		
-	sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.JPG", ManaGunZ_id, PICTURE_NAME[i]);
+	sprintf(temp, "%s/USRDIR/GUI/common/%s.JPG", ManaGunZ_path, PICTURE_NAME[i]);
 	if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &SIZE, gray) == SUCCESS ) return;
 }
 
@@ -7917,10 +8081,10 @@ void Load_Theme()
 	texture_BG = 0;
 	texture_BGS = 0;
 	
-	sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+	sprintf(thmPath, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], Themes[UI_position]);
 	if(path_info(thmPath) == _NOT_EXIST) {
 		strcpy(Themes[UI_position], STR_NONE);
-		sprintf(thmPath, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes[UI_position]);
+		sprintf(thmPath, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], Themes[UI_position]);
 	}
 	u8 gray = NO;
 	for(i=0; i<PICTURE_NUMBER; i++) {
@@ -7943,10 +8107,10 @@ void Load_Theme()
 		sprintf(temp, "%s/%s.JPG", thmPath, PICTURE_NAME[i]);
 		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
 		
-		sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_id, PICTURE_NAME[i]);
+		sprintf(temp, "%s/USRDIR/GUI/common/%s.PNG", ManaGunZ_path, PICTURE_NAME[i]);
 		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
 		
-		sprintf(temp, "/dev_hdd0/game/%s/USRDIR/GUI/common/%s.JPG", ManaGunZ_id, PICTURE_NAME[i]);
+		sprintf(temp, "%s/USRDIR/GUI/common/%s.JPG", ManaGunZ_path, PICTURE_NAME[i]);
 		if( LoadTexture(temp, &PICTURE_offset[i], &PICTURE[i], &TEXTURE_THEME_SIZE, gray) == SUCCESS ) continue;
 		
 	}	
@@ -8708,7 +8872,7 @@ void DrawChildArrow(float x, float y, float z, float w, float h, u32 color)
 s8 spam_CIRCLE=-1;
 #define spam_CIRCLE_MAX 3
 
-void DrawProgRing(float x, float y, float d, float e, float value, u32 color)
+void DrawProgRing(float x, float y, float z, float d, float e, float value, u32 color)
 {
 	float t;
 	float v = value*3.6;
@@ -8723,9 +8887,9 @@ void DrawProgRing(float x, float y, float d, float e, float value, u32 color)
 	
 	if(v<10) {
 		tiny3d_SetPolygon(TINY3D_LINES);
-		tiny3d_VertexPos(x, y - r1, 0);
+		tiny3d_VertexPos(x, y - r1, z);
 		tiny3d_VertexColor(color);
-		tiny3d_VertexPos(x, y - r2, 0);
+		tiny3d_VertexPos(x, y - r2, z);
 		tiny3d_End();
 		return;
 	}
@@ -8733,8 +8897,8 @@ void DrawProgRing(float x, float y, float d, float e, float value, u32 color)
 	tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
 	tiny3d_VertexColor(color);
 	for(t=0; t<=v ; t+=10) {
-		tiny3d_VertexPos( x + r1*sin(t*PI/180), y - r1*cos(t*PI/180), 0);
-		tiny3d_VertexPos( x + r2*sin(t*PI/180), y - r2*cos(t*PI/180), 0);
+		tiny3d_VertexPos( x + r1*sin(t*PI/180), y - r1*cos(t*PI/180), z);
+		tiny3d_VertexPos( x + r2*sin(t*PI/180), y - r2*cos(t*PI/180), z);
 	}
 	tiny3d_End();
 }
@@ -8769,9 +8933,9 @@ float DrawSpam(float x, float y)
 	
 	float val = (spam_CIRCLE*100 + 100) / spam_CIRCLE_MAX;
 	
-	DrawProgRing(x+8, y+8, 22.5, 5, val, COLOR_1);
+	DrawProgRing(x+8, y+8, 0, 22.5, 5, val, COLOR_1);
 	
-	if(hold_CIRCLE) DrawProgRing(x+8, y+8, 20.5, 2, (float) ((hold_CIRCLE * 100) / MAX_HOLD), COLOR_3);
+	if(hold_CIRCLE) DrawProgRing(x+8, y+8, 0, 20.5, 2, (float) ((hold_CIRCLE * 100) / MAX_HOLD), COLOR_3);
 	
 	if(0<=spam_CIRCLE) Draw_Line(x+8, y+8, x+8 + 22.5/2*sin(0), y+8 - 22.5/2*cos(0), 0, BLACK);
 	if(1<=spam_CIRCLE) Draw_Line(x+8, y+8, x+8 + 22.5/2*sin(2*PI/3), y+8 - 22.5/2*cos(2*PI/3), 0, BLACK); 
@@ -9250,8 +9414,13 @@ float Draw_Progress_Bar_Advanced(float x, float y, float z, float r, float w, fl
 	if( border != 0 ) Draw_Box(x-border, y-border, z, r, w+border*2, h+border*2, border_color, NO);
 	
 	// bar
-	float bar_w = w*value/max;
-	Draw_Box(x, y, z, r, bar_w, h, bar_color, NO);
+	if( w > h ) {
+		float bar_w = w*value/max;
+		Draw_Box(x, y, z, r, bar_w, h, bar_color, NO);
+	} else {
+		float bar_h = h*value/max;
+		Draw_Box(x, y, z, r, w, bar_h, bar_color, NO);
+	}
 	
 	return x+w+border;
 }
@@ -9583,7 +9752,7 @@ void Draw_Loading(void *unused)
 		
 		if(show_scene) {
 			Draw_scene();
-			if((SHOW_LOG || DEBUG) && show_log && have_log) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
+			if( old_DEBUG || (show_log && have_log)) Draw_Box(0, 0, 0, 0, 848, 512, 0x000000C0, NO);
 		} else Draw_BGS();
 		
 		FontSize(20);
@@ -9594,6 +9763,7 @@ void Draw_Loading(void *unused)
 		
 		if(!loading) break;
 		
+		// bullet
 		if(!show_scene) {	
 		
 			int t;
@@ -9734,107 +9904,104 @@ void Draw_Loading(void *unused)
 			}
 		}
 		
-		if( SHOW_LOG || DEBUG ) {
-			if(show_log && have_log) {
+		if( old_DEBUG || (show_log && have_log)) {
+			if(head_title[0] != 0) {
+				FontColor(COLOR_2);
+				DrawString(x, y, head_title);
+				FontColor(COLOR_1);
+				y+=20;
+			}
+			if( task_ProgressBar1_max != 0 && start == 0 && task_ProgressBar1_max != task_ProgressBar1_val) {
+				start = sTime();
+				init_timer(4);
+				start_timer(4);
+			}
+			if( start ) {
 				
-				if(head_title[0] != 0) {
-					FontColor(COLOR_2);
-					DrawString(x, y, head_title);
-					FontColor(COLOR_1);
-					y+=20;
-				}
-				if( task_ProgressBar1_max != 0 && start == 0 && task_ProgressBar1_max != task_ProgressBar1_val) {
-					start = sTime();
-					init_timer(4);
+				u64 progress_bar_w = 600;
+				
+				char speed_STR[32];
+				char elapsed_STR[32];
+				char remaining_STR[32];
+				if( get_time(4) > 1000 ) {
+					
 					start_timer(4);
+					s64 speed = task_ProgressBar1_val - previous_val;
+					if( speed < 0) speed=0;
+					char *copy_speed = get_unit((u64) speed);
+					if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
+					FREE(copy_speed);
+					
+					previous_val = task_ProgressBar1_val;
+					
+					u64 ElapsedTime = sTime() - start;
+					u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
+				
+					char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
+					if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
+					FREE(ElapsedTime_STR);	
+					
+					char *RemainingTime_STR = GetTimeStr(RemainingTime);
+					if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
+					FREE(RemainingTime_STR);
 				}
-				if( start ) {
-					
-					u64 progress_bar_w = 600;
-					
-					char speed_STR[32];
-					char elapsed_STR[32];
-					char remaining_STR[32];
-					if( get_time(4) > 1000 ) {
-						
-						start_timer(4);
-						s64 speed = task_ProgressBar1_val - previous_val;
-						if( speed < 0) speed=0;
-						char *copy_speed = get_unit((u64) speed);
-						if(copy_speed) sprintf(speed_STR, "%s/s", copy_speed);
-						FREE(copy_speed);
-						
-						previous_val = task_ProgressBar1_val;
-						
-						u64 ElapsedTime = sTime() - start;
-						u64 RemainingTime = ElapsedTime * task_ProgressBar1_max / task_ProgressBar1_val - ElapsedTime;
-					
-						char *ElapsedTime_STR = GetTimeStr(ElapsedTime);
-						if(ElapsedTime_STR) sprintf(elapsed_STR,  "%s: %s", STR_ELAPSED, ElapsedTime_STR);
-						FREE(ElapsedTime_STR);	
-						
-						char *RemainingTime_STR = GetTimeStr(RemainingTime);
-						if(RemainingTime_STR) sprintf(remaining_STR,  "%s: %s", STR_REMAINING, RemainingTime_STR);
-						FREE(RemainingTime_STR);
-					}
-					
-					DrawFormatString(x, y, elapsed_STR);
-					
-					y+=new_line(1);
-					
-					DrawFormatString(x, y, remaining_STR);
-					
-					y+=new_line(1);
-					
-					char *size_current = get_unit(task_ProgressBar1_val);
-					if(size_current) DrawString(x, y, size_current);
-					FREE(size_current);
-					
-					char *size_tot = get_unit(task_ProgressBar1_max);
-					if(size_tot) DrawString(x+progress_bar_w-WidthFromStr(size_tot), y, size_tot);
-					FREE(size_tot);
-					
-					DrawStringFromCenterX(x+progress_bar_w/2, y, speed_STR);
-					
-					y+=new_line(1);
+				
+				DrawFormatString(x, y, elapsed_STR);
+				
+				y+=new_line(1);
+				
+				DrawFormatString(x, y, remaining_STR);
+				
+				y+=new_line(1);
+				
+				char *size_current = get_unit(task_ProgressBar1_val);
+				if(size_current) DrawString(x, y, size_current);
+				FREE(size_current);
+				
+				char *size_tot = get_unit(task_ProgressBar1_max);
+				if(size_tot) DrawString(x+progress_bar_w-WidthFromStr(size_tot), y, size_tot);
+				FREE(size_tot);
+				
+				DrawStringFromCenterX(x+progress_bar_w/2, y, speed_STR);
+				
+				y+=new_line(1);
 
-					Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar1_max, task_ProgressBar1_val);
-					
-					y+=new_line(1);
-					
-					if( task_ProgressBar2_max != task_ProgressBar1_max && task_ProgressBar2_max != 0) {
-						Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar2_max, task_ProgressBar2_val);
-					}
-					
-					y+=new_line(1);
-					
-					if( task_ProgressBar1_max == task_ProgressBar1_val ) {
-						 task_ProgressBar1_max=0;
-						 task_ProgressBar1_val=0;
-						 task_ProgressBar2_max=0;
-						 task_ProgressBar2_val=0;
-					}
-					if( task_ProgressBar1_max == 0) start = 0;
-				} else 
-				if(prog_bar1_value >= 0) {
-					Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
-					y+=15;
-					if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
-					y+=25;
+				Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar1_max, task_ProgressBar1_val);
+				
+				y+=new_line(1);
+				
+				if( task_ProgressBar2_max != task_ProgressBar1_max && task_ProgressBar2_max != 0) {
+					Draw_Progress_Bar_Advanced(x, y, 0, 0, progress_bar_w, 4, 1, WHITE, BLACK, GREEN,  task_ProgressBar2_max, task_ProgressBar2_val);
 				}
 				
-				if(!loading) break;
+				y+=new_line(1);
 				
-				for(i=0; i<=20; i++){
-					
-					if(strstr(loading_log[i], "Error")) FontColor(RED);
-					else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
-					else FontColor(COLOR_1);
-					
-					DrawFormatString(x , y, loading_log[i]);
-					y+=20;
-					if(y>450) break;
+				if( task_ProgressBar1_max == task_ProgressBar1_val ) {
+					 task_ProgressBar1_max=0;
+					 task_ProgressBar1_val=0;
+					 task_ProgressBar2_max=0;
+					 task_ProgressBar2_val=0;
 				}
+				if( task_ProgressBar1_max == 0) start = 0;
+			} else 
+			if(prog_bar1_value >= 0) {
+				Draw_Progress_Bar(x, y, 2, prog_bar1_value, COLOR_2);
+				y+=15;
+				if(prog_bar2_value >= 0) Draw_Progress_Bar(x, y, 2, prog_bar2_value, COLOR_2);
+				y+=25;
+			}
+			
+			if(!loading) break;
+			
+			for(i=0; i<=20; i++){
+				
+				if(strstr(loading_log[i], "Error")) FontColor(RED);
+				else if(strstr(loading_log[i], "Warning")) FontColor(ORANGE);
+				else FontColor(COLOR_1);
+				
+				DrawFormatString(x , y, loading_log[i]);
+				y+=20;
+				if(y>450) break;
 			}
 		}
 		if(!loading) break;
@@ -9853,15 +10020,20 @@ void Draw_Loading(void *unused)
 			}
 		}
 		
-		if(have_log && (SHOW_LOG || DEBUG)) {
-			if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
-			else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
+		if( !old_DEBUG) {
+			if( have_log) {
+				if(show_log) x=DrawButton(x, y, STR_HIDELOGS, BUTTON_SELECT);
+				else x=DrawButton(x, y, STR_SHOWLOGS, BUTTON_SELECT);
+			}	
 		}
 		
 		if(!show_scene) {
-			x=Draw_Button_Square(x, y, 15);
-			x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
-			x=DrawFormatString( x+5, y, "%s ", STR_BOOST);
+			DrawProgRing(x+8, y+8, 0, 22.5, 5, boost, color);
+			x=DrawButton(x, y, STR_BOOST, BUTTON_SQUARE);
+			
+			//x=Draw_Button_Square(x, y, 16);
+			//x=Draw_Progress_Bar(x+5, y+4, 1, boost, color);
+			//x=DrawFormatString( x+8, y, "%s ", STR_BOOST);
 		}
 		
 		if(!loading) break;
@@ -9874,13 +10046,13 @@ void Draw_Loading(void *unused)
 		if(AutoM) {
 			x=DrawButton(x, y, STR_GAMEMENU, BUTTON_TRIANGLE);
 		}
-		if(prog_bar1_value >= 0 || task_ProgressBar1_max) {
-			x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
+		if( disable_cancel == NO)  {
+			if(prog_bar1_value >= 0 || task_ProgressBar1_max) {
+				x=DrawButton(x, y, STR_CANCEL, BUTTON_CIRCLE);
+			}
 		}
-		
 		if( old_DEBUG ) {
-			x=DrawButton(x, y, "Disable DEBUG temporarily", BUTTON_R1);
-			x=Draw_checkbox(x-3, y, 0, "", DEBUG, YES);
+			x=DrawButton(x, y, "Debug faster", BUTTON_R1);
 		}
 		
 		if(!loading) break;
@@ -9912,13 +10084,15 @@ void Draw_Loading(void *unused)
 		if(NewPad(BUTTON_DOWN)) {
 			bullet_move = 4;
 		}
-		if(NewPad(BUTTON_CIRCLE) && (prog_bar1_value >= 0 || task_ProgressBar1_max)) {
-			cancel=YES;
+		if( disable_cancel == NO ) {
+			if(NewPad(BUTTON_CIRCLE) && (prog_bar1_value >= 0 || task_ProgressBar1_max)) {
+				cancel=YES;
+			}
 		}
 		if((NewPad(BUTTON_TRIANGLE) || OldPad(BUTTON_TRIANGLE)) && AutoM) {
 			gui_called=YES;
 		}
-		if(NewPad(BUTTON_SELECT)) {
+		if(NewPad(BUTTON_SELECT) && !old_DEBUG) {
 			show_log=!show_log;
 		}
 		if(OldPad(BUTTON_SQUARE)) {
@@ -9944,6 +10118,7 @@ void Draw_Loading(void *unused)
 	cls();
 	tiny3d_Flip();
 	
+	
 	if(!cancel == NO && shutdown) {
 		MGZ_exit();
 		Delete("/dev_hdd0/tmp/turnoff");
@@ -9955,6 +10130,7 @@ void Draw_Loading(void *unused)
 	prog_bar1_value=-1;
 	prog_bar2_value=-1;
 	cancel=NO;
+	disable_cancel = NO;
 	
 	strcpy(head_title, "\0");
 	show_scene=NO;
@@ -10107,7 +10283,7 @@ void Draw_Gathering(void *unused)
 	for(i=0; i<=20; i++) strcpy(loading_log[i], "\0");
 	
 	while(gathering) {
-				
+	
 		int x=50, y=40;
 		
 		Draw_BGS();
@@ -10427,6 +10603,8 @@ typedef struct
 	u16 signature; // 0x55AA
 } __attribute__((packed)) mbr_t;
 
+
+// LV2 PEEK
 u64 lv2peek(u64 addr)
 { 
 	u64 l_addr = (u64) addr >> 0ULL; 
@@ -10437,6 +10615,47 @@ u64 lv2peek(u64 addr)
 	return_to_user_prog(u64);
 }
 
+u32 lv2peek32(u64 addr)
+{
+	return (u32)(lv2peek(addr) >> 32ULL);
+
+}
+
+u16 lv2peek16(u64 addr) {
+	return (u16) (lv2peek(addr) >> 48ULL);
+}
+
+u8 lv2peek8(u64 addr) {
+	return (u8) (lv2peek(addr) >> 56ULL);
+}
+
+void MEM_lv2peek(uint64_t src, const void* dst, uint64_t size)
+{
+	if (size == 0)
+		return;
+	uint8_t* out = (uint8_t*)dst;
+	while (size >= sizeof(uint64_t)) {
+		*(uint64_t*)out = lv2peek(src);
+		src += sizeof(uint64_t); out += sizeof(uint64_t);
+		size -= sizeof(uint64_t);
+	}
+	while (size >= sizeof(uint32_t)) {
+		*(uint32_t*)out = lv2peek32(src);
+		src += sizeof(uint32_t); out += sizeof(uint32_t);
+		size -= sizeof(uint32_t);
+	}
+	while (size >= sizeof(uint16_t)) {
+		*(uint16_t*)out = lv2peek16(src);
+		src += sizeof(uint16_t); out += sizeof(uint16_t);
+		size -= sizeof(uint16_t);
+	}
+	if (size > 0) {
+		*(uint8_t*)out = lv2peek8(src);
+		size--;
+	}
+}
+
+// LV2 POKE
 u64 lv2poke(u64 addr, u64 value) 
 { 
 	u64 l_addr = (u64) addr >> 0ULL; 
@@ -10447,17 +10666,11 @@ u64 lv2poke(u64 addr, u64 value)
 	return_to_user_prog(u64);
 }
 
-u32 lv2peek32(uint64_t addr)
-{
-	return (u32)(lv2peek(addr) >> 32);
-}
-
 static void lv2poke32(u64 addr, uint32_t val)
 {
 	uint32_t next = lv2peek(addr) & 0xffffffff;
 	lv2poke(addr, (((u64) val) << 32) | next);
 }
-
 static inline void _poke(u64 addr, u64 val)
 {
 	lv2poke(0x8000000000000000ULL + addr, val);
@@ -10468,10 +10681,6 @@ static inline void _poke32(u64 addr, uint32_t val)
 	lv2poke32(0x8000000000000000ULL + addr, val);
 }
 
-u8 lv2peek8(u64 addr) {
-	u8 ret = (u8) (lv2peek(addr) >> 56ULL);
-	return ret;
-}
 
 u64 lv2poke8(u64 addr, u8 value) 
 { 
@@ -10486,6 +10695,45 @@ u64 lv1peek(u64 addr)
 	} else {
 		lv2syscall1(8, (u64) addr >> 0ULL);
 		return_to_user_prog(u64);
+	}
+}
+
+u32 lv1peek32(u64 addr)
+{
+	return (u32)(lv1peek(addr) >> 32ULL);
+}
+
+u16 lv1peek16(u64 addr) {
+	return (u16) (lv1peek(addr) >> 48ULL);
+}
+
+u8 lv1peek8(u64 addr) {
+	return (u8) (lv1peek(addr) >> 56ULL);
+}
+
+void MEM_lv1peek(uint64_t src, const void* dst, uint64_t size)
+{
+	if (size == 0)
+		return;
+	uint8_t* out = (uint8_t*)dst;
+	while (size >= sizeof(uint64_t)) {
+		*(uint64_t*)out = lv1peek(src);
+		src += sizeof(uint64_t); out += sizeof(uint64_t);
+		size -= sizeof(uint64_t);
+	}
+	while (size >= sizeof(uint32_t)) {
+		*(uint32_t*)out = lv1peek32(src);
+		src += sizeof(uint32_t); out += sizeof(uint32_t);
+		size -= sizeof(uint32_t);
+	}
+	while (size >= sizeof(uint16_t)) {
+		*(uint16_t*)out = lv1peek16(src);
+		src += sizeof(uint16_t); out += sizeof(uint16_t);
+		size -= sizeof(uint16_t);
+	}
+	if (size > 0) {
+		*(uint8_t*)out = lv1peek8(src);
+		size--;
 	}
 }
 
@@ -11010,17 +11258,7 @@ void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
 		temp[n]=0;
 		
 		strcpy(DeviceInfo->MountPoint, temp);
-		
-#ifdef RPCS3
-		if(strcmp(temp, "/app_home")==0 || strcmp(temp, "/dev_flash")==0) {DeviceInfo->ReadOnly = YES; return;}
-		
-		DeviceInfo->TotalSpace = Go(500);
-		strcpy(DeviceInfo->Label, "Device");
-		strcpy(DeviceInfo->FileSystem, "CELL_FS_FAKE");
-		strcpy(DeviceInfo->Name, "CELL_FS_FAKE:RPCS3");
-		
-		DeviceInfo->ReadOnly = NO;
-#else		
+			
 		sys_fs_mount_info mount_info;
 		if( get_mount_info(temp, &mount_info) == SUCCESS) {
 			
@@ -11106,7 +11344,6 @@ void GetDeviceInfo(char *mount_point, DeviceInfo_t *DeviceInfo)
 				}
 			}
 		}
-#endif
 	}
 }
 
@@ -11441,7 +11678,7 @@ FILE *openPUP(char *path, u64 *offset, char *mode)
 	
 	char *ext = get_ext(path);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcasecmp(ext, ".pup")) return NULL;
+	if(  strcmp(ext, _ENC_ISO_PS3) && strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcasecmp(ext, ".pup")) return NULL;
 	
 	if(!strcasecmp(ext, ".pup")) {
 		pup = fopen(path, mode);
@@ -11453,7 +11690,7 @@ FILE *openPUP(char *path, u64 *offset, char *mode)
 		*offset=0;
 		return pup;
 	} else
-	if(!strcmp(ext, _ISO_PS3)) {
+	if(!strcmp(ext, _ISO_PS3) || !strcmp(ext, _ENC_ISO_PS3)) {
 		pup = fopen(path, mode);
 		if(pup==NULL) {
 			SetPerms(path);
@@ -11525,7 +11762,7 @@ u8 Get_PUPVersion(char *source, char *UpdateVersion)
 	u16 offset;
 	if( strncmp(source, "/dev_bdvd", 9) == 0) {
 		// remove remap of webMAN MOD
-		sys_map_path("/dev_bdvd/PS3_UPDATE", NULL);
+		{sys_map_path("/dev_bdvd/PS3_UPDATE", NULL);}
 	}
 	FILE *f = openPUP(source, &pup_offset, "rb");
 	if(f==NULL) return FAILED;
@@ -11534,6 +11771,14 @@ u8 Get_PUPVersion(char *source, char *UpdateVersion)
 	fseek(f, pup_offset+offset, SEEK_SET);
 	fread(UpdateVersion, sizeof(char), 4, f);
 	fclose(f);
+	
+	// empty firmware md5 : 1F5039E50BD66B290C56684D8550C6C2
+	// used by day-one game like BLES00028 - SONIC THE HEDGEHOG.
+	// the pup is full of zero.
+	if( !memcmp(UpdateVersion, "\0\0\0\0", 4) ) {
+		strcpy(UpdateVersion, "0000");
+	}
+	
 	return SUCCESS;
 }
 
@@ -11666,7 +11911,7 @@ u32 IRD_extra_sig(ird_t *ird)
 	char header_path[512];
 	char footer_path[512];
 	
-	sprintf(TempDir, "/dev_hdd0/game/%s/USRDIR/sys/temp", ManaGunZ_id);
+	sprintf(TempDir, "%s/USRDIR/sys/temp", ManaGunZ_path);
 	mkdir(TempDir, 0777);
 	
 	sprintf(header_path, "%s/%s.header.bin", TempDir, ird->GameId);
@@ -11747,7 +11992,7 @@ u32 IRD_meta_sig(char *source)
 	
 	char *ext = get_ext(source);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcasecmp(ext, ".ird")) return 0;
+	if( strcmp(ext, _ENC_ISO_PS3) && strcmp(ext, _ISO_PS3) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcasecmp(ext, ".ird")) return 0;
 	
 	if( !strcasecmp(ext, ".ird") ) {
 		int ret = GZ_decompress8(source, &mem, 1024);
@@ -11829,7 +12074,7 @@ retry:
 		goto retry;
 	}
 	
-	print_load("Failed to upload...");
+	print_load("Failed to upload... error : %d", ret);
 	
 	return FAILED; 
 }
@@ -12613,7 +12858,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 			
 			if(copy_cancel) goto error;
 			
-			if( split ) {	
+			if( split ) {
 				u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
 				
 				if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
@@ -12630,7 +12875,7 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 					N_SPLIT_ISO++;
 					
 					sprintf(SPLIT_ISO_PATH, "%s/%s_%s.iso.%d%c", outdir, ird->GameId, DATE, N_SPLIT_ISO, '\0');	
-										
+				
 					print_debug("fopen %s", SPLIT_ISO_PATH);
 					f = fopen(SPLIT_ISO_PATH, "wb");
 					if(f==NULL) {
@@ -13201,8 +13446,6 @@ error:
 		}
 	}
 	
-	if( copy_cancel || cancel ) ret=FAILED;
-	
 	if(!source) sys_storage_close(source);
 	FCLOSE(f);
 	FCLOSE(f1);
@@ -13253,6 +13496,333 @@ u8 GetPVD(char *ISO, u8 *PVD)
     
     return SUCCESS;
 }
+
+u8 get_decrypt_key(char *in, u8 *key)
+{
+	FILE *fkey=NULL;
+	// Get decryption key
+	char key_str[0x20]={0};
+	char PATH_KEY[2048]={0};
+	
+	memset(key, 0, 0x10);
+	
+	// redump : hexa
+	strcpy(PATH_KEY, in);
+	RemoveExtension(PATH_KEY);
+	strcat(PATH_KEY, ".key"); 
+	
+	fkey = fopen(PATH_KEY, "rb");
+	if( fkey != NULL) {
+		fread(key, 0x10, 1, fkey);
+		FCLOSE(fkey);
+		return SUCCESS;
+	}
+	
+	// the vault : ASCII
+	RemoveExtension(PATH_KEY);
+	strcat(PATH_KEY, ".dkey"); 
+	
+	fkey = fopen(PATH_KEY, "rb");
+	if( fkey != NULL ) {
+		fread(key_str, 0x20, 1, fkey);
+		if(is_hex(key_str, 0x20)) {
+			hex_to_bytes(key, key_str, 0x20);
+			FCLOSE(fkey);
+			return SUCCESS;
+		}
+	}
+
+	// IRD - local path
+	char **IRD_Path=NULL;
+	u32 IRD_nPath=0;
+	u32 meta_sig = 0;
+
+	ird_t *ird = IRD_new(in);
+	if(ird == NULL) {
+		print_load("Error : (decrypt_ps3iso) failed to get struct ird_t %s", in);
+		return FAILED;
+	}
+	meta_sig = IRD_meta_sig3(ird);
+	
+	IRD_search(ird, meta_sig, in, &IRD_Path, &IRD_nPath); 
+	
+	if( IRD_nPath != 0 ) {
+		ird_t *ird_c = IRD_load(IRD_Path[0]);
+		if( ird_c != NULL) {
+			memcpy(key, ird->Data1, 0x10);
+			enc_d1(key);
+			FREE(ird_c);
+			FREE(ird);
+			return SUCCESS;
+		}
+	}
+	
+	IRD_download(ird, meta_sig, &IRD_Path, &IRD_nPath);
+	
+	if( IRD_nPath != 0 ) {
+		ird_t *ird_c = IRD_load(IRD_Path[0]);
+		if( ird_c != NULL) {
+			memcpy(key, ird->Data1, 0x10);
+			enc_d1(key);
+			FREE(ird_c);
+			FREE(ird);
+			return SUCCESS;
+		}
+	}
+	
+	FREE_IRD(ird);
+	
+	return FAILED;
+}
+
+u8 decrypt_ps3iso(char *in, char *outdir)
+{
+	u8 *key=NULL;
+	FILE *source=NULL;
+	FILE *f=NULL;
+	u8 *buff=NULL;
+	u8 *iv=NULL;
+	u8 *sec0sec1=NULL;
+	u8 ret = FAILED;
+	char out[2048]={0};
+	char SPLIT_ISO_PATH[2048]={0};
+	int N_SPLIT_ISO = 0;
+	int i;
+	u8 split= NO;
+	
+	print_head("Decrypting...");
+	
+	print_debug("(decrypt_ps3iso) malloc key");
+	key = (u8 *) malloc(0x10);
+	if( key == NULL ) {
+		print_load("Error : decrypt_ps3iso failed to malloc key");
+		goto error;
+	}
+	
+	print_debug("(decrypt_ps3iso) get_decrypt_key");
+	if( get_decrypt_key(in, key) == FAILED ) {
+		print_load("Error : decrypt_ps3iso failed to get decryption key");
+		goto error;
+	}
+	
+	print_debug("(decrypt_ps3iso) fopen");
+	source = fopen(in, "rb");
+	if( source == NULL ) {
+		print_load("Error : (decrypt_ps3iso) failed to open %s", in);
+		goto error;
+	}
+
+	print_debug("(decrypt_ps3iso) malloc buff");
+	buff = (u8 *) malloc(BDVD_BUFFSIZE);
+	if(buff==NULL) {
+		print_load("Error : (decrypt_ps3iso) malloc BDVD_BUFFSIZE");
+		goto error;
+	}
+	
+	print_debug("(decrypt_ps3iso) init aes");
+	aes_context aes;
+	if( aes_setkey_dec(&aes, key, 128 )!=0 ) {
+		print_load(" Error : decrypt_ps3iso aes_setkey_dec ");
+		goto error;
+	}
+	
+	print_debug("(decrypt_ps3iso) malloc iv");
+	iv = (u8 *) malloc(0x10);
+	if( iv == NULL ) {
+		print_load(" Error : decrypt_ps3iso malloc iv ");
+		goto error;
+	}
+	
+	print_debug("(decrypt_ps3iso) malloc sec0sec1");
+	sec0sec1 = (u8 *) malloc( 0x800 * 2 );
+	if( sec0sec1 == NULL ) {
+		print_load(" Error : decrypt_ps3iso malloc sec0sec1 ");
+		goto error;
+	}
+	
+	memset(sec0sec1, 0, 0x800*2);
+	fread(sec0sec1, 0x800, 2, source);
+
+	u32 regions=(u8_to_u32(sec0sec1)*2)-1;
+	u32 total_sectors=1+u8_to_u32(sec0sec1+12+((regions-1)*4));
+	
+	print_debug("(decrypt_ps3iso) Gathering data");	
+	gathering_nb_file = -1;
+	gathering_nb_directory = -1;
+	gathering_total_size = (u64) total_sectors * 0x800ULL;
+	
+	// Set out path
+	if( outdir != NULL ) {
+		MGZ_mkdir_recursive(outdir);
+		sprintf(out, "%s%s", outdir, strrchr(in, '/'));
+	} else {
+		strcpy(out, in);
+	}
+	RemoveExtension(out);
+	strcat(out, ".dec.iso");
+	
+	if( MAX_SPLIT_SECTOR < total_sectors )  split = is_FAT32(out);
+	
+	if( split ) strcat(out, ".0");
+	
+	print_debug("(decrypt_ps3iso) getfreespace");
+	if( GetFreeSpace(out) < gathering_total_size ) {
+		print_load("Error : Not enough space.");
+		goto error;
+	}
+	
+	print_debug("(decrypt_ps3iso) fopen %s", out);
+	f = fopen(out, "wb");
+	if(f==NULL) {
+		print_load("Error : decrypt_ps3iso fopen %s", out);
+		goto error;
+	}
+	
+	strcpy( copy_src, in);
+	strcpy( copy_dst, out);
+	
+	u64 current_sector=0;
+	u64 sector_nb;
+	u8 plain = YES;
+	
+	print_debug("regions :  0x%X", regions);
+	print_debug("total_sectors :  0x%X", total_sectors);
+	print_debug("gathering_total_size :  0x%llX", gathering_total_size);
+	
+	i=0;
+	while(i<regions)
+	{	
+		u32 region_last_sector=u8_to_u32(sec0sec1+12+(i*4)) + 1;	
+		
+		print_debug("Region #%02d", i);
+		
+		if( plain == YES ) {
+			print_debug("Copying offset 0x%llX to 0x%llX", 
+						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
+		} else {
+			region_last_sector -= 1;
+			print_debug("Decrypting offset 0x%llX to 0x%llX", 
+						(unsigned long long int) current_sector*0x800, (unsigned long long int)  region_last_sector*0x800);
+		}
+
+		while( current_sector < region_last_sector ) {
+		
+			memset(buff, 0, BDVD_BUFFSIZE);
+			
+			if(region_last_sector < current_sector + BDVD_BUFF_SEC_NB) sector_nb = region_last_sector - current_sector;
+			else sector_nb = BDVD_BUFF_SEC_NB;
+			
+			fseek(source, 0x800 * current_sector, SEEK_SET);
+			
+			fread(buff, sector_nb, 0x800, source);
+
+			if(copy_cancel) goto error;
+
+			if( plain == NO ) {
+				u32 k;
+				for(k=0;k<sector_nb;++k) {
+					reset_iv(iv, current_sector+k);
+					if(aes_crypt_cbc(&aes, AES_DECRYPT, 0x800, iv, buff+0x800*k , buff+0x800*k )!=0) {
+						printf("Error : aes_crypt_cbc ");
+						goto error;
+					}
+				}
+			}
+			
+			if(copy_cancel) goto error;
+			
+			if( split ) {
+				u32 split_current_sector = current_sector - N_SPLIT_ISO * MAX_SPLIT_SECTOR;
+				
+				if( split_current_sector + sector_nb <= MAX_SPLIT_SECTOR ) {
+					fwrite(buff, sector_nb, 0x800, f);
+				} else {
+					u32 last_sectors = MAX_SPLIT_SECTOR - split_current_sector;
+					fwrite(buff, last_sectors, 0x800, f);
+					
+					FCLOSE(f);
+					
+					if( SPLIT_ISO_PATH[0] != 0) SetPerms(SPLIT_ISO_PATH);
+					memset(SPLIT_ISO_PATH, 0, 2048);
+					
+					N_SPLIT_ISO++;
+					
+					if( outdir != NULL ) {
+						sprintf(out, "%s%s", outdir, strrchr(in, '/'));
+					} else {
+						strcpy(out, in);
+					}
+					RemoveExtension(out);
+					sprintf(out+strlen(out), ".dec.iso.%d%c", N_SPLIT_ISO, '\0');
+					
+					print_debug("fopen %s", SPLIT_ISO_PATH);
+					f = fopen(SPLIT_ISO_PATH, "wb");
+					if(f==NULL) {
+						print_load("Error : fopen %s", SPLIT_ISO_PATH);
+						goto error;
+					}
+					
+					u32 sectors_left = sector_nb - last_sectors;
+					fwrite(buff, sectors_left, 0x800, f);
+				}
+			} else {
+				fwrite(buff, sector_nb, 0x800, f);
+			}
+			
+			current_sector += sector_nb;
+			
+			copy_current_size += sector_nb*0x800;
+		
+			if(copy_cancel) goto error;
+		}
+		
+		plain = !plain;
+		++i;
+	}
+	FCLOSE(f);
+	
+	SetPerms(out);
+	
+	ret = SUCCESS;
+
+error:
+
+	FCLOSE(source);
+	FCLOSE(f);
+	FREE(buff);
+	FREE(iv);
+	FREE(key);
+	FREE(sec0sec1);
+	
+	if( copy_cancel || cancel ) ret=FAILED;
+	
+	if( ret == FAILED) {
+		if( split ) {
+			for(i=0; i<N_SPLIT_ISO; i++) {
+				if( outdir != NULL ) {
+					sprintf(out, "%s%s", outdir, strrchr(in, '/'));
+				} else {
+					strcpy(out, in);
+				}
+				RemoveExtension(out);
+				sprintf(out+strlen(out), ".dec.iso.%d%c", N_SPLIT_ISO, '\0');	
+				Delete(out);
+			}
+		} else {
+			if( outdir != NULL ) {
+				sprintf(out, "%s%s", outdir, strrchr(in, '/'));
+			} else {
+				strcpy(out, in);
+			}
+			RemoveExtension(out);
+			strcat(out, ".dec.iso");
+			Delete(out);
+		}
+	}
+
+	return ret;
+}
+
 
 //*******************************************************
 // RAR
@@ -13589,7 +14159,6 @@ int mountCount;
 int NTFS_Test_Device(char *name)
 {
 	int i;
-
 	for (i = 0; i < mountCount; i++) {
 		if(!strncmp(mounts[i].name, name, 5 - 1 *( name[0] == 'e'))) 
 			return (mounts[i].interface->ioType & 0xff) - '0';
@@ -13601,14 +14170,20 @@ int NTFS_Test_Device(char *name)
 
 void NTFS_mount_all()
 {
+	if( RPCS3 ) return;
+	
 	u8 i;
+	print_debug("Start of ntfs_mount_all : mountCount = %d", mountCount);
+	
 	for (i = 0; i < mountCount; i++) ntfsUnmount(mounts[i].name, 1);
 	
+	print_debug("ntfsMountAll");
 	mounts = NULL;
 	mountCount = 0;
 	mountCount = ntfsMountAll(&mounts, NTFS_SU | NTFS_FORCE);
 	if(mountCount < 0) print_load("Error : ntfsMountAll failed	%d", mountCount);
-
+	
+	print_debug("end of ntfs_mount_all");
 }
 
 //*******************************************************
@@ -14041,8 +14616,8 @@ int Delete_Game(char *path, int position)
 	
 	print_load("Removing game from list");
 	char setPath[128];
-	if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_title[position]);
-	else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin" , ManaGunZ_id, list_game_title[position]);
+	if(iso) sprintf(setPath, "%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_path, list_game_title[position]);
+	else	sprintf(setPath, "%s/USRDIR/setting/game_setting/[JB]%s.bin" , ManaGunZ_path, list_game_title[position]);
 	Delete(setPath);
 	
 	remove_GAMELIST(position);
@@ -14371,16 +14946,7 @@ void end_copy_loading()
 }
 
 void initAIO()
-{
-
-#ifdef RPCS3
-	sysFsAioInit("/dev_hdd0");
-	sysFsAioInit("/dev_hdd1");
-	sysFsAioInit("/dev_usb000");
-	sysFsAioInit("/dev_flash");
-	return;
-#endif
-	
+{	
 	char mount_point[32];
 
 	DIR *d;
@@ -15019,7 +15585,13 @@ u8 CopyFile_stdio(char* src, char* dst)
 	
 	mem = malloc(BUFFSIZE);
 	if(mem == NULL) return FAILED;
-
+	
+	// create directories path
+	char *last_slash = strrchr(destination, '/');
+	destination[last_slash - destination] = 0;
+	MGZ_mkdir_recursive(destination);
+	destination[last_slash - destination] = '/';
+	
 next_file:
 	
 	if(do_split) sprintf(destination, "%s.666%02d", dst, cur_file);
@@ -15062,6 +15634,8 @@ next_file:
 				read = SPLITSIZE*(cur_file+1) - pos;
 		}
 		if(read > BUFFSIZE) read = BUFFSIZE;
+		
+		memset(mem, 0, BUFFSIZE);
 		
 		writed = fread(mem, 1, read, f1);
 		if(writed<0) {ret = FAILED; goto skip;}
@@ -15645,6 +16219,8 @@ void Copy_Game(char *src, char *dst)
 			show_msg(STR_CANCELLED);
 			return;
 		}
+		// remove remap of webMAN MOD
+		{sys_map_path("/dev_bdvd/PS3_UPDATE", NULL);}
 	} else {
 		char *tmp = strrchr(copy_src, '/');
 		strcat(copy_dst, tmp);
@@ -15673,7 +16249,7 @@ void Copy_Game(char *src, char *dst)
 		sort_GAMELIST();
 		init_Load_GAMEPIC();
 		read_fav();
-			
+		
 		show_msg(STR_DONE);
 	} else {
 		Delete_Game(copy_dst, -1);
@@ -16323,7 +16899,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 	
 	char *ext = get_ext(path);
 	
-	if( strcmp(ext, _ISO_PS3) && strcmp(ext, _ISO_PSP) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcmp(ext, _JB_PSP) && strcasecmp(ext, ".sfo")) return NULL;
+	if( strcmp(ext, _ENC_ISO_PS3) && strcmp(ext, _ISO_PS3) && strcmp(ext, _ISO_PSP) && strcmp(ext, _JB_PS3) && strcmp(ext, _BDVD) && strcmp(ext, _JB_PSP) && strcasecmp(ext, ".sfo")) return NULL;
 	
 	if(!strcasecmp(ext, ".sfo")) {
 		sfo = fopen(path, mode);
@@ -16341,7 +16917,7 @@ FILE* openSFO(char *path, u32 *start_offset, u32 *size, char *mode)
 		
 		return sfo;
 	} else 
-	if(!strcmp(ext, _ISO_PS3)) {
+	if(!strcmp(ext, _ISO_PS3) || !strcmp(ext, _ENC_ISO_PS3)){
 		sfo = fopen(path, mode);
 		if(sfo==NULL) {
 			SetPerms(path);
@@ -16649,7 +17225,6 @@ int download(char *url, char *dst)
 	FILE* fp=NULL;
 	s32 nRecv = -1;
 	s32 size = 0;
-	u64 dl=0;
 	uint64_t length = 0;
 	void *http_pool = NULL;
 	void *uri_pool = NULL;
@@ -16849,26 +17424,18 @@ int download(char *url, char *dst)
 		goto end;
 	}
 	
-	if(length != 0) {
-		if(prog_bar1_value!=-1) prog_bar2_value=0;
-		else prog_bar1_value=0;
-	}
+	if(length != 0) task_Init(length);
 	
 	while(nRecv != 0) {
 		if(httpRecvResponse(httpTrans, (void*) getBuffer, sizeof(getBuffer)-1, &nRecv) > 0) break;
 		if(nRecv == 0)	break;
 		fwrite((char*) getBuffer, nRecv, 1, fp);
 		if(cancel==YES) break;
-		dl+=nRecv;
-		if(length != 0) {
-			if(prog_bar2_value!=-1) prog_bar2_value=(dl*100)/length;
-			else prog_bar1_value = (dl*100)/length;
-		}
+		
+		if(length != 0) task_Update(nRecv);
 	}
 	fclose(fp);
-		
-	if(prog_bar2_value!=-1) prog_bar2_value=-1;
-	else prog_bar1_value=-1;
+	if(length != 0) task_End();
 	
 //END of TRANSFERT
 
@@ -17373,7 +17940,7 @@ int read_scan_dir()
 	scan_dir_number=-1;
 	memset(scan_dir, 0, sizeof(scan_dir));
 	
-	sprintf(scanPath, "/dev_hdd0/game/%s/USRDIR/setting/scan_dir.txt", ManaGunZ_id);
+	sprintf(scanPath, "%s/USRDIR/setting/scan_dir.txt", ManaGunZ_path);
 	
 	fp=fopen(scanPath, "rb");
 	if(fp==NULL){
@@ -17400,7 +17967,7 @@ void write_scan_dir()
 	char scanPath[128];
 	int i;
 	
-	sprintf(scanPath, "/dev_hdd0/game/%s/USRDIR/setting/scan_dir.txt", ManaGunZ_id);
+	sprintf(scanPath, "%s/USRDIR/setting/scan_dir.txt", ManaGunZ_path);
 	
 	fp=fopen(scanPath, "wb");
 	if(fp==NULL)return;
@@ -17804,9 +18371,7 @@ void end_PlugAndPlay()
 
 void AutoRefresh_GAMELIST()
 {
-#ifdef RPCS3
-	return;
-#endif
+	if( RPCS3 ) return;
 
 	if(PlugAndPlay==NO) { start_PlugAndPlay(); return; }
 	if(do_Refresh == NO) return;
@@ -17978,11 +18543,11 @@ u8 Download_MD5(char *gameID)
 	redumpID[9]=redumpID[10];
 	redumpID[10]=0;
 	
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/sys/Check", ManaGunZ_path);
 	mkdir(dst, 0777);
 	
 	// it's better to http_set_autoredirect=false and then get header.value of "Location" header...
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/temp.txt", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/sys/Check/temp.txt", ManaGunZ_path);
 	sprintf(url, "http://redump.org/discs/quicksearch/%s/", redumpID);
 	
 	if( download(url, dst) == FAILED) {
@@ -18012,7 +18577,7 @@ u8 Download_MD5(char *gameID)
 	free(buff);
 	
 	sprintf(url, "http://redump.org/disc/%s/md5/", pageID);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.md5", ManaGunZ_id, gameID);
+	sprintf(dst, "%s/USRDIR/sys/Check/%s.md5", ManaGunZ_path, gameID);
 
 	if( download(url, dst) == FAILED) {
 		print_load("Error : failed to download md5");
@@ -18046,8 +18611,8 @@ u8 CheckMD5(char *path)
 		return FAILED;
 	}
 	
-	sprintf(MD5_redump, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.md5", ManaGunZ_id, gameID);
-	sprintf(MD5_DB, "/dev_hdd0/game/%s/USRDIR/sys/Check.zip", ManaGunZ_id);
+	sprintf(MD5_redump, "%s/USRDIR/sys/Check/%s.md5", ManaGunZ_path, gameID);
+	sprintf(MD5_DB, "%s/USRDIR/sys/Check.zip", ManaGunZ_path);
 	sprintf(MD5_FILE, "%s.md5", gameID);
 	
 	ExtractZipFile(MD5_DB, MD5_FILE, MD5_redump);
@@ -18155,7 +18720,7 @@ u32 GetPSPCRC32(char *path)
 	
 	if( Get_ID(path, ISO_PSP, game_ID) == FAILED) return 0;
 	
-	sprintf(CRC_DB, "/dev_hdd0/game/%s/USRDIR/sys/PSP_CRC.txt", ManaGunZ_id);
+	sprintf(CRC_DB, "%s/USRDIR/sys/PSP_CRC.txt", ManaGunZ_path);
 	
 	FILE* f;
 	
@@ -18282,10 +18847,10 @@ uint8_t patch_PS2()
 	char tmp_gx[128];
 	char tmp_net[128];
 	
-	sprintf(tmp_dir, "/dev_hdd0/game/%s/USRDIR/temp", ManaGunZ_id);
-	sprintf(tmp_hw, "/dev_hdd0/game/%s/USRDIR/temp/ps2_emu.self", ManaGunZ_id);
-	sprintf(tmp_gx, "/dev_hdd0/game/%s/USRDIR/temp/ps2_gxemu.self", ManaGunZ_id);
-	sprintf(tmp_net, "/dev_hdd0/game/%s/USRDIR/temp/ps2_netemu.self", ManaGunZ_id);
+	sprintf(tmp_dir, "%s/USRDIR/temp", ManaGunZ_path);
+	sprintf(tmp_hw, "%s/USRDIR/temp/ps2_emu.self", ManaGunZ_path);
+	sprintf(tmp_gx, "%s/USRDIR/temp/ps2_gxemu.self", ManaGunZ_path);
+	sprintf(tmp_net, "%s/USRDIR/temp/ps2_netemu.self", ManaGunZ_path);
 	
 	Delete(tmp_dir);
 	mkdir(tmp_dir, 0777);
@@ -18331,7 +18896,7 @@ uint8_t patch_PS2()
 	/*
 	print_load("Saving Original files...")
 	char bak[128];
-	sprintf(bak, "/dev_hdd0/game/%s/USRDIR/PS2BAK", ManaGunZ_id);
+	sprintf(bak, "%s/USRDIR/PS2BAK", ManaGunZ_path);
 	Delete(bak);
 	if ( Copy("/dev_blind/ps2emu", bak) == FAILED ) {
 		print_load("Error : failed to copy original files");
@@ -18584,9 +19149,8 @@ void IRD_search(ird_t *ird, u32 meta_sig, char *g_path, char ***IRD_Path, u32 *I
 		memset(IRD_dir, 0, 512);
 		
 		if( i == -1 ) {
-			sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
-		} else
-		if(strstr(list_device[i], "dev_usb")) {
+			sprintf(IRD_dir, "%s/USRDIR/sys/Check", ManaGunZ_path);
+		} else {
 			sprintf(IRD_dir, "/%s/IRD", list_device[i]);
 		}
 		
@@ -18599,7 +19163,7 @@ void IRD_search(ird_t *ird, u32 meta_sig, char *g_path, char ***IRD_Path, u32 *I
 		while ((dir = readdir(d))) {
 			if(!strcmp(dir->d_name, ".") || !strcmp(dir->d_name, "..")) continue;
 			if(dir->d_type & DT_DIR) continue;
-				
+		
 			memset(filepath, 0, 512);
 			sprintf(filepath, "%s/%s", IRD_dir, dir->d_name);
 			print_debug(filepath);
@@ -18675,16 +19239,15 @@ void IRD_download2(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
 	}
 	free(mem);
 	
-	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
+	sprintf(IRD_dst, "%s/USRDIR/sys/Check", ManaGunZ_path);
 	mkdir(IRD_dst, 0777);
 	char *date = get_date();
 	if(date==NULL) {
 		print_debug("Error : can't get the date");
 		return;
 	}
-	sprintf(IRD_dst, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s_%08X.ird", ManaGunZ_id, date, meta_sig);
+	sprintf(IRD_dst, "%s/USRDIR/sys/Check/%s_%08X.ird", ManaGunZ_path, date, meta_sig);
 	free(date);
-	
 	
 	if( download(IRD_url, IRD_dst) == FAILED) {
 		Delete(IRD_dst);
@@ -18700,7 +19263,7 @@ void IRD_download2(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
 			return;
 		}
 		char filename[512];
-		sprintf(filename, "/dev_hdd0/game/%s/USRDIR/sys/Check/%s.ird", ManaGunZ_id, full_sig);
+		sprintf(filename, "%s/USRDIR/sys/Check/%s.ird", ManaGunZ_path, full_sig);
 		free(full_sig);
 		
 		if(path_info(filename) == _FILE) return;
@@ -18722,13 +19285,15 @@ void IRD_download(ird_t *ird, u32 meta_sig, char ***IRD_Path, u32 *IRD_nPath)
 	char tmp[512]={0};
 	
 	char IRD_dir[512]={0};
-	sprintf(IRD_dir, "/dev_hdd0/game/%s/USRDIR/sys/Check", ManaGunZ_id);
-	
+	sprintf(IRD_dir, "%s/USRDIR/sys/Check", ManaGunZ_path);
+	MGZ_mkdir_recursive(IRD_dir);
+
 	sprintf(URL, IRD_SCRIPT "?ird=%08X", meta_sig);
 	
-	sprintf(tmp, "/dev_hdd0/game/%s/USRDIR/temp", ManaGunZ_id);
-	mkdir(tmp, 0777);
-	sprintf(tmp, "/dev_hdd0/game/%s/USRDIR/temp/%08X.txt", ManaGunZ_id, meta_sig);
+	sprintf(tmp, "%s/USRDIR/temp", ManaGunZ_path);
+	MGZ_mkdir_recursive(tmp);
+	
+	sprintf(tmp, "%s/USRDIR/temp/%08X.txt", ManaGunZ_path, meta_sig);
 	
 	if( download(URL, tmp)==FAILED) return;
 	
@@ -18795,7 +19360,6 @@ check:
 	IRD_check_md5(G_PATH, IRD_Path, IRD_nPath);
 	
 	print_debug("FREE_IRD");
-	sleep(3);
 	
 	FREE_IRD(ird);
 	
@@ -18885,7 +19449,7 @@ u32 Download_covers()
 		if(list_game_platform[i] == BDVD || list_game_platform[i] == JB_PS3 || list_game_platform[i] == ISO_PS3)
 		if(strstr(game_ID, "NP") != NULL) continue;
 		
-		sprintf(out, "/dev_hdd0/game/%s/USRDIR/covers/%s.JPG", ManaGunZ_id, game_ID);
+		sprintf(out, "%s/USRDIR/covers/%s.JPG", ManaGunZ_path, game_ID);
 		
 		if(path_info(out)==_FILE) {print_load("OK : %s", list_game_title[i]); continue;}
 		
@@ -19231,15 +19795,15 @@ int make_EBOOT_NPDRM(char *in, char *out, char *content_id)
 	_encrypt_file = TRUE;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/keys", ManaGunZ_path);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/ldr_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/ldr_curves", ManaGunZ_path);
 	if(curves_load(temp_buffer) == FALSE) return NOK;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/vsh_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/vsh_curves", ManaGunZ_path);
 	if(vsh_curves_load(temp_buffer) == FALSE) return NOK;
 	
 	if(frontend_encrypt(in, out) != 0) return NOK;
@@ -19288,15 +19852,15 @@ int Sign_PRX(char *in, char *out)
 	_encrypt_file = TRUE;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/keys", ManaGunZ_path);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
 
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/ldr_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/ldr_curves", ManaGunZ_path);
 	if(curves_load(temp_buffer) == FALSE) return NOK;
 
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/vsh_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/vsh_curves", ManaGunZ_path);
 	if(vsh_curves_load(temp_buffer) == FALSE) return NOK;
 
 	if(frontend_encrypt(in, out)) return NOK;
@@ -19347,15 +19911,15 @@ int Sign_ELF(char *in, char *out)
 	_encrypt_file = TRUE;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/keys", ManaGunZ_path);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
 
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/ldr_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/ldr_curves", ManaGunZ_path);
 	if(curves_load(temp_buffer) == FALSE) return NOK;
 
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/vsh_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/vsh_curves", ManaGunZ_path);
 	if(vsh_curves_load(temp_buffer) == FALSE) return NOK;
 
 	if(frontend_encrypt(in, out)) return NOK;
@@ -19411,15 +19975,15 @@ int Sign_EBOOT(char *in, char *out)
 	_encrypt_file = TRUE;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/keys", ManaGunZ_path);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/ldr_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/ldr_curves", ManaGunZ_path);
 	if(curves_load(temp_buffer) == FALSE) return NOK;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/vsh_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/vsh_curves", ManaGunZ_path);
 	if(vsh_curves_load(temp_buffer) == FALSE) return NOK;
 	
 	if(frontend_encrypt(in, out) != 0) return NOK;
@@ -19467,15 +20031,15 @@ int Sign_PS2ELF(char *in, char *out)
 	_encrypt_file = TRUE;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/keys", ManaGunZ_path);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
 
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/ldr_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/ldr_curves", ManaGunZ_path);
 	if(curves_load(temp_buffer) == FALSE) return NOK;
 
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/vsh_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/vsh_curves", ManaGunZ_path);
 	if(vsh_curves_load(temp_buffer) == FALSE) return NOK;
 
 	if(frontend_encrypt(in, out)) return NOK;
@@ -19521,15 +20085,15 @@ int Extract_SELF(char *in, char *out, u8 *rif)
 	
 	print_head("Extracting %s", in);
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/keys", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/keys", ManaGunZ_path);
 	if(keys_load(temp_buffer) == FALSE) return NOK;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/ldr_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/ldr_curves", ManaGunZ_path);
 	if(curves_load(temp_buffer) == FALSE) return NOK;
 	
 	memset(temp_buffer, 0, sizeof(temp_buffer));
-	sprintf(temp_buffer, "/dev_hdd0/game/%s/USRDIR/sys/data/vsh_curves", ManaGunZ_id);
+	sprintf(temp_buffer, "%s/USRDIR/sys/data/vsh_curves", ManaGunZ_path);
 	if(vsh_curves_load(temp_buffer) == FALSE) return NOK;
 	
 	if(frontend_decrypt(in, out)) return NOK;
@@ -19547,26 +20111,27 @@ u8 re_sign_EBOOT(char *path)
 	
 	char local_path[128]; //faster in local if file is in usb
 	
-	sprintf(local_path, "/dev_hdd0/game/%s/USRDIR/sys/EBOOT.BIN", ManaGunZ_id);
+	sprintf(local_path, "%s/USRDIR/sys/EBOOT.BIN", ManaGunZ_path);
 
 	if(CopyFile(path, local_path) != SUCCESS){
-		print_load("Error : Failed to copy EBOOT.BIN to the local path");
+		print_load("Error : (re_sign_SELF) Failed to copy %s to %s", path, local_path);
 		return FAILED;
 	}
+	
 	
 	strcpy(elf, local_path);	
 	RemoveExtension(elf);
 	strcat(elf, ".elf");
 	
 	if(Extract_SELF(local_path, elf, NULL)==FAILED) {
-		print_load("Error : Failed extract EBOOT.BIN");
+		print_load("Error : Failed extract %s to %s", local_path, elf);
 		return FAILED;
 	}
 	
 	Delete(local_path);
 	
 	if(Sign_EBOOT(elf, local_path)==FAILED) {
-		print_load("Error : Failed sign EBOOT.BIN");
+		print_load("Error : Failed sign %s to %s", elf, local_path);
 		return FAILED;
 	}
 	
@@ -19576,7 +20141,7 @@ u8 re_sign_EBOOT(char *path)
 	rename(path, bak);
 	
 	if(CopyFile(local_path, path) != SUCCESS) {
-		print_load("Error : Failed to copy re-signed EBOOT.BIN to the original path");
+		print_load("Error : Failed to copy re-signed %s to %s", local_path, path);
 		rename(bak, path);
 		return FAILED;
 	}
@@ -19599,10 +20164,10 @@ u8 re_sign_SELF(char *path)
 	
 	print_load("Re-signing %s", filename);
 	
-	sprintf(local_path, "/dev_hdd0/game/%s/USRDIR/sys/%s", ManaGunZ_id, filename);
+	sprintf(local_path, "%s/USRDIR/sys/%s", ManaGunZ_path, filename);
 
 	if(CopyFile(path, local_path) != SUCCESS){
-		print_load("Error : Failed to copy %s to the local path", filename);
+		print_load("Error : (re_sign_SELF) Failed to copy %s to %s", path, local_path);
 		return FAILED;
 	}
 	
@@ -19611,14 +20176,14 @@ u8 re_sign_SELF(char *path)
 	strcat(elf, ".elf");
 	
 	if(Extract_SELF(local_path, elf, NULL)==FAILED) {
-		print_load("Error : Failed extract %s", filename);
+		print_load("Error : Failed extract %s to %s", local_path, elf);
 		return FAILED;
 	}
 	
 	Delete(local_path);
 	
 	if(Sign_ELF(elf, local_path)==FAILED) {
-		print_load("Error : Failed sign %s", filename);
+		print_load("Error : Failed sign %s to %s", elf, local_path);
 		return FAILED;
 	}
 	
@@ -19628,7 +20193,7 @@ u8 re_sign_SELF(char *path)
 	rename(path, bak);
 	
 	if(CopyFile(local_path, path) != SUCCESS) {
-		print_load("Error : Failed to copy re-signed %s to the original path", filename);
+		print_load("Error : Failed to copy re-signed %s to %s", local_path, path);
 		rename(bak, path);
 		return FAILED;
 	}
@@ -19651,10 +20216,10 @@ u8 re_sign_SPRX(char *path)
 	
 	print_load("Re-signing %s", filename);
 	
-	sprintf(local_path, "/dev_hdd0/game/%s/USRDIR/sys/%s", ManaGunZ_id, filename);
+	sprintf(local_path, "%s/USRDIR/sys/%s", ManaGunZ_path, filename);
 	
-	if(CopyFile(local_path, path) != SUCCESS) {
-		print_load("Error : Failed to copy %s to the local path", filename);
+	if(CopyFile(path, local_path) != SUCCESS){
+		print_load("Error : (re_sign_SELF) Failed to copy %s to %s", path, local_path);
 		return FAILED;
 	}
 	
@@ -19663,14 +20228,14 @@ u8 re_sign_SPRX(char *path)
 	strcat(prx, ".prx");
 	
 	if(Extract_SELF(local_path, prx, NULL)==FAILED) {
-		print_load("Error : Failed extract %s", filename);
+		print_load("Error : Failed extract %s", local_path);
 		return FAILED;
 	}
 	
 	Delete(local_path);
 	
 	if(Sign_PRX(prx, local_path)==FAILED) {
-		print_load("Error : Failed sign %s", filename);
+		print_load("Error : Failed sign %s", prx);
 		return FAILED;
 	}
 	
@@ -20518,15 +21083,15 @@ int patch_libfs(int8_t device)
 	char patched_libfs_from_iris[128];
 	char patched_libfs_from_reactPSN[128];
 	
-	sprintf(patched_libfs_from_iris, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_from_iris_%X.sprx", ManaGunZ_id, firmware);
+	sprintf(patched_libfs_from_iris, "%s/USRDIR/sys/patched_libfs_from_iris_%X.sprx", ManaGunZ_path, firmware);
 	
 	if(device<0) {
-		sprintf(patched_libfs_from_MM, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_int_from_MM_%X.sprx", ManaGunZ_id, firmware);
-		sprintf(patched_libfs_from_reactPSN, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_int_from_reactPSN_%X.sprx", ManaGunZ_id, firmware);
+		sprintf(patched_libfs_from_MM, "%s/USRDIR/sys/patched_libfs_int_from_MM_%X.sprx", ManaGunZ_path, firmware);
+		sprintf(patched_libfs_from_reactPSN, "%s/USRDIR/sys/patched_libfs_int_from_reactPSN_%X.sprx", ManaGunZ_path, firmware);
 	}
 	else {
-		sprintf(patched_libfs_from_MM, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_usb%d_from_MM_%X.sprx", ManaGunZ_id, device, firmware);
-		sprintf(patched_libfs_from_reactPSN, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_usb%d_from_reactPSN_%X.sprx", ManaGunZ_id, device, firmware);
+		sprintf(patched_libfs_from_MM, "%s/USRDIR/sys/patched_libfs_usb%d_from_MM_%X.sprx", ManaGunZ_path, device, firmware);
+		sprintf(patched_libfs_from_reactPSN, "%s/USRDIR/sys/patched_libfs_usb%d_from_reactPSN_%X.sprx", ManaGunZ_path, device, firmware);
 	}
 	
 	if(path_info(patched_libfs_from_MM) == _NOT_EXIST) {
@@ -20535,9 +21100,9 @@ int patch_libfs(int8_t device)
 		char ori_prx[128];
 		char patched_prx[128];
 		
-		sprintf(ori_sprx, "/dev_hdd0/game/%s/USRDIR/sys/original_libfs_%X.sprx", ManaGunZ_id, firmware);
-		sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/original_libfs_%X.prx", ManaGunZ_id, firmware);
-		sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_from_MM_%X.prx", ManaGunZ_id, firmware);
+		sprintf(ori_sprx, "%s/USRDIR/sys/original_libfs_%X.sprx", ManaGunZ_path, firmware);
+		sprintf(ori_prx, "%s/USRDIR/sys/original_libfs_%X.prx", ManaGunZ_path, firmware);
+		sprintf(patched_prx, "%s/USRDIR/sys/patched_libfs_from_MM_%X.prx", ManaGunZ_path, firmware);
 		
 		if(CopyFile("/dev_flash/sys/external/libfs.sprx", ori_sprx) != SUCCESS) {
 			print_load("Error : can't copy original sprx");
@@ -20602,9 +21167,9 @@ int patch_libfs(int8_t device)
 		char ori_prx[128];
 		char patched_prx[128];
 		
-		sprintf(ori_sprx, "/dev_hdd0/game/%s/USRDIR/sys/original_libfs_%X.sprx", ManaGunZ_id, firmware);
-		sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/original_libfs_%X.prx", ManaGunZ_id, firmware);
-		sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_from_iris_%X.prx", ManaGunZ_id, firmware);
+		sprintf(ori_sprx, "%s/USRDIR/sys/original_libfs_%X.sprx", ManaGunZ_path, firmware);
+		sprintf(ori_prx, "%s/USRDIR/sys/original_libfs_%X.prx", ManaGunZ_path, firmware);
+		sprintf(patched_prx, "%s/USRDIR/sys/patched_libfs_from_iris_%X.prx", ManaGunZ_path, firmware);
 		
 		if(CopyFile("/dev_flash/sys/external/libfs.sprx", ori_sprx) != SUCCESS) {
 			print_load("Error : can't copy original sprx");
@@ -20666,9 +21231,9 @@ int patch_libfs(int8_t device)
 		char patched_prx[128];
 
 		
-		sprintf(ori_sprx, "/dev_hdd0/game/%s/USRDIR/sys/original_libfs_%X.sprx", ManaGunZ_id, firmware);
-		sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/original_libfs_%X.prx", ManaGunZ_id, firmware);
-		sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_from_reactPSN_%X.prx", ManaGunZ_id, firmware);
+		sprintf(ori_sprx, "%s/USRDIR/sys/original_libfs_%X.sprx", ManaGunZ_path, firmware);
+		sprintf(ori_prx, "%s/USRDIR/sys/original_libfs_%X.prx", ManaGunZ_path, firmware);
+		sprintf(patched_prx, "%s/USRDIR/sys/patched_libfs_from_reactPSN_%X.prx", ManaGunZ_path, firmware);
 		
 		if(CopyFile("/dev_flash/sys/external/libfs.sprx", ori_sprx) != SUCCESS) {
 			print_load("Error : can't copy original sprx");
@@ -20743,21 +21308,21 @@ char *get_libfs_path()
 	else device=-1;
 		
 	if(libfs_from == IRIS) {
-		sprintf(libfs_path, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_from_iris_%X.sprx", ManaGunZ_id, firmware);
+		sprintf(libfs_path, "%s/USRDIR/sys/patched_libfs_from_iris_%X.sprx", ManaGunZ_path, firmware);
 	}
 	else if(libfs_from == MM) {
 		if(device==-1) {
-			sprintf(libfs_path, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_int_from_MM_%X.sprx", ManaGunZ_id, firmware);
+			sprintf(libfs_path, "%s/USRDIR/sys/patched_libfs_int_from_MM_%X.sprx", ManaGunZ_path, firmware);
 		}
 		else {
-			sprintf(libfs_path, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_usb%d_from_MM_%X.sprx", ManaGunZ_id, device, firmware);
+			sprintf(libfs_path, "%s/USRDIR/sys/patched_libfs_usb%d_from_MM_%X.sprx", ManaGunZ_path, device, firmware);
 		}
 	} else if(libfs_from == REACTPSN) {
 		if(device==-1) {
-			sprintf(libfs_path, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_int_from_reactPSN_%X.sprx", ManaGunZ_id, firmware);
+			sprintf(libfs_path, "%s/USRDIR/sys/patched_libfs_int_from_reactPSN_%X.sprx", ManaGunZ_path, firmware);
 		}
 		else {
-			sprintf(libfs_path, "/dev_hdd0/game/%s/USRDIR/sys/patched_libfs_usb%d_from_reactPSN_%X.sprx", ManaGunZ_id, device, firmware);
+			sprintf(libfs_path, "%s/USRDIR/sys/patched_libfs_usb%d_from_reactPSN_%X.sprx", ManaGunZ_path, device, firmware);
 		}
 	}
 	
@@ -20770,7 +21335,7 @@ int patch_exp_plug()
 {
 	char patched_sprx[128];
 	
-	sprintf(patched_sprx, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+	sprintf(patched_sprx, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 	
 	if(path_info(patched_sprx) == _NOT_EXIST) {
 		print_load("Patching explore_pluging...");
@@ -20779,9 +21344,9 @@ int patch_exp_plug()
 		char patched_prx[128];
 		int k;
 		
-		sprintf(ori_sprx, "/dev_hdd0/game/%s/USRDIR/sys/original_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
-		sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/original_explore_plugin_%X.prx", ManaGunZ_id, firmware);
-		sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.prx", ManaGunZ_id, firmware);
+		sprintf(ori_sprx, "%s/USRDIR/sys/original_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
+		sprintf(ori_prx, "%s/USRDIR/sys/original_explore_plugin_%X.prx", ManaGunZ_path, firmware);
+		sprintf(patched_prx, "%s/USRDIR/sys/patched_explore_plugin_%X.prx", ManaGunZ_path, firmware);
 		
 		if(CopyFile("/dev_flash/vsh/module/explore_plugin.sprx", ori_sprx) != SUCCESS) {
 			print_load("Error : can't copy original sprx");
@@ -20846,15 +21411,15 @@ char *get_libaudio_path()
 {
 	
 	print_debug("Start of get_libaudio_path()");
-	char *libaudio_path = sprintf_malloc("/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.sprx", ManaGunZ_id, firmware);
+	char *libaudio_path = sprintf_malloc("%s/USRDIR/sys/patched_libaudio_%X.sprx", ManaGunZ_path, firmware);
 	
 	print_debug("path_info...");
 	if( path_info(libaudio_path) == _FILE ) return libaudio_path;
 	
 	char ori_prx[128];
 	char patched_prx[128];
-	sprintf(ori_prx, "/dev_hdd0/game/%s/USRDIR/sys/libaudio_%X.prx", ManaGunZ_id, firmware);
-	sprintf(patched_prx, "/dev_hdd0/game/%s/USRDIR/sys/patched_libaudio_%X.prx", ManaGunZ_id, firmware);
+	sprintf(ori_prx, "%s/USRDIR/sys/libaudio_%X.prx", ManaGunZ_path, firmware);
+	sprintf(patched_prx, "%s/USRDIR/sys/patched_libaudio_%X.prx", ManaGunZ_path, firmware);
 	
 	print_debug("Extract_SELF...");
 	if( Extract_SELF("/dev_flash/sys/external/libaudio.sprx", ori_prx, NULL) == FAILED ) {
@@ -21145,12 +21710,45 @@ char *ISOtype(char *isoPath)
 	fseek(f, SectSize*0x10+JP, SEEK_SET);
 
 	fread(mem, 1, 0x40, f);
-		
+	
 	if(!memcmp((char *) &mem[0x28], (char *) "PS3VOLUME", 0x9)) {
-		free(mem);
-		fclose(f);
-		return _ISO_PS3;
+		FREE(mem);
+		
+		// check if it's encrypted
+		// - Get number of plain region
+		u32 value=0;
+		fseek(f, 0, SEEK_SET);
+		fread(&value, sizeof(u32), 1, f);
+		if( value < 2 ) {
+			FCLOSE(f);
+			return _ISO_PS3;
+		}
+		// - Get sector of 1st encrypted region
+		fseek(f, 0xC , SEEK_SET);
+		fread(&value, sizeof(u32), 1, f);
+		value += 1;
+		
+		
+		// Check if magic of LIC.DAT is encrypted.
+		// On originals iso, it's always the 1st file encrypted.
+		char magic[8]={0};
+		fseek(f, value*SectSize, SEEK_SET);
+		fread(&magic, sizeof(char), 8, f);
+		
+		FCLOSE(f);
+		
+		if( memcmp((char *) magic, "PS3LICDA", 8) == 0 // LIC should be this one...
+		|| memcmp((char *) magic, "SCE", 3) == 0 // self
+		|| memcmp((char *) magic+1, "PSF", 4) == 0 // param.sfo
+		|| memcmp((char *) magic+1, "PNG", 3) == 0 // icon0.png ...
+		|| memcmp((char *) magic+1, "SFB", 3) == 0 // PS3_DISC.SFB
+		) {
+			return _ISO_PS3;
+		}
+		
+		return _ENC_ISO_PS3;
 	}
+	
 	if(!memcmp((char *) &mem[0x8], (char *) "PSP GAME", 0x8)) {
 		free(mem);
 		fclose(f);
@@ -21701,7 +22299,7 @@ void iris_Mount()
 		
 		if(use_ex_plug==YES) {
 			if(patch_exp_plug() == SUCCESS) {
-				sprintf(temp, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+				sprintf(temp, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 				if(path_info(temp) == _FILE)	add_sys8_path_table( (char*)"/dev_flash/vsh/module/explore_plugin.sprx", temp);
 			} else  print_load("Error : cannot patch explore_plugin.sprx");
 		}
@@ -21908,12 +22506,12 @@ void mm_Mount()
 		
 		if(use_ex_plug==YES) {
 			if(patch_exp_plug() == SUCCESS) {
-				sprintf(temp, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+				sprintf(temp, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 				if(path_info(temp) == _FILE )	add_to_map( (char*)"/dev_flash/vsh/module/explore_plugin.sprx", temp);
 			} else  print_load("Error : cannot patch explore_plugin.sprx");
 		}
 	}
-
+	
 	if(ext_game_data==YES) {
 		int i;
 		for(i=0; i<=device_number; i++) {
@@ -22178,7 +22776,7 @@ void cobra_MountISO(char *path, int EMU)
 			memcpy(plugin_args+sizeof(rawseciso_args), sections, parts*sizeof(uint32_t));
 			memcpy(plugin_args+sizeof(rawseciso_args)+(parts*sizeof(uint32_t)), sections_size, parts*sizeof(uint32_t)); 
 			cobra_unload_vsh_plugin(0);
-			sprintf(temp_buffer + 2048, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
+			sprintf(temp_buffer + 2048, "%s/USRDIR/sys/sprx_iso", ManaGunZ_path);
 			if (cobra_load_vsh_plugin(0, temp_buffer + 2048, plugin_args, 0x10000) == 0) return;
 		}
 	} 
@@ -22247,7 +22845,7 @@ void cobra_MountISO(char *path, int EMU)
 void cobra_Mount()
 {
 	int i;
-	char temp[128];
+	char temp[2048];
 	
 	fix_error();
 	
@@ -22257,7 +22855,7 @@ void cobra_Mount()
 			
 			if(use_ex_plug==YES) {
 				if(patch_exp_plug() == SUCCESS) {
-					sprintf(temp, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+					sprintf(temp, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 					if(path_info(temp) != _NOT_EXIST) {sys_map_path("/dev_flash/vsh/module/explore_plugin.sprx", temp);}
 				} else  print_load("Error : cannot patch explore_plugin.sprx");
 			}
@@ -22310,7 +22908,7 @@ void cobra_Mount()
 			
 			if(use_ex_plug==YES) {
 				if(patch_exp_plug() == SUCCESS) {
-					sprintf(temp, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+					sprintf(temp, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 					if((path_info(temp)==_FILE) )	{sys_map_path("/dev_flash/vsh/module/explore_plugin.sprx", temp);}
 				} else  print_load("Error : cannot patch explore_plugin.sprx");
 			}
@@ -22328,6 +22926,8 @@ void cobra_Mount()
 			}
 		}
 	}
+	
+	
 }
 
 //*******************************************************
@@ -22393,7 +22993,7 @@ int syscall_load_mamba(char* payload_path)
 int load_mamba()
 {
 	char mamba_path[255];
-	sprintf(mamba_path, "/dev_hdd0/game/%s/USRDIR/sys/mamba_%X.bin", ManaGunZ_id, firmware);
+	sprintf(mamba_path, "%s/USRDIR/sys/mamba_%X.bin", ManaGunZ_path, firmware);
 	
 	Delete(mamba_path);
 	
@@ -22536,12 +23136,12 @@ void mamba_MountISO(int EMU)
 			memcpy(plugin_args+sizeof(rawseciso_args), sections, parts*sizeof(uint32_t));
 			memcpy(plugin_args+sizeof(rawseciso_args)+(parts*sizeof(uint32_t)), sections_size, parts*sizeof(uint32_t)); 
 			cobra_unload_vsh_plugin(0);
-			sprintf(temp_buffer + 2048, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
+			sprintf(temp_buffer + 2048, "%s/USRDIR/sys/sprx_iso", ManaGunZ_path);
 			if (cobra_load_vsh_plugin(0, temp_buffer + 2048, plugin_args, 0x10000) == 0) return;
 		}
 	} 
 	else {
-		sprintf((char *) plugin_args, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
+		sprintf((char *) plugin_args, "%s/USRDIR/sys/sprx_iso", ManaGunZ_path);
 		
 		if(path_info((char *) plugin_args) == _NOT_EXIST) {free(plugin_args); return;}
 
@@ -22590,7 +23190,7 @@ void mamba_MountISO(int EMU)
 
 			cobra_unload_vsh_plugin(0);
 
-			sprintf(temp_buffer + 2048, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
+			sprintf(temp_buffer + 2048, "%s/USRDIR/sys/sprx_iso", ManaGunZ_path);
 
 			if( cobra_load_vsh_plugin(0, temp_buffer + 2048, plugin_args, 0x10000) != 0) {
 				print_load("Error : failed to load plugin");
@@ -22615,20 +23215,7 @@ void mamba_Mount()
 {
 	mamba = install_mamba();
 	
-	char temp[128];
-		
-	if(ext_game_data==YES) {
-		int i;
-		
-		for(i=0; i<=device_number; i++) {
-			sprintf(temp, "/%s", list_device[i]);
-			if(strstr(temp, "/dev_usb")) {
-				strcat(temp, "/GAMEI");
-				if(path_info(temp)==_NOT_EXIST) mkdir(temp, 0777);
-				{snake_map("/dev_hdd0/game", temp);}
-			}
-		}
-	}
+	char temp[2048];
 	
 	if(iso) {
 		mamba_MountISO(EMU_PS3);
@@ -22639,7 +23226,7 @@ void mamba_Mount()
 			
 			if(use_ex_plug==YES) {
 				if(patch_exp_plug() == SUCCESS) {
-					sprintf(temp, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+					sprintf(temp, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 					if(path_info(temp) != _NOT_EXIST)	{snake_map("/dev_flash/vsh/module/explore_plugin.sprx", temp);}
 				} else  print_load("Error : cannot patch explore_plugin.sprx");
 			}
@@ -22692,9 +23279,22 @@ void mamba_Mount()
 			
 			if(use_ex_plug==YES) {
 				if(patch_exp_plug() == SUCCESS) {
-					sprintf(temp, "/dev_hdd0/game/%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_id, firmware);
+					sprintf(temp, "%s/USRDIR/sys/patched_explore_plugin_%X.sprx", ManaGunZ_path, firmware);
 					if((path_info(temp) == _FILE) )	{snake_map("/dev_flash/vsh/module/explore_plugin.sprx", temp);}
 				} else  print_load("Error : cannot patch explore_plugin.sprx");
+			}
+		}
+	}
+	
+	if(ext_game_data==YES) {
+		int i;
+		
+		for(i=0; i<=device_number; i++) {
+			sprintf(temp, "/%s", list_device[i]);
+			if(strstr(temp, "/dev_usb")) {
+				strcat(temp, "/GAMEI");
+				if(path_info(temp)==_NOT_EXIST) mkdir(temp, 0777);
+				{snake_map("/dev_hdd0/game", temp);}
 			}
 		}
 	}
@@ -22749,7 +23349,6 @@ u8 MountGame(char *GamePath)
 		
 		if(PEEKnPOKE) {
 			if(payload==IRIS) iris_Mount(); else
-			if(payload==MM) mm_Mount(); else
 			if(cobra) cobra_Mount(); else 
 			mamba_Mount();
 			if(change_IDPS) poke_IDPS();	
@@ -22761,10 +23360,10 @@ u8 MountGame(char *GamePath)
 		
 		if(direct_boot) {
 			MGZ_exit();
-			if(mount_app_home == NO) {
-				sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
-			} else {
+			if(mount_app_home) {
 				sysProcessExitSpawn2("/app_home/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
+			} else {
+				sysProcessExitSpawn2("/dev_bdvd/PS3_GAME/USRDIR/EBOOT.BIN", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
 			}
 		}
 	} else 
@@ -22879,7 +23478,6 @@ typedef struct
 	uint8_t qa_digest[16];
 	uint8_t KLicensee[16];
 } pkg_header;
-
 
 #define PKG_HEADER_FROM_BE(x)								   \
   (x).magic = FROM_BE (32, (x).magic);						  \
@@ -23808,9 +24406,9 @@ u8 write_AutoMount_setting(char *path, u8 launcher)
 	u16 path_size = strlen(path);
 	
 	if( launcher ) {
-		sprintf(Mount_path, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/AutoMount", ManaGunZ_id);
+		sprintf(Mount_path, "%s/USRDIR/launcher/USRDIR/AutoMount", ManaGunZ_path);
 	} else {
-		sprintf(Mount_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
+		sprintf(Mount_path, "%s/USRDIR/AutoMount", ManaGunZ_path);
 	}
 	
 	fp = fopen(Mount_path, "wb");
@@ -23841,7 +24439,7 @@ u8 read_AutoMount_setting()
 	FILE* fp;
 	u16 path_size;
 	
-	sprintf(Mount_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
+	sprintf(Mount_path, "%s/USRDIR/AutoMount", ManaGunZ_path);
 	
 	fp=fopen(Mount_path, "rb");
 	
@@ -23926,7 +24524,7 @@ print_load("Init...");
 	char src[128];
 	char dst[128];
 	char lch[128];
-	sprintf(lch, "/dev_hdd0/game/%s/USRDIR/launcher", ManaGunZ_id);
+	sprintf(lch, "%s/USRDIR/launcher", ManaGunZ_path);
 	Delete(lch);
 	mkdir(lch, 0777);
 	
@@ -23934,8 +24532,8 @@ print_load("Init...");
 	
 //	loc
 print_load("Copy loc...");
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys/loc", ManaGunZ_id);
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys/loc", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/launcher/USRDIR/sys/loc", ManaGunZ_path);
+	sprintf(src, "%s/USRDIR/sys/loc", ManaGunZ_path);
 	if( Copy(src, dst) == FAILED ) {
 		print_load("Error : failed to copy loc directory");
 		Delete(lch);
@@ -23945,8 +24543,8 @@ print_load("Copy loc...");
 // rawsceiso
 	if( _iso_ ) {
 print_load("Copy iso plugin...");
-		sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys/sprx_iso", ManaGunZ_id);
-		sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys/sprx_iso", ManaGunZ_id);
+		sprintf(dst, "%s/USRDIR/launcher/USRDIR/sys/sprx_iso", ManaGunZ_path);
+		sprintf(src, "%s/USRDIR/sys/sprx_iso", ManaGunZ_path);
 		if( Copy(src, dst) == FAILED ) {
 			print_load("Error : failed to copy sprx_iso directory");
 			Delete(lch);
@@ -23956,8 +24554,8 @@ print_load("Copy iso plugin...");
 	
 // data
 print_load("Copy scetool data...");
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/sys/data", ManaGunZ_id);
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR/sys/data", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/launcher/USRDIR/sys/data", ManaGunZ_path);
+	sprintf(src, "%s/USRDIR/sys/data", ManaGunZ_path);
 	if( Copy(src, dst) == FAILED ) {
 		print_load("Error : failed to copy data directory");
 		Delete(lch);
@@ -23967,8 +24565,8 @@ print_load("Copy scetool data...");
 	
 //  self
 print_load("Copy self...");
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/ManaGunZ.self", ManaGunZ_id);
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR/ManaGunZ.self", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/launcher/USRDIR/ManaGunZ.self", ManaGunZ_path);
+	sprintf(src, "%s/USRDIR/ManaGunZ.self", ManaGunZ_path);
 	if( CopyFile(src, dst) == FAILED ) {
 		print_load("Error : failed to copy ManaGunZ.self");
 		Delete(lch);
@@ -23977,7 +24575,7 @@ print_load("Copy self...");
 	
 //	ICON0
 print_load("Copy icon0...");
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/ICON0.PNG", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/launcher/ICON0.PNG", ManaGunZ_path);
 	if(_iso_) {
 		if( ExtractFromISO(path, "/PS3_GAME/ICON0.PNG", dst) == FAILED) {
 			print_load("Error : failed to get ICON0.PNG");
@@ -23995,8 +24593,8 @@ print_load("Copy icon0...");
 	
 //	PARAM.SFO
 print_load("Copy param...");
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/PARAM.SFO", ManaGunZ_id);
-	sprintf(src, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/launcher/PARAM.SFO", ManaGunZ_path);
+	sprintf(src, "%s/PARAM.SFO", ManaGunZ_path);
 	if( CopyFile(src, dst) == FAILED ) {
 		print_load("Error : failed to copy PARAM.SFO");
 		Delete(lch);
@@ -24033,8 +24631,8 @@ print_load("Create AutoMount...");
 	
 // EBOOT.BIN
 print_load("Extract EBOOT...");
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR/EBOOT.BIN", ManaGunZ_id);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
+	sprintf(src, "%s/USRDIR/EBOOT.BIN", ManaGunZ_path);
+	sprintf(dst, "%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_path);
 	if( Extract_SELF(src, dst, NULL) == FAILED ) {
 		print_load("Error : Failed extract EBOOT.BIN");
 		Delete(lch);
@@ -24043,8 +24641,8 @@ print_load("Extract EBOOT...");
 	
 // NEW EBOOT
 print_load("Make new EBOOT...");
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_id);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/launcher/USRDIR/EBOOT.BIN", ManaGunZ_id);
+	sprintf(src, "%s/USRDIR/launcher/USRDIR/EBOOT.elf", ManaGunZ_path);
+	sprintf(dst, "%s/USRDIR/launcher/USRDIR/EBOOT.BIN", ManaGunZ_path);
 	sprintf(content_id, "EP0001-%s_00-0000000000000000", title_id);
 	if(make_EBOOT_NPDRM(src, dst, content_id) == FAILED) {
 		print_load("Error : Failed to make EBOOT.BIN");
@@ -24082,7 +24680,7 @@ print_load("Make Package...");
 	mkdir(dst, 0777);
 	sprintf(dst, "/dev_hdd0/packages/%s.pkg", ascii_name);
 	Delete(dst);
-	sprintf(src, "/dev_hdd0/game/%s/USRDIR", ManaGunZ_id);
+	sprintf(src, "%s/USRDIR", ManaGunZ_path);
 	if( pkg_pack(dst, content_id, src, "launcher") == FAILED ) {
 		print_load("Error : Failed to make PKG");
 		Delete(lch);
@@ -24331,7 +24929,7 @@ void read_RootSetting()
 	char setPath[128];
 	u8 format_id[6]={0};
 	
-	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/root.bin", ManaGunZ_id);
+	sprintf(setPath, "%s/USRDIR/setting/root.bin", ManaGunZ_path);
 	
 	fp = fopen(setPath, "rb");
 	if(fp==NULL) return;
@@ -24392,7 +24990,7 @@ void write_RootSetting()
 	FILE *fp;
 	char setPath[128];
 
-	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/root.bin", ManaGunZ_id);
+	sprintf(setPath, "%s/USRDIR/setting/root.bin", ManaGunZ_path);
 	
 	u8 format_id[6] = {0};
 	int i;
@@ -24426,7 +25024,7 @@ void read_setting()
 	FILE* fp=NULL;
 	char setPath[128];
 	
-	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/setting.bin", ManaGunZ_id);
+	sprintf(setPath, "%s/USRDIR/setting/setting.bin", ManaGunZ_path);
 	
 	fp = fopen(setPath, "rb");
 	if(fp!=NULL) {
@@ -24506,7 +25104,7 @@ void write_setting()
 	FILE* fp=NULL;
 	char setPath[128];
 	
-	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/setting.bin", ManaGunZ_id);
+	sprintf(setPath, "%s/USRDIR/setting/setting.bin", ManaGunZ_path);
 	fp = fopen(setPath, "wb");
 	if(fp!=NULL) {
 		fwrite(&Themes[0], sizeof(char), 0x40, fp);
@@ -24577,7 +25175,7 @@ void write_setting()
 	write_RootSetting();
 	
 	char sfo[64];
-	sprintf(sfo, "/dev_hdd0/game/%s/PARAM.SFO", ManaGunZ_id);
+	sprintf(sfo, "%s/PARAM.SFO", ManaGunZ_path);
 	SetParamSFO("ITEM_PRIORITY", (char *) &XMB_priority, sfo);
 	
 	if(lang_code != lang_code_loaded) update_lang();
@@ -24595,11 +25193,11 @@ void read_game_setting(int pos)
 		char oldPath[128];	
 		char setPath[128];
 		
-		if(iso) sprintf(oldPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_title[pos]);
-		else	sprintf(oldPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, list_game_title[pos]);
+		if(iso) sprintf(oldPath, "%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_path, list_game_title[pos]);
+		else	sprintf(oldPath, "%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_path, list_game_title[pos]);
 		
-		if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_ID[pos]);
-		else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, list_game_ID[pos]);
+		if(iso) sprintf(setPath, "%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_path, list_game_ID[pos]);
+		else	sprintf(setPath, "%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_path, list_game_ID[pos]);
 		
 		if(path_info(setPath) == _FILE) Delete(oldPath); 
 		else rename(oldPath, setPath);
@@ -24647,12 +25245,14 @@ void write_game_setting(int pos)
 {
 	if(AutoM == YES) return;
 	
+	print_debug("write_game_setting");
+	
 	FILE* fp=NULL;
 	
 	if(0<=pos) {		
 		char setPath[128];
-		if(iso) sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_id, list_game_ID[pos]);
-		else	sprintf(setPath, "/dev_hdd0/game/%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_id, list_game_ID[pos]);
+		if(iso) sprintf(setPath, "%s/USRDIR/setting/game_setting/[ISO]%s.bin", ManaGunZ_path, list_game_ID[pos]);
+		else	sprintf(setPath, "%s/USRDIR/setting/game_setting/[JB]%s.bin", ManaGunZ_path, list_game_ID[pos]);
 		fp = fopen(setPath, "wb");
 	}
 	
@@ -24682,7 +25282,7 @@ void write_fav()
 	int i;
 	u16 path_size;
 	
-	sprintf(favPath, "/dev_hdd0/game/%s/USRDIR/setting/fav.bin", ManaGunZ_id);
+	sprintf(favPath, "%s/USRDIR/setting/fav.bin", ManaGunZ_path);
 	fp = fopen(favPath, "wb");
 	if(fp!=NULL)	{
 		fwrite(&FAV_game_number, sizeof(u8), 1, fp);
@@ -24705,7 +25305,7 @@ void read_fav()
 	int i;
 	u16 path_size;
 	
-	sprintf(favPath, "/dev_hdd0/game/%s/USRDIR/setting/fav.bin", ManaGunZ_id);
+	sprintf(favPath, "%s/USRDIR/setting/fav.bin", ManaGunZ_path);
 	fp = fopen(favPath, "rb");
 	if(fp!=NULL)	{
 		fread(&FAV_game_number, sizeof(u8), 1, fp);
@@ -27338,63 +27938,6 @@ void Window(char *directory)
 		UpdateLastPath();
 	}
 	
-#ifdef RPCS3
-	
-	window_content_N[window_activ]=-1;
-	int n;
-	for(n=0; n<WINDOW_MAX_ITEMS; n++) {
-		FREE(window_content_Name[window_activ][n]);
-		FREE(window_content_Type[window_activ][n]);
-		window_content_Size[window_activ][n] = 0;
-		window_content_Selected[window_activ][n] = NO;
-	}
-	
-	if(strcmp(window_path[window_activ], "/") == 0) {
-		DevicesInfo_N=-1;
-		memset(DevicesInfo, 0, sizeof(DevicesInfo));
-		
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd0");
-		DevicesInfo_N++;
-		GetDeviceInfo("/dev_hdd0/", &DevicesInfo[window_content_N[window_activ]]);
-		
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_hdd1");
-		DevicesInfo_N++;
-		GetDeviceInfo("/dev_hdd1/", &DevicesInfo[window_content_N[window_activ]]);
-		
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_usb000");
-		DevicesInfo_N++;
-		GetDeviceInfo("/dev_usb000/", &DevicesInfo[window_content_N[window_activ]]);
-		
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("dev_flash");
-		DevicesInfo_N++;
-		GetDeviceInfo("/dev_flash/", &DevicesInfo[window_content_N[window_activ]]);
-		
-// RPCS3 app_home = /dev_hdd0/game/MANAGUNZ0/USRDIR
-
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("app_home");
-		DevicesInfo_N++;
-		GetDeviceInfo("/app_home/", &DevicesInfo[window_content_N[window_activ]]);
-		
-		window_content_N[window_activ]++;
-		window_content_Type[window_activ][window_content_N[window_activ]] = strcpy_malloc(_SDIR);
-		window_content_Name[window_activ][window_content_N[window_activ]] = strcpy_malloc("app_home");
-		DevicesInfo_N++;
-		GetDeviceInfo("/dev_bdvd/", &DevicesInfo[window_content_N[window_activ]]);
-		
-		return;
-	}
-#endif
-	
 	print_debug("NTFS_mount_all");
 	NTFS_mount_all();
 	
@@ -27997,7 +28540,7 @@ u8 GetParamSFO(const char *name, char *value, char *path)
 	
 	sfo = openSFO(path, &sfo_start, &sfo_size, "rb");
 	if(sfo==NULL) {
-		print_load("Failed to open %s", path);
+		print_load("GetParamSFO Failed to open %s", path);
 		return FAILED;
 	}
 	
@@ -28361,7 +28904,7 @@ void Option(char *item)
 	} else
 	if(strcmp(item, "Test") == 0) {
 		start_loading();
-		
+		PokeNewCHDIR("BLES01938");
 		end_loading();
 	} else
 	if(strcmp(item, "Test2") == 0) {
@@ -28884,9 +29427,8 @@ void Option(char *item)
 			else dst[strlen(dst)-4]=0;
 			
 			u8 ret = extractps3iso(option_sel[0], dst, is_FAT32(option_sel[0]));
-			
-			if(ret==FAILED) show_msg(STR_FAILED); 
-			else show_msg(STR_DONE);
+			if( ret ) show_msg(STR_DONE);
+			else show_msg(STR_FAILED);
 		}
 		end_loading();
 		Window(".");
@@ -28896,20 +29438,72 @@ void Option(char *item)
 		start_loading();
 		for(i=0; i<=option_sel_N; i++) {
 			print_head("Converting to ISO : %s", option_sel[i]);
-			
-			char dst[255];
+			u8 ret = FAILED;
 			if( strcmp(option_sel[i], "/dev_bdvd") == 0) {
-				strcpy(dst, "/dev_hdd0/dev_bdvd.iso");
+				ret = makeps3iso(option_sel[i], "/dev_hdd0", NO);
 			} else {
-				sprintf(dst, "%s.ISO", option_sel[i]);
+				ret = makeps3iso(option_sel[i], option_sel[i], is_FAT32(option_sel[i]));
 			}
-			
-			u8 ret = makeps3iso(option_sel[i], dst, is_FAT32(option_sel[i]));
-			
-			if(ret==FAILED) show_msg(STR_FAILED); 
-			else show_msg(STR_DONE);
+			if( ret ) show_msg(STR_DONE);
+			else show_msg(STR_FAILED);
 		}
 		end_loading();
+		Window(".");
+	} else
+	if(strcmp(item, STR_BUILD_ISO) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = build_bdvd_iso("/dev_hdd0", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_DUMP_DEC) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = dump_dec_bdvd("/dev_hdd0", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_DUMP_ENC) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = dump_enc_bdvd("/dev_hdd0", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_REDUMP_LOG) == 0) {
+		start_copy_loading();
+		u8 ret =FAILED;
+		char log_path[512];
+		char pic_path[512];
+		char *date = get_date();
+		if( date != NULL) {
+			sprintf(log_path, "/dev_hdd0/%s_%s.getkey.log", list_game_ID[position], date);
+			sprintf(pic_path, "/dev_hdd0/%s_%s.disc.pic", list_game_ID[position], date);
+			free(date);
+			ret = get_redump_log(log_path, pic_path);
+		}
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+	} else
+	if(strcmp(item, STR_DECRYPT_ISO) == 0) {
+		start_copy_loading();
+		for(i=0; i<=option_sel_N; i++) {
+			u8 ret = decrypt_ps3iso(option_sel[i], NULL);
+			if( ret ) show_msg(STR_DONE);
+			else show_msg(STR_FAILED);
+		}
+		end_copy_loading();
 		Window(".");
 	}
 	else
@@ -29193,14 +29787,25 @@ void Open_option()
 				add_option_item(STR_UNMOUNT_DEVBLIND);
 			}
 			
-			if(PEEKnPOKE) {
+			//if(PEEKnPOKE) {
 				add_option_item(STR_DUMP_LV1);
 				add_option_item(STR_DUMP_LV2);
-			}
+			//}
 			add_option_item(STR_DUMP_FLASH);
 			
-			
-			//add_option_item("Test");
+			if( option_sel_N == 0 && strcmp(option_sel[0], "/dev_bdvd")) {
+				add_option_item(STR_COPY);
+				//add_option_item(STR_CONVERT_ISO);
+				if( HEN ) {
+					add_option_item(STR_BUILD_ISO);
+				} else {
+					add_option_item(STR_DUMP_DEC);
+				}
+				add_option_item(STR_DUMP_ENC);
+				add_option_item(STR_REDUMP_LOG);
+				
+			}
+			add_option_item("Test");
 			//add_option_item("Test2");
 			//add_option_item("Test3");
 			
@@ -29282,25 +29887,34 @@ void Open_option()
 						if(option_sel_N==0) add_option_item(STR_READ_XREG);
 					} else
 					if(!strcasecmp(ext, ".self")) {
-						add_option_item(STR_EXTRACT_ELF);
-						add_option_item(STR_RESIGN_SELF);
+						if( firmware != 0 ) {
+							add_option_item(STR_EXTRACT_ELF);
+							add_option_item(STR_RESIGN_SELF);
+						}
 						if(option_sel_N==0) add_option_item(STR_LAUNCH_SELF);
 					} else 
 					if(!strcmp(ext, _EBOOT_BIN)) {
-						add_option_item(STR_EXTRACT_EBOOT);
-						add_option_item(STR_RESIGN_EBOOT);
+						if( firmware != 0 ) {
+							add_option_item(STR_EXTRACT_EBOOT);
+							add_option_item(STR_RESIGN_EBOOT);
+						}
 						if(option_sel_N==0) add_option_item(STR_LAUNCH_EBOOT);
 					} else 
 					if(!strcmp(ext, _EBOOT_ELF)) {
-						add_option_item(STR_SIGN_EBOOT);
+						if( firmware != 0 ) {
+							add_option_item(STR_SIGN_EBOOT);
+						}
 					} else 
 					if(!strcasecmp(ext, ".elf")) {
-						add_option_item(STR_SIGN_ELF);
+						if( firmware != 0 ) {
+							add_option_item(STR_SIGN_ELF);
+						}
 					}  else		
 					if(!strcasecmp(ext, ".sprx")) {
-						add_option_item(STR_EXTRACT_PRX);
-						add_option_item(STR_RESIGN_SPRX);
-						
+						if( firmware != 0 ) {
+							add_option_item(STR_EXTRACT_PRX);
+							add_option_item(STR_RESIGN_SPRX);
+						}
 						if(option_sel_N==0) {
 							if(path_info("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt") != _NOT_EXIST) {
 								if(is_it_inside("/dev_hdd0/game/PRXLOADER/USRDIR/plugins.txt", option_sel[0]) == YES) {
@@ -29336,7 +29950,9 @@ void Open_option()
 						}
 					} else
 					if(!strcasecmp(ext, ".prx")) {
-						add_option_item(STR_SIGN_PRX);
+						if( firmware != 0 ) {
+							add_option_item(STR_SIGN_PRX);
+						}
 					} else
 					if(!strcasecmp(ext, ".rco")) {
 						add_option_item(STR_EXTRACT_RCO);
@@ -29352,6 +29968,9 @@ void Open_option()
 						add_option_item(STR_CONVERT_ISO);
 						//add_option_item(STR_MAKE_SHTCUT_PKG);
 						add_option_item(STR_CHECK_IRD);
+					} else
+					if(!strcmp(ext, _ENC_ISO_PS3)) {
+						add_option_item(STR_DECRYPT_ISO);
 					} else
 					if(!strcmp(ext, _ISO_PS3)) {
 						add_option_item(STR_EXTRACT_ISO);
@@ -30110,12 +30729,7 @@ void AutoClose(int window_id)
 
 void AutoRefresh_Windows()
 {
-
-#ifdef RPCS3
-	return;
-#endif
-
-	if(PlugAndPlay == NO) {start_PlugAndPlay(); return;}
+	if(PlugAndPlay == NO && !RPCS3) {start_PlugAndPlay(); return;}
 	if(do_Refresh == NO) return;
 	
 	NTFS_mount_all();
@@ -30466,9 +31080,6 @@ void Draw_HELP()
 	if(item_is(STR_UPLOADER)) {
 		DrawString(x, y, STR_UPLOADER_DESC);
 	} else
-
-
-
 	if(item_is(STR_BT_AUDIO)) {
 		DrawString(x, y, STR_BT_AUDIO_DESC);
 	} else
@@ -31036,7 +31647,7 @@ void Draw_MENU()
 			break;
 		}
 	}
-	return;
+	
 	show_preview();
 }
 
@@ -31650,25 +32261,25 @@ CopyCustom:
 	
 	md5_file(CONFIG_path, (u8 *) cur_MD5);
 	
-	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CFG_path, "%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CFG_path) == _FILE) { 
 		md5_file(CFG_path, (u8 *) cfg_md5);
 		if(cur_MD5[0]==cfg_md5[0] && cur_MD5[1]==cfg_md5[1]) return SUCCESS;
 	}
 	
-	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CFG_path, "%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CFG_path) == _FILE) { 
 		md5_file(CFG_path, (u8 *) cfg_md5);
 		if(cur_MD5[0]==cfg_md5[0] && cur_MD5[1]==cfg_md5[1]) return SUCCESS;
 	}
 	
-	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CFG_path, "%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CFG_path) == _FILE) { 
 		md5_file(CFG_path, (u8 *) cfg_md5);
 		if(cur_MD5[0]==cfg_md5[0] && cur_MD5[1]==cfg_md5[1]) return SUCCESS;
 	}
 	
-	sprintf(CFG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CFG_path, "%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	CopyFile(CONFIG_path, CFG_path);
 	
 	return SUCCESS;
@@ -31679,16 +32290,16 @@ u16 MGZCONFIG()
 	u8 ret=0;
 	char CONFIG_path[128];
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += NETCONFIG;
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += GXCONFIG;
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += SOFTCONFIG;
 	
-	sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+	sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_path, PS2_ID);
 	if(path_info(CONFIG_path) == _FILE) ret += CUSTCONFIG;
 	
 	sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
@@ -31717,7 +32328,7 @@ u16 MGZCONFIG()
 			
 			md5_file(CONFIG_path, (u8 *) DB_CONFIG_MD5);
 			
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_path, PS2_ID);
 			
 			md5_file(CONFIG_path, (u8 *) MGZ_CONFIG_MD5);
 			
@@ -31823,16 +32434,16 @@ void CONFIG_check(char *IsoPath)
 				char CONFIG_path[128];
 				
 				if( strcmp(	CONFIG_STR[config_position], STR_CUSTOM) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+					sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_path, PS2_ID);
 				} else
 				if( strcmp(	CONFIG_STR[config_position], STR_NET) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
+					sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_path, PS2_ID);
 				} else
 				if( strcmp(	CONFIG_STR[config_position], STR_GX) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
+					sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_path, PS2_ID);
 				} else
 				if( strcmp(	CONFIG_STR[config_position], STR_SOFT) == 0) {
-					sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
+					sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_path, PS2_ID);
 				} else
 				if( strcmp(	CONFIG_STR[config_position], STR_DB_CUSTOM) == 0) {
 					sprintf(CONFIG_path, "/dev_hdd0/game/PS2CONFIG/USRDIR/CONFIG/CUSTOM/%s.CONFIG", PS2_ID);
@@ -32979,16 +33590,16 @@ void PS2_CONFIG_MENU_CROSS()
 			sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
 		} else
 		if(item_value_is(STR_NET)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/NET/%s.CONFIG", ManaGunZ_path, PS2_ID);
 		} else
 		if(item_value_is(STR_SOFT)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/SOFT/%s.CONFIG", ManaGunZ_path, PS2_ID);
 		} else
 		if(item_value_is(STR_GX)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/GX/%s.CONFIG", ManaGunZ_path, PS2_ID);
 		} else
 		if(item_value_is(STR_CUSTOM)) {
-			sprintf(CONFIG_path, "/dev_hdd0/game/%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_id, PS2_ID);
+			sprintf(CONFIG_path, "%s/USRDIR/sys/CONFIG/CUSTOM/%s.CONFIG", ManaGunZ_path, PS2_ID);
 		} else
 		if(item_value_is(STR_CURRENT)) {
 			sprintf(CONFIG_path, "%s.CONFIG", list_game_path[position]);
@@ -33202,8 +33813,8 @@ u32 Get_Original_PS2CRC()
 	char Rest[128];
 	char wsRest[128];
 	
-	sprintf(Rest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);	
-	sprintf(wsRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);	
+	sprintf(Rest, "%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_path, PS2CRC);	
+	sprintf(wsRest, "%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_path, PS2CRC);	
 	
 	int i;
 	u32 CRC=0;
@@ -33364,8 +33975,8 @@ void update_PS2CRC()
 	char old[255];
 	char new[255];
 	
-	sprintf(old, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnatchrest", ManaGunZ_id, PS2CRC);
-	sprintf(new, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnatchrest", ManaGunZ_id, new_PS2CRC);
+	sprintf(old, "%s/USRDIR/setting/PS2/%08X.pnatchrest", ManaGunZ_path, PS2CRC);
+	sprintf(new, "%s/USRDIR/setting/PS2/%08X.pnatchrest", ManaGunZ_path, new_PS2CRC);
 	
 	if( path_info(old) == _FILE) {
 		if( rename(old, new) != 0) {
@@ -33373,8 +33984,8 @@ void update_PS2CRC()
 		}
 	}
 	
-	sprintf(old, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
-	sprintf(new, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, new_PS2CRC);
+	sprintf(old, "%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_path, PS2CRC);
+	sprintf(new, "%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_path, new_PS2CRC);
 	
 	if( path_info(old) == _FILE) {
 		if( rename(old, new) != 0) {
@@ -33421,7 +34032,7 @@ u8 is_pnached()
 {
 	char PnachRest[128];
 	
-	sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);
+	sprintf(PnachRest, "%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_path, PS2CRC);
 	
 	if(path_info(PnachRest) == _NOT_EXIST) return NO; else
 	return YES;
@@ -33429,7 +34040,7 @@ u8 is_pnached()
 
 u8 Pnach_exist()
 {
-	sprintf(pnach, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnach", ManaGunZ_id, PS2ORICRC);
+	sprintf(pnach, "%s/USRDIR/setting/PS2/%08X.pnach", ManaGunZ_path, PS2ORICRC);
 	if(path_info(pnach) == _FILE) return YES;
 	
 	int i;
@@ -33664,7 +34275,7 @@ u8 apply_pnach(char *pnach_file, char *PnachRest)
 
 u8 WS_exist()
 {
-	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.ws", ManaGunZ_id, PS2ORICRC);
+	sprintf(WS, "%s/USRDIR/setting/PS2/%08X.ws", ManaGunZ_path, PS2ORICRC);
 	
 	if(path_info(WS) == _NOT_EXIST) return NO;
 	
@@ -33673,7 +34284,7 @@ u8 WS_exist()
 
 void get_WS()
 {
-	sprintf(WS, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.ws", ManaGunZ_id, PS2ORICRC);
+	sprintf(WS, "%s/USRDIR/setting/PS2/%08X.ws", ManaGunZ_path, PS2ORICRC);
 	
 	if(path_info(WS) != _NOT_EXIST) return;
 	
@@ -33681,7 +34292,7 @@ void get_WS()
 	char ZIP[128];
 	
 	sprintf(ZIP_WS, "%08X.pnach", PS2ORICRC);
-	sprintf(ZIP, "/dev_hdd0/game/%s/USRDIR/sys/ws.zip", ManaGunZ_id);
+	sprintf(ZIP, "%s/USRDIR/sys/ws.zip", ManaGunZ_path);
 	
 	ExtractZipFile(ZIP, ZIP_WS, WS);
 }
@@ -33690,7 +34301,7 @@ u8 is_WS()
 {
 	char WSRest[128];
 	
-	sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
+	sprintf(WSRest, "%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_path, PS2CRC);
 	
 	if(path_info(WSRest) == _NOT_EXIST) return NO; else
 	return YES;
@@ -33969,7 +34580,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_REST_PNACH)) {
 		start_loading();
 		char PnachRest[128];
-		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);
+		sprintf(PnachRest, "%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_path, PS2CRC);
 		u8 ret = restore_pnach(PnachRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg(STR_DONE);
@@ -33978,7 +34589,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_APPLY_PNACH)) {
 		start_loading();
 		char PnachRest[128];
-		sprintf(PnachRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_id, PS2CRC);
+		sprintf(PnachRest, "%s/USRDIR/setting/PS2/%08X.pnachrest", ManaGunZ_path, PS2CRC);
 		u8 ret = apply_pnach(pnach, PnachRest);
 		end_loading();
 		
@@ -33988,7 +34599,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_ENABLE_WS)) {
 		start_loading();
 		char WSRest[128];
-		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
+		sprintf(WSRest, "%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_path, PS2CRC);
 		u8 ret = apply_pnach(WS, WSRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg(STR_DONE);
@@ -33997,7 +34608,7 @@ u8 PS2_GAME_MENU_CROSS()
 	if(item_is(STR_DISABLE_WS)) {
 		start_loading();
 		char WSRest[128];
-		sprintf(WSRest, "/dev_hdd0/game/%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_id, PS2CRC);
+		sprintf(WSRest, "%s/USRDIR/setting/PS2/%08X.wsrest", ManaGunZ_path, PS2CRC);
 		u8 ret = restore_pnach(WSRest);
 		end_loading();
 		if( ret == SUCCESS) show_msg(STR_DONE);
@@ -34697,7 +35308,7 @@ char ps3_game_current_version[4]={0};
 void get_current_version(char *gameID)
 {
 	char sfo_path[255];
-	sprintf(sfo_path, "/dev_hdd0/game/%s/USRDIR/param.sfo", gameID);
+	sprintf(sfo_path, "%s/USRDIR/param.sfo", gameID);
 	
 	memset(ps3_game_current_version, 0, 4);
 	if( GetParamSFO("APP_VER", ps3_game_current_version, sfo_path)== FAILED) {
@@ -34717,9 +35328,9 @@ update_data *download_upd_xml(char *gameID, int *nPKG)
 	*nPKG = -1;
 	
 	sprintf(url, "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml", gameID, gameID);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/temp", ManaGunZ_id);
+	sprintf(dst, "%s/USRDIR/sys/temp", ManaGunZ_path);
 	mkdir(dst, 0777);
-	sprintf(dst, "/dev_hdd0/game/%s/USRDIR/sys/temp/%s.xml", ManaGunZ_id, list_game_ID[position]);
+	sprintf(dst, "%s/USRDIR/sys/temp/%s.xml", ManaGunZ_path, list_game_ID[position]);
 	
 	print_load("Downloading xml...");
 	if(download(url, dst) == FAILED) {
@@ -34872,14 +35483,16 @@ u8 PS3_UPDATE_MENU_START()
 	start_loading();
 	
 	int n;
+	task_Init(ps3_game_updates_number);
 	for(n=0; n<=ps3_game_updates_number; n++) {
 		if( ps3_game_updates[n].to_dl && !ps3_game_updates[n].pkg_exist ) {
-			print_head("Downloading update v%f", ps3_game_updates[n].pkgVers);
+			print_head("Downloading update v%05.2f", ps3_game_updates[n].pkgVers);
 			if( download(ps3_game_updates[n].url, ps3_game_updates[n].pkg_path) ) {
 				ps3_game_updates[n].pkg_exist = YES;
 			}
 		}
 	}
+	task_End();
 	
 	end_loading();
 	loading_can_turnoff =  NO;
@@ -35601,6 +36214,7 @@ void init_PS3_GAME_MENU()
 		}
 	}
 	
+	
 	if(have_payload == NO ) {
 		init_MENU();
 		add_title_MENU(STR_GAME_SETTINGS);
@@ -35618,8 +36232,10 @@ void init_PS3_GAME_MENU()
 			}
 			
 			if( HEN ) {
-				add_item_MENU("BDMIRROR", ITEM_TOGGLE);
-				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
+				if( PEEKnPOKE ) {
+					add_item_MENU("BDMIRROR", ITEM_TOGGLE);
+					ITEMS_VALUE_POSITION[ITEMS_NUMBER] = emu;
+				}
 			} else {
 				add_item_MENU(STR_BDEMU, ITEM_TEXTBOX);
 				add_item_value_MENU(STR_NONE);
@@ -35643,8 +36259,10 @@ void init_PS3_GAME_MENU()
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = mount_app_home;
 		
 		if(mount_app_home && !HEN) {
-			add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
-			ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
+			if( firmware != 0 ) {
+				add_item_MENU(STR_PATCH_EXP, ITEM_TOGGLE);
+				ITEMS_VALUE_POSITION[ITEMS_NUMBER] = use_ex_plug;
+			}
 		}
 		
 		add_item_MENU(STR_BT_AUDIO, ITEM_TOGGLE);
@@ -35680,17 +36298,21 @@ void init_PS3_GAME_MENU()
 			add_item_MENU(STR_JOIN, ITEM_TEXTBOX);
 		}
 		
-		add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);	
+		if( firmware != 0) {
+			add_item_MENU(STR_MAKE_SHTCUT_PKG, ITEM_TEXTBOX);	
+		}
 	}
 	
 	if( !HEN ) {
 		add_item_MENU(STR_PATCH_EBOOT, ITEM_TEXTBOX);
 		
 		if(iso==NO) {
-			if(is_resigned_GAME(list_game_path[position])==NO) {
-				add_item_MENU(STR_RESIGN, ITEM_TEXTBOX);
-			} else {
+			if(is_resigned_GAME(list_game_path[position])) {
 				add_item_MENU(STR_RESTORE, ITEM_TEXTBOX);
+			} else {
+				if( firmware != 0 ) {
+					add_item_MENU(STR_RESIGN, ITEM_TEXTBOX);
+				}
 			}
 		}
 	}
@@ -35782,6 +36404,7 @@ u8 PS3_GAME_MENU_CROSS()
 					show_msg(STR_DONE);
 				}
 			}
+			
 		}
 	} else 
 	if(item_is(STR_ADD_FAV)) {
@@ -36335,7 +36958,7 @@ u8 BDVD_MENU_CROSS()
 	if(item_is(STR_BUILD_ISO)) {
 		start_copy_loading();
 		char result_log[64]={0};
-		sprintf(result_log, "/dev_hdd0/game/%s/USRDIR/sys/result.log", ManaGunZ_id);
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
 		u8 ret = build_bdvd_iso(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], result_log);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
@@ -36345,7 +36968,7 @@ u8 BDVD_MENU_CROSS()
 	if(item_is(STR_DUMP_DEC)) {
 		start_copy_loading();
 		char result_log[64]={0};
-		sprintf(result_log, "/dev_hdd0/game/%s/USRDIR/sys/result.log", ManaGunZ_id);
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
 		u8 ret = dump_dec_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], result_log);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
@@ -36355,7 +36978,7 @@ u8 BDVD_MENU_CROSS()
 	if(item_is(STR_DUMP_ENC)) {
 		start_copy_loading();
 		char result_log[64]={0};
-		sprintf(result_log, "/dev_hdd0/game/%s/USRDIR/sys/result.log", ManaGunZ_id);
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
 		u8 ret = dump_enc_bdvd(ITEMS_VALUE[ITEMS_POSITION][ITEMS_VALUE_POSITION[ITEMS_POSITION]], result_log);
 		end_copy_loading();
 		if( ret ) show_msg(STR_DONE);
@@ -37071,7 +37694,7 @@ void Draw_AdjustScreen()
 	int Show_TVTEST=NO;
 	
 	char TVTEST[128];
-	sprintf(TVTEST, "/dev_hdd0/game/%s/USRDIR/GUI/common/TVTEST.PNG", ManaGunZ_id);
+	sprintf(TVTEST, "%s/USRDIR/GUI/common/TVTEST.PNG", ManaGunZ_path);
 
 	if(path_info(TVTEST) != _FILE) Show_TVTEST=-1;
 	
@@ -37298,9 +37921,7 @@ u8 input_COLOR(int n)
 	u8 alpha_inc = 0;
 	
 	u64 delay=0;
-	
-	u8 refresh_color = NO;
-	
+
 	if(NewPad(BUTTON_UP)) {
 		if(C_pos==0) C_pos=3;
 		else C_pos--;
@@ -37876,7 +38497,7 @@ void init_SETTINGS()
 	
 	FILE *f;
 	char ColorSetPath[128];
-	sprintf(ColorSetPath, "/dev_hdd0/game/%s/USRDIR/GUI/colorset.ini",  ManaGunZ_id);
+	sprintf(ColorSetPath, "%s/USRDIR/GUI/colorset.ini",  ManaGunZ_path);
 	f = fopen(ColorSetPath, "r");
 	if(f!=NULL) {
 		char *ColorSetName = NextColorSetName(f);
@@ -38714,8 +39335,8 @@ u8 SETTINGS_SQUARE()
 			strcpy(tmpName, Themes_Names_list[UI_position][Themes_position[UI_position]]);
 			if(Get_OSK_String(STR_RENAME, tmpName, 128) == SUCCESS) {
 				char old[128], new[128];
-				sprintf(old, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
-				sprintf(new, "/dev_hdd0/game/%s/USRDIR/GUI/%s/%s", ManaGunZ_id, UI[UI_position], tmpName);
+				sprintf(old, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], Themes_Names_list[UI_position][Themes_position[UI_position]]);
+				sprintf(new, "%s/USRDIR/GUI/%s/%s", ManaGunZ_path, UI[UI_position], tmpName);
 				if( rename(old, new) == 0 ) {
 					strcpy(Themes_Names_list[UI_position][Themes_position[UI_position]], tmpName);
 					show_msg(STR_DONE);
@@ -39075,19 +39696,35 @@ void open_SETTINGS()
 // MODE AutoMount
 //*******************************************************
 
+
 u8 is_AutoMount()
 {
 	FILE* fp;
 	fp = fopen("/dev_hdd0/vsh/pushlist/game.dat", "rb");
-	if(fp==NULL) return FAILED;
-	fread(ManaGunZ_id, 9, 1, fp);
-	fclose(fp);
+	if(fp!=NULL) {	
+		fread(ManaGunZ_id, 9, 1, fp);
+		fclose(fp);
+	} else {
+// for RPCS3
+		RPCS3=YES;
+#ifdef FILEMANAGER
+		strcpy(ManaGunZ_id, "FILEMANAG");
+#else
+		strcpy(ManaGunZ_id, "MANAGUNZ0");
+#endif
+	}
 	ManaGunZ_id[9]=0;
-	
 	//_sys_process_get_paramsfo(ManaGunZ_id);
 	
+//testing...
+#ifdef _BDVD_BUILD_
+	ManaGunZ_path = strcpy_malloc("/dev_bdvd/PS3_GAME");
+#else
+	ManaGunZ_path = sprintf_malloc("/dev_hdd0/game/%s", ManaGunZ_id);
+#endif
+	
 	char M_path[128];
-	sprintf(M_path, "/dev_hdd0/game/%s/USRDIR/AutoMount", ManaGunZ_id);
+	sprintf(M_path, "%s/USRDIR/AutoMount", ManaGunZ_path);
 	
 	if(path_info(M_path) == _NOT_EXIST) return NO;
 	
@@ -42382,9 +43019,9 @@ void input_MAIN()
 	if(txt_viewer_activ == YES) return;
 	
 	int i,j,k;
-		
+	
 	R2_SyncLeftJoystick();
-		
+	
 	if(HoldCircleDelay()) {
 		MGZ_exit();
 		exit(0);
@@ -42420,15 +43057,17 @@ void input_MAIN()
 			
 			end_loading();
 			
-#ifdef RPCS3
-			if(mounted) show_msg("EXIT !");
-			else show_msg("FAILED : EXIT !");
-#else
-			if(mounted) {
-				MGZ_exit();
-				exit(0);
+			if( RPCS3 ) {
+				if(mounted) show_msg("RPCS3 : mounted !");
+				else show_msg("RPCS3 : failed to mount !");
+			} else {
+				if(mounted) {
+					MGZ_exit();
+					exit(0);
+				} else {
+					show_msg("failed to mount !");
+				}
 			}
-#endif
 		} else {
 			show_msg(STR_CANT_MOUNT);
 		}
@@ -42870,6 +43509,7 @@ u8 Show_it(int pos)
 void MGZ_exit()
 {
 	if( DEBUG ) start_loading();
+	FREE(ManaGunZ_path);
 	print_debug("end_PlugAndPlay");
 	end_PlugAndPlay();
 	print_debug("end_MemMonitor");
@@ -42912,21 +43552,6 @@ int main(void)
 	SetCurrentFont(-1);
 
 	AutoMountCheckPad();
-	
-#ifdef RPCS3
-#ifdef FILEMANAGER
-	strcpy(ManaGunZ_id, "FILEMANAG");
-#else
-	strcpy(ManaGunZ_id, "MANAGUNZ0");
-#endif //  FILEMANAGER
-	cobra = NO;
-	mamba = NO;
-	HEN = YES;
-	device_number++;
-	strcpy(list_device[device_number], "dev_hdd0");
-	//device_number++;
-	//strcpy(list_device[device_number], "dev_usb000");
-#endif // RPCS3
 
 	read_setting(); //it needs ManaGunZ_id
 
@@ -42944,9 +43569,10 @@ int main(void)
 		PEEKnPOKE = NO;
 	else
 		PEEKnPOKE = YES;
-
-	print_load("Initialization");
 	
+	if( test_peek == 0x80010003ULL ) RPCS3 = YES;
+	
+	print_load("Initialization");
 	if(PEEKnPOKE) {
 		if(init_fw() == FAILED) {
 			HEN	= is_HEN(); // it initied later inside init_ManaGunZ
@@ -42960,14 +43586,15 @@ int main(void)
 	}
 	
 	//init_MAP_PATHS_LIST();
-	
+
 #ifdef FILEMANAGER
 
-#ifndef RPCS3
+	print_debug("getDevices");
 	getDevices();
+	print_debug("is_cobra");
 	cobra = is_cobra();
+	print_debug("is_mamba");
 	mamba = is_mamba();
-#endif // RPCS3
 
 	print_load(STR_ADJUST);
 	adjust_screen();
@@ -42982,7 +43609,6 @@ int main(void)
 	return 0;
 #endif // FILEMANAGER
 	
-#ifndef RPCS3
 	if(init_ManaGunZ() == FAILED) {
 		end_loading();
 		LoopBreak=1;
@@ -43010,8 +43636,7 @@ int main(void)
 				return 0;
 			}
 		}
-	}
-#endif	
+	}	
 	
 	if(AutoM) AutoMount();	
 
