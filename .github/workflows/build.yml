@@ -13,63 +13,31 @@ jobs:
           shell: bash
     steps:
     - uses: actions/checkout@v2
-    - name: Install build requirements
+    - name: Install build dependencies
       run: ./.github/scripts/req.sh
-    - name: Build release
+    - name: Build packages
       run: |
-        wget --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.27_045936/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
+        wget -q --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.27_045936/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
         tar -C /usr/local/ -xzf psdk.tar.gz
         . ./.github/scripts/env.sh
         export CSHA=${GITHUB_SHA:0:7}
         export TAIL="Nightly_${CSHA}"
         make pkg && export FILEMANAGER=1 && make pkg
         export TAGGY="nightly_${CSHA}" && ./.github/scripts/name.sh
-    - name: Remove previous release
-      uses: dev-drprasad/delete-tag-and-release@v0.2.0
+    - name: Delete old assets
+      uses: mknejp/delete-release-assets@v1
       with:
-        delete_release: true
-        tag_name: nightly
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Uploading ManaGunZ
-      id: upload_mgz_1
-      continue-on-error: true
-      uses: softprops/action-gh-release@v1
+        token: ${{ github.token }}
+        tag: nightly
+        assets: '*.pkg'
+    - name: Create release
+      uses: iTrooz/action-gh-release@update_tag
       with:
-        name: "Nightly Releases"
+        name: "Nightly Release"
         tag_name: nightly
-        body: "- Non-tested nightly binaries. See commit log [here](https://github.com/Zarh/ManaGunZ/commits/master) for included features and fixes."
-        files: ./ManaGunZ*.pkg
-        prerelease: true
-    - name: Uploading ManaGunZ (#2)
-      id: upload_mgz_2
-      if: steps.upload_mgz_1.outcome == 'failure'
-      continue-on-error: true
-      uses: softprops/action-gh-release@v1
-      with:
-        name: "Nightly Releases"
-        tag_name: nightly
-        body: "- Non-tested nightly binaries. See commit log [here](https://github.com/Zarh/ManaGunZ/commits/master) for included features and fixes."
-        files: ./ManaGunZ*.pkg
-        prerelease: true
-    - name: Uploading FileManager
-      id: upload_fmg_1
-      continue-on-error: true
-      uses: softprops/action-gh-release@v1
-      with:
-        name: "Nightly Releases"
-        tag_name: nightly
-        body: "- Non-tested nightly binaries. See commit log [here](https://github.com/Zarh/ManaGunZ/commits/master) for included features and fixes."
-        files: ./FileManager*.pkg
-        prerelease: true
-    - name: Uploading FileManager (#2)
-      id: upload_fmg_2
-      if: steps.upload_fmg_1.outcome == 'failure'
-      continue-on-error: true
-      uses: softprops/action-gh-release@v1
-      with:
-        name: "Nightly Releases"
-        tag_name: nightly
-        body: "- Non-tested nightly binaries. See commit log [here](https://github.com/Zarh/ManaGunZ/commits/master) for included features and fixes."
-        files: ./FileManager*.pkg
+        body: "Up-to-date packages including the latest updates to the repository.\n- Unless otherwise specified, this release has not been thoroughly tested.\n- For included changes, see the [commit log](https://github.com/Zarh/ManaGunZ/commits/master).\n\nUse at your own risk."
+        files: |
+          ./ManaGunZ*.pkg
+          ./FileManager*.pkg
+        update_tag: true
         prerelease: true
