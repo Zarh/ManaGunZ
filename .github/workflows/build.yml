@@ -17,7 +17,7 @@ jobs:
       run: ./.github/scripts/req.sh
     - name: Build packages
       run: |
-        wget -q --no-check-certificate https://github.com/PS3SDK-Misc/SDK-Build/releases/download/2022.01.27_045936/psdk3-linux-bullseye.tar.gz -O psdk.tar.gz
+        wget -q --no-check-certificate https://github.com/MiscPS3/NixSDK/releases/download/2023.09.17/bullseye-sdk.tar.gz -O psdk.tar.gz
         tar -C /usr/local/ -xzf psdk.tar.gz
         . ./.github/scripts/env.sh
         export CSHA=${GITHUB_SHA:0:7}
