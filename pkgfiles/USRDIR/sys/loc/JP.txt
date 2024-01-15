@@ -1,7 +1,7 @@
 STR_LANGUAGE                  {日本語}
 STR_LANGCODE                  {\x08}
 
-STR_LANG                      {言語)}
+STR_LANG                      {言語}
 STR_LANG_DESC                 {言語を選択...}
 STR_GATHERING                 {データを収集中です...}
 STR_COPYING                   {コピー中...}
