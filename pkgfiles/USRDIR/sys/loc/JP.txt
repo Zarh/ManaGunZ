@@ -12,7 +12,7 @@ STR_DIRS                      {フォルダー数}
 STR_UNKNOWN                   {不明}
 STR_FILE                      {ファイル名}
 STR_CANCEL                    {キャンセル}
-STR_TURNOFF                   {オフにする}
+STR_TURNOFF                   {完了後、電源を切る}
 STR_CANCELLED                 {キャンセルされました}
 STR_UNIT                      {バイト}
 STR_TOTALSIZE                 {総サイズ}
