@@ -381,7 +381,7 @@ STR_SYSTEM_TOOLS              {本体ツール}
 STR_DECRYPT_NPDATA            {edat/sdatを復号化}
 STR_REDUMP_LOG                {GetKeyダンプを生成する}
 STR_REDUMP_LOG_DESC           {redump.orgの投稿に必要なファイルを生成します。}
-STR_DUMP_OPTION               {Blu-ray Disc™をダンプする}
+STR_DUMP_OPTION               {Blu-ray Disc™ダンプの設定}
 STR_IGNORE_ERR                {エラーを無視する}
 STR_IGNORE_ERR_DESC           {Blu-ray Disc™のダンプ中にエラーを無視します。}
 STR_3K3Y_HEADER               {3k3yヘッダーを含める}
@@ -406,11 +406,11 @@ STR_MOUNT_BD                  {BDとしてマウント}
 STR_MOUNT_DVD                 {DVDとしてマウント}
 STR_SHOWLOGS_DESC             {ロード画面中に現在のタスクについてのメッセージを表示する。}
 STR_OVERWRITE                 {上書きする}
-STR_OVERWRITE_DESC            {既存ファイルの上書きを制御する。}
-STR_OVERWRITE_ALWAYS          {常に}
-STR_OVERWRITE_NEVER           {しない}
+STR_OVERWRITE_DESC            {既存ファイルの上書きを設定する。}
+STR_OVERWRITE_ALWAYS          {入}
+STR_OVERWRITE_NEVER           {切}
 STR_OVERWRITE_ASK             {毎回確認する}
-STR_OVERWRITE_DUPLICATE       {重複}
+STR_OVERWRITE_DUPLICATE       {重複ファイルを作成}
 STR_ASK_TO_OVERWRITE          {ファイルは既に存在します。 既存のファイルを上書きしてもよろしいですか？}
 STR_ASK_TO_DELETE             {削除してもよろしいですか？}
 STR_DUMPER_MAX_TRY            {読み込み試行}
