@@ -143,7 +143,7 @@ STR_OPEN_WINDOW               {新しいウィンドウを開く}
 STR_DUMP_LV1                  {lv1のダンプ}
 STR_DUMP_LV2                  {lv2のダンプ}
 STR_DUMP_FLASH                {フラッシュのダンプ}
-STR_REFRESH                   {再フレッシュ}
+STR_REFRESH                   {更新}
 STR_NEWFOLDER                 {新しいフォルダー}
 STR_NEWFILE                   {新しいファイル}
 STR_PASTE                     {貼り付け}
