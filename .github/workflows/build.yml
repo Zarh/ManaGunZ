@@ -1,18 +1,18 @@
-name: nightly
+name: release
 
-on: 
-  push
+on:
+  workflow_dispatch
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     container:
       image: debian:bullseye
     defaults:
         run:
           shell: bash
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Install build dependencies
       run: ./.github/scripts/req.sh
     - name: Build packages
@@ -20,24 +20,16 @@ jobs:
         wget -q --no-check-certificate https://github.com/MiscPS3/NixSDK/releases/download/2023.09.17/bullseye-sdk.tar.gz -O psdk.tar.gz
         tar -C /usr/local/ -xzf psdk.tar.gz
         . ./.github/scripts/env.sh
-        export CSHA=${GITHUB_SHA:0:7}
-        export TAIL="Nightly_${CSHA}"
+        export C_DATE=$(date +'%m/%d/%Y')
+        export C_SHA=${GITHUB_SHA:0:5}
         make pkg && export FILEMANAGER=1 && make pkg
-        export TAGGY="nightly_${CSHA}" && ./.github/scripts/name.sh
-    - name: Delete old assets
-      uses: mknejp/delete-release-assets@v1
-      with:
-        token: ${{ github.token }}
-        tag: nightly
-        assets: '*.pkg'
     - name: Create release
-      uses: iTrooz/action-gh-release@update_tag
+      uses: softprops/action-gh-release@v2
       with:
-        name: "Nightly Release"
-        tag_name: nightly
-        body: "Up-to-date packages including the latest updates to the repository.\n- Unless otherwise specified, this release has not been thoroughly tested.\n- For included changes, see the [commit log](https://github.com/Zarh/ManaGunZ/commits/master).\n\nUse at your own risk."
+        name: "Automatic Release  ${{ vars.C_DATE }}"
+        body: "Includes latest changes to the repository, not thoroughly tested."
+        tag_name: "v${{ vars.C_SHA }}"
         files: |
           ./ManaGunZ*.pkg
           ./FileManager*.pkg
-        update_tag: true
         prerelease: true
