@@ -5,7 +5,7 @@
 #include "extern.h"
 
 // todo : include this with offsetfinder
-#define LAST_FW(x)   (x##_491C)
+#define LAST_FW(x)   (x##_492C)
 
 u8 compare(u8 ignore, char *mem, char *flag, u32 size)
 {
