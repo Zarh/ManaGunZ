@@ -279,5 +279,28 @@
 #include "ps2gxemu_stage2_489C_bin.h"
 #include "ps2netemu_stage2_489C_bin.h"
 
+#include "ps2hwemu_stage1_490C_bin.h"
+#include "ps2hwemu_stage2_490C_bin.h"
+#include "ps2gxemu_stage1_490C_bin.h"
+#include "ps2gxemu_stage2_490C_bin.h"
+#include "ps2netemu_stage2_490C_bin.h"
+
+#include "ps2hwemu_stage1_491C_bin.h"
+#include "ps2hwemu_stage2_491C_bin.h"
+#include "ps2gxemu_stage1_491C_bin.h"
+#include "ps2gxemu_stage2_491C_bin.h"
+#include "ps2netemu_stage2_491C_bin.h"
+
+#include "ps2hwemu_stage1_492C_bin.h"
+#include "ps2hwemu_stage2_492C_bin.h"
+#include "ps2gxemu_stage1_492C_bin.h"
+#include "ps2gxemu_stage2_492C_bin.h"
+#include "ps2netemu_stage2_492C_bin.h"
+
+#include "ps2hwemu_stage1_493C_bin.h"
+#include "ps2hwemu_stage2_493C_bin.h"
+#include "ps2gxemu_stage1_493C_bin.h"
+#include "ps2gxemu_stage2_493C_bin.h"
+#include "ps2netemu_stage2_493C_bin.h"
 
 #endif /* __PS2DATA_H__ */
