@@ -8,7 +8,7 @@
 // everything after "net0:" is the path on the server, relative to its root.
 //
 // The server is configured in <ManaGunZ>/USRDIR/setting/net.txt, one line per
-// server: "net0=192.168.1.9:38008" (only net0 is used for now). Without that
+// server: "net0=192.168.1.100:38008" (only net0 is used for now). Without that
 // file the network device does not exist.
 //
 // ps3netsrv accepts only ONE connection per client IP (a new connection from
