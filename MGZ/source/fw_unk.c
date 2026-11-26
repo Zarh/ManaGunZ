@@ -3,6 +3,7 @@
 
 #include "fw_unk.h"
 #include "extern.h"
+#include "data.h"
 
 // todo : include this with offsetfinder
 #define LAST_FW(x)   (x##_488C)
@@ -455,8 +456,20 @@ u8 try_latest_fw()
 	
 	MACRO_CHECK_LV1(SPE_OFFSET, 0, flag_spe, 0xFF);
 	
-	MACRO_CHECK_LV1(HV_START_OFFSET, -0xA8, flag_hv_start_offset, 0xBB);
-	
+	// HV_START_OFFSET : the full flag_hv_start_offset pattern also covers the bytes
+	// before the entry (offsets 0x00-0x9F), which are runtime data and differ between
+	// consoles/boots (e.g. on 4.92 CEX 0x370E90 holds 0xFF..FF and 0x370EF0-0x370F17
+	// is zeroed), so it rejected an unchanged lv1. Only check the stable part:
+	// 0x8000000000000000 at -8, then the 8-byte value + 20-byte hash, then zero padding.
+	print_debug("HV_START_OFFSET");
+	memset(mem, 0, 0x1000);
+	TEMP_HV_START_OFFSET = LAST_FW(HV_START_OFFSET);
+	MEM_lv1peek((u64) (TEMP_HV_START_OFFSET - 0x8), (char *) mem, 0x30);
+	if(!compare(0xBB, (char *) mem, (char *) &flag_hv_start_offset[0xA0], 0x30)) {
+		print_debug("Not the same HV_START_OFFSET");
+		return FAILED;
+	}
+
 	TOC=TEMP_TOC;
 	FW_DATE_OFFSET=TEMP_FW_DATE_OFFSET;
 	FW_DATE_1=TEMP_FW_DATE_1;
@@ -491,11 +504,38 @@ u8 try_latest_fw()
 
 }
 
+// Firmwares newer than the last known one (4.90+) reuse the 4.84-4.89 lv1/lv2 layout.
+// The offsets are found (or validated) by try_latest_fw()/read_fw_unk(), but the
+// firmware-specific payloads were never set, so features like the eid_root_key
+// dumper (needed for "Dump decrypted Blu-Ray disc") reported "firmware not supported".
+// When the lv1 offsets the eid_root_key dumper patches are exactly the last known
+// firmware's, the last known firmware's dumper payload is the right one: it is
+// byte-identical for 4.84C..4.89C.
+static void set_latest_fw_erk_dumper()
+{
+	if( ERK_DUMPER_SIZE != 0 ) return;
+	
+	if( HV_START_OFFSET != LAST_FW(HV_START_OFFSET)
+	||  HTAB_OFFSET     != LAST_FW(HTAB_OFFSET)
+	||  MMAP_OFFSET1    != LAST_FW(MMAP_OFFSET1)
+	||  MMAP_OFFSET2    != LAST_FW(MMAP_OFFSET2)
+	||  SPE_OFFSET      != LAST_FW(SPE_OFFSET)
+	||  SYSCALL_TABLE   != LAST_FW(SYSCALL_TABLE) )
+	{
+		print_debug("set_latest_fw_erk_dumper: offsets differ from the last known fw, erk dumper not set");
+		return;
+	}
+	
+	ERK_DUMPER_SIZE = erk_dumper_489C_bin_size;
+	ERK_DUMPER = (u64 *) erk_dumper_489C_bin;
+	print_debug("set_latest_fw_erk_dumper: using the 4.89C eid_root_key dumper");
+}
+
 u8 init_fw_unk()
 {		
-	if( read_fw_unk() == SUCCESS) return SUCCESS;
-	if( is_scanned() == SUCCESS) return SUCCESS;
-	if( try_latest_fw() == SUCCESS) return SUCCESS;
+	if( read_fw_unk() == SUCCESS) { set_latest_fw_erk_dumper(); return SUCCESS; }
+	if( is_scanned() == SUCCESS) { set_latest_fw_erk_dumper(); return SUCCESS; }
+	if( try_latest_fw() == SUCCESS) { set_latest_fw_erk_dumper(); return SUCCESS; }
 	
 	print_load("New firmware, searching for the new offsets...");
 	
@@ -699,6 +739,8 @@ u8 init_fw_unk()
 	}
 	
 	save_fw_unk();
+	
+	set_latest_fw_erk_dumper();
 	
 	return SUCCESS;
 }
