@@ -3,6 +3,7 @@
 
 #include "fw_unk.h"
 #include "extern.h"
+#include "data.h"
 
 // todo : include this with offsetfinder
 #define LAST_FW(x)   (x##_488C)
@@ -491,11 +492,38 @@ u8 try_latest_fw()
 
 }
 
+// Firmwares newer than the last known one (4.90+) reuse the 4.84-4.89 lv1/lv2 layout.
+// The offsets are found (or validated) by try_latest_fw()/read_fw_unk(), but the
+// firmware-specific payloads were never set, so features like the eid_root_key
+// dumper (needed for "Dump decrypted Blu-Ray disc") reported "firmware not supported".
+// When the lv1 offsets the eid_root_key dumper patches are exactly the last known
+// firmware's, the last known firmware's dumper payload is the right one: it is
+// byte-identical for 4.84C..4.89C.
+static void set_latest_fw_erk_dumper()
+{
+	if( ERK_DUMPER_SIZE != 0 ) return;
+	
+	if( HV_START_OFFSET != LAST_FW(HV_START_OFFSET)
+	||  HTAB_OFFSET     != LAST_FW(HTAB_OFFSET)
+	||  MMAP_OFFSET1    != LAST_FW(MMAP_OFFSET1)
+	||  MMAP_OFFSET2    != LAST_FW(MMAP_OFFSET2)
+	||  SPE_OFFSET      != LAST_FW(SPE_OFFSET)
+	||  SYSCALL_TABLE   != LAST_FW(SYSCALL_TABLE) )
+	{
+		print_debug("set_latest_fw_erk_dumper: offsets differ from the last known fw, erk dumper not set");
+		return;
+	}
+	
+	ERK_DUMPER_SIZE = erk_dumper_489C_bin_size;
+	ERK_DUMPER = (u64 *) erk_dumper_489C_bin;
+	print_debug("set_latest_fw_erk_dumper: using the 4.89C eid_root_key dumper");
+}
+
 u8 init_fw_unk()
 {		
-	if( read_fw_unk() == SUCCESS) return SUCCESS;
-	if( is_scanned() == SUCCESS) return SUCCESS;
-	if( try_latest_fw() == SUCCESS) return SUCCESS;
+	if( read_fw_unk() == SUCCESS) { set_latest_fw_erk_dumper(); return SUCCESS; }
+	if( is_scanned() == SUCCESS) { set_latest_fw_erk_dumper(); return SUCCESS; }
+	if( try_latest_fw() == SUCCESS) { set_latest_fw_erk_dumper(); return SUCCESS; }
 	
 	print_load("New firmware, searching for the new offsets...");
 	
@@ -699,6 +727,8 @@ u8 init_fw_unk()
 	}
 	
 	save_fw_unk();
+	
+	set_latest_fw_erk_dumper();
 	
 	return SUCCESS;
 }
