@@ -12,6 +12,7 @@
 	
 #define TYPE_NTFS	0 // ntfs lib support file system
 #define TYPE_EXFAT	1
+#define TYPE_NET	2
 
 //extern u8 SetFilePerms(char *path);
 
@@ -19,6 +20,8 @@ int MGZ_truncate(char *path, u64 len)
 {
     int ret;
     int fd;
+
+	if( is_net(path) ) return -1; // not supported by ps3netsrv
 
 	if( is_exFAT(path) ) {
 		
@@ -60,6 +63,20 @@ int MGZ_truncate(char *path, u64 len)
 
 MGZ_FILE* MGZ_fopen(char *filepath, const char *mode)
 {	
+	if( is_net(filepath) ) {
+		net_file_t *net = net_fopen(filepath, mode);
+		if( net == NULL ) return NULL;
+		MGZ_FILE *mgz_file = (MGZ_FILE *) malloc(sizeof(MGZ_FILE));
+		if(mgz_file == NULL) {
+			net_fclose(net);
+			return NULL;
+		}
+		memset(mgz_file, 0, sizeof(MGZ_FILE));
+		mgz_file->type = TYPE_NET;
+		mgz_file->net = net;
+		return mgz_file;
+	}
+	
 	u8 exfat = is_exFAT(filepath); 	
 	
 	int oflags;
@@ -118,6 +135,7 @@ MGZ_FILE* MGZ_fopen(char *filepath, const char *mode)
 s64 MGZ_fseek(MGZ_FILE* mgz_file, s64 pos, int whence)
 {
 	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_seek64(mgz_file->fd, (s64) pos, whence);
+	if(mgz_file->type==TYPE_NET) return net_fseek(mgz_file->net, pos, whence);
 		
 	FRESULT res = -1;
 	
@@ -134,6 +152,7 @@ s64 MGZ_fseek(MGZ_FILE* mgz_file, s64 pos, int whence)
 size_t MGZ_fread(void *ptr, size_t size, size_t count, MGZ_FILE* mgz_file)
 {
 	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_read(mgz_file->fd, (char*)ptr, size*count);
+	if(mgz_file->type==TYPE_NET) return net_fread(mgz_file->net, ptr, (u64) size*count);
 	
 	u32 br=0;
 	
@@ -145,6 +164,7 @@ size_t MGZ_fread(void *ptr, size_t size, size_t count, MGZ_FILE* mgz_file)
 size_t MGZ_fwrite(void *ptr, size_t size, size_t count, MGZ_FILE* mgz_file)
 {
 	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_write(mgz_file->fd, (char*)ptr, size*count);
+	if(mgz_file->type==TYPE_NET) return net_fwrite(mgz_file->net, ptr, (u64) size*count);
 	
 	u32 bw=0;
 	
@@ -172,6 +192,21 @@ char *MGZ_fgets(char *str, int length, MGZ_FILE* mgz_file)
 		
 		return str;
 	}
+	if(mgz_file->type==TYPE_NET) {
+		char c;
+		int count=0;
+		if(length==0) return NULL;
+		
+		memset(str, 0, length);
+		while(count < length-1 && net_fread(mgz_file->net, &c, 1) == 1)
+		{	
+			str[count++]=c;
+			if(c=='\n' || c==0) break;
+		}
+		if(count == 0) return NULL;
+		
+		return str;
+	}
 	
 	return f_gets(str, length, &mgz_file->fp);
 }
@@ -179,6 +214,7 @@ char *MGZ_fgets(char *str, int length, MGZ_FILE* mgz_file)
 int MGZ_fputs(char *str, MGZ_FILE* mgz_file)
 {
 	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_write(mgz_file->fd, str, strlen(str));
+	if(mgz_file->type==TYPE_NET) return net_fwrite(mgz_file->net, str, strlen(str));
 	
 	return f_puts(str, &mgz_file->fp);
 }
@@ -189,6 +225,7 @@ int MGZ_fclose(MGZ_FILE* mgz_file)
 	
 	if(mgz_file->type==TYPE_NTFS) ret=ps3ntfs_close(mgz_file->fd);
 	if(mgz_file->type==TYPE_EXFAT) ret=f_close(&mgz_file->fp);
+	if(mgz_file->type==TYPE_NET) ret=net_fclose(mgz_file->net);
 	
 	FREE(mgz_file);
 	
@@ -200,6 +237,7 @@ int MGZ_fclose(MGZ_FILE* mgz_file)
 u64 MGZ_ftell(MGZ_FILE* mgz_file)
 {
 	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_seek64(mgz_file->fd, 0, SEEK_CUR);
+	if(mgz_file->type==TYPE_NET) return net_ftell(mgz_file->net);
 	
 	return f_tell(&mgz_file->fp);
 }
@@ -210,6 +248,10 @@ char MGZ_fgetc(MGZ_FILE* mgz_file)
 	
 	if(mgz_file->type==TYPE_NTFS) {
 		if( ps3ntfs_read(mgz_file->fd, &c, 1) != 1) return -1;
+		return c;
+	} else
+	if(mgz_file->type==TYPE_NET) {
+		if( net_fread(mgz_file->net, &c, 1) != 1) return -1;
 		return c;
 	} else
 	if(mgz_file->type==TYPE_EXFAT) {
@@ -226,6 +268,7 @@ char MGZ_fgetc(MGZ_FILE* mgz_file)
 char MGZ_fputc(char c, MGZ_FILE* mgz_file)
 {
 	if(mgz_file->type==TYPE_NTFS) ps3ntfs_write(mgz_file->fd, (const char *) &c, 1);
+	if(mgz_file->type==TYPE_NET) return net_fwrite(mgz_file->net, &c, 1) == 1 ? c : -1;
 	
 	if(mgz_file->type==TYPE_EXFAT) return f_putc(c, &mgz_file->fp);
 	
@@ -248,6 +291,7 @@ int MGZ_fflush(MGZ_FILE *mgz_file)
 	if(mgz_file->type==TYPE_NTFS) return ps3ntfs_fsync(mgz_file->fd);
 	
 	if(mgz_file->type==TYPE_EXFAT) return f_sync(&mgz_file->fp);
+	if(mgz_file->type==TYPE_NET) return 0; // every write is already sent
 	
 	return -1;
 }
@@ -294,12 +338,14 @@ int MGZ_fprintf(MGZ_FILE *mgz_file, const char *fmt, ...)
 
 int MGZ_rename(char *old_path, char *new_path)
 {
+	if( is_net(old_path) || is_net(new_path) ) return -1; // not supported by ps3netsrv
 	if( is_exFAT(old_path) && is_exFAT(new_path)) return f_rename(old_path, new_path);
 	return ps3ntfs_rename(old_path, new_path);
 }
 
 int MGZ_unlink(char *path)
 {
+	if( is_net(path) ) return net_unlink(path);
 	if( is_exFAT(path) ) return f_unlink(path);
 	
 	return ps3ntfs_unlink(path);
@@ -307,6 +353,7 @@ int MGZ_unlink(char *path)
 
 int MGZ_mkdir(char *path, int mode)
 {
+	if( is_net(path) ) return net_mkdir(path);
 	if( is_exFAT(path) ) {
 		FRESULT res = f_mkdir(path);
 		if( res!= FR_OK) return -1;
@@ -324,6 +371,7 @@ int MGZ_mkdir(char *path, int mode)
 
 int MGZ_stat(char *path, struct stat *st)
 {
+	if( is_net(path) ) return net_stat(path, st);
 	if(is_exFAT(path)) {
 		FILINFO fno;
 		
@@ -359,6 +407,16 @@ MGZ_DIR* MGZ_opendir(char *path)
 		return NULL;
 	}
 	
+	if( is_net(path) ) {
+		mgz_dir->type = TYPE_NET;
+		mgz_dir->net = net_opendir(path);
+		if(mgz_dir->net == NULL) {
+			FREE(mgz_dir->dir);
+			FREE(mgz_dir);
+		}
+		return mgz_dir;
+	}
+	
 	u8 exfat = is_exFAT(path);
 	
 	mgz_dir->type = exfat;
@@ -384,6 +442,9 @@ MGZ_DIR* MGZ_opendir(char *path)
 int MGZ_closedir(MGZ_DIR *mgz_dir)
 {
 	int res = -1;
+	if(mgz_dir->type == TYPE_NET) {
+		res = net_closedir(mgz_dir->net);
+	} else
 	if(mgz_dir->type == TYPE_EXFAT) {
 		res = f_closedir(&mgz_dir->fdir);
 	} else {
@@ -418,6 +479,14 @@ struct dirent *MGZ_readdir(MGZ_DIR *mgz_dir)
 			d->d_type = DT_REG;
 		}
 		
+		return d;
+	}
+	
+	if(mgz_dir->type == TYPE_NET) {
+		u8 is_dir = 0;
+		if( net_readdir(mgz_dir->net, d->d_name, sizeof(d->d_name), &is_dir, NULL) != 0 ) return NULL;
+		d->d_namlen = strlen(d->d_name);
+		d->d_type = is_dir ? DT_DIR : DT_REG;
 		return d;
 	}
 	

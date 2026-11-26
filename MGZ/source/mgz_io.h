@@ -10,6 +10,7 @@
 #include "ff.h"
 #include "ntfs.h"
 #include "exFAT.h"
+#include "net_io.h"
 
 #define FREE(x) if(x!=NULL) {free(x);x=NULL;}
 
@@ -18,6 +19,7 @@
 	
 #define TYPE_NTFS	0 // ntfs lib support file system
 #define TYPE_EXFAT	1
+#define TYPE_NET	2 // ps3netsrv, see net_io.h
 
 typedef struct {
 	int type;
@@ -27,6 +29,9 @@ typedef struct {
 	
 // ntfs
 	int fd;
+	
+// net
+	net_file_t *net;
 } MGZ_FILE;
 
 int MGZ_truncate(char *path, u64 len);
@@ -92,6 +97,9 @@ typedef struct {
 	
 // ntfs
 	DIR_ITER *dir_iter;
+	
+// net
+	net_dir_t *net;
 	
 // readdir
 	struct dirent *dir;

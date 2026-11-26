@@ -519,6 +519,21 @@ char ManaGunZ_id[10];
 
 char *ManaGunZ_path=NULL;
 
+#define STR_UPDATES_TO_NET "Copy game updates to net0 (PKG)"
+// copy downloaded game updates to /net0:/PKG as well (needs net0 in setting/net.txt)
+static u8 UPDATES_TO_NET = YES;
+
+#define STR_DUMP_DEC_NET  "Dump decrypted Blu-ray to net0 (PS3ISO)"
+#define STR_DUMP_ENC_NET  "Dump encrypted Blu-ray to net0 (PS3ISO)"
+#define STR_BUILD_ISO_NET "Build ISO to net0 (PS3ISO)"
+#define STR_NET_SERVER    "Network server (net0)"
+#define STR_NET_SERVER_DESC "PC running ps3netsrv to dump to, as IP or IP:port (default port 38008). Saved in setting/net.txt. Leave empty to turn net0 off."
+
+static void net_cfg_path(char *path)
+{
+	sprintf(path, "%s/USRDIR/setting/net.txt", ManaGunZ_path);
+}
+
 static int position_CURPIC=-1;
 
 static u8 RPCS3=NO;
@@ -2075,6 +2090,7 @@ u8 support_big_files(char *path)
 {
 	if( is_exFAT(path) ) return YES;
 	if( is_ntfs(path) ) return YES;
+	if( is_net(path) ) return YES;
 	if( strncmp(path, "/dev_hdd0", 9) == 0) return YES;
 	
 	return NO;
@@ -11186,6 +11202,9 @@ u64 GetFreeSpace(char *path)
 
 	u64 freeSize = 0;
 	u32 blockSize;
+	if(is_net(temp)) {
+		freeSize = 0x0004000000000000ULL; // unknown (ps3netsrv has no free space command)
+	} else
 	if(is_ntfs(temp)) {
 		struct statvfs vfs;
         ps3ntfs_statvfs(path, &vfs);
@@ -13062,6 +13081,10 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 error:
 	
 	if( iso_done ) {
+		if(with_3k3y_header && is_net(ISO_PATH)) {
+			print_load("Warning : 3k3y header not added, not supported on network (net0) destinations");
+			if(rlog) fputs("3k3y header : not added (network destination)\n", rlog);
+		} else
 		if(with_3k3y_header) {
 			FCLOSE(f);
 			
@@ -16829,6 +16852,7 @@ u8 SetDirPerms(char *path)
 u8 SetPerms(char* path)
 {
 	if(is_ntfs(path)) return SUCCESS;
+	if(is_net(path)) return SUCCESS;
 	
 	u8 f_info = path_info(path);
 	
@@ -25088,6 +25112,11 @@ void read_setting()
 		fread(&SHOW_LOG, sizeof(u8), 1, fp);
 		fread(&OVERWRITE, sizeof(u8), 1, fp);
 		fread(&DUMPER_MAX_TRY, sizeof(u8), 1, fp);
+		{	// added later: older setting.bin files end before it
+			u8 un = YES;
+			if( fread(&un, sizeof(u8), 1, fp) == 1 && un <= 1 ) UPDATES_TO_NET = un;
+			else UPDATES_TO_NET = YES;
+		}
 		
 		fclose(fp);
 	} 
@@ -25167,6 +25196,7 @@ void write_setting()
 		fwrite(&SHOW_LOG, sizeof(u8), 1, fp);
 		fwrite(&OVERWRITE, sizeof(u8), 1, fp);
 		fwrite(&DUMPER_MAX_TRY, sizeof(u8), 1, fp);
+		fwrite(&UPDATES_TO_NET, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 		SetFilePerms(setPath);
@@ -25413,6 +25443,12 @@ int init_ManaGunZ()
 	print_debug("start of init mgz");
 	
 	int i;
+	
+	{
+		char net_cfg[255];
+		net_cfg_path(net_cfg);
+		if( net_io_init(net_cfg) ) print_debug("net0 = ps3netsrv %s", net_io_server());
+	}
 
 	cobra = is_cobra();
 	mamba = is_mamba();
@@ -29470,6 +29506,36 @@ void Option(char *item)
 		else show_msg(STR_FAILED);
 		open_txt_viewer(result_log);
 	} else
+	if(strcmp(item, STR_BUILD_ISO_NET) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = build_bdvd_iso("/net0:/PS3ISO", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_DUMP_DEC_NET) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = dump_dec_bdvd("/net0:/PS3ISO", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_DUMP_ENC_NET) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = dump_enc_bdvd("/net0:/PS3ISO", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
 	if(strcmp(item, STR_DUMP_ENC) == 0) {
 		start_copy_loading();
 		char result_log[64]={0};
@@ -29802,6 +29868,14 @@ void Open_option()
 					add_option_item(STR_DUMP_DEC);
 				}
 				add_option_item(STR_DUMP_ENC);
+				if( net_io_enabled() ) {
+					if( HEN ) {
+						add_option_item(STR_BUILD_ISO_NET);
+					} else {
+						add_option_item(STR_DUMP_DEC_NET);
+					}
+					add_option_item(STR_DUMP_ENC_NET);
+				}
 				add_option_item(STR_REDUMP_LOG);
 				
 			}
@@ -30976,6 +31050,21 @@ void add_item_MENU(char *str, u8 type)
 	}
 }
 
+void add_item_value_MENU(char *str);
+
+// network destinations (ps3netsrv, see net_io.h) for the dump menus
+void add_net_dump_values()
+{
+	if( !net_io_enabled() ) return;
+	
+	char tmp[255];
+	int j;
+	for(j=0; j<=scan_dir_number; j++) {
+		sprintf(tmp, "/net0:/%s", scan_dir[j]);
+		add_item_value_MENU(tmp);
+	}
+}
+
 void add_item_value_MENU(char *str)
 {
 	if(MENU_MAX_ITEMS_VALUE <= ITEMS_VALUE_NUMBER[ITEMS_NUMBER]) {
@@ -31068,6 +31157,9 @@ void Draw_HELP()
 	if(item_is(STR_IGNORE_ERR)) {
 		DrawString(x, y, STR_IGNORE_ERR_DESC);
 	} else
+	if(item_is(STR_UPDATES_TO_NET)) {
+		DrawFormatString(x, y, "Downloaded game updates are also copied to /net0:/PKG (ps3netsrv %s).", (char *) net_io_server());
+	} else
 	if(item_is(STR_3K3Y_HEADER)) {
 		DrawString(x, y, STR_3K3Y_HEADER_DESC);
 	} else
@@ -31079,6 +31171,9 @@ void Draw_HELP()
 	} else
 	if(item_is(STR_UPLOADER)) {
 		DrawString(x, y, STR_UPLOADER_DESC);
+	} else
+	if(item_is(STR_NET_SERVER)) {
+		DrawString(x, y, STR_NET_SERVER_DESC);
 	} else
 	if(item_is(STR_BT_AUDIO)) {
 		DrawString(x, y, STR_BT_AUDIO_DESC);
@@ -35477,6 +35572,39 @@ u8 PS3_UPDATE_MENU_TRIANGLE()
 	return CONTINUE;
 }
 
+// copy a downloaded update to /net0:/PKG (skipped when the same size is already there)
+static void copy_update_to_net(char *pkg_path)
+{
+	if( !net_io_enabled() || !UPDATES_TO_NET ) return;
+	
+	char *name = strrchr(pkg_path, '/');
+	if( name == NULL ) return;
+	
+	char dst[512];
+	MGZ_mkdir_recursive("/net0:/PKG");
+	sprintf(dst, "/net0:/PKG%s", name);
+	
+	struct stat sl, sr;
+	if( stat(pkg_path, &sl) != 0 ) return;
+	if( stat(dst, &sr) == 0 ) {
+		if( sr.st_size == sl.st_size ) {
+			print_load("Already on net0 : %s", dst);
+			return;
+		}
+		unlink(dst);
+	}
+	
+	print_head("Copying update to net0...");
+	strncpy(copy_src, pkg_path, sizeof(copy_src)-1);
+	strncpy(copy_dst, dst, sizeof(copy_dst)-1);
+	if( CopyFile(pkg_path, dst) == SUCCESS ) {
+		print_load("Copied to %s", dst);
+	} else {
+		print_load("Error : failed to copy %s to %s", pkg_path, dst);
+		unlink(dst);
+	}
+}
+
 u8 PS3_UPDATE_MENU_START()
 {
 	loading_can_turnoff = YES;
@@ -35490,6 +35618,9 @@ u8 PS3_UPDATE_MENU_START()
 			if( download(ps3_game_updates[n].url, ps3_game_updates[n].pkg_path) ) {
 				ps3_game_updates[n].pkg_exist = YES;
 			}
+		}
+		if( ps3_game_updates[n].to_dl && ps3_game_updates[n].pkg_exist ) {
+			copy_update_to_net(ps3_game_updates[n].pkg_path);
 		}
 	}
 	task_End();
@@ -36882,6 +37013,7 @@ void init_BDVD_MENU()
 				add_item_value_MENU(tmp);
 			}
 		}
+		add_net_dump_values();
 	} else {
 		add_item_MENU(STR_DUMP_DEC, ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
@@ -36890,6 +37022,7 @@ void init_BDVD_MENU()
 				add_item_value_MENU(tmp);
 			}
 		}
+		add_net_dump_values();
 	}
 	add_item_MENU(STR_DUMP_ENC, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
@@ -36898,6 +37031,7 @@ void init_BDVD_MENU()
 			add_item_value_MENU(tmp);
 		}
 	}
+	add_net_dump_values();
 	add_item_MENU(STR_REDUMP_LOG, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
@@ -38801,6 +38935,18 @@ void init_SETTINGS()
 	
 	add_item_MENU(STR_IGNORE_ERR, ITEM_TOGGLE);
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = IGNORE_ERR;
+	add_item_MENU(STR_NET_SERVER, ITEM_TEXTBOX);
+	if( net_io_enabled() ) {
+		add_item_value_MENU((char *) net_io_server());
+	} else {
+		add_item_value_MENU(STR_NONE);
+	}
+	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = 0;
+	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	if( net_io_enabled() ) {
+		add_item_MENU(STR_UPDATES_TO_NET, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = UPDATES_TO_NET;
+	}
 	if( !HEN ) {
 		add_item_MENU(STR_3K3Y_HEADER, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = with_3k3y_header;
@@ -39125,6 +39271,9 @@ void update_SETTINGS()
 		}
 	} else
 	if( item_title_is(STR_DUMP_OPTION)){
+		if(item_is(STR_UPDATES_TO_NET)) {
+			UPDATES_TO_NET = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
 		if(item_is(STR_3K3Y_HEADER)) {
 			with_3k3y_header = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else
@@ -39247,6 +39396,20 @@ u8 SETTINGS_CROSS()
 			}
 		}
 	} else 
+	if(item_is(STR_NET_SERVER)) {
+		char tmpName[0x40];
+		memset(tmpName, 0, 0x40);
+		if( net_io_enabled() ) strncpy(tmpName, net_io_server(), 0x3F);
+		if(Get_OSK_String(STR_NET_SERVER, tmpName, 0x40) == SUCCESS) {
+			if( net_io_parse_server(tmpName) ) {
+				char net_cfg[255];
+				net_cfg_path(net_cfg);
+				net_io_save(net_cfg);
+			} else {
+				show_msg("Invalid server, use IP or IP:port");
+			}
+		}
+	} else
 	if(item_is(STR_UPLOADER)) {
 		char tmpName[0x40];
 		memset(tmpName, 0, 0x40);
@@ -39324,6 +39487,12 @@ u8 SETTINGS_SQUARE()
 	} else
 	if(item_is(STR_UPLOADER)) {
 		memset(UPLOADER, 0, 0x40);
+	} else
+	if(item_is(STR_NET_SERVER)) {
+		char net_cfg[255];
+		net_cfg_path(net_cfg);
+		net_io_disable();
+		net_io_save(net_cfg);
 	} else
 	if(item_is(STR_DUMPER_MAX_TRY)) {
 		DUMPER_MAX_TRY = 30;
@@ -39618,7 +39787,7 @@ void Draw_SETTINGS_input()
 				x=DrawButton(x, y, STR_DELETE, BUTTON_TRIANGLE);
 			}
 		} else
-		if(item_is(STR_UPLOADER)){
+		if(item_is(STR_UPLOADER) || item_is(STR_NET_SERVER)){
 			x=DrawButton(x, y, STR_RENAME, BUTTON_CROSS);
 			x=DrawButton(x, y, STR_RESET, BUTTON_SQUARE);
 		}
