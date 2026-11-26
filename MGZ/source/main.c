@@ -519,6 +519,10 @@ char ManaGunZ_id[10];
 
 char *ManaGunZ_path=NULL;
 
+#define STR_DUMP_DEC_NET  "Dump decrypted Blu-ray to net0 (PS3ISO)"
+#define STR_DUMP_ENC_NET  "Dump encrypted Blu-ray to net0 (PS3ISO)"
+#define STR_BUILD_ISO_NET "Build ISO to net0 (PS3ISO)"
+
 static int position_CURPIC=-1;
 
 static u8 RPCS3=NO;
@@ -2075,6 +2079,7 @@ u8 support_big_files(char *path)
 {
 	if( is_exFAT(path) ) return YES;
 	if( is_ntfs(path) ) return YES;
+	if( is_net(path) ) return YES;
 	if( strncmp(path, "/dev_hdd0", 9) == 0) return YES;
 	
 	return NO;
@@ -11186,6 +11191,9 @@ u64 GetFreeSpace(char *path)
 
 	u64 freeSize = 0;
 	u32 blockSize;
+	if(is_net(temp)) {
+		freeSize = 0x0004000000000000ULL; // unknown (ps3netsrv has no free space command)
+	} else
 	if(is_ntfs(temp)) {
 		struct statvfs vfs;
         ps3ntfs_statvfs(path, &vfs);
@@ -13062,6 +13070,10 @@ u8 dump_dec_bdvd(char *outdir, char *result_log)
 error:
 	
 	if( iso_done ) {
+		if(with_3k3y_header && is_net(ISO_PATH)) {
+			print_load("Warning : 3k3y header not added, not supported on network (net0) destinations");
+			if(rlog) fputs("3k3y header : not added (network destination)\n", rlog);
+		} else
 		if(with_3k3y_header) {
 			FCLOSE(f);
 			
@@ -16829,6 +16841,7 @@ u8 SetDirPerms(char *path)
 u8 SetPerms(char* path)
 {
 	if(is_ntfs(path)) return SUCCESS;
+	if(is_net(path)) return SUCCESS;
 	
 	u8 f_info = path_info(path);
 	
@@ -25413,6 +25426,12 @@ int init_ManaGunZ()
 	print_debug("start of init mgz");
 	
 	int i;
+	
+	{
+		char net_cfg[255];
+		sprintf(net_cfg, "%s/USRDIR/setting/net.txt", ManaGunZ_path);
+		if( net_io_init(net_cfg) ) print_debug("net0 = ps3netsrv %s", net_io_server());
+	}
 
 	cobra = is_cobra();
 	mamba = is_mamba();
@@ -29470,6 +29489,36 @@ void Option(char *item)
 		else show_msg(STR_FAILED);
 		open_txt_viewer(result_log);
 	} else
+	if(strcmp(item, STR_BUILD_ISO_NET) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = build_bdvd_iso("/net0:/PS3ISO", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_DUMP_DEC_NET) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = dump_dec_bdvd("/net0:/PS3ISO", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
+	if(strcmp(item, STR_DUMP_ENC_NET) == 0) {
+		start_copy_loading();
+		char result_log[64]={0};
+		sprintf(result_log, "%s/USRDIR/sys/result.log", ManaGunZ_path);
+		u8 ret = dump_enc_bdvd("/net0:/PS3ISO", result_log);
+		end_copy_loading();
+		if( ret ) show_msg(STR_DONE);
+		else show_msg(STR_FAILED);
+		open_txt_viewer(result_log);
+	} else
 	if(strcmp(item, STR_DUMP_ENC) == 0) {
 		start_copy_loading();
 		char result_log[64]={0};
@@ -29802,6 +29851,14 @@ void Open_option()
 					add_option_item(STR_DUMP_DEC);
 				}
 				add_option_item(STR_DUMP_ENC);
+				if( net_io_enabled() ) {
+					if( HEN ) {
+						add_option_item(STR_BUILD_ISO_NET);
+					} else {
+						add_option_item(STR_DUMP_DEC_NET);
+					}
+					add_option_item(STR_DUMP_ENC_NET);
+				}
 				add_option_item(STR_REDUMP_LOG);
 				
 			}
@@ -30973,6 +31030,21 @@ void add_item_MENU(char *str, u8 type)
 	} else 
 	if(type==ITEM_LOCKED) {
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER]=0;
+	}
+}
+
+void add_item_value_MENU(char *str);
+
+// network destinations (ps3netsrv, see net_io.h) for the dump menus
+void add_net_dump_values()
+{
+	if( !net_io_enabled() ) return;
+	
+	char tmp[255];
+	int j;
+	for(j=0; j<=scan_dir_number; j++) {
+		sprintf(tmp, "/net0:/%s", scan_dir[j]);
+		add_item_value_MENU(tmp);
 	}
 }
 
@@ -36882,6 +36954,7 @@ void init_BDVD_MENU()
 				add_item_value_MENU(tmp);
 			}
 		}
+		add_net_dump_values();
 	} else {
 		add_item_MENU(STR_DUMP_DEC, ITEM_TEXTBOX);
 		for(j=0; j<=scan_dir_number; j++) {
@@ -36890,6 +36963,7 @@ void init_BDVD_MENU()
 				add_item_value_MENU(tmp);
 			}
 		}
+		add_net_dump_values();
 	}
 	add_item_MENU(STR_DUMP_ENC, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
@@ -36898,6 +36972,7 @@ void init_BDVD_MENU()
 			add_item_value_MENU(tmp);
 		}
 	}
+	add_net_dump_values();
 	add_item_MENU(STR_REDUMP_LOG, ITEM_TEXTBOX);
 	for(j=0; j<=scan_dir_number; j++) {
 		for(i=0; i<=device_number; i++) {
