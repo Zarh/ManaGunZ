@@ -49,6 +49,9 @@ typedef struct {
 
 int  net_io_init(const char *config_path);   // returns number of configured devices
 int  net_io_set_server(const char *host, unsigned int port); // used by net_io_init (and tests)
+int  net_io_parse_server(const char *str);  // "ip" or "ip:port"; "" disables net0. 0 = invalid
+void net_io_disable();
+int  net_io_save(const char *config_path);   // writes net0=ip:port, or removes the file when disabled
 uint8_t net_io_enabled();
 uint8_t is_net(const char *path);
 const char *net_io_server(); // "ip:port" of net0, for display

@@ -97,14 +97,53 @@ const char *net_io_server()
 	return net_server_str;
 }
 
+static void net_disconnect();
+
 int net_io_set_server(const char *host, unsigned int port)
 {
 	if(host == NULL || host[0] == 0 || sizeof(net_host) <= strlen(host)) return 0;
 	if(port == 0 || 0xFFFF < port) port = 38008;
+	NET_LOCK();
+	net_disconnect(); // the next call connects to the new server
+	NET_UNLOCK();
 	strcpy(net_host, host);
 	net_port = (uint16_t) port;
 	snprintf(net_server_str, sizeof(net_server_str), "%s:%u", net_host, net_port);
 	net_enabled = 1;
+	return 1;
+}
+
+void net_io_disable()
+{
+	NET_LOCK();
+	net_disconnect();
+	NET_UNLOCK();
+	net_enabled = 0;
+	net_host[0] = 0;
+	net_server_str[0] = 0;
+}
+
+// "192.168.1.100" or "192.168.1.100:38008"; empty = disable
+int net_io_parse_server(const char *str)
+{
+	char host[64] = {0};
+	unsigned int port = 38008;
+	while(str && (*str == ' ' || *str == '\t')) str++;
+	if(str == NULL || str[0] == 0) {
+		net_io_disable();
+		return 1;
+	}
+	if(sscanf(str, "%63[^:\r\n ]:%u", host, &port) < 1 || host[0] == 0) return 0;
+	return net_io_set_server(host, port);
+}
+
+int net_io_save(const char *config_path)
+{
+	if(!net_enabled) return remove(config_path) == 0 ? 1 : 0;
+	FILE *fp = fopen(config_path, "w");
+	if(fp == NULL) return 0;
+	fprintf(fp, "# ManaGunZ network destination (ps3netsrv): net0=<ip>[:<port>]\nnet0=%s\n", net_server_str);
+	fclose(fp);
 	return 1;
 }
 
