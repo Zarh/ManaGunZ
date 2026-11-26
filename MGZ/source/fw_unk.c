@@ -456,8 +456,20 @@ u8 try_latest_fw()
 	
 	MACRO_CHECK_LV1(SPE_OFFSET, 0, flag_spe, 0xFF);
 	
-	MACRO_CHECK_LV1(HV_START_OFFSET, -0xA8, flag_hv_start_offset, 0xBB);
-	
+	// HV_START_OFFSET : the full flag_hv_start_offset pattern also covers the bytes
+	// before the entry (offsets 0x00-0x9F), which are runtime data and differ between
+	// consoles/boots (e.g. on 4.92 CEX 0x370E90 holds 0xFF..FF and 0x370EF0-0x370F17
+	// is zeroed), so it rejected an unchanged lv1. Only check the stable part:
+	// 0x8000000000000000 at -8, then the 8-byte value + 20-byte hash, then zero padding.
+	print_debug("HV_START_OFFSET");
+	memset(mem, 0, 0x1000);
+	TEMP_HV_START_OFFSET = LAST_FW(HV_START_OFFSET);
+	MEM_lv1peek((u64) (TEMP_HV_START_OFFSET - 0x8), (char *) mem, 0x30);
+	if(!compare(0xBB, (char *) mem, (char *) &flag_hv_start_offset[0xA0], 0x30)) {
+		print_debug("Not the same HV_START_OFFSET");
+		return FAILED;
+	}
+
 	TOC=TEMP_TOC;
 	FW_DATE_OFFSET=TEMP_FW_DATE_OFFSET;
 	FW_DATE_1=TEMP_FW_DATE_1;
