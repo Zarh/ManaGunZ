@@ -519,6 +519,10 @@ char ManaGunZ_id[10];
 
 char *ManaGunZ_path=NULL;
 
+#define STR_UPDATES_TO_NET "Copy game updates to net0 (PKG)"
+// copy downloaded game updates to /net0:/PKG as well (needs net0 in setting/net.txt)
+static u8 UPDATES_TO_NET = YES;
+
 #define STR_DUMP_DEC_NET  "Dump decrypted Blu-ray to net0 (PS3ISO)"
 #define STR_DUMP_ENC_NET  "Dump encrypted Blu-ray to net0 (PS3ISO)"
 #define STR_BUILD_ISO_NET "Build ISO to net0 (PS3ISO)"
@@ -25108,6 +25112,11 @@ void read_setting()
 		fread(&SHOW_LOG, sizeof(u8), 1, fp);
 		fread(&OVERWRITE, sizeof(u8), 1, fp);
 		fread(&DUMPER_MAX_TRY, sizeof(u8), 1, fp);
+		{	// added later: older setting.bin files end before it
+			u8 un = YES;
+			if( fread(&un, sizeof(u8), 1, fp) == 1 && un <= 1 ) UPDATES_TO_NET = un;
+			else UPDATES_TO_NET = YES;
+		}
 		
 		fclose(fp);
 	} 
@@ -25187,6 +25196,7 @@ void write_setting()
 		fwrite(&SHOW_LOG, sizeof(u8), 1, fp);
 		fwrite(&OVERWRITE, sizeof(u8), 1, fp);
 		fwrite(&DUMPER_MAX_TRY, sizeof(u8), 1, fp);
+		fwrite(&UPDATES_TO_NET, sizeof(u8), 1, fp);
 		
 		fclose(fp);
 		SetFilePerms(setPath);
@@ -31147,6 +31157,9 @@ void Draw_HELP()
 	if(item_is(STR_IGNORE_ERR)) {
 		DrawString(x, y, STR_IGNORE_ERR_DESC);
 	} else
+	if(item_is(STR_UPDATES_TO_NET)) {
+		DrawFormatString(x, y, "Downloaded game updates are also copied to /net0:/PKG (ps3netsrv %s).", (char *) net_io_server());
+	} else
 	if(item_is(STR_3K3Y_HEADER)) {
 		DrawString(x, y, STR_3K3Y_HEADER_DESC);
 	} else
@@ -35559,6 +35572,39 @@ u8 PS3_UPDATE_MENU_TRIANGLE()
 	return CONTINUE;
 }
 
+// copy a downloaded update to /net0:/PKG (skipped when the same size is already there)
+static void copy_update_to_net(char *pkg_path)
+{
+	if( !net_io_enabled() || !UPDATES_TO_NET ) return;
+	
+	char *name = strrchr(pkg_path, '/');
+	if( name == NULL ) return;
+	
+	char dst[512];
+	MGZ_mkdir_recursive("/net0:/PKG");
+	sprintf(dst, "/net0:/PKG%s", name);
+	
+	struct stat sl, sr;
+	if( stat(pkg_path, &sl) != 0 ) return;
+	if( stat(dst, &sr) == 0 ) {
+		if( sr.st_size == sl.st_size ) {
+			print_load("Already on net0 : %s", dst);
+			return;
+		}
+		unlink(dst);
+	}
+	
+	print_head("Copying update to net0...");
+	strncpy(copy_src, pkg_path, sizeof(copy_src)-1);
+	strncpy(copy_dst, dst, sizeof(copy_dst)-1);
+	if( CopyFile(pkg_path, dst) == SUCCESS ) {
+		print_load("Copied to %s", dst);
+	} else {
+		print_load("Error : failed to copy %s to %s", pkg_path, dst);
+		unlink(dst);
+	}
+}
+
 u8 PS3_UPDATE_MENU_START()
 {
 	loading_can_turnoff = YES;
@@ -35572,6 +35618,9 @@ u8 PS3_UPDATE_MENU_START()
 			if( download(ps3_game_updates[n].url, ps3_game_updates[n].pkg_path) ) {
 				ps3_game_updates[n].pkg_exist = YES;
 			}
+		}
+		if( ps3_game_updates[n].to_dl && ps3_game_updates[n].pkg_exist ) {
+			copy_update_to_net(ps3_game_updates[n].pkg_path);
 		}
 	}
 	task_End();
@@ -38894,6 +38943,10 @@ void init_SETTINGS()
 	}
 	ITEMS_VALUE_POSITION[ITEMS_NUMBER] = 0;
 	ITEMS_VALUE_SHOW[ITEMS_NUMBER] = YES;
+	if( net_io_enabled() ) {
+		add_item_MENU(STR_UPDATES_TO_NET, ITEM_TOGGLE);
+		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = UPDATES_TO_NET;
+	}
 	if( !HEN ) {
 		add_item_MENU(STR_3K3Y_HEADER, ITEM_TOGGLE);
 		ITEMS_VALUE_POSITION[ITEMS_NUMBER] = with_3k3y_header;
@@ -39218,6 +39271,9 @@ void update_SETTINGS()
 		}
 	} else
 	if( item_title_is(STR_DUMP_OPTION)){
+		if(item_is(STR_UPDATES_TO_NET)) {
+			UPDATES_TO_NET = ITEMS_VALUE_POSITION[ITEMS_POSITION];
+		} else
 		if(item_is(STR_3K3Y_HEADER)) {
 			with_3k3y_header = ITEMS_VALUE_POSITION[ITEMS_POSITION];
 		} else
